@@ -3,13 +3,16 @@
 This root `AGENTS.md` provides default guidance for the whole repository.
 
 ## Repository Layout
-- `umkm-pos-api/` — NestJS + Prisma backend service.
-- `umkm-pos-app/` — Vue 3 + Vite frontend application.
+- `apps/api/` — NestJS + Prisma backend service.
+- `apps/web/` — Vue 3 + Vite frontend application.
+- `packages/` — shared packages used across applications.
+- `infra/` — infrastructure assets and scripts.
+- `docs/` — architecture and operational runbooks.
 
 ## Working Rules
 - Before editing files in a subproject, read that subproject's own `AGENTS.md` first.
 - Treat nested `AGENTS.md` files as higher-priority instructions for files under their directory.
-- Keep changes scoped to the relevant project (`api` vs `app`) unless the task explicitly spans both.
+- Keep changes scoped to the relevant project (`api` vs `web`) unless the task explicitly spans both.
 
 ## Common Workflow
 1. Identify which subproject is affected.

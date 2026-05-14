@@ -24,7 +24,7 @@ This migration script transitions the UMKM POS system from single-cashier to mul
 Ensure all Prisma migrations have been applied:
 
 ```bash
-cd umkm-pos-api
+cd apps/api
 npx prisma migrate deploy
 ```
 
