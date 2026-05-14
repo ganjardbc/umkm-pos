@@ -1,0 +1,13 @@
+{
+  "name": "umkm-pos",
+  "private": true,
+  "packageManager": "pnpm@10.22.0",
+  "scripts": {
+    "dev:app": "pnpm --filter umkm-pos-app dev",
+    "dev:api": "pnpm --filter umkm-pos-api start:dev",
+    "build": "pnpm -r build",
+    "test": "pnpm -r --if-present test",
+    "lint": "pnpm -r --if-present lint",
+    "format": "pnpm -r --if-present format"
+  }
+}
