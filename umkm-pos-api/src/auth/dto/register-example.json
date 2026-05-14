@@ -1,0 +1,20 @@
+{
+  "name": "John Doe",
+  "email": "john@example.com",
+  "password": "Password123!",
+  "merchant": {
+    "slug": "my-store",
+    "name": "My Store",
+    "phone": "08123456789",
+    "address": "Jl. Ahmad Yani No. 123",
+    "logo": "https://example.com/logo.png"
+  },
+  "outlets": [
+    {
+      "slug": "main-branch",
+      "name": "Main Branch",
+      "location": "Jl. Sudirman No. 1",
+      "logo": "https://example.com/outlet-logo.png"
+    }
+  ]
+}

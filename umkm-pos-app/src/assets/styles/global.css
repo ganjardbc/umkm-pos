@@ -1,0 +1,20 @@
+@import "tailwindcss";
+@import "tailwindcss-primeui";
+@import "primeicons/primeicons.css";
+@import './variables-orange.css';
+@import './variables-dark.css';
+@import './themes.css';
+
+html {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+#layout-footer {
+  display: none;
+}
+
+#layout-footer:not(:empty) {
+  display: block;
+}

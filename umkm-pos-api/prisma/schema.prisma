@@ -1,0 +1,346 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model daily_reports {
+  id                 String    @id @default(dbgenerated("(uuid())")) @db.Char(36)
+  merchant_id        String    @db.Char(36)
+  outlet_id          String    @db.Char(36)
+  report_date        DateTime  @db.Date
+  total_sales        Decimal   @db.Decimal(14, 2)
+  total_transactions Int
+  created_at         DateTime  @default(now()) @db.Timestamp(0)
+  updated_at         DateTime  @default(now()) @db.Timestamp(0)
+  created_by         String?   @db.Char(36)
+  updated_by         String?   @db.Char(36)
+  merchants          merchants @relation(fields: [merchant_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "daily_reports_ibfk_1")
+  outlets            outlets   @relation(fields: [outlet_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "daily_reports_ibfk_2")
+
+  @@unique([merchant_id, outlet_id, report_date], map: "unique_merchant_outlet_date")
+  @@index([merchant_id], map: "idx_daily_reports_merchant")
+  @@index([outlet_id], map: "idx_daily_reports_outlet")
+}
+
+model merchants {
+  id                 String               @id @default(dbgenerated("(uuid())")) @db.Char(36)
+  slug               String               @unique(map: "slug") @db.VarChar(120)
+  name               String               @db.VarChar(150)
+  phone              String?              @db.VarChar(50)
+  address            String?              @db.Text
+  logo               String?              @db.Text
+  logo_upload_id     String?              @db.Char(36)
+  created_at         DateTime             @default(now()) @db.Timestamp(0)
+  updated_at         DateTime             @default(now()) @db.Timestamp(0)
+  created_by         String?              @db.Char(36)
+  updated_by         String?              @db.Char(36)
+  daily_reports      daily_reports[]
+  outlets            outlets[]
+  products           products[]
+  users              users[]
+  product_categories product_categories[]
+  upload             uploads?             @relation(fields: [logo_upload_id], references: [id], onDelete: SetNull, map: "merchants_ibfk_logo_upload")
+
+  @@index([logo_upload_id], map: "idx_merchants_logo_upload")
+}
+
+model outlets {
+  id            String          @id @default(dbgenerated("(uuid())")) @db.Char(36)
+  merchant_id   String          @db.Char(36)
+  slug          String          @db.VarChar(120)
+  name          String          @db.VarChar(150)
+  location      String?         @db.Text
+  logo          String?         @db.Text
+  logo_upload_id String?        @db.Char(36)
+  is_active     Boolean         @default(true)
+  created_at    DateTime        @default(now()) @db.Timestamp(0)
+  updated_at    DateTime        @default(now()) @db.Timestamp(0)
+  created_by    String?         @db.Char(36)
+  updated_by    String?         @db.Char(36)
+  merchants     merchants       @relation(fields: [merchant_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "outlets_ibfk_1")
+  daily_reports daily_reports[]
+  shifts        shifts[]
+  transactions  transactions[]
+  user_roles    user_roles[]
+  upload        uploads?        @relation(fields: [logo_upload_id], references: [id], onDelete: SetNull, map: "outlets_ibfk_logo_upload")
+
+  @@unique([merchant_id, slug], map: "unique_merchant_slug")
+  @@index([merchant_id], map: "idx_outlets_merchant")
+  @@index([logo_upload_id], map: "idx_outlets_logo_upload")
+}
+
+model permissions {
+  id               String             @id @default(dbgenerated("(uuid())")) @db.Char(36)
+  code             String             @unique(map: "code") @db.VarChar(120)
+  description      String?            @db.Text
+  created_at       DateTime           @default(now()) @db.Timestamp(0)
+  updated_at       DateTime           @default(now()) @db.Timestamp(0)
+  created_by       String?            @db.Char(36)
+  updated_by       String?            @db.Char(36)
+  role_permissions role_permissions[]
+}
+
+model product_categories {
+  id          String     @id @default(dbgenerated("(uuid())")) @db.Char(36)
+  merchant_id String     @db.Char(36)
+  name        String     @db.VarChar(100)
+  description String?    @db.Text
+  is_active   Boolean    @default(true)
+  created_at  DateTime   @default(now()) @db.Timestamp(0)
+  updated_at  DateTime   @default(now()) @db.Timestamp(0)
+  created_by  String?    @db.Char(36)
+  updated_by  String?    @db.Char(36)
+  merchants   merchants  @relation(fields: [merchant_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "product_categories_ibfk_1")
+  products    products[]
+
+  @@unique([merchant_id, name], map: "unique_merchant_category_name")
+  @@index([merchant_id], map: "idx_product_categories_merchant")
+  @@index([is_active], map: "idx_product_categories_active")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model products {
+  id                 String              @id @default(dbgenerated("(uuid())")) @db.Char(36)
+  merchant_id        String              @db.Char(36)
+  category_id        String?             @db.Char(36)
+  image_upload_id    String?             @db.Char(36)
+  slug               String              @db.VarChar(120)
+  thumbnail          String?             @db.Text
+  name               String              @db.VarChar(150)
+  category           String?             @db.VarChar(120)
+  price              Decimal             @db.Decimal(14, 2)
+  cost               Decimal             @default(0.00) @db.Decimal(14, 2)
+  stock_qty          Int                 @default(0)
+  min_stock          Int                 @default(0)
+  is_active          Boolean             @default(true)
+  created_at         DateTime            @default(now()) @db.Timestamp(0)
+  updated_at         DateTime            @default(now()) @db.Timestamp(0)
+  created_by         String?             @db.Char(36)
+  updated_by         String?             @db.Char(36)
+  merchants          merchants           @relation(fields: [merchant_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "products_ibfk_1")
+  product_categories product_categories? @relation(fields: [category_id], references: [id], onDelete: SetNull, onUpdate: NoAction, map: "products_ibfk_category")
+  upload             uploads?            @relation(fields: [image_upload_id], references: [id], onDelete: SetNull, onUpdate: NoAction, map: "products_ibfk_image_upload")
+  stock_logs         stock_logs[]
+  transaction_items  transaction_items[]
+
+  @@unique([merchant_id, slug], map: "unique_merchant_slug")
+  @@index([is_active], map: "idx_products_active")
+  @@index([merchant_id], map: "idx_products_merchant")
+  @@index([category_id], map: "idx_products_category")
+}
+
+model role_permissions {
+  role_id       String      @db.Char(36)
+  permission_id String      @db.Char(36)
+  created_at    DateTime    @default(now()) @db.Timestamp(0)
+  updated_at    DateTime    @default(now()) @db.Timestamp(0)
+  created_by    String?     @db.Char(36)
+  updated_by    String?     @db.Char(36)
+  roles         roles       @relation(fields: [role_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "role_permissions_ibfk_1")
+  permissions   permissions @relation(fields: [permission_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "role_permissions_ibfk_2")
+
+  @@id([role_id, permission_id])
+  @@index([permission_id], map: "permission_id")
+}
+
+model roles {
+  id               String             @id @default(dbgenerated("(uuid())")) @db.Char(36)
+  name             String             @unique(map: "name") @db.VarChar(100)
+  description      String?            @db.Text
+  created_at       DateTime           @default(now()) @db.Timestamp(0)
+  updated_at       DateTime           @default(now()) @db.Timestamp(0)
+  role_permissions role_permissions[]
+  user_roles       user_roles[]
+}
+
+model shifts {
+  id                 String               @id @default(dbgenerated("(uuid())")) @db.Char(36)
+  outlet_id          String               @db.Char(36)
+  shift_owner_id     String               @db.Char(36)
+  status             String               @default("open") @db.VarChar(20)
+  start_time         DateTime             @db.Timestamp(0)
+  end_time           DateTime?            @db.Timestamp(0)
+  created_at         DateTime             @default(now()) @db.Timestamp(0)
+  updated_at         DateTime             @default(now()) @db.Timestamp(0)
+  created_by         String?              @db.Char(36)
+  updated_by         String?              @db.Char(36)
+  outlets            outlets              @relation(fields: [outlet_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "shifts_ibfk_1")
+  shift_owner        users                @relation("shift_owner", fields: [shift_owner_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "shifts_ibfk_shift_owner")
+  transactions       transactions[]
+  shift_participants shift_participants[]
+  shift_audit_logs   shift_audit_logs[]
+
+  @@index([outlet_id], map: "idx_shifts_outlet")
+  @@index([shift_owner_id], map: "idx_shifts_shift_owner_id")
+  @@index([status], map: "idx_shifts_status")
+  @@index([start_time(sort: Desc)], map: "idx_shifts_start_time")
+  @@index([outlet_id, shift_owner_id, status], map: "idx_shifts_outlet_owner_status")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model shift_participants {
+  id                     String    @id @default(dbgenerated("(uuid())")) @db.Char(36)
+  shift_id               String    @db.Char(36)
+  user_id                String    @db.Char(36)
+  participant_added_at   DateTime  @default(now()) @db.Timestamp(0)
+  participant_removed_at DateTime? @db.Timestamp(0)
+  is_owner               Boolean   @default(false)
+  created_at             DateTime  @default(now()) @db.Timestamp(0)
+  shifts                 shifts    @relation(fields: [shift_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "shift_participants_ibfk_1")
+  users                  users     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "shift_participants_ibfk_2")
+
+  @@unique([shift_id, user_id], map: "unique_participant_per_shift")
+  @@index([shift_id], map: "idx_shift_participants_shift_id")
+  @@index([user_id], map: "idx_shift_participants_user_id")
+  @@index([shift_id, participant_removed_at], map: "idx_shift_participants_active")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model shift_audit_logs {
+  id             String   @id @default(dbgenerated("(uuid())")) @db.Char(36)
+  shift_id       String   @db.Char(36)
+  action         String   @db.VarChar(50)
+  user_id        String   @db.Char(36)
+  action_details Json?
+  created_at     DateTime @default(now()) @db.Timestamp(0)
+  shifts         shifts   @relation(fields: [shift_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "shift_audit_logs_ibfk_1")
+  users          users    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "shift_audit_logs_ibfk_2")
+
+  @@index([shift_id], map: "idx_shift_audit_logs_shift_id")
+  @@index([user_id], map: "idx_shift_audit_logs_user_id")
+  @@index([created_at(sort: Desc)], map: "idx_shift_audit_logs_created_at")
+}
+
+model stock_logs {
+  id         String   @id @default(dbgenerated("(uuid())")) @db.Char(36)
+  product_id String   @db.Char(36)
+  change_qty Int
+  reason     String   @db.VarChar(50)
+  ref_id     String?  @db.Char(36)
+  created_at DateTime @default(now()) @db.Timestamp(0)
+  updated_at DateTime @default(now()) @db.Timestamp(0)
+  created_by String?  @db.Char(36)
+  updated_by String?  @db.Char(36)
+  products   products @relation(fields: [product_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "stock_logs_ibfk_1")
+
+  @@index([product_id], map: "idx_stock_logs_product")
+  @@index([ref_id], map: "idx_stock_logs_ref")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model transaction_items {
+  id                    String       @id @default(dbgenerated("(uuid())")) @db.Char(36)
+  transaction_id        String       @db.Char(36)
+  product_id            String?      @db.Char(36)
+  product_name_snapshot String       @db.VarChar(150)
+  price_snapshot        Decimal      @db.Decimal(14, 2)
+  qty                   Int
+  subtotal              Decimal      @db.Decimal(14, 2)
+  created_at            DateTime     @default(now()) @db.Timestamp(0)
+  updated_at            DateTime     @default(now()) @db.Timestamp(0)
+  created_by            String?      @db.Char(36)
+  updated_by            String?      @db.Char(36)
+  transactions          transactions @relation(fields: [transaction_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "transaction_items_ibfk_1")
+  products              products?    @relation(fields: [product_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "transaction_items_ibfk_2")
+
+  @@index([product_id], map: "idx_tx_items_product")
+  @@index([transaction_id], map: "idx_tx_items_tx")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model uploads {
+  id             String     @id @default(dbgenerated("(uuid())")) @db.Char(36)
+  original_name  String     @db.VarChar(255)
+  mime_type      String     @db.VarChar(100)
+  size           Int
+  s3_key         String     @db.VarChar(500)
+  bucket         String     @db.VarChar(255)
+  uploaded_by_id String     @db.Char(36)
+  created_at     DateTime   @default(now()) @db.Timestamp(0)
+  updated_at     DateTime   @default(now()) @db.Timestamp(0)
+  products       products[]
+  merchants      merchants[]
+  outlets        outlets[]
+  users          users[]
+
+  @@index([uploaded_by_id], map: "idx_uploads_uploaded_by")
+}
+
+model transactions {
+  id                String              @id @default(dbgenerated("(uuid())")) @db.Char(36)
+  outlet_id         String              @db.Char(36)
+  user_id           String              @db.Char(36)
+  shift_id          String?             @db.Char(36)
+  cashier_id        String?             @db.Char(36)
+  payment_method    String              @db.VarChar(50)
+  total_amount      Decimal             @db.Decimal(14, 2)
+  is_offline        Boolean             @default(false)
+  device_id         String?             @db.VarChar(120)
+  created_at        DateTime            @default(now()) @db.Timestamp(0)
+  updated_at        DateTime            @default(now()) @db.Timestamp(0)
+  created_by        String?             @db.Char(36)
+  updated_by        String?             @db.Char(36)
+  is_cancelled      Boolean             @default(false)
+  transaction_items transaction_items[]
+  outlets           outlets             @relation(fields: [outlet_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "transactions_ibfk_1")
+  users             users               @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "transactions_ibfk_2")
+  shifts            shifts?             @relation(fields: [shift_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "transactions_ibfk_3")
+  cashier           users?              @relation("cashier_transactions", fields: [cashier_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "transactions_ibfk_cashier")
+
+  @@index([is_cancelled], map: "idx_tx_cancelled")
+  @@index([created_at], map: "idx_tx_created")
+  @@index([outlet_id], map: "idx_tx_outlet")
+  @@index([shift_id], map: "idx_transactions_shift_id")
+  @@index([cashier_id], map: "idx_transactions_cashier_id")
+  @@index([user_id], map: "idx_tx_user")
+}
+
+model user_roles {
+  user_id    String   @db.Char(36)
+  role_id    String   @db.Char(36)
+  outlet_id  String   @db.Char(36)
+  created_at DateTime @default(now()) @db.Timestamp(0)
+  updated_at DateTime @default(now()) @db.Timestamp(0)
+  created_by String?  @db.Char(36)
+  updated_by String?  @db.Char(36)
+  users      users    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "user_roles_ibfk_1")
+  roles      roles    @relation(fields: [role_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "user_roles_ibfk_2")
+  outlets    outlets  @relation(fields: [outlet_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "user_roles_ibfk_3")
+
+  @@id([user_id, role_id, outlet_id])
+  @@index([outlet_id], map: "idx_user_roles_outlet")
+  @@index([user_id], map: "idx_user_roles_user")
+  @@index([role_id], map: "role_id")
+}
+
+model users {
+  id                   String               @id @default(dbgenerated("(uuid())")) @db.Char(36)
+  merchant_id          String               @db.Char(36)
+  avatar               String?              @db.Text
+  avatar_upload_id     String?              @db.Char(36)
+  username             String               @db.VarChar(120)
+  name                 String               @db.VarChar(150)
+  email                String               @db.VarChar(150)
+  password_hash        String               @db.Text
+  is_active            Boolean              @default(true)
+  created_at           DateTime             @default(now()) @db.Timestamp(0)
+  updated_at           DateTime             @default(now()) @db.Timestamp(0)
+  created_by           String?              @db.Char(36)
+  updated_by           String?              @db.Char(36)
+  shifts_as_owner      shifts[]             @relation("shift_owner")
+  transactions         transactions[]
+  cashier_transactions transactions[]       @relation("cashier_transactions")
+  user_roles           user_roles[]
+  shift_participants   shift_participants[]
+  shift_audit_logs     shift_audit_logs[]
+  merchants            merchants            @relation(fields: [merchant_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "users_ibfk_1")
+  upload               uploads?             @relation(fields: [avatar_upload_id], references: [id], onDelete: SetNull, map: "users_ibfk_avatar_upload")
+
+  @@unique([merchant_id, email], map: "unique_merchant_email")
+  @@unique([merchant_id, username], map: "unique_merchant_username")
+  @@index([merchant_id], map: "idx_users_merchant")
+  @@index([avatar_upload_id], map: "idx_users_avatar_upload")
+}
