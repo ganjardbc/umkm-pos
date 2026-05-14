@@ -17,8 +17,13 @@ async function bootstrap() {
   app.use('/uploads/local', express.static(uploadsDir));
 
   // Enable CORS
+  const corsOrigins = (process.env.CORS_ORIGIN ?? '')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+
   app.enableCors({
-    origin: process.env.CORS_ORIGIN,
+    origin: corsOrigins.length > 0 ? corsOrigins : true,
     credentials: true,
   });
 
