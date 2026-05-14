@@ -1,26 +1,18 @@
+import type { ApiResponse as SharedApiResponse, PaginationMeta } from '@umkm-pos/shared-types';
+
 /**
  * Standard API Response Interface
  * All API responses should follow this format
  */
-export interface ApiResponse<T = any> {
-  success: boolean;
-  data?: T;
-  message?: string;
-  code?: string;
-}
+export type ApiResponse<T = unknown> = SharedApiResponse<T>;
 
 /**
  * Paginated Response Interface
  */
-export interface PaginatedResponse<T = any> {
+export interface PaginatedResponse<T = unknown> {
   success: boolean;
   data: T[];
-  meta: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  };
+  meta: PaginationMeta;
 }
 
 /**
@@ -30,5 +22,5 @@ export interface ErrorResponse {
   success: false;
   message: string;
   code: string;
-  errors?: any[];
+  errors?: unknown[];
 }
