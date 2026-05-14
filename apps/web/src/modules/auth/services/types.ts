@@ -1,3 +1,5 @@
+import type { AuthUser } from '@umkm-pos/shared-types';
+
 export interface LoginPayload {
   email: string;
   password: string;
@@ -24,20 +26,6 @@ export interface RegisterPayload {
   password: string;
   merchant: MerchantInfo;
   outlets: OutletInfo[];
-}
-
-export interface AuthUser {
-  id: string;
-  email: string;
-  name: string;
-  username: string;
-  merchant_id: string;
-  merchant: {
-    id: string;
-    name: string;
-    slug: string;
-  };
-  is_active: boolean;
 }
 
 export interface AuthResponse {
