@@ -1,4 +1,7 @@
-import type { ApiResponse as SharedApiResponse, PaginationMeta } from '@umkm-pos/shared-types';
+import type {
+  ApiResponse as SharedApiResponse,
+  PaginationMeta,
+} from '@umkm-pos/shared-types';
 
 /**
  * Standard API Response Interface

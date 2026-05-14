@@ -100,13 +100,21 @@ export class MerchantsController {
     @CurrentUser('merchant_id') merchantId: string,
     @CurrentUser('id') userId: string,
   ) {
-    return this.merchantsService.setImage(id, dto.upload_id, merchantId, userId);
+    return this.merchantsService.setImage(
+      id,
+      dto.upload_id,
+      merchantId,
+      userId,
+    );
   }
 
   @Delete(':id/image')
   @RequirePermission('merchants.update')
   @ApiOperation({ summary: 'Remove merchant logo' })
-  @ApiResponse({ status: 200, description: 'Merchant logo removed successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Merchant logo removed successfully',
+  })
   @ApiResponse({ status: 404, description: 'Merchant not found' })
   removeImage(
     @Param('id') id: string,

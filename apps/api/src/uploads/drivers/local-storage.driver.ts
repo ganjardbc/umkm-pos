@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'crypto';
 import { existsSync, mkdirSync, writeFile, unlink } from 'fs';
 import { join } from 'path';
 import { StorageDriver } from './storage-driver.interface';
@@ -12,7 +12,10 @@ export class LocalStorageDriver implements StorageDriver {
 
   constructor() {
     this.uploadDir = join(process.cwd(), 'uploads');
-    this.baseUrl = (process.env.APP_URL || 'http://localhost:3000').replace(/\/+$/, '');
+    this.baseUrl = (process.env.APP_URL || 'http://localhost:3000').replace(
+      /\/+$/,
+      '',
+    );
 
     if (!existsSync(this.uploadDir)) {
       mkdirSync(this.uploadDir, { recursive: true });
@@ -20,8 +23,10 @@ export class LocalStorageDriver implements StorageDriver {
     }
   }
 
-  async upload(file: Express.Multer.File): Promise<{ key: string; url: string }> {
-    const key = `${uuidv4()}-${file.originalname}`;
+  async upload(
+    file: Express.Multer.File,
+  ): Promise<{ key: string; url: string }> {
+    const key = `${randomUUID()}-${file.originalname}`;
     const filePath = join(this.uploadDir, key);
 
     await new Promise<void>((resolve, reject) => {

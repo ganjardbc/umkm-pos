@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'crypto';
 import {
   S3Client,
   PutObjectCommand,
@@ -19,8 +19,10 @@ export class S3StorageDriver implements StorageDriver {
     this.s3Client = this.s3Config.createS3Client();
   }
 
-  async upload(file: Express.Multer.File): Promise<{ key: string; url: string }> {
-    const key = `${uuidv4()}/${file.originalname}`;
+  async upload(
+    file: Express.Multer.File,
+  ): Promise<{ key: string; url: string }> {
+    const key = `${randomUUID()}/${file.originalname}`;
 
     const command = new PutObjectCommand({
       Bucket: this.s3Config.bucket,

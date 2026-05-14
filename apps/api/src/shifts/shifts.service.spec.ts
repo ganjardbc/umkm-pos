@@ -221,7 +221,9 @@ describe('ShiftsService', () => {
 
       await service.closeShift(shiftId, userId, merchantId);
 
-      expect(mockPrisma.$transaction).toHaveBeenCalled();
+      expect(mockPrisma.shifts.update).toHaveBeenCalled();
+      expect(mockPrisma.shift_participants.updateMany).toHaveBeenCalled();
+      expect(mockPrisma.shift_audit_logs.create).toHaveBeenCalled();
     });
 
     it('should throw BadRequestException if shift already closed', async () => {
