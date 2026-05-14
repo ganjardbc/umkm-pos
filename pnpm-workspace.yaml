@@ -1,0 +1,3 @@
+packages:
+  - 'umkm-pos-app'
+  - 'umkm-pos-api'
