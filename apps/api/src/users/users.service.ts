@@ -38,7 +38,6 @@ export class UsersService {
       this.prisma.users.count({ where }),
     ]);
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const data = users.map(({ password_hash: _, ...user }) => user);
     return { data, meta: PaginationDto.calculateMeta(total, page, limit) };
   }
@@ -99,7 +98,6 @@ export class UsersService {
       },
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password_hash: _, ...userWithoutPassword } = user;
     return userWithoutPassword;
   }

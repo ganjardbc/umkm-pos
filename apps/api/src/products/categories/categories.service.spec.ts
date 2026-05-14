@@ -301,7 +301,9 @@ describe('CategoriesService', () => {
       };
 
       mockPrisma.product_categories.findFirst.mockResolvedValue(null);
-      mockPrisma.product_categories.create.mockResolvedValue(mockCreatedCategory);
+      mockPrisma.product_categories.create.mockResolvedValue(
+        mockCreatedCategory,
+      );
 
       const result = await service.create(dto, merchantId, userId);
 
@@ -338,7 +340,9 @@ describe('CategoriesService', () => {
       };
 
       mockPrisma.product_categories.findFirst.mockResolvedValue(null);
-      mockPrisma.product_categories.create.mockResolvedValue(mockCreatedCategory);
+      mockPrisma.product_categories.create.mockResolvedValue(
+        mockCreatedCategory,
+      );
 
       const result = await service.create(dto, merchantId, userId);
 
@@ -364,7 +368,9 @@ describe('CategoriesService', () => {
       };
 
       mockPrisma.product_categories.findFirst.mockResolvedValue(null);
-      mockPrisma.product_categories.create.mockResolvedValue(mockCreatedCategory);
+      mockPrisma.product_categories.create.mockResolvedValue(
+        mockCreatedCategory,
+      );
 
       const result = await service.create(dto, merchantId, userId);
 
@@ -492,13 +498,18 @@ describe('CategoriesService', () => {
         .mockResolvedValueOnce(null); // Second call: check for duplicate name
       mockPrisma.product_categories.update.mockResolvedValue(updatedCategory);
 
-      const result = await service.update(categoryId, dto, merchantId, updatingUserId);
+      const result = await service.update(
+        categoryId,
+        dto,
+        merchantId,
+        updatingUserId,
+      );
 
       expect(result.created_by).toBe(originalUserId);
       expect(result.created_at).toEqual(createdAtTime);
       expect(result.updated_by).toBe(updatingUserId);
     });
-  });;
+  });
 
   describe('findOne', () => {
     it('should return category if it belongs to merchant', async () => {
@@ -538,7 +549,7 @@ describe('CategoriesService', () => {
       );
     });
 
-    it('should throw NotFoundException for other merchant\'s category', async () => {
+    it("should throw NotFoundException for other merchant's category", async () => {
       const categoryId = 'cat-1';
       const merchantId = 'merchant-1';
 
@@ -572,7 +583,9 @@ describe('CategoriesService', () => {
       };
 
       mockPrisma.product_categories.findFirst.mockResolvedValue(null);
-      mockPrisma.product_categories.create.mockResolvedValue(mockCreatedCategory);
+      mockPrisma.product_categories.create.mockResolvedValue(
+        mockCreatedCategory,
+      );
 
       const result = await service.create(dto, merchantId, userId);
 
@@ -607,7 +620,9 @@ describe('CategoriesService', () => {
         updated_by: null,
       };
 
-      mockPrisma.product_categories.findFirst.mockResolvedValue(existingCategory);
+      mockPrisma.product_categories.findFirst.mockResolvedValue(
+        existingCategory,
+      );
 
       await expect(service.create(dto, merchantId, userId)).rejects.toThrow(
         'Category with this name already exists for your merchant',
@@ -634,7 +649,9 @@ describe('CategoriesService', () => {
       };
 
       mockPrisma.product_categories.findFirst.mockResolvedValue(null);
-      mockPrisma.product_categories.create.mockResolvedValue(mockCreatedCategory);
+      mockPrisma.product_categories.create.mockResolvedValue(
+        mockCreatedCategory,
+      );
 
       const result = await service.create(dto, merchantId, userId);
 
@@ -720,7 +737,9 @@ describe('CategoriesService', () => {
         .mockResolvedValueOnce(existingCategory)
         .mockResolvedValueOnce(duplicateCategory);
 
-      await expect(service.update(categoryId, dto, merchantId, userId)).rejects.toThrow(
+      await expect(
+        service.update(categoryId, dto, merchantId, userId),
+      ).rejects.toThrow(
         'Category with this name already exists for your merchant',
       );
     });
@@ -743,7 +762,9 @@ describe('CategoriesService', () => {
         updated_by: null,
       };
 
-      mockPrisma.product_categories.findFirst.mockResolvedValue(existingCategory);
+      mockPrisma.product_categories.findFirst.mockResolvedValue(
+        existingCategory,
+      );
       mockPrisma.products.updateMany.mockResolvedValue({ count: 5 });
       mockPrisma.product_categories.delete.mockResolvedValue(existingCategory);
 
@@ -775,7 +796,9 @@ describe('CategoriesService', () => {
         updated_by: null,
       };
 
-      mockPrisma.product_categories.findFirst.mockResolvedValue(existingCategory);
+      mockPrisma.product_categories.findFirst.mockResolvedValue(
+        existingCategory,
+      );
       mockPrisma.products.updateMany.mockResolvedValue({ count: 3 });
       mockPrisma.product_categories.delete.mockResolvedValue(existingCategory);
 
@@ -797,7 +820,9 @@ describe('CategoriesService', () => {
         { id: 'cat-2', name: 'Electronics' },
       ];
 
-      mockPrisma.product_categories.findMany.mockResolvedValue(mockActiveCategories);
+      mockPrisma.product_categories.findMany.mockResolvedValue(
+        mockActiveCategories,
+      );
 
       const result = await service.findActiveCategories(merchantId);
 
@@ -826,7 +851,9 @@ describe('CategoriesService', () => {
         { id: 'cat-3', name: 'Food' },
       ];
 
-      mockPrisma.product_categories.findMany.mockResolvedValue(mockActiveCategories);
+      mockPrisma.product_categories.findMany.mockResolvedValue(
+        mockActiveCategories,
+      );
 
       const result = await service.findActiveCategories(merchantId);
 
@@ -838,11 +865,11 @@ describe('CategoriesService', () => {
     it('should return only id and name fields', async () => {
       const merchantId = 'merchant-1';
 
-      const mockActiveCategories = [
-        { id: 'cat-1', name: 'Electronics' },
-      ];
+      const mockActiveCategories = [{ id: 'cat-1', name: 'Electronics' }];
 
-      mockPrisma.product_categories.findMany.mockResolvedValue(mockActiveCategories);
+      mockPrisma.product_categories.findMany.mockResolvedValue(
+        mockActiveCategories,
+      );
 
       const result = await service.findActiveCategories(merchantId);
 
@@ -929,7 +956,9 @@ describe('CategoriesService', () => {
       };
 
       mockPrisma.product_categories.findFirst.mockResolvedValue(null);
-      mockPrisma.product_categories.create.mockResolvedValue(mockCreatedCategory);
+      mockPrisma.product_categories.create.mockResolvedValue(
+        mockCreatedCategory,
+      );
 
       const result = await service.create(dto, merchantId, userId);
 

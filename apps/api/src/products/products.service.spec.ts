@@ -103,7 +103,10 @@ describe('ProductsService', () => {
 
       const result = await service.create(dto, merchantId, userId);
 
-      expect(mockCategoriesService.findOne).toHaveBeenCalledWith('category-1', merchantId);
+      expect(mockCategoriesService.findOne).toHaveBeenCalledWith(
+        'category-1',
+        merchantId,
+      );
       expect(mockPrisma.products.create).toHaveBeenCalled();
       expect(result.category_id).toBe('category-1');
     });
@@ -281,9 +284,17 @@ describe('ProductsService', () => {
       mockCategoriesService.findOne.mockResolvedValue(mockCategory);
       mockPrisma.products.update.mockResolvedValue(updatedProduct);
 
-      const result = await service.update(productId, updateDto, merchantId, userId);
+      const result = await service.update(
+        productId,
+        updateDto,
+        merchantId,
+        userId,
+      );
 
-      expect(mockCategoriesService.findOne).toHaveBeenCalledWith('category-1', merchantId);
+      expect(mockCategoriesService.findOne).toHaveBeenCalledWith(
+        'category-1',
+        merchantId,
+      );
       expect(mockPrisma.products.update).toHaveBeenCalledWith({
         where: { id: productId },
         data: expect.objectContaining({
@@ -326,7 +337,12 @@ describe('ProductsService', () => {
       mockPrisma.products.findFirst.mockResolvedValue(productWithCategory);
       mockPrisma.products.update.mockResolvedValue(updatedProduct);
 
-      const result = await service.update(productId, updateDto, merchantId, userId);
+      const result = await service.update(
+        productId,
+        updateDto,
+        merchantId,
+        userId,
+      );
 
       expect(mockCategoriesService.findOne).not.toHaveBeenCalled();
       expect(mockPrisma.products.update).toHaveBeenCalledWith({
@@ -368,10 +384,12 @@ describe('ProductsService', () => {
         new NotFoundException('Category not found'),
       );
 
-      await expect(service.update(productId, updateDto, merchantId, userId)).rejects.toThrow(
-        BadRequestException,
-      );
-      await expect(service.update(productId, updateDto, merchantId, userId)).rejects.toThrow(
+      await expect(
+        service.update(productId, updateDto, merchantId, userId),
+      ).rejects.toThrow(BadRequestException);
+      await expect(
+        service.update(productId, updateDto, merchantId, userId),
+      ).rejects.toThrow(
         'Invalid category_id: category does not exist or belongs to another merchant',
       );
     });
@@ -404,9 +422,9 @@ describe('ProductsService', () => {
         new NotFoundException('Category not found'),
       );
 
-      await expect(service.update(productId, updateDto, merchantId, userId)).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(
+        service.update(productId, updateDto, merchantId, userId),
+      ).rejects.toThrow(BadRequestException);
     });
 
     it('should not validate category_id if not provided in update', async () => {
@@ -440,7 +458,12 @@ describe('ProductsService', () => {
       mockPrisma.products.findFirst.mockResolvedValue(mockExistingProduct);
       mockPrisma.products.update.mockResolvedValue(updatedProduct);
 
-      const result = await service.update(productId, updateDto, merchantId, userId);
+      const result = await service.update(
+        productId,
+        updateDto,
+        merchantId,
+        userId,
+      );
 
       expect(mockCategoriesService.findOne).not.toHaveBeenCalled();
       expect(mockPrisma.products.update).toHaveBeenCalled();
@@ -485,9 +508,17 @@ describe('ProductsService', () => {
       mockCategoriesService.findOne.mockResolvedValue(mockNewCategory);
       mockPrisma.products.update.mockResolvedValue(updatedProduct);
 
-      const result = await service.update(productId, updateDto, merchantId, userId);
+      const result = await service.update(
+        productId,
+        updateDto,
+        merchantId,
+        userId,
+      );
 
-      expect(mockCategoriesService.findOne).toHaveBeenCalledWith('category-2', merchantId);
+      expect(mockCategoriesService.findOne).toHaveBeenCalledWith(
+        'category-2',
+        merchantId,
+      );
       expect(result.category_id).toBe('category-2');
     });
 
@@ -498,9 +529,9 @@ describe('ProductsService', () => {
 
       mockPrisma.products.findFirst.mockResolvedValue(null);
 
-      await expect(service.update(productId, updateDto, merchantId, userId)).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(
+        service.update(productId, updateDto, merchantId, userId),
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('should throw NotFoundException if product belongs to different merchant', async () => {
@@ -510,9 +541,9 @@ describe('ProductsService', () => {
 
       mockPrisma.products.findFirst.mockResolvedValue(null);
 
-      await expect(service.update(productId, updateDto, 'different-merchant', userId)).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(
+        service.update(productId, updateDto, 'different-merchant', userId),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 });

@@ -65,7 +65,9 @@ describe('Backward Compatibility: Single-Cashier Shifts', () => {
       };
 
       expect(participant.participant_added_at).toBeInstanceOf(Date);
-      expect(participant.participant_added_at.getTime()).toBeLessThanOrEqual(new Date().getTime());
+      expect(participant.participant_added_at.getTime()).toBeLessThanOrEqual(
+        new Date().getTime(),
+      );
     });
 
     it('should have participant_removed_at as null for active shift', () => {
@@ -200,7 +202,9 @@ describe('Backward Compatibility: Single-Cashier Shifts', () => {
         { id: 'tx-002', shift_id: 'shift-123' },
       ];
 
-      const shiftTransactions = transactions.filter((t) => t.shift_id === 'shift-123');
+      const shiftTransactions = transactions.filter(
+        (t) => t.shift_id === 'shift-123',
+      );
 
       expect(shiftTransactions).toHaveLength(2);
       expect(shiftTransactions.map((t) => t.id)).toEqual(
@@ -378,7 +382,9 @@ describe('Backward Compatibility: Single-Cashier Shifts', () => {
         },
       ];
 
-      const beforeCloseLog = auditLogs.find((log) => log.action === 'participant_added');
+      const beforeCloseLog = auditLogs.find(
+        (log) => log.action === 'participant_added',
+      );
 
       expect(beforeCloseLog).toBeDefined();
       expect(beforeCloseLog?.action).toBe('participant_added');
@@ -450,7 +456,9 @@ describe('Backward Compatibility: Single-Cashier Shifts', () => {
         { id: 'tx-003', shift_id: 'shift-123', cashier_id: 'user-456' },
       ];
 
-      const totalTransactions = transactions.filter((t) => t.shift_id === 'shift-123').length;
+      const totalTransactions = transactions.filter(
+        (t) => t.shift_id === 'shift-123',
+      ).length;
 
       expect(totalTransactions).toBe(3);
     });
@@ -494,7 +502,9 @@ describe('Backward Compatibility: Single-Cashier Shifts', () => {
         },
       ];
 
-      const shiftsWithoutParticipants = shifts.filter((s) => s.shift_participants.length === 0);
+      const shiftsWithoutParticipants = shifts.filter(
+        (s) => s.shift_participants.length === 0,
+      );
 
       expect(shiftsWithoutParticipants).toHaveLength(0);
     });
@@ -530,7 +540,10 @@ describe('Backward Compatibility: Single-Cashier Shifts', () => {
         },
       ];
 
-      const totalParticipants = shifts.reduce((sum, s) => sum + s.shift_participants.length, 0);
+      const totalParticipants = shifts.reduce(
+        (sum, s) => sum + s.shift_participants.length,
+        0,
+      );
 
       expect(totalParticipants).toBeGreaterThanOrEqual(shifts.length);
     });
@@ -545,7 +558,9 @@ describe('Backward Compatibility: Single-Cashier Shifts', () => {
       ];
 
       shifts.forEach((shift) => {
-        const ownerParticipant = shift.shift_participants.find((p) => p.is_owner);
+        const ownerParticipant = shift.shift_participants.find(
+          (p) => p.is_owner,
+        );
         expect(shift.shift_owner_id).toBe(ownerParticipant?.user_id);
       });
     });
@@ -556,7 +571,9 @@ describe('Backward Compatibility: Single-Cashier Shifts', () => {
         { id: 'tx-002', shift_id: 'shift-123', cashier_id: 'user-456' },
       ];
 
-      const linkedTransactions = transactions.filter((t) => t.shift_id && t.cashier_id);
+      const linkedTransactions = transactions.filter(
+        (t) => t.shift_id && t.cashier_id,
+      );
 
       expect(linkedTransactions.length).toBeGreaterThan(0);
     });

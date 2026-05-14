@@ -120,9 +120,9 @@ describe('ShiftsService - Property-Based Tests', () => {
             mockPrisma.transactions.count.mockResolvedValue(0);
 
             return true;
-          }
+          },
         ),
-        { numRuns: 100 }
+        { numRuns: 100 },
       );
     });
   });
@@ -150,28 +150,30 @@ describe('ShiftsService - Property-Based Tests', () => {
             });
 
             let callCount = 0;
-            mockPrisma.shift_participants.findFirst.mockImplementation(async () => {
-              callCount++;
-              if (callCount === 1) {
-                return null;
-              }
-              return {
-                id: fc.sample(fc.uuid(), 1)[0],
-                shift_id: shiftId,
-                user_id: userId,
-                is_owner: false,
-                participant_added_at: new Date(),
-                participant_removed_at: null,
-                users: { id: userId, name: 'User', username: 'user' },
-              };
-            });
+            mockPrisma.shift_participants.findFirst.mockImplementation(
+              async () => {
+                callCount++;
+                if (callCount === 1) {
+                  return null;
+                }
+                return {
+                  id: fc.sample(fc.uuid(), 1)[0],
+                  shift_id: shiftId,
+                  user_id: userId,
+                  is_owner: false,
+                  participant_added_at: new Date(),
+                  participant_removed_at: null,
+                  users: { id: userId, name: 'User', username: 'user' },
+                };
+              },
+            );
 
             mockPrisma.transactions.count.mockResolvedValue(0);
 
             return true;
-          }
+          },
         ),
-        { numRuns: 100 }
+        { numRuns: 100 },
       );
     });
   });
@@ -181,25 +183,21 @@ describe('ShiftsService - Property-Based Tests', () => {
   describe('Property 3: Removed Participants Cannot Submit Transactions', () => {
     it('should reject transactions from removed participants for any shift', () => {
       fc.assert(
-        fc.property(
-          fc.uuid(),
-          fc.uuid(),
-          (shiftId, userId) => {
-            // A removed participant has participant_removed_at set to a timestamp
-            const removedParticipant = {
-              user_id: userId,
-              participant_removed_at: new Date(),
-            };
+        fc.property(fc.uuid(), fc.uuid(), (shiftId, userId) => {
+          // A removed participant has participant_removed_at set to a timestamp
+          const removedParticipant = {
+            user_id: userId,
+            participant_removed_at: new Date(),
+          };
 
-            // The isActiveParticipant check should return false for removed participants
-            // This is verified by the participant_removed_at being not null
-            const isRemoved = removedParticipant.participant_removed_at !== null;
-            expect(isRemoved).toBe(true);
+          // The isActiveParticipant check should return false for removed participants
+          // This is verified by the participant_removed_at being not null
+          const isRemoved = removedParticipant.participant_removed_at !== null;
+          expect(isRemoved).toBe(true);
 
-            return true;
-          }
-        ),
-        { numRuns: 100 }
+          return true;
+        }),
+        { numRuns: 100 },
       );
     });
   });
@@ -217,29 +215,29 @@ describe('ShiftsService - Property-Based Tests', () => {
                 'participant_added',
                 'participant_removed',
                 'shift_handoff',
-                'shift_closed'
+                'shift_closed',
               ),
               timestamp: fc.date(),
             }),
-            { minLength: 1, maxLength: 10 }
+            { minLength: 1, maxLength: 10 },
           ),
           (auditEntries) => {
             // Sort by timestamp
             const sorted = [...auditEntries].sort(
-              (a, b) => a.timestamp.getTime() - b.timestamp.getTime()
+              (a, b) => a.timestamp.getTime() - b.timestamp.getTime(),
             );
 
             // Verify chronological order is maintained
             for (let i = 1; i < sorted.length; i++) {
               expect(sorted[i].timestamp.getTime()).toBeGreaterThanOrEqual(
-                sorted[i - 1].timestamp.getTime()
+                sorted[i - 1].timestamp.getTime(),
               );
             }
 
             return true;
-          }
+          },
         ),
-        { numRuns: 100 }
+        { numRuns: 100 },
       );
     });
   });
@@ -255,13 +253,13 @@ describe('ShiftsService - Property-Based Tests', () => {
               user_id: fc.uuid(),
               transaction_count: fc.integer({ min: 0, max: 100 }),
             }),
-            { minLength: 1, maxLength: 10 }
+            { minLength: 1, maxLength: 10 },
           ),
           (participants) => {
             // Sum of individual transaction counts
             const totalFromParticipants = participants.reduce(
               (sum, p) => sum + p.transaction_count,
-              0
+              0,
             );
 
             // This should equal the shift's total_transactions
@@ -269,9 +267,9 @@ describe('ShiftsService - Property-Based Tests', () => {
             expect(totalFromParticipants).toBeGreaterThanOrEqual(0);
 
             return true;
-          }
+          },
         ),
-        { numRuns: 100 }
+        { numRuns: 100 },
       );
     });
   });
@@ -282,7 +280,11 @@ describe('ShiftsService - Property-Based Tests', () => {
     it('should reject operations on closed shifts for any operation type', () => {
       fc.assert(
         fc.property(
-          fc.constantFrom('add_participant', 'remove_participant', 'submit_transaction'),
+          fc.constantFrom(
+            'add_participant',
+            'remove_participant',
+            'submit_transaction',
+          ),
           (operationType) => {
             const closedShift = {
               status: 'closed',
@@ -294,9 +296,9 @@ describe('ShiftsService - Property-Based Tests', () => {
             expect(isOpen).toBe(false);
 
             return true;
-          }
+          },
         ),
-        { numRuns: 100 }
+        { numRuns: 100 },
       );
     });
   });
@@ -312,26 +314,29 @@ describe('ShiftsService - Property-Based Tests', () => {
               user_id: fc.uuid(),
               participant_added_at: fc.date(),
             }),
-            { minLength: 1, maxLength: 10 }
+            { minLength: 1, maxLength: 10 },
           ),
           (participants) => {
             // Sort by participant_added_at
             const sorted = [...participants].sort(
               (a, b) =>
-                a.participant_added_at.getTime() - b.participant_added_at.getTime()
+                a.participant_added_at.getTime() -
+                b.participant_added_at.getTime(),
             );
 
             // Verify ascending order
             for (let i = 1; i < sorted.length; i++) {
-              expect(sorted[i].participant_added_at.getTime()).toBeGreaterThanOrEqual(
-                sorted[i - 1].participant_added_at.getTime()
+              expect(
+                sorted[i].participant_added_at.getTime(),
+              ).toBeGreaterThanOrEqual(
+                sorted[i - 1].participant_added_at.getTime(),
               );
             }
 
             return true;
-          }
+          },
         ),
-        { numRuns: 100 }
+        { numRuns: 100 },
       );
     });
   });
@@ -341,24 +346,20 @@ describe('ShiftsService - Property-Based Tests', () => {
   describe('Property 8: Shift Ownership Transfer', () => {
     it('should update shift_owner_id after handoff for any target participant', () => {
       fc.assert(
-        fc.property(
-          fc.uuid(),
-          fc.uuid(),
-          (currentOwnerId, newOwnerId) => {
-            const shift = {
-              shift_owner_id: currentOwnerId,
-            };
+        fc.property(fc.uuid(), fc.uuid(), (currentOwnerId, newOwnerId) => {
+          const shift = {
+            shift_owner_id: currentOwnerId,
+          };
 
-            // After handoff, shift_owner_id should be updated
-            shift.shift_owner_id = newOwnerId;
+          // After handoff, shift_owner_id should be updated
+          shift.shift_owner_id = newOwnerId;
 
-            expect(shift.shift_owner_id).toBe(newOwnerId);
-            expect(shift.shift_owner_id).not.toBe(currentOwnerId);
+          expect(shift.shift_owner_id).toBe(newOwnerId);
+          expect(shift.shift_owner_id).not.toBe(currentOwnerId);
 
-            return true;
-          }
-        ),
-        { numRuns: 100 }
+          return true;
+        }),
+        { numRuns: 100 },
       );
     });
   });
@@ -368,22 +369,18 @@ describe('ShiftsService - Property-Based Tests', () => {
   describe('Property 9: Merchant Scoping Enforcement', () => {
     it('should reject cross-merchant access for any shift operation', () => {
       fc.assert(
-        fc.property(
-          fc.uuid(),
-          fc.uuid(),
-          (merchantId1, merchantId2) => {
-            // Different merchants should not access each other's shifts
-            const isSameMerchant = merchantId1 === merchantId2;
+        fc.property(fc.uuid(), fc.uuid(), (merchantId1, merchantId2) => {
+          // Different merchants should not access each other's shifts
+          const isSameMerchant = merchantId1 === merchantId2;
 
-            // If merchants are different, access should be denied
-            if (!isSameMerchant) {
-              expect(isSameMerchant).toBe(false);
-            }
-
-            return true;
+          // If merchants are different, access should be denied
+          if (!isSameMerchant) {
+            expect(isSameMerchant).toBe(false);
           }
-        ),
-        { numRuns: 100 }
+
+          return true;
+        }),
+        { numRuns: 100 },
       );
     });
   });
@@ -393,18 +390,15 @@ describe('ShiftsService - Property-Based Tests', () => {
   describe('Property 10: Single Participant Minimum', () => {
     it('should prevent removal of last participant for any open shift', () => {
       fc.assert(
-        fc.property(
-          fc.integer({ min: 1, max: 1 }),
-          (participantCount) => {
-            // If only 1 participant, removal should be prevented
-            if (participantCount === 1) {
-              expect(participantCount).toBe(1);
-            }
-
-            return true;
+        fc.property(fc.integer({ min: 1, max: 1 }), (participantCount) => {
+          // If only 1 participant, removal should be prevented
+          if (participantCount === 1) {
+            expect(participantCount).toBe(1);
           }
-        ),
-        { numRuns: 100 }
+
+          return true;
+        }),
+        { numRuns: 100 },
       );
     });
   });
@@ -414,28 +408,27 @@ describe('ShiftsService - Property-Based Tests', () => {
   describe('Property 11: Backward Compatibility', () => {
     it('should maintain compatibility with single-participant shifts for any legacy shift', () => {
       fc.assert(
-        fc.property(
-          fc.uuid(),
-          (userId) => {
-            const legacyShift = {
-              shift_owner_id: userId,
-              participants: [
-                {
-                  user_id: userId,
-                  is_owner: true,
-                },
-              ],
-            };
+        fc.property(fc.uuid(), (userId) => {
+          const legacyShift = {
+            shift_owner_id: userId,
+            participants: [
+              {
+                user_id: userId,
+                is_owner: true,
+              },
+            ],
+          };
 
-            // Single-participant shifts should have owner as participant
-            expect(legacyShift.participants).toHaveLength(1);
-            expect(legacyShift.participants[0].is_owner).toBe(true);
-            expect(legacyShift.participants[0].user_id).toBe(legacyShift.shift_owner_id);
+          // Single-participant shifts should have owner as participant
+          expect(legacyShift.participants).toHaveLength(1);
+          expect(legacyShift.participants[0].is_owner).toBe(true);
+          expect(legacyShift.participants[0].user_id).toBe(
+            legacyShift.shift_owner_id,
+          );
 
-            return true;
-          }
-        ),
-        { numRuns: 100 }
+          return true;
+        }),
+        { numRuns: 100 },
       );
     });
   });
@@ -454,11 +447,11 @@ describe('ShiftsService - Property-Based Tests', () => {
                 'participant_added',
                 'participant_removed',
                 'shift_handoff',
-                'shift_closed'
+                'shift_closed',
               ),
               created_at: fc.date(),
             }),
-            { minLength: 1, maxLength: 10 }
+            { minLength: 1, maxLength: 10 },
           ),
           (auditLogs) => {
             // Audit logs should be append-only (no modifications)
@@ -469,9 +462,9 @@ describe('ShiftsService - Property-Based Tests', () => {
             expect(newLogs).toHaveLength(originalLength);
 
             return true;
-          }
+          },
         ),
-        { numRuns: 100 }
+        { numRuns: 100 },
       );
     });
   });
@@ -481,21 +474,18 @@ describe('ShiftsService - Property-Based Tests', () => {
   describe('Property 13: Active Participant Validation', () => {
     it('should validate participant_removed_at is null for active participants for any transaction', () => {
       fc.assert(
-        fc.property(
-          fc.uuid(),
-          (userId) => {
-            const activeParticipant = {
-              user_id: userId,
-              participant_removed_at: null,
-            };
+        fc.property(fc.uuid(), (userId) => {
+          const activeParticipant = {
+            user_id: userId,
+            participant_removed_at: null,
+          };
 
-            // Active participants must have participant_removed_at = null
-            expect(activeParticipant.participant_removed_at).toBeNull();
+          // Active participants must have participant_removed_at = null
+          expect(activeParticipant.participant_removed_at).toBeNull();
 
-            return true;
-          }
-        ),
-        { numRuns: 100 }
+          return true;
+        }),
+        { numRuns: 100 },
       );
     });
   });
@@ -520,9 +510,9 @@ describe('ShiftsService - Property-Based Tests', () => {
             expect(average).toBeGreaterThanOrEqual(0);
 
             return true;
-          }
+          },
         ),
-        { numRuns: 100 }
+        { numRuns: 100 },
       );
     });
   });
@@ -532,27 +522,23 @@ describe('ShiftsService - Property-Based Tests', () => {
   describe('Property 15: Duplicate Participant Prevention', () => {
     it('should prevent duplicate participants for any shift and user combination', () => {
       fc.assert(
-        fc.property(
-          fc.uuid(),
-          fc.uuid(),
-          (shiftId, userId) => {
-            const participants = [
-              { shift_id: shiftId, user_id: userId },
-              { shift_id: shiftId, user_id: userId },
-            ];
+        fc.property(fc.uuid(), fc.uuid(), (shiftId, userId) => {
+          const participants = [
+            { shift_id: shiftId, user_id: userId },
+            { shift_id: shiftId, user_id: userId },
+          ];
 
-            // Check for duplicates
-            const uniqueParticipants = new Set(
-              participants.map((p) => `${p.shift_id}-${p.user_id}`)
-            );
+          // Check for duplicates
+          const uniqueParticipants = new Set(
+            participants.map((p) => `${p.shift_id}-${p.user_id}`),
+          );
 
-            // Should have only 1 unique participant (duplicates prevented)
-            expect(uniqueParticipants.size).toBe(1);
+          // Should have only 1 unique participant (duplicates prevented)
+          expect(uniqueParticipants.size).toBe(1);
 
-            return true;
-          }
-        ),
-        { numRuns: 100 }
+          return true;
+        }),
+        { numRuns: 100 },
       );
     });
   });

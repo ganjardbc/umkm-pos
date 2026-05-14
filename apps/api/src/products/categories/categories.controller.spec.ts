@@ -70,7 +70,11 @@ describe('CategoriesController', () => {
       const result = await controller.create(dto, merchantId, userId);
 
       expect(result).toEqual(mockCreatedCategory);
-      expect(mockCategoriesService.create).toHaveBeenCalledWith(dto, merchantId, userId);
+      expect(mockCategoriesService.create).toHaveBeenCalledWith(
+        dto,
+        merchantId,
+        userId,
+      );
     });
 
     it('should return 409 for duplicate category names', async () => {
@@ -80,10 +84,14 @@ describe('CategoriesController', () => {
       dto.name = 'Electronics';
 
       mockCategoriesService.create.mockRejectedValue(
-        new ConflictException('Category with this name already exists for your merchant'),
+        new ConflictException(
+          'Category with this name already exists for your merchant',
+        ),
       );
 
-      await expect(controller.create(dto, merchantId, userId)).rejects.toThrow(ConflictException);
+      await expect(controller.create(dto, merchantId, userId)).rejects.toThrow(
+        ConflictException,
+      );
     });
   });
 
@@ -121,7 +129,10 @@ describe('CategoriesController', () => {
       const result = await controller.findAll(merchantId, pagination);
 
       expect(result).toEqual(mockResponse);
-      expect(mockCategoriesService.findAll).toHaveBeenCalledWith(merchantId, pagination);
+      expect(mockCategoriesService.findAll).toHaveBeenCalledWith(
+        merchantId,
+        pagination,
+      );
     });
 
     it('should scope results to current merchant', async () => {
@@ -135,7 +146,10 @@ describe('CategoriesController', () => {
 
       await controller.findAll(merchantId, pagination);
 
-      expect(mockCategoriesService.findAll).toHaveBeenCalledWith(merchantId, pagination);
+      expect(mockCategoriesService.findAll).toHaveBeenCalledWith(
+        merchantId,
+        pagination,
+      );
     });
   });
 
@@ -161,16 +175,23 @@ describe('CategoriesController', () => {
       const result = await controller.findOne(categoryId, merchantId);
 
       expect(result).toEqual(mockCategory);
-      expect(mockCategoriesService.findOne).toHaveBeenCalledWith(categoryId, merchantId);
+      expect(mockCategoriesService.findOne).toHaveBeenCalledWith(
+        categoryId,
+        merchantId,
+      );
     });
 
     it('should return 404 if not found or not accessible', async () => {
       const categoryId = 'cat-1';
       const merchantId = 'merchant-1';
 
-      mockCategoriesService.findOne.mockRejectedValue(new NotFoundException('Category not found'));
+      mockCategoriesService.findOne.mockRejectedValue(
+        new NotFoundException('Category not found'),
+      );
 
-      await expect(controller.findOne(categoryId, merchantId)).rejects.toThrow(NotFoundException);
+      await expect(controller.findOne(categoryId, merchantId)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -196,10 +217,20 @@ describe('CategoriesController', () => {
 
       mockCategoriesService.update.mockResolvedValue(mockUpdatedCategory);
 
-      const result = await controller.update(categoryId, dto, merchantId, userId);
+      const result = await controller.update(
+        categoryId,
+        dto,
+        merchantId,
+        userId,
+      );
 
       expect(result).toEqual(mockUpdatedCategory);
-      expect(mockCategoriesService.update).toHaveBeenCalledWith(categoryId, dto, merchantId, userId);
+      expect(mockCategoriesService.update).toHaveBeenCalledWith(
+        categoryId,
+        dto,
+        merchantId,
+        userId,
+      );
     });
 
     it('should return 404 if not found', async () => {
@@ -208,11 +239,13 @@ describe('CategoriesController', () => {
       const userId = 'user-2';
       const dto = new UpdateCategoryDto();
 
-      mockCategoriesService.update.mockRejectedValue(new NotFoundException('Category not found'));
-
-      await expect(controller.update(categoryId, dto, merchantId, userId)).rejects.toThrow(
-        NotFoundException,
+      mockCategoriesService.update.mockRejectedValue(
+        new NotFoundException('Category not found'),
       );
+
+      await expect(
+        controller.update(categoryId, dto, merchantId, userId),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -238,16 +271,23 @@ describe('CategoriesController', () => {
       const result = await controller.remove(categoryId, merchantId);
 
       expect(result).toEqual(mockDeletedCategory);
-      expect(mockCategoriesService.remove).toHaveBeenCalledWith(categoryId, merchantId);
+      expect(mockCategoriesService.remove).toHaveBeenCalledWith(
+        categoryId,
+        merchantId,
+      );
     });
 
     it('should return 404 if not found', async () => {
       const categoryId = 'cat-1';
       const merchantId = 'merchant-1';
 
-      mockCategoriesService.remove.mockRejectedValue(new NotFoundException('Category not found'));
+      mockCategoriesService.remove.mockRejectedValue(
+        new NotFoundException('Category not found'),
+      );
 
-      await expect(controller.remove(categoryId, merchantId)).rejects.toThrow(NotFoundException);
+      await expect(controller.remove(categoryId, merchantId)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -260,22 +300,26 @@ describe('CategoriesController', () => {
         { id: 'cat-2', name: 'Electronics' },
       ];
 
-      mockCategoriesService.findActiveCategories.mockResolvedValue(mockActiveCategories);
+      mockCategoriesService.findActiveCategories.mockResolvedValue(
+        mockActiveCategories,
+      );
 
       const result = await controller.findActiveCategories(merchantId);
 
       expect(result).toEqual(mockActiveCategories);
-      expect(mockCategoriesService.findActiveCategories).toHaveBeenCalledWith(merchantId);
+      expect(mockCategoriesService.findActiveCategories).toHaveBeenCalledWith(
+        merchantId,
+      );
     });
 
     it('should return only id and name fields', async () => {
       const merchantId = 'merchant-1';
 
-      const mockActiveCategories = [
-        { id: 'cat-1', name: 'Electronics' },
-      ];
+      const mockActiveCategories = [{ id: 'cat-1', name: 'Electronics' }];
 
-      mockCategoriesService.findActiveCategories.mockResolvedValue(mockActiveCategories);
+      mockCategoriesService.findActiveCategories.mockResolvedValue(
+        mockActiveCategories,
+      );
 
       const result = await controller.findActiveCategories(merchantId);
 

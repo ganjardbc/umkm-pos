@@ -75,7 +75,7 @@ describe('ShiftsService', () => {
 
       mockPrisma.outlets.findFirst.mockResolvedValue({ id: outletId });
       mockPrisma.shifts.findFirst.mockResolvedValue(null);
-      
+
       // Mock the transaction to return the created shift
       mockPrisma.$transaction.mockImplementation(async (callback) => {
         const result = await callback(mockPrisma);
@@ -97,14 +97,18 @@ describe('ShiftsService', () => {
 
       mockPrisma.shifts.create.mockResolvedValue(createdShift);
       mockPrisma.outlets.findMany.mockResolvedValue([{ id: outletId }]);
-      
+
       // Mock findFirst to return the created shift when called from getShift
       mockPrisma.shifts.findFirst.mockImplementation(async (args) => {
         if (args.where.id === 'shift-1') {
           return {
             ...createdShift,
             outlets: { id: outletId, name: 'Outlet 1', slug: 'outlet-1' },
-            shift_owner: { id: userId, name: 'Test User', username: 'testuser' },
+            shift_owner: {
+              id: userId,
+              name: 'Test User',
+              username: 'testuser',
+            },
           };
         }
         return null;
@@ -257,7 +261,7 @@ describe('ShiftsService', () => {
         { id: 'outlet-1' },
         { id: 'outlet-2' },
       ]);
-      
+
       const shiftsData = [
         {
           id: 'shift-1',

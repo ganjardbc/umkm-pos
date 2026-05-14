@@ -159,7 +159,7 @@ export class CategoriesService {
    */
   async remove(id: string, merchantId: string) {
     // Validate category exists and belongs to merchant
-    const category = await this.findOne(id, merchantId);
+    await this.findOne(id, merchantId);
 
     // Set category_id to NULL for all products referencing this category
     await this.prisma.products.updateMany({

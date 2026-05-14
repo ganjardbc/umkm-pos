@@ -14,13 +14,11 @@ import {
   ApiOperation,
   ApiResponse,
   ApiBearerAuth,
-  ApiQuery,
 } from '@nestjs/swagger';
 import { ShiftsService } from './shifts.service';
 import { CreateShiftDto } from './dto/create-shift.dto';
 import { AddParticipantDto } from './dto/add-participant.dto';
 import { HandoffShiftDto } from './dto/handoff-shift.dto';
-import { FindAllShiftsDto } from './dto/find-all-shifts.dto';
 import { QueryShiftsDto } from './dto/query-shifts.dto';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { RequirePermission } from '../common/decorators/require-permission.decorator';
