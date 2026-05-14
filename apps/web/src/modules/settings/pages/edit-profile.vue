@@ -126,7 +126,7 @@ import { Form } from '@primevue/forms';
 import { getProfile, updateProfile } from '@/modules/settings/services/api.ts';
 import { setUserAvatar, removeUserAvatar } from '@/services/uploads';
 import { useFileUpload } from '@/composables/useFileUpload';
-import { PROFILE_READ, PROFILE_UPDATE } from '@/modules/settings/services/rbac.ts';
+import { PROFILE_READ } from '@/modules/settings/services/rbac.ts';
 import type { UpdateProfileDto } from '@/modules/settings/services/types';
 
 const router = useRouter();
@@ -134,7 +134,6 @@ const currentUserId = computed(() => getUser()?.id || '');
 
 // RBAC
 const isCanRead = computed(() => isHasPermission(PROFILE_READ));
-const isCanUpdate = computed(() => isHasPermission(PROFILE_UPDATE));
 
 // Form state
 const isLoaded = ref(false);

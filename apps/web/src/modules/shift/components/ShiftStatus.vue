@@ -126,8 +126,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, watch } from 'vue';
-import { useShift, type Participant } from '@/modules/shift/composables/useShift.ts';
+import { onMounted, watch } from 'vue';
+import { useShift } from '@/modules/shift/composables/useShift.ts';
 import { formatDateTime, formatRangeTime } from '@/helpers/utils.ts';
 import { showConfirm, showToast } from '@/helpers/toast.ts';
 import { getErrorMessage } from '@/helpers/utils.ts';

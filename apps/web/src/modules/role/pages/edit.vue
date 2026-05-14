@@ -96,7 +96,8 @@ const resolver = ref(zodResolver(
   })
 ));
 
-const onFormSubmit = async ({ valid, values }: { valid: boolean; values: Form }) => {
+const onFormSubmit = async (event: any) => {
+  const { valid, values } = event as { valid: boolean; values: any };
   if (valid) {
     try {
       showLoading();

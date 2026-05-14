@@ -132,7 +132,8 @@ const resolver = ref(zodResolver(
   })
 ));
 
-const onFormSubmit = ({ valid, values }: { valid: boolean; values: AdjustStock }) => {
+const onFormSubmit = (event: any) => {
+  const { valid, values } = event as { valid: boolean; values: any };
   if (valid) {
     const newStock = (props.product?.stock_qty || 0) + values.change_qty;
     
