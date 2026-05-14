@@ -445,9 +445,9 @@ VITE_APP_VERSION=1.0.0
 
 ## 📚 Related Documentation
 
-- API Documentation: See `umkm-pos-api/README.md`
-- API Conventions: See `umkm-pos-api/API_CONVENTIONS.md`
-- Domain Rules: See `umkm-pos-api/DOMAIN_RULES.md`
+- API Documentation: See `apps/api/README.md`
+- API Conventions: See `apps/api/API_CONVENTIONS.md`
+- Domain Rules: See `apps/api/DOMAIN_RULES.md`
 
 ---
 

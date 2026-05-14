@@ -3,7 +3,7 @@
   "private": true,
   "packageManager": "pnpm@10.22.0",
   "scripts": {
-    "dev:app": "pnpm --filter umkm-pos-app dev",
+    "dev:web": "pnpm --filter umkm-pos-app dev",
     "dev:api": "pnpm --filter umkm-pos-api start:dev",
     "build": "pnpm -r build",
     "test": "pnpm -r --if-present test",
