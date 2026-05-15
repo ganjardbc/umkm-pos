@@ -427,16 +427,8 @@ onMounted(() => {
 }
 
 .default-layout__content-container {
-  @apply container mx-auto min-h-[calc(100vh-88px)];
+  @apply container mx-auto min-h-[calc(100dvh-88px)];
 }
-
-/* .default-layout__content-container:not(:has(.pos)) {
-  @apply max-w-6xl;
-}
-
-.default-layout__content-container:has(.pos) {
-  @apply container;
-} */
 
 /* Footer */
 .default-layout__footer {
