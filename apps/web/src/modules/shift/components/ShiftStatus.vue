@@ -37,12 +37,9 @@
           </span>
         </div>
       </div>
-      <div v-if="currentShift.id" class="pos-shift-status__actions">
+      <div class="pos-shift-status__actions">
         <Button
-          v-if="
-            isUserOwner &&
-            currentShift.status === ShiftStatus.OPEN
-          "
+          v-if="currentShift.status === ShiftStatus.OPEN"
           label="Close Shift"
           size="small"
           severity="success"
@@ -148,7 +145,6 @@ const props = defineProps({
 const emit = defineEmits(['shift-loaded']);
 
 const {
-  isUserOwner,
   isUserInShift,
   isUserRemovedFromShift,
   currentShift,
