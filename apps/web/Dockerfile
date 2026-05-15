@@ -4,10 +4,10 @@ ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
 WORKDIR /app
 
-COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
+COPY pnpm-workspace.yaml package.json ./
 COPY apps/web/package.json apps/web/package.json
 COPY packages/shared-types/package.json packages/shared-types/package.json
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --no-frozen-lockfile
 
 COPY . .
 RUN pnpm --filter @umkm-pos/shared-types build \
@@ -15,6 +15,6 @@ RUN pnpm --filter @umkm-pos/shared-types build \
 
 FROM nginx:stable-alpine AS production
 COPY --from=build /app/apps/web/dist /usr/share/nginx/html
-COPY apps/web/default.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /app/apps/web/default.conf /etc/nginx/conf.d/default.conf
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
