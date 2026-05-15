@@ -6,6 +6,7 @@ RUN corepack prepare pnpm@10.22.0 --activate
 WORKDIR /app
 
 COPY . .
+RUN node -e "const fs=require('fs');const p='package.json';const j=JSON.parse(fs.readFileSync(p,'utf8'));j.dependencies['@umkm-pos/shared-types']='file:./vendor/shared-types';fs.writeFileSync(p,JSON.stringify(j,null,2));"
 RUN pnpm install --no-frozen-lockfile
 RUN pnpm build
 
