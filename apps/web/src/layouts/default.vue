@@ -295,7 +295,7 @@ onMounted(() => {
 
 /* Main Layout */
 .default-layout {
-  @apply relative w-full h-screen flex bg-white;
+  @apply relative w-full h-dvh flex bg-white;
 }
 
 .default-layout--dark {
@@ -304,7 +304,7 @@ onMounted(() => {
 
 /* Sidebar */
 .default-layout__sidebar {
-  @apply top-0 h-screen border-r border-gray-200 flex flex-col justify-between transition-all duration-100 bg-white;
+  @apply top-0 h-dvh border-r border-gray-200 flex flex-col justify-between transition-all duration-100 bg-white;
 }
 
 .default-layout__sidebar--dark {
