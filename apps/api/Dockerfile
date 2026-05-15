@@ -25,4 +25,4 @@ COPY --from=build /app/apps/api/prisma ./apps/api/prisma
 COPY --from=build /app/apps/api/package.json ./apps/api/package.json
 WORKDIR /app/apps/api
 EXPOSE 3000
-CMD ["node", "dist/main"]
+CMD ["node", "dist/src/main.js"]
