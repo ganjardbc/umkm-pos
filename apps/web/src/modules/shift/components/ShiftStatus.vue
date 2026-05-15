@@ -39,15 +39,6 @@
       </div>
       <div v-if="currentShift.id" class="pos-shift-status__actions">
         <Button
-          v-if="currentShift.status === ShiftStatus.CLOSED"
-          label="Open Shift"
-          size="small"
-          severity="danger"
-          :loading="loading"
-          :disabled="loading"
-          @click="handleOpenShift"
-        />
-        <Button
           v-if="
             isUserOwner &&
             currentShift.status === ShiftStatus.OPEN
@@ -58,6 +49,15 @@
           :loading="loading"
           :disabled="loading"
           @click="handleCloseConfirm"
+        />
+        <Button
+          v-else
+          label="Open Shift"
+          size="small"
+          severity="danger"
+          :loading="loading"
+          :disabled="loading"
+          @click="handleOpenShift"
         />
       </div>
     </div>
