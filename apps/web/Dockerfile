@@ -17,6 +17,9 @@ RUN corepack enable
 RUN corepack prepare pnpm@10.22.0 --activate
 WORKDIR /app
 
+ARG VITE_API_BASE_URL=https://umkm-pos-api-production.up.railway.app
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
+
 COPY apps/web/ .
 COPY --from=shared-types-build /shared-types/dist ./vendor/shared-types/dist
 COPY --from=shared-types-build /shared-types/package.json ./vendor/shared-types/package.json
