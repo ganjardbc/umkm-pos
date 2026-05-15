@@ -2,19 +2,15 @@ FROM node:22-alpine AS build
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
+RUN corepack prepare pnpm@10.22.0 --activate
 WORKDIR /app
 
-COPY pnpm-workspace.yaml package.json ./
-COPY apps/web/package.json apps/web/package.json
-COPY packages/shared-types/package.json packages/shared-types/package.json
-RUN pnpm install --no-frozen-lockfile
-
 COPY . .
-RUN pnpm --filter @umkm-pos/shared-types build \
-  && pnpm --filter umkm-pos-app build
+RUN pnpm install --no-frozen-lockfile
+RUN pnpm build
 
 FROM nginx:stable-alpine AS production
-COPY --from=build /app/apps/web/dist /usr/share/nginx/html
-COPY --from=build /app/apps/web/default.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /app/dist /usr/share/nginx/html
+COPY --from=build /app/default.conf /etc/nginx/conf.d/default.conf
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
