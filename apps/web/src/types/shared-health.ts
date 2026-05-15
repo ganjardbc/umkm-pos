@@ -1,3 +1,6 @@
-import type { ServiceHealth } from '@umkm-pos/shared-types';
+export type HealthStatus = 'ok' | 'degraded';
 
-export type WebHealth = ServiceHealth;
+export interface WebHealth {
+  service: 'web' | 'api';
+  status: HealthStatus;
+}
