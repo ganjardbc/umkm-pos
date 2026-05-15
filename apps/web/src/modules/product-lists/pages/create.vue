@@ -55,7 +55,7 @@
             name="category_id"
             option-label="name"
             option-value="id"
-            placeholder="Choose a user"
+            placeholder="Choose a category"
             class="w-full"
             :loading="loadingCategory"
           />
