@@ -16,25 +16,15 @@
 </template>
 <script lang="ts" setup>
 import { onMounted } from 'vue';
-import { useRouter } from 'vue-router';
 import Button from 'primevue/button';
 
-import { isLogin } from '@/helpers/auth.ts';
 import { useDarkMode } from '@/composables/useDarkMode.ts';
-
-import { PREFIX_ROUTE_PATH as PRP_LANDING } from '@/modules/landing/services/constants';
 
 const ENABLE_DARKMODE_TOGGLE = false;
 
-const router = useRouter();
 const { isDark, toggleDarkMode, initializeTheme } = useDarkMode();
 
 onMounted(() => {
-  // Check if user is already logged in
-  if (isLogin()) {
-    router.push(PRP_LANDING);
-  }
-  
   // Initialize theme on mount
   initializeTheme();
 });

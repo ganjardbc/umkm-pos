@@ -1,6 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import type { Router } from 'vue-router';
-import { isHasPermission } from '@/helpers/auth.ts';
+import { isHasPermission, isLogin } from '@/helpers/auth.ts';
+import { PREFIX_ROUTE_PATH as PRP_AUTH } from '@/modules/auth/services/constants';
+import { PREFIX_ROUTE_PATH as PRP_LANDING } from '@/modules/landing/services/constants';
 
 const modules = import.meta.glob('../modules/**/router/index.ts',{ eager: true });
 
@@ -38,8 +40,26 @@ entireModules.push({
 
 // setup router
 export function setupRouter(): Router {
-	return createRouter({
+	const router = createRouter({
 		history: createWebHistory(),
 		routes: entireModules,
 	});
+
+  // Centralized auth guard to avoid layout flicker and duplicated redirects.
+  router.beforeEach((to) => {
+    const routeLayout = to.meta?.layout;
+    const loggedIn = !!isLogin();
+
+    if (routeLayout === 'auth' && loggedIn) {
+      return PRP_LANDING;
+    }
+
+    if (routeLayout === 'default' && !loggedIn) {
+      return PRP_AUTH;
+    }
+
+    return true;
+  });
+
+  return router;
 }
