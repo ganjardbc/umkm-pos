@@ -5,6 +5,9 @@ RUN corepack enable
 RUN corepack prepare pnpm@10.22.0 --activate
 WORKDIR /app
 
+ARG VITE_WEB_BASE_URL=https://umkm-pos-fe-production.up.railway.app
+ENV VITE_WEB_BASE_URL=$VITE_WEB_BASE_URL
+
 COPY apps/landing/ .
 RUN pnpm install --no-frozen-lockfile
 RUN pnpm build
