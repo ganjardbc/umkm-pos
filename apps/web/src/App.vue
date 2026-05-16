@@ -3,7 +3,7 @@
   <UiConfirmDialog />
   <UiGlobalLoading />
 
-  <component :is="isAuthRoute ? AuthLayout : DefaultLayout">
+  <component :is="!isAuthRoute ? DefaultLayout : AuthLayout">
     <router-view />
   </component>
 </template>

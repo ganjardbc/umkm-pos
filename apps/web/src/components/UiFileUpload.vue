@@ -43,7 +43,7 @@
 </template>
 
 <script setup lang="ts">
-const props = defineProps<{
+const { previewUrl } = defineProps<{
   previewUrl: string | null
 }>()
 

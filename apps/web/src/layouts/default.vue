@@ -184,17 +184,16 @@
 
 <script lang="ts" setup>
 import { onMounted, computed, ref, watch } from "vue";
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
 import defaultIcon from '@/assets/logo.png';
 import defaultLogo from '@/assets/insell-logo.png';
 
-import { isLogin, getOutlet } from '@/helpers/auth.ts';
+import { getOutlet } from '@/helpers/auth.ts';
 import { useDarkMode } from '@/composables/useDarkMode.ts';
 
 import { storeToRefs } from 'pinia';
 import { useAuthStore } from '@/modules/auth/stores/index.ts';
 
-import { PREFIX_ROUTE_PATH as PRP_AUTH } from '@/modules/auth/services/constants.ts';
 import { useShift } from '@/modules/shift/composables/useShift.ts';
 import { getOutletShift } from '@/modules/shift/services/api.ts';
 
@@ -214,7 +213,6 @@ const home = computed(() => ({
   route: '/landing',
 }));
 
-const router = useRouter();
 const outlet = getOutlet();
 
 // Dark mode
@@ -282,9 +280,6 @@ watch(
 );
 
 onMounted(() => {
-  if (!isLogin()) {
-    router.push(PRP_AUTH);
-  }
   initializeTheme();
   fetchOutletShift();
 });

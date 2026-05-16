@@ -97,7 +97,9 @@ vueInit.use(ToastService);
 import ConfirmationService from 'primevue/confirmationservice';
 vueInit.use(ConfirmationService);
 
-// Mount the application
-vueInit.mount('#app');
+// Mount after router resolves initial location to prevent first-paint layout mismatch.
+router.isReady().then(() => {
+  vueInit.mount('#app');
+});
 
 export default vueInit;
