@@ -69,6 +69,7 @@
             variant="outlined"
             size="medium"
             icon="pi pi-bell"
+            @click="isMobile ? handleOpenSidebar() : null"
           />
         </router-link>
         <router-link to="/settings">
@@ -77,6 +78,7 @@
             variant="outlined"
             size="medium"
             icon="pi pi-cog"
+            @click="isMobile ? handleOpenSidebar() : null"
           />
         </router-link>
         <router-link to="/profile">
@@ -85,6 +87,7 @@
             variant="outlined"
             size="medium"
             icon="pi pi-user"
+            @click="isMobile ? handleOpenSidebar() : null"
           />
         </router-link>
       </div>
