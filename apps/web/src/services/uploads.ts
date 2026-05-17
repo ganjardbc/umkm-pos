@@ -12,6 +12,10 @@ export const postUpload = async (file: File, options: any = {}) => {
   })
 }
 
+export const getUploadSignedUrl = async (id: string, options: any = {}) => {
+  return await api.get(`/api/v1/uploads/${id}/signed-url`, { ...(options || {}) })
+}
+
 export const setProductImage = async (id: string, upload_id: string, options: any = {}) => {
   return await api.patch(`/api/v1/products/${id}/image`, { upload_id }, { ...(options || {}) })
 }

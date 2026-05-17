@@ -188,8 +188,9 @@ import { zodResolver } from '@primevue/forms/resolvers/zod';
 import { getErrorMessage } from '@/helpers/utils.ts';
 import { showToast } from '@/helpers/toast.ts';
 import { showLoading, hideLoading } from '@/helpers/loading.ts';
-import { putProduct, getDetailProduct, postUpload, setProductImage, removeProductImage } from '@/modules/product-lists/services/api';
+import { putProduct, getDetailProduct, setProductImage, removeProductImage } from '@/modules/product-lists/services/api';
 import { getActiveCategories } from '@/modules/product-categories/services/api';
+import { useFileUpload } from '@/composables/useFileUpload';
 import UiCard from '@/components/UiCard.vue';
 import UiFormGroup from '@/components/UiFormGroup.vue';
 
@@ -209,8 +210,8 @@ const initialValues = ref<FormEdit>({
   is_active: true
 });
 
-const imagePreview = ref<string | null>(null);
-const selectedUploadId = ref<string | null>(null);
+const { selectedUploadId, imagePreview, onUploadImage, onRemoveImage } =
+  useFileUpload();
 const existingUploadId = ref<string | null>(null);
 
 const resolver = ref(zodResolver(
@@ -259,35 +260,6 @@ const onFormSubmit = async ({ valid, values }: any) => {
       hideLoading();
     }
   }
-};
-
-const onUploadImage = async (event: any) => {
-  const file = event.files?.[0];
-  if (!file) return;
-
-  try {
-    showLoading();
-    const response = await postUpload(file);
-    const { success, data } = response?.data || {};
-
-    if (success) {
-      selectedUploadId.value = data?.id;
-      imagePreview.value = data?.url;
-    }
-  } catch (error) {
-    showToast({
-      type: 'error',
-      title: 'Upload Failed.',
-      message: getErrorMessage(error) || 'There was an error.',
-    });
-  } finally {
-    hideLoading();
-  }
-};
-
-const onRemoveImage = () => {
-  imagePreview.value = null;
-  selectedUploadId.value = null;
 };
 
 const onCancel = () => {
