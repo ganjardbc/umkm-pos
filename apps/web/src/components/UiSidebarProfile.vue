@@ -11,8 +11,8 @@
         class="text-xs! font-medium!"
       />
       <Avatar
-        :image="personalInfo?.user?.avatar"
-        :label="personalInfo?.user?.avatar ? undefined : personalInfo?.user?.name?.charAt(0)"
+        :image="avatarUrl || undefined"
+        :label="avatarUrl ? undefined : personalInfo?.user?.name?.charAt(0)"
         size="small"
         shape="circle"
         class="ui-sidebar-profile__avatar"
@@ -26,8 +26,8 @@
       <div class="space-y-4 w-60">
         <div class="relative flex items-center gap-2">
           <Avatar
-            :image="personalInfo?.user?.avatar"
-            :label="personalInfo?.user?.avatar ? undefined : personalInfo?.user?.name?.charAt(0)"
+            :image="avatarUrl || undefined"
+            :label="avatarUrl ? undefined : personalInfo?.user?.name?.charAt(0)"
             size="small"
             shape="circle"
             class="ui-sidebar-profile__avatar"
@@ -87,13 +87,14 @@
     </Popover>
   </div>
 </template>
-<script setup>
-import { ref, computed } from "vue";
+<script setup lang="ts">
+import { ref, computed, onMounted } from "vue";
 import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { removeAuth } from '@/helpers/auth.ts';
 import { showConfirm, showToast } from "@/helpers/toast.ts";
 import { getPersonalInformation } from '@/helpers/auth.ts';
+import { getUploadSignedUrl } from '@/services/uploads';
 import { useAuthStore } from '@/modules/auth/stores/index.ts';
 import { useShift } from '@/modules/shift/composables/useShift.ts';
 import { PREFIX_ROUTE_PATH as PRP_AUTH } from '@/modules/auth/services/constants.ts';
@@ -109,6 +110,7 @@ defineProps({
 
 const router = useRouter();
 const personalInfo = computed(() => getPersonalInformation());
+const avatarUrl = ref<string | null>(personalInfo.value?.user?.avatar || null);
 
 const authStore = useAuthStore();
 const { deviceType } = storeToRefs(authStore);
@@ -137,9 +139,25 @@ const handleLogout = () => {
 }
 
 const opProfileMenu = ref();
-const openProfileMenu = (event) => {
+const openProfileMenu = (event: MouseEvent) => {
   opProfileMenu.value.toggle(event);
 }
+
+const hydrateAvatarUrl = async () => {
+  try {
+    const avatarUploadId = personalInfo.value?.user?.avatar_upload_id;
+    if (!avatarUploadId) return;
+
+    const response = await getUploadSignedUrl(avatarUploadId);
+    avatarUrl.value = response?.data?.data?.url || personalInfo.value?.user?.avatar || null;
+  } catch {
+    avatarUrl.value = personalInfo.value?.user?.avatar || null;
+  }
+};
+
+onMounted(() => {
+  hydrateAvatarUrl();
+});
 </script>
 <style>
 @import 'tailwindcss';

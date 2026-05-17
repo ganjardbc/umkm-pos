@@ -77,7 +77,7 @@
   </div>
 </template>
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useRouter } from 'vue-router';
 import { useConfirm } from 'primevue/useconfirm';
 import { storeToRefs } from 'pinia';
@@ -85,6 +85,7 @@ import { useAuthStore } from '@/modules/auth/stores/index.ts';
 import { removeAuth } from '@/helpers/auth.ts';
 import { showToast } from '@/helpers/toast.ts';
 import { getMerchant, getListOutlet, getOutlet, setOutlet } from '@/helpers/auth.ts';
+import { getUploadSignedUrl } from '@/services/uploads';
 
 defineProps({
   isCollapsed: {
@@ -105,8 +106,8 @@ const confirm = useConfirm();
 
 const merchant = computed(() => getMerchant());
 
-const listOutlet = computed(() => getListOutlet());
-const activeOutlet = computed(() => getOutlet());
+const listOutlet = ref(getListOutlet());
+const activeOutlet = ref(getOutlet());
 
 const opOutletMenu = ref();
 const openOutletMenu = (event) => {
@@ -128,6 +129,43 @@ const onVisitOutlet = async (outlet) => {
     })
   }
 };
+
+const hydrateOutletLogos = async () => {
+  try {
+    if (activeOutlet.value?.logo_upload_id) {
+      const activeResponse = await getUploadSignedUrl(activeOutlet.value.logo_upload_id);
+      activeOutlet.value.logo = activeResponse?.data?.data?.url || activeOutlet.value.logo;
+    }
+
+    const refreshedList = await Promise.all(
+      (listOutlet.value || []).map(async (item) => {
+        const uploadId = item?.outlet?.logo_upload_id;
+        if (!uploadId) return item;
+
+        try {
+          const response = await getUploadSignedUrl(uploadId);
+          return {
+            ...item,
+            outlet: {
+              ...item.outlet,
+              logo: response?.data?.data?.url || item?.outlet?.logo,
+            },
+          };
+        } catch {
+          return item;
+        }
+      }),
+    );
+
+    listOutlet.value = refreshedList;
+  } catch {
+    // Keep original local auth values if re-signing fails.
+  }
+};
+
+onMounted(() => {
+  hydrateOutletLogos();
+});
 </script>
 <style>
 @import 'tailwindcss';
