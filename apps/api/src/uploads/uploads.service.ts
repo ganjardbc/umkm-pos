@@ -31,6 +31,7 @@ export class UploadsService {
     original_name: string;
     mime_type: string;
     size: number;
+    s3_key: string;
     url: string;
   }> {
     this.validateFile(file);
@@ -53,6 +54,7 @@ export class UploadsService {
       original_name: upload.original_name,
       mime_type: upload.mime_type,
       size: upload.size,
+      s3_key: upload.s3_key,
       url,
     };
   }

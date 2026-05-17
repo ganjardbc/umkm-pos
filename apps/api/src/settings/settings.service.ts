@@ -12,13 +12,32 @@ import { VerifyEmailDto } from './dto/verify-email.dto';
 import { DeactivateAccountDto } from './dto/deactivate-account.dto';
 import { UpdateSiteSettingsDto } from './dto/update-site-settings.dto';
 import * as bcrypt from 'bcrypt';
+import { UploadsService } from '../uploads/uploads.service';
 
 @Injectable()
 export class SettingsService {
   private verificationCodes: Map<string, { code: string; expiresAt: Date }> =
     new Map();
 
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private uploadsService: UploadsService,
+  ) {}
+
+  private async attachSignedAvatar<
+    T extends { avatar_upload_id?: string | null; avatar?: string | null },
+  >(
+    user: T,
+  ): Promise<T> {
+    if (!user?.avatar_upload_id) return user;
+
+    return {
+      ...user,
+      avatar: (
+        await this.uploadsService.generateSignedUrl(user.avatar_upload_id)
+      ).url,
+    };
+  }
 
   async getProfile(userId: string) {
     const user = await this.prisma.users.findUnique({
@@ -28,6 +47,7 @@ export class SettingsService {
         name: true,
         email: true,
         avatar: true,
+        avatar_upload_id: true,
         created_at: true,
         updated_at: true,
       },
@@ -37,7 +57,7 @@ export class SettingsService {
       throw new NotFoundException('User not found');
     }
 
-    return user;
+    return this.attachSignedAvatar(user);
   }
 
   async updateProfile(userId: string, dto: UpdateProfileDto) {
@@ -49,7 +69,7 @@ export class SettingsService {
       throw new NotFoundException('User not found');
     }
 
-    return this.prisma.users.update({
+    const updatedUser = await this.prisma.users.update({
       where: { id: userId },
       data: {
         name: dto.name,
@@ -61,9 +81,11 @@ export class SettingsService {
         name: true,
         email: true,
         avatar: true,
+        avatar_upload_id: true,
         updated_at: true,
       },
     });
+    return this.attachSignedAvatar(updatedUser);
   }
 
   async changePassword(userId: string, dto: ChangePasswordDto) {

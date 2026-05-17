@@ -13,6 +13,9 @@ export class UploadResponseDto {
   @ApiProperty({ example: 102400 })
   size: number;
 
+  @ApiProperty({ example: '550e8400-e29b-41d4-a716-446655440000/product.jpg' })
+  s3_key: string;
+
   @ApiProperty({
     example:
       'https://umkm-pos-uploads.s3.amazonaws.com/uuid/product.jpg?X-Amz-Algorithm=...',

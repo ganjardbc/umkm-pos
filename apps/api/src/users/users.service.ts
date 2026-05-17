@@ -18,6 +18,16 @@ export class UsersService {
     private uploadsService: UploadsService,
   ) {}
 
+  private async attachSignedUrl(user: any) {
+    if (!user?.avatar_upload_id) return user;
+
+    return {
+      ...user,
+      avatar: (await this.uploadsService.generateSignedUrl(user.avatar_upload_id))
+        .url,
+    };
+  }
+
   /**
    * List all users for the current merchant.
    * Never returns password_hash.
@@ -38,7 +48,10 @@ export class UsersService {
       this.prisma.users.count({ where }),
     ]);
 
-    const data = users.map(({ password_hash: _, ...user }) => user);
+    const sanitizedUsers = users.map(({ password_hash: _, ...user }) => user);
+    const data = await Promise.all(
+      sanitizedUsers.map((user) => this.attachSignedUrl(user)),
+    );
     return { data, meta: PaginationDto.calculateMeta(total, page, limit) };
   }
 
@@ -57,7 +70,7 @@ export class UsersService {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password_hash, ...userWithoutPassword } = user;
-    return userWithoutPassword;
+    return this.attachSignedUrl(userWithoutPassword);
   }
 
   /**
