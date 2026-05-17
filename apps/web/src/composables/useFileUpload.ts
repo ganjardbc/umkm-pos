@@ -1,5 +1,5 @@
 import { ref } from 'vue'
-import { postUpload } from '@/services/uploads'
+import { postUpload, getUploadSignedUrl } from '@/services/uploads'
 import { showLoading, hideLoading } from '@/helpers/loading'
 import { showToast } from '@/helpers/toast'
 
@@ -20,7 +20,8 @@ export function useFileUpload() {
       const { success, data } = response?.data || {}
       if (success) {
         selectedUploadId.value = data?.id
-        imagePreview.value = data?.url
+        const signedUrlResponse = await getUploadSignedUrl(data?.id)
+        imagePreview.value = signedUrlResponse?.data?.data?.url || data?.url || null
       }
     } catch (error: any) {
       showToast({

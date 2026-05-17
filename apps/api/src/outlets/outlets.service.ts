@@ -17,6 +17,16 @@ export class OutletsService {
     private uploadsService: UploadsService,
   ) {}
 
+  private async attachSignedUrl(outlet: any) {
+    if (!outlet?.logo_upload_id) return outlet;
+
+    return {
+      ...outlet,
+      logo: (await this.uploadsService.generateSignedUrl(outlet.logo_upload_id))
+        .url,
+    };
+  }
+
   async findAll(merchantId: string, pagination: PaginationDto) {
     const { page = 1, limit = 10 } = pagination;
     const skip = pagination.skip;
@@ -33,7 +43,14 @@ export class OutletsService {
       this.prisma.outlets.count({ where }),
     ]);
 
-    return { data, meta: PaginationDto.calculateMeta(total, page, limit) };
+    const dataWithSignedUrls = await Promise.all(
+      data.map((outlet) => this.attachSignedUrl(outlet)),
+    );
+
+    return {
+      data: dataWithSignedUrls,
+      meta: PaginationDto.calculateMeta(total, page, limit),
+    };
   }
 
   async findOne(id: string, merchantId: string) {
@@ -46,7 +63,7 @@ export class OutletsService {
       throw new NotFoundException(`Outlet with ID ${id} not found`);
     }
 
-    return outlet;
+    return this.attachSignedUrl(outlet);
   }
 
   async create(dto: CreateOutletDto, merchantId: string, userId: string) {

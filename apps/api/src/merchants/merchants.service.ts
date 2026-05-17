@@ -21,6 +21,16 @@ export class MerchantsService {
     private uploadsService: UploadsService,
   ) {}
 
+  private async attachSignedUrl(merchant: any) {
+    if (!merchant?.logo_upload_id) return merchant;
+
+    return {
+      ...merchant,
+      logo: (await this.uploadsService.generateSignedUrl(merchant.logo_upload_id))
+        .url,
+    };
+  }
+
   /**
    * Check if user is admin (belongs to admin merchant)
    */
@@ -71,7 +81,14 @@ export class MerchantsService {
       this.prisma.merchants.count({ where }),
     ]);
 
-    return { data, meta: PaginationDto.calculateMeta(total, page, limit) };
+    const dataWithSignedUrls = await Promise.all(
+      data.map((merchant) => this.attachSignedUrl(merchant)),
+    );
+
+    return {
+      data: dataWithSignedUrls,
+      meta: PaginationDto.calculateMeta(total, page, limit),
+    };
   }
 
   async findOne(id: string, userMerchantId: string) {
@@ -85,7 +102,7 @@ export class MerchantsService {
       throw new NotFoundException(`Merchant with ID ${id} not found`);
     }
 
-    return merchant;
+    return this.attachSignedUrl(merchant);
   }
 
   async findBySlug(slug: string) {
@@ -97,7 +114,7 @@ export class MerchantsService {
       throw new NotFoundException(`Merchant with slug ${slug} not found`);
     }
 
-    return merchant;
+    return this.attachSignedUrl(merchant);
   }
 
   async create(dto: CreateMerchantDto, userId?: string) {

@@ -19,6 +19,16 @@ export class ProductsService {
     private uploadsService: UploadsService,
   ) {}
 
+  private async attachSignedUrl(product: any) {
+    if (!product?.image_upload_id) return product;
+
+    return {
+      ...product,
+      thumbnail: (await this.uploadsService.generateSignedUrl(product.image_upload_id))
+        .url,
+    };
+  }
+
   async findAll(merchantId: string, pagination: PaginationDto) {
     const { page = 1, limit = 10 } = pagination;
     const skip = pagination.skip;
@@ -35,7 +45,14 @@ export class ProductsService {
       this.prisma.products.count({ where }),
     ]);
 
-    return { data, meta: PaginationDto.calculateMeta(total, page, limit) };
+    const dataWithSignedUrls = await Promise.all(
+      data.map((product) => this.attachSignedUrl(product)),
+    );
+
+    return {
+      data: dataWithSignedUrls,
+      meta: PaginationDto.calculateMeta(total, page, limit),
+    };
   }
 
   async findOne(id: string, merchantId: string) {
@@ -48,7 +65,7 @@ export class ProductsService {
       throw new NotFoundException(`Product with ID ${id} not found`);
     }
 
-    return product;
+    return this.attachSignedUrl(product);
   }
 
   async create(dto: CreateProductDto, merchantId: string, userId: string) {
