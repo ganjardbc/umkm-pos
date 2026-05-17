@@ -5,6 +5,7 @@ import { ConfigService } from '@nestjs/config';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
+import { UploadsModule } from '../uploads/uploads.module';
 
 /**
  * Auth Module
@@ -12,6 +13,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
  */
 @Module({
   imports: [
+    UploadsModule,
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       inject: [ConfigService],

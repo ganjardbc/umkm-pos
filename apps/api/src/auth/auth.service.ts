@@ -8,6 +8,7 @@ import { PrismaService } from '../database/prisma.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import * as bcrypt from 'bcrypt';
+import { UploadsService } from '../uploads/uploads.service';
 
 /**
  * Auth Service
@@ -18,6 +19,7 @@ export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
+    private uploadsService: UploadsService,
   ) {}
 
   /**
@@ -35,6 +37,8 @@ export class AuthService {
             id: true,
             name: true,
             slug: true,
+            logo: true,
+            logo_upload_id: true,
           },
         },
       },
@@ -63,6 +67,14 @@ export class AuthService {
 
     // Fetch user RBAC data
     const rbac = await this.getUserRbac(user.id);
+    const avatarUrl = await this.resolveSignedUrl(
+      user.avatar_upload_id,
+      user.avatar,
+    );
+    const merchantLogoUrl = await this.resolveSignedUrl(
+      user.merchants?.logo_upload_id,
+      user.merchants?.logo,
+    );
 
     return {
       access_token: token,
@@ -72,9 +84,13 @@ export class AuthService {
         email: user.email,
         name: user.name,
         username: user.username,
-        avatar: user.avatar,
+        avatar: avatarUrl,
+        avatar_upload_id: user.avatar_upload_id,
         merchant_id: user.merchant_id,
-        merchant: user.merchants,
+        merchant: {
+          ...user.merchants,
+          logo: merchantLogoUrl,
+        },
         is_active: user.is_active,
       },
       rbac,
@@ -232,6 +248,8 @@ export class AuthService {
             id: true,
             name: true,
             slug: true,
+            logo: true,
+            logo_upload_id: true,
           },
         },
       },
@@ -242,14 +260,27 @@ export class AuthService {
     }
 
     // Return user without password_hash
+    const avatarUrl = await this.resolveSignedUrl(
+      user.avatar_upload_id,
+      user.avatar,
+    );
+    const merchantLogoUrl = await this.resolveSignedUrl(
+      user.merchants?.logo_upload_id,
+      user.merchants?.logo,
+    );
+
     return {
       id: user.id,
       email: user.email,
       name: user.name,
       username: user.username,
-      avatar: user.avatar,
+      avatar: avatarUrl,
+      avatar_upload_id: user.avatar_upload_id,
       merchant_id: user.merchant_id,
-      merchants: user.merchants,
+      merchants: {
+        ...user.merchants,
+        logo: merchantLogoUrl,
+      },
       is_active: user.is_active,
       created_at: user.created_at,
       updated_at: user.updated_at,
@@ -286,7 +317,13 @@ export class AuthService {
     });
 
     // Transform to a more usable format
-    return userRoles.map((ur) => {
+    return Promise.all(
+      userRoles.map(async (ur) => {
+        const outletLogoUrl = await this.resolveSignedUrl(
+          ur.outlets.logo_upload_id,
+          ur.outlets.logo,
+        );
+
       const rolePerms = ur.roles.role_permissions || [];
       const permissions = rolePerms.map((rp) => ({
         id: rp.permissions.id,
@@ -299,7 +336,8 @@ export class AuthService {
           id: ur.outlets.id,
           name: ur.outlets.name,
           slug: ur.outlets.slug,
-          logo: ur.outlets.logo,
+          logo: outletLogoUrl,
+          logo_upload_id: ur.outlets.logo_upload_id,
         },
         role: {
           id: ur.roles.id,
@@ -308,6 +346,22 @@ export class AuthService {
           permissions,
         },
       };
-    });
+      }),
+    );
+  }
+
+  private async resolveSignedUrl(
+    uploadId?: string | null,
+    fallbackUrl?: string | null,
+  ): Promise<string | null> {
+    if (!uploadId) {
+      return fallbackUrl || null;
+    }
+
+    try {
+      return (await this.uploadsService.generateSignedUrl(uploadId)).url;
+    } catch {
+      return fallbackUrl || null;
+    }
   }
 }
