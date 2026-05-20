@@ -128,6 +128,7 @@ import { useShift } from '@/modules/shift/composables/useShift.ts';
 import { formatDateTime, formatRangeTime } from '@/helpers/utils.ts';
 import { showConfirm, showToast } from '@/helpers/toast.ts';
 import { getErrorMessage } from '@/helpers/utils.ts';
+import { useGlobalLoading } from '@/composables/useGlobalLoading.ts';
 import * as shiftApi from '@/modules/shift/services/api.ts';
 
 const ShiftStatus = {
@@ -144,6 +145,7 @@ const props = defineProps({
 
 const emit = defineEmits(['shift-loaded']);
 
+const { show, hide } = useGlobalLoading();
 const {
   isUserInShift,
   isUserRemovedFromShift,
@@ -173,6 +175,8 @@ const fetchOutletShift = async () => {
 
 const handleOpenShift = async () => {
   try {
+    show();
+
     const response = await shiftApi.openShift({
       outlet_id: props.outletId,
       // shift_owner_id: user?.id,
@@ -192,11 +196,15 @@ const handleOpenShift = async () => {
       title: 'Error',
       message: getErrorMessage(error) || 'Failed to open shift',
     });
+  } finally {
+    hide();
   }
 };
 
 const handleCloseShift = async () => {
   try {
+    show();
+
     await shiftApi.closeShift(currentShift.id);
     await fetchOutletShift();
     showToast({
@@ -210,6 +218,8 @@ const handleCloseShift = async () => {
       title: 'Error',
       message: getErrorMessage(error) || 'Failed to close shift',
     });
+  } finally {
+    hide();
   }
 };
 
