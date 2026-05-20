@@ -143,31 +143,6 @@
       }"
     >
       <div class="pos-cart__section space-y-2">
-        <div class="space-y-2">
-          <div class="text-sm font-medium text-gray-800 dark:text-gray-400">Payment Method</div>
-          <Select
-            v-model="transactionForm.payment_method"
-            :options="paymentMethods"
-            option-label="label"
-            option-value="value"
-            placeholder="Select Payment Method"
-            fluid
-            class="w-full"
-          />
-        </div>
-
-        <div class="flex items-center justify-between">
-          <label class="text-sm font-medium text-gray-800 dark:text-gray-400">Is Offline Order?</label>
-          <InputSwitch
-            v-model="transactionForm.is_offline"
-            :binary="true"
-          />
-        </div>
-      </div>
-
-      <Divider class="m-0!" />
-      
-      <div class="pos-cart__section space-y-2">
         <div class="flex items-center justify-between">
           <span class="text-sm">
             Total ({{ posStore.cartItemCount }})
@@ -177,12 +152,11 @@
           </span>
         </div>
         <Button
-          label="Checkout"
+          label="Continue Payment"
           size="medium"
           fluid
           :disabled="isCanCheckout"
-          :loading="isCheckingOut"
-          @click="onCheckout"
+          @click="openPaymentModal"
         />
       </div>
     </div>
@@ -234,6 +208,15 @@
       </div>
     </UiCard>
   </div>
+
+  <PaymentModal
+    v-model:visibility="showPaymentModal"
+    v-model:payment-method="transactionForm.payment_method"
+    v-model:is-offline="transactionForm.is_offline"
+    v-model:cash-amount="cashPaidAmount"
+    :total-amount="posStore.cartTotal"
+    @confirm="onCheckout"
+  />
 </template>
 
 <script setup lang="ts">
@@ -242,9 +225,11 @@ import { storeToRefs } from 'pinia';
 import { useAuthStore } from '@/modules/auth/stores/index.ts';
 import { usePosStore } from '@/modules/transaction/stores-pos';
 import { getCurrency } from '@/helpers/utils.ts';
+import { useGlobalLoading } from '@/composables/useGlobalLoading.ts';
 import { showConfirm, showToast } from '@/helpers/toast.ts';
 import { postTransaction } from '@/modules/transaction/services/api.ts';
 import UiCard from '@/components/UiCard.vue';
+import PaymentModal from '@/modules/transaction/components/PaymentModal.vue';
 
 const props = defineProps({
   isUserInShift: {
@@ -263,6 +248,7 @@ const props = defineProps({
 
 const emit = defineEmits(['checkout-success']);
 
+const { show, hide } = useGlobalLoading();
 const posStore = usePosStore();
 const isCheckingOut = ref(false);
 
@@ -274,13 +260,13 @@ const transactionForm = ref({
   device_id: `device-${Date.now()}`,
 });
 
-const paymentMethods = ref([
-  { label: 'Cash', value: 'cash' },
-  { label: 'Debit Card', value: 'debit' },
-  { label: 'Credit Card', value: 'credit' },
-  { label: 'E-Wallet', value: 'e-wallet' },
-  { label: 'QRIS', value: 'qris' },
-]);
+const cashPaidAmount = ref<number>(0);
+const showPaymentModal = ref(false);
+const isCashPayment = computed(() => transactionForm.value.payment_method === 'cash');
+const hasInsufficientCash = computed(() => isCashPayment.value && cashPaidAmount.value < posStore.cartTotal);
+const cashChangeAmount = computed(() =>
+  isCashPayment.value ? Math.max(0, cashPaidAmount.value - posStore.cartTotal) : 0,
+);
 
 // Cart Items
 const removeItem = (productId: string) => {
@@ -324,6 +310,11 @@ const isCanCheckout = computed(() => {
   );
 });
 
+const openPaymentModal = () => {
+  if (isCanCheckout.value) return;
+  showPaymentModal.value = true;
+};
+
 const onCheckout = async () => {
   if (isCheckingOut.value) return;
   
@@ -354,9 +345,19 @@ const onCheckout = async () => {
     });
     return;
   }
+
+  if (hasInsufficientCash.value) {
+    showToast({
+      type: 'error',
+      title: 'Validation Error',
+      message: 'Cash received is less than total amount',
+    });
+    return;
+  }
   
   try {
     isCheckingOut.value = true;
+    show();
     
     // Prepare transaction payload
     const payload: any = {
@@ -365,6 +366,8 @@ const onCheckout = async () => {
       payment_method: transactionForm.value.payment_method,
       is_offline: transactionForm.value.is_offline,
       device_id: transactionForm.value.device_id,
+      cash_received: isCashPayment.value ? cashPaidAmount.value : undefined,
+      change_amount: isCashPayment.value ? cashChangeAmount.value : undefined,
       items: posStore.cartItems.map(item => ({
         product_id: item.id,
         qty: item.quantity
@@ -382,9 +385,11 @@ const onCheckout = async () => {
       
       posStore.clearCart();
       openCloseCart();
+      showPaymentModal.value = false;
       
       // Emit event to parent to handle form clearing
       emit('checkout-success');
+      cashPaidAmount.value = 0;
     }
   } catch (error: any) {
     console.error('Checkout error:', error);
@@ -395,6 +400,7 @@ const onCheckout = async () => {
     });
   } finally {
     isCheckingOut.value = false;
+    hide();
   }
 };
 
@@ -419,6 +425,12 @@ watch(() => props.outletId, (newVal: string) => {
 watch(() => props.shiftId, (newVal: string) => {
   transactionForm.value.shift_id = newVal;
 }, { immediate: true });
+
+watch(() => transactionForm.value.payment_method, (method: string) => {
+  if (method !== 'cash') {
+    cashPaidAmount.value = 0;
+  }
+});
 </script>
 <style>
 @import 'tailwindcss';

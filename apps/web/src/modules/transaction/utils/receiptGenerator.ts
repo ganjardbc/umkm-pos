@@ -10,6 +10,8 @@ export interface ReceiptData {
   created_at: string;
   payment_method: string;
   total_amount: string | number;
+  cash_received?: string | number | null;
+  change_amount?: string | number | null;
   is_offline: boolean;
   is_cancelled: boolean;
   transaction_items: Array<{
@@ -168,6 +170,42 @@ export const generateReceiptHTML = (transaction: ReceiptData): string => {
           <span>Total Amount:</span>
           <span>${formatCurrency(transaction?.total_amount)}</span>
         </div>
+        ${
+          transaction?.payment_method === 'cash' &&
+          transaction?.cash_received !== null &&
+          transaction?.cash_received !== undefined
+            ? `
+          <div style="
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #374151;
+            margin-top: 8px;
+          ">
+            <span>Cash Received:</span>
+            <span>${formatCurrency(transaction?.cash_received)}</span>
+          </div>
+        `
+            : ''
+        }
+        ${
+          transaction?.payment_method === 'cash' &&
+          transaction?.change_amount !== null &&
+          transaction?.change_amount !== undefined
+            ? `
+          <div style="
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #374151;
+            margin-top: 4px;
+          ">
+            <span>Change:</span>
+            <span>${formatCurrency(transaction?.change_amount)}</span>
+          </div>
+        `
+            : ''
+        }
         ${
           transaction?.is_offline
             ? `

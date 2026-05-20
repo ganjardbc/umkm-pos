@@ -96,7 +96,7 @@
       </template>
 
       <div class="space-y-4">
-        <DataTable :value="transactionDetail.transaction_items" tableStyle="min-width: 50rem">
+        <DataTable :value="transactionDetail.transaction_items" :loading="loading" tableStyle="min-width: 50rem">
           <template #empty>
             <span class="w-full text-center flex justify-center">
               No items in this transaction.
@@ -130,7 +130,7 @@
         </DataTable>
 
         <div class="bg-gray-50 dark:bg-dark! p-3 rounded">
-          <div class="flex flex-col gap-4 justify-start">
+          <div class="flex flex-col gap-2 justify-start">
             <div class="flex gap-4 items-center">
               <label class="flex-1 text-sm font-medium text-gray-500">
                 Total Qty :
@@ -144,7 +144,15 @@
                 Total Amount :
               </label>
               <div class="text-base">
-                {{ formatPrice(getProductTotalAmount(transactionDetail.transaction_items)) }}
+                {{ formatPrice(transactionDetail.total_amount) }}
+              </div>
+            </div>
+            <div v-if="transactionDetail.change_amount" class="flex gap-4 items-center">
+              <label class="flex-1 text-sm font-medium text-gray-500">
+                Change Amount :
+              </label>
+              <div class="text-base">
+                {{ formatPrice(transactionDetail.change_amount) }}
               </div>
             </div>
           </div>
@@ -201,9 +209,11 @@ const openPrintReceipt = (transaction: any) => {
 
 // Fetch Detail
 const transactionDetail = ref<any>(null);
+const loading = ref(false);
 
 const fetchDetail = async () => {
   try {
+    loading.value = true;
     const response = await getDetailTransaction(transactionID.value);
     const { data } = response?.data || {};
 
@@ -214,6 +224,8 @@ const fetchDetail = async () => {
       title: 'Failed to fetch data.',
       message: getErrorMessage(error) || 'There was an error.',
     });
+  } finally {
+    loading.value = false;
   }
 };
 

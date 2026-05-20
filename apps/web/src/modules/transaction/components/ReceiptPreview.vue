@@ -56,6 +56,20 @@
         <span>Total Amount:</span>
         <span>{{ formatCurrency(transaction?.total_amount) }}</span>
       </div>
+      <div
+        v-if="transaction?.payment_method === 'cash' && transaction?.cash_received !== null && transaction?.cash_received !== undefined"
+        class="flex justify-between text-xs text-gray-700"
+      >
+        <span>Cash Received:</span>
+        <span>{{ formatCurrency(transaction?.cash_received) }}</span>
+      </div>
+      <div
+        v-if="transaction?.payment_method === 'cash' && transaction?.change_amount !== null && transaction?.change_amount !== undefined"
+        class="flex justify-between text-xs text-gray-700"
+      >
+        <span>Change:</span>
+        <span>{{ formatCurrency(transaction?.change_amount) }}</span>
+      </div>
       <div v-if="transaction?.is_offline" class="flex justify-between text-xs text-orange-600 font-semibold">
         <span>Mode:</span>
         <span>OFFLINE</span>
