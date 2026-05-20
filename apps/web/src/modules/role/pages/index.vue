@@ -23,7 +23,7 @@
     </div>
 
     <UiCard class="p-0! gap-0! overflow-hidden!">
-      <DataTable :value="roles" tableStyle="min-width: 50rem">
+      <DataTable :value="roles" :loading="loading" tableStyle="min-width: 50rem">
         <template #empty>
           <span class="w-full text-center flex justify-center">
             Roles are empty.
@@ -114,6 +114,7 @@ const isCanUpdate = computed(() => isHasPermission(UPDATE));
 const isCanDelete = computed(() => isHasPermission(DELETE));
 
 // Fetch Data
+const loading = ref(false);
 const roles = ref([]);
 const pagination = ref({
   page: 1,
@@ -124,6 +125,7 @@ const pagination = ref({
 
 const fetchRole = async () => {
   try {
+    loading.value = true;
     const payload = {
       page: pagination.value.page,
       limit: pagination.value.rows,
@@ -141,6 +143,8 @@ const fetchRole = async () => {
         title: 'Error.',
         message: getErrorMessage(error) || 'There was an error.',
     });
+  } finally {
+    loading.value = false;
   }
 };
 

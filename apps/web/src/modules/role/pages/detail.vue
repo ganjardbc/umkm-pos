@@ -65,7 +65,7 @@
         </h2>
       </template>
 
-      <DataTable :value="permissions" tableStyle="min-width: 50rem">
+      <DataTable :value="permissions" :loading="loadingPermissions" tableStyle="min-width: 50rem">
         <template #empty>
           <span class="w-full text-center flex justify-center">
             Permissions are empty.
@@ -157,6 +157,7 @@ const fetchDetail = async () => {
 
 // Fetch Data
 const permissions = ref([]);
+const loadingPermissions = ref(false);
 const pagination = ref({
   page: 1,
   pageCount: 0,
@@ -166,6 +167,7 @@ const pagination = ref({
 
 const fetchPermission = async () => {
   try {
+    loadingPermissions.value = true;
     const payload = {
       page: pagination.value.page,
       limit: pagination.value.rows,
@@ -183,6 +185,8 @@ const fetchPermission = async () => {
       title: 'Error.',
       message: getErrorMessage(error) || 'There was an error.',
     });
+  } finally {
+    loadingPermissions.value = false;
   }
 };
 

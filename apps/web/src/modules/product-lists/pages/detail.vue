@@ -132,7 +132,7 @@
         />
 
         <div class="overflow-hidden">
-          <DataTable :value="stockLogs" tableStyle="min-width: 50rem">
+          <DataTable :value="stockLogs" :loading="loadingStockLogs" tableStyle="min-width: 50rem">
             <template #empty>
               <span class="w-full text-center flex justify-center">
                 Stock histories are empty.
@@ -225,6 +225,7 @@ const fetchDetail = async () => {
 
 // Fetch Stock Logs
 const stockLogs = ref([]);
+const loadingStockLogs = ref(false);
 const stockPagination = ref({
   page: 1,
   pageCount: 0,
@@ -234,6 +235,7 @@ const stockPagination = ref({
 
 const fetchStockLogs = async () => {
   try {
+    loadingStockLogs.value = true;
     const payload = {
       page: stockPagination.value.page,
       limit: stockPagination.value.rows,
@@ -252,6 +254,8 @@ const fetchStockLogs = async () => {
       title: 'Failed to fetch stock logs.',
       message: getErrorMessage(error) || 'There was an error.',
     });
+  } finally {
+    loadingStockLogs.value = false;
   }
 };
 

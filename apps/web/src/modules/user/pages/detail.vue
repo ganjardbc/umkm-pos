@@ -100,7 +100,7 @@
         </div>
       </template>
 
-      <DataTable :value="userRoles">
+      <DataTable :value="userRoles" :loading="loadingUserRoles">
         <template #empty>
           <span class="w-full text-center flex justify-center">
             Your works are empty.
@@ -189,9 +189,11 @@ const fetchDetail = async () => {
 
 // Fetch User Role
 const userRoles = ref<string[]>([]);
+const loadingUserRoles = ref(false);
 
 const fetchUserRole = async () => {
   try {
+    loadingUserRoles.value = true;
     const response = await getUserRole(userID.value);
     const { data } = response?.data || {};
 
@@ -202,6 +204,8 @@ const fetchUserRole = async () => {
       title: 'Failed to fetch data.',
       message: getErrorMessage(error) || 'There was an error.',
     });
+  } finally {
+    loadingUserRoles.value = false;
   }
 };
 

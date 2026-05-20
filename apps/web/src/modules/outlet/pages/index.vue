@@ -19,7 +19,7 @@
     </div>
 
     <UiCard class="p-0! gap-0! overflow-hidden!">
-      <DataTable :value="outlets" tableStyle="min-width: 50rem">
+      <DataTable :value="outlets" :loading="loading" tableStyle="min-width: 50rem">
         <template #empty>
           <span class="w-full text-center flex justify-center">
             Outlets are empty.
@@ -124,6 +124,7 @@ const isCanUpdate = computed(() => isHasPermission(UPDATE));
 const isCanDelete = computed(() => isHasPermission(DELETE));
 
 // Fetch Data
+const loading = ref(false);
 const outlets = ref([]);
 const pagination = ref({
   page: 1,
@@ -134,6 +135,7 @@ const pagination = ref({
 
 const fetchOutlet = async () => {
   try {
+    loading.value = true;
     const payload = {
       page: pagination.value.page,
       limit: pagination.value.rows,
@@ -151,6 +153,8 @@ const fetchOutlet = async () => {
       title: 'Error.',
       message: getErrorMessage(error) || 'There was an error.',
     });
+  } finally {
+    loading.value = false;
   }
 };
 

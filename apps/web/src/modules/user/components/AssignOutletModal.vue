@@ -29,7 +29,7 @@
                 </h2>
               </template>
 
-              <DataTable :value="outlets">
+              <DataTable :value="outlets" :loading="loadingOutlets">
                 <template #empty>
                   <span class="w-full text-center flex justify-center">
                     Your outlets are empty.
@@ -80,7 +80,7 @@
                 </h2>
               </template>
               
-              <DataTable :value="roles">
+              <DataTable :value="roles" :loading="loadingRoles">
                 <template #empty>
                   <span class="w-full text-center flex justify-center">
                     Your roles are empty.
@@ -285,6 +285,7 @@ interface OutletData {
 }
 
 const outlets = ref<OutletData[]>([]);
+const loadingOutlets = ref(false);
 const outletPagination = ref({
   page: 1,
   pageCount: 0,
@@ -307,6 +308,7 @@ const isOutletSelected = (outlet: OutletData) => {
 
 const fetchOutlet = async () => {
   try {
+    loadingOutlets.value = true;
     const payload = {
       page: outletPagination.value.page,
       limit: outletPagination.value.rows,
@@ -324,6 +326,8 @@ const fetchOutlet = async () => {
       title: 'Error.',
       message: getErrorMessage(error) || 'There was an error.',
     });
+  } finally {
+    loadingOutlets.value = false;
   }
 };
 
@@ -349,6 +353,7 @@ interface RoleData {
 }
 
 const roles = ref<RoleData[]>([]);
+const loadingRoles = ref(false);
 const rolePagination = ref({
   page: 1,
   pageCount: 0,
@@ -371,6 +376,7 @@ const isRoleSelected = (role: RoleData) => {
 
 const fetchRole = async () => {
   try {
+    loadingRoles.value = true;
     const payload = {
       page: rolePagination.value.page,
       limit: rolePagination.value.rows,
@@ -387,6 +393,8 @@ const fetchRole = async () => {
       title: 'Error.',
       message: getErrorMessage(error) || 'There was an error.',
     });
+  } finally {
+    loadingRoles.value = false;
   }
 };
 

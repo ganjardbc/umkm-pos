@@ -14,7 +14,7 @@
     </div>
 
     <UiCard class="p-0! gap-0! overflow-hidden!">
-      <DataTable :value="stocks" tableStyle="min-width: 50rem">
+      <DataTable :value="stocks" :loading="loading" tableStyle="min-width: 50rem">
         <template #empty>
           <span class="w-full text-center flex justify-center">
             Stocks are empty.
@@ -71,6 +71,7 @@ import UiSearch from '@/components/UiSearch.vue';
 import UiPagination from '@/components/UiPagination.vue';
 
 // Fetch Data
+const loading = ref(false);
 const stocks = ref([]);
 const pagination = ref({
   page: 1,
@@ -81,6 +82,7 @@ const pagination = ref({
 
 const fetchStock = async () => {
   try {
+    loading.value = true;
     const payload = {
       page: pagination.value.page,
       limit: pagination.value.rows,
@@ -98,6 +100,8 @@ const fetchStock = async () => {
         title: 'Error.',
         message: getErrorMessage(error) || 'There was an error.',
     });
+  } finally {
+    loading.value = false;
   }
 };
 
