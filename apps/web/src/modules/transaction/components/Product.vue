@@ -10,7 +10,7 @@
     </div>
 
     <div
-      v-if="products && products.length === 0"
+      v-if="!loading && products && products.length === 0"
     >
       <span class="w-full text-center flex justify-center">
         Products are empty.
@@ -18,7 +18,7 @@
     </div>
 
     <div
-      v-if="products && products.length > 0"
+      v-if="!loading && products && products.length > 0"
       class="pos-product__content"
       :class="{
         'pos-product__content-cols-2': isMobile,
@@ -87,6 +87,11 @@
       </UiCard>
     </div>
 
+    <UiLoading
+      v-if="loading"
+      message="Loading products..."
+    />
+
     <UiPagination
       v-model="pagination"
       no-padding
@@ -106,6 +111,7 @@ import { usePosStore } from '@/modules/transaction/stores-pos';
 import UiSearch from '@/components/UiSearch.vue';
 import UiPagination from '@/components/UiPagination.vue';
 import UiCard from '@/components/UiCard.vue';
+import UiLoading from '@/components/UiLoading.vue';
 
 const posStore = usePosStore();
 
@@ -121,6 +127,7 @@ defineProps({
 });
 
 // Fetch Data
+const loading = ref(false);
 const products = ref();
 const pagination = ref({
   page: 1,
@@ -131,6 +138,8 @@ const pagination = ref({
 
 const fetchProduct = async () => {
   try {
+    loading.value = true;
+
     const payload = {
       page: pagination.value.page,
       limit: pagination.value.rows,
@@ -148,6 +157,8 @@ const fetchProduct = async () => {
       title: 'Error.',
       message: getErrorMessage(error) || 'There was an error.',
     });
+  } finally {
+    loading.value = false;
   }
 };
 

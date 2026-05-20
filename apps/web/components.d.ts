@@ -59,6 +59,7 @@ declare module 'vue' {
     UiFileUpload: typeof import('./src/components/UiFileUpload.vue')['default']
     UiFormGroup: typeof import('./src/components/UiFormGroup.vue')['default']
     UiGlobalLoading: typeof import('./src/components/UiGlobalLoading.vue')['default']
+    UiLoading: typeof import('./src/components/UiLoading.vue')['default']
     UiPagination: typeof import('./src/components/UiPagination.vue')['default']
     UiPercentage: typeof import('./src/components/UiPercentage.vue')['default']
     UiSearch: typeof import('./src/components/UiSearch.vue')['default']

@@ -19,7 +19,7 @@
     </div>
 
     <UiCard class="p-0! gap-0! overflow-hidden!">
-      <DataTable :value="products" tableStyle="min-width: 50rem">
+      <DataTable :value="products" :loading="loading" tableStyle="min-width: 50rem">
         <template #empty>
           <span class="w-full text-center flex justify-center">
             Products are empty.
@@ -168,6 +168,7 @@ const isCanDelete = computed(() => isHasPermission(DELETE));
 const isCanAdjust = computed(() => isHasPermission(ADJUST));
 
 // Fetch Data
+const loading = ref(false);
 const products = ref([]);
 const pagination = ref({
   page: 1,
@@ -178,6 +179,8 @@ const pagination = ref({
 
 const fetchProduct = async () => {
   try {
+    loading.value = true;
+
     const payload = {
       page: pagination.value.page,
       limit: pagination.value.rows,
@@ -194,6 +197,8 @@ const fetchProduct = async () => {
       title: 'Error.',
       message: getErrorMessage(error) || 'There was an error.',
     });
+  } finally {
+    loading.value = false;
   }
 };
 

@@ -10,7 +10,7 @@
     </div>
 
     <UiCard class="p-0! gap-0! overflow-hidden!">
-      <DataTable :value="shifts" tableStyle="min-width: 50rem">
+      <DataTable :value="shifts" :loading="loading" tableStyle="min-width: 50rem">
         <template #empty>
           <span class="w-full text-center flex justify-center">
             Shifts are empty.
@@ -94,6 +94,7 @@ const outlet = getOutlet();
 const router = useRouter();
 
 // Fetch Data
+const loading = ref(false);
 const shifts = ref([]);
 const pagination = ref({
   page: 1,
@@ -104,6 +105,8 @@ const pagination = ref({
 
 const fetchShift = async () => {
   try {
+    loading.value = true;
+
     const payload = {
       outlet_id: outlet?.id,
       page: pagination.value.page,
@@ -122,6 +125,8 @@ const fetchShift = async () => {
         title: 'Error.',
         message: getErrorMessage(error) || 'There was an error.',
     });
+  } finally {
+    loading.value = false;
   }
 };
 

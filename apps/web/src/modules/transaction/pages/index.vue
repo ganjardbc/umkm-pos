@@ -26,6 +26,7 @@
     <UiCard class="p-0! gap-0! overflow-hidden!">
       <DataTable
         :value="transactions"
+        :loading="loading"
         dataKey="id"
         tableStyle="min-width: 50rem;"
       >
@@ -164,6 +165,7 @@ const listOfCancellFilters = [
 ];
 
 // Fetch Data
+const loading = ref(false);
 const transactions = ref([]);
 const filter = ref({
   outlet_id: outlet?.id,
@@ -178,6 +180,8 @@ const pagination = ref({
 
 const fetchTransaction = async () => {
   try {
+    loading.value = true;
+
     const payload = {
       outlet_id: outlet?.id,
       page: pagination.value.page,
@@ -197,6 +201,8 @@ const fetchTransaction = async () => {
         title: 'Error.',
         message: getErrorMessage(error) || 'There was an error.',
     });
+  } finally {
+    loading.value = false;
   }
 };
 
