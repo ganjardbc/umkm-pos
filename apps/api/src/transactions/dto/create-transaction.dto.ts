@@ -3,6 +3,7 @@ import {
   IsArray,
   IsBoolean,
   IsInt,
+  IsNumber,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -81,4 +82,22 @@ export class CreateTransactionDto {
   @ValidateNested({ each: true })
   @Type(() => TransactionItemInputDto)
   items: TransactionItemInputDto[];
+
+  @ApiPropertyOptional({
+    example: 50000,
+    description: 'Cash amount received from customer (cash only)',
+  })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  cash_received?: number;
+
+  @ApiPropertyOptional({
+    example: 10000,
+    description: 'Change amount returned to customer (cash only)',
+  })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  change_amount?: number;
 }

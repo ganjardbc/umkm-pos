@@ -277,6 +277,8 @@ model transactions {
   cashier_id        String?             @db.Char(36)
   payment_method    String              @db.VarChar(50)
   total_amount      Decimal             @db.Decimal(14, 2)
+  cash_received     Decimal?            @db.Decimal(14, 2)
+  change_amount     Decimal?            @db.Decimal(14, 2)
   is_offline        Boolean             @default(false)
   device_id         String?             @db.VarChar(120)
   created_at        DateTime            @default(now()) @db.Timestamp(0)

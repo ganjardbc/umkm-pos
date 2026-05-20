@@ -183,6 +183,28 @@ export class TransactionsService {
       });
     }
 
+    const cashReceived =
+      dto.payment_method === 'cash' ? Number(dto.cash_received ?? 0) : null;
+    const changeAmount =
+      dto.payment_method === 'cash' ? Number(dto.change_amount ?? 0) : null;
+
+    if (dto.payment_method === 'cash') {
+      if (cashReceived === null || Number.isNaN(cashReceived)) {
+        throw new BadRequestException('cash_received is required for cash payment');
+      }
+      if (cashReceived < totalAmount) {
+        throw new BadRequestException('cash_received must be greater than or equal to total_amount');
+      }
+
+      const expectedChange = Number((cashReceived - totalAmount).toFixed(2));
+      if (changeAmount === null || Number.isNaN(changeAmount)) {
+        throw new BadRequestException('change_amount is required for cash payment');
+      }
+      if (Number(changeAmount.toFixed(2)) !== expectedChange) {
+        throw new BadRequestException('change_amount does not match cash_received - total_amount');
+      }
+    }
+
     // 4. Atomic DB transaction
     const result = await this.prisma.$transaction(async (tx) => {
       // Create transaction record
@@ -194,6 +216,8 @@ export class TransactionsService {
           cashier_id: cashierId,
           payment_method: dto.payment_method,
           total_amount: totalAmount,
+          cash_received: cashReceived,
+          change_amount: changeAmount,
           is_offline: dto.is_offline ?? false,
           device_id: dto.device_id ?? null,
           created_by: userId,

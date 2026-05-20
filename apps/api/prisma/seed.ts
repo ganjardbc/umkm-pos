@@ -424,6 +424,8 @@ async function main() {
         shift_id: SHIFT_1_ID,
         payment_method: 'cash',
         total_amount: 40000, // 15000*2 + 10000*1
+        cash_received: 50000,
+        change_amount: 10000,
         is_offline: false,
         created_by: storeManagerUser.id,
         updated_by: storeManagerUser.id,
@@ -507,6 +509,8 @@ async function main() {
         user_id: cashierUser.id,
         payment_method: 'qris',
         total_amount: 15000, // 5000*3
+        cash_received: null,
+        change_amount: null,
         is_offline: false,
         created_by: cashierUser.id,
         updated_by: cashierUser.id,
