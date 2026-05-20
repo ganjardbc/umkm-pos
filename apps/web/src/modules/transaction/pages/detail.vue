@@ -273,10 +273,6 @@ const getProductTotalQuantity = (items: any[] ) => {
   return items?.reduce((total, item) => total + (item.qty || 0), 0) || 0;
 };
 
-const getProductTotalAmount = (items: any[]) => {
-  return items?.reduce((total, item) => total + (Number.parseInt(item.subtotal) || 0), 0) || 0;
-};
-
 // Navigation
 const onBack = () => {
   router.back();

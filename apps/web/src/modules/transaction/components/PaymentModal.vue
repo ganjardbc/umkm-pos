@@ -26,9 +26,9 @@
         <span class="text-base font-semibold text-primary dark:text-primary-400">{{ getCurrency(totalAmount) }}</span>
       </div>
 
-      <div v-if="isPaymentMethodCash" class="w-full rounded-lg bg-gray-100 dark:bg-dark! grid md:grid-cols-[1fr_260px] gap-5 p-5">
+      <div v-if="isPaymentMethodCash" class="w-full grid md:grid-cols-[1fr_260px] gap-5">
         <div class="flex-1 space-y-4">
-          <div class="flex items-center justify-between p-3 bg-white dark:bg-dark-secondary! rounded-lg">
+          <div class="flex items-center justify-between p-3 bg-gray-100 dark:bg-dark! rounded-lg">
             <span class="text-sm text-gray-700 dark:text-gray-300">Total Payment</span>
             <span class="text-base font-semibold text-primary dark:text-primary-400">{{ getCurrency(totalAmount) }}</span>
           </div>
@@ -58,7 +58,7 @@
             </div>
           </UiFormGroup>
 
-          <div class="p-3 bg-white dark:bg-dark-secondary! rounded-lg">
+          <div class="p-3 bg-gray-100 dark:bg-dark! rounded-lg">
             <div class="flex items-center justify-between text-sm">
               <span class="font-semibold text-gray-700 dark:text-gray-300">Change</span>
               <span class="font-semibold text-emerald-600 dark:text-emerald-400">{{ getCurrency(changeAmount) }}</span>
