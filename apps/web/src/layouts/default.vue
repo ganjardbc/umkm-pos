@@ -116,7 +116,7 @@
               icon="pi pi-arrow-left"
               aria-label="Back"
               class="default-layout__header-back"
-              @click="$router.back()"
+              @click="router.back()"
             />
 
             <div class="default-layout__header-title default-layout__header-title--dark">
@@ -187,7 +187,7 @@
 
 <script lang="ts" setup>
 import { onMounted, computed, ref, watch } from "vue";
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import defaultIcon from '@/assets/logo.png';
 import defaultLogo from '@/assets/insell-logo.png';
 
@@ -207,6 +207,7 @@ import UiSidebarProfile from '@/components/UiSidebarProfile.vue';
 const ENABLE_DARKMODE_TOGGLE = false;
 
 const route = useRoute();
+const router = useRouter();
 const isBack = computed(() => route.meta.isBack || false);
 const title = computed(() => route.meta.title || '-');
 const breadcrumbs = computed(() => Array.isArray(route.meta.breadcrumbs) ? route.meta.breadcrumbs : []);
