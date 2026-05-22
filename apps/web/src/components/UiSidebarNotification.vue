@@ -20,7 +20,7 @@
       class="ui-sidebar-notification__popper"
     >
       <div class="w-full pb-3">
-        <div class="text-base font-medium">
+        <div class="text-sm font-medium">
           Notifications(0)
         </div>
       </div>
