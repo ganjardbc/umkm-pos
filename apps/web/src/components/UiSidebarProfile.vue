@@ -86,12 +86,10 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import { useRouter } from 'vue-router';
-import { storeToRefs } from 'pinia';
 import { removeAuth } from '@/helpers/auth.ts';
 import { showConfirm, showToast } from "@/helpers/toast.ts";
 import { getPersonalInformation } from '@/helpers/auth.ts';
 import { getUploadSignedUrl } from '@/services/uploads';
-import { useAuthStore } from '@/modules/auth/stores/index.ts';
 import { useShift } from '@/modules/shift/composables/useShift.ts';
 import { PREFIX_ROUTE_PATH as PRP_AUTH } from '@/modules/auth/services/constants.ts';
 import { PREFIX_ROUTE_PATH as PRP_PROFILE } from '@/modules/profile/services/constants.ts';
@@ -107,11 +105,6 @@ defineProps({
 const router = useRouter();
 const personalInfo = computed(() => getPersonalInformation());
 const avatarUrl = ref<string | null>(personalInfo.value?.user?.avatar || null);
-
-const authStore = useAuthStore();
-const { deviceType } = storeToRefs(authStore);
-
-const isWeb = computed(() => deviceType.value === 'web');
 
 // Computed for Shift
 const { isUserInShift } = useShift();
