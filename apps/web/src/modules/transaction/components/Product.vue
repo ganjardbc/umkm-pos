@@ -28,7 +28,8 @@
       <UiCard
         v-for="product in products"
         :key="product.id"
-        class="overflow-hidden hover:shadow-lg"
+        class="overflow-hidden hover:shadow-lg! cursor-pointer"
+        @click="addProductToCart(product)"
       >
         <div class="relative space-y-4">
           <div
@@ -71,7 +72,7 @@
             {{ getCurrency(product.price) }}
           </div>
 
-          <Divider />
+          <!-- <Divider />
 
           <Button
             severity="secondary"
@@ -82,7 +83,7 @@
             fluid
             :disabled="!isUserInShift"
             @click="addProductToCart(product)"
-          />
+          /> -->
         </div>
       </UiCard>
     </div>
@@ -115,7 +116,7 @@ import UiLoading from '@/components/UiLoading.vue';
 
 const posStore = usePosStore();
 
-defineProps({
+const props = defineProps({
   isUserInShift: {
     type: Boolean,
     default: false,
@@ -178,6 +179,15 @@ const search = () => {
 
 // Cart
 const addProductToCart = (product: any) => {
+  if (!props.isUserInShift) {
+    showToast({
+      type: 'warn',
+      title: 'No active shift',
+      message: 'Please open a shift to add products to the cart.',
+    });
+    return;
+  }
+
   if (product.stock_qty > 0) {
     posStore.addToCart(product);
     showToast({

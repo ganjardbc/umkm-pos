@@ -1,9 +1,5 @@
 <template>
   <div class="w-full space-y-4">
-    <h1 class="text-lg font-semibold">
-      Permission
-    </h1>
-
     <div class="flex flex-col md:flex-row gap-4">
       <div class="flex-1">
         <UiSearch

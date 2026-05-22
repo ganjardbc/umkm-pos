@@ -9,18 +9,6 @@
     <!-- POS Product -->
     <div class="pos__content">
       <!-- Warning Shift -->
-      <Message
-        v-if="isShiftClosed"
-        severity="warn"
-        icon="pi pi-info-circle"
-      >
-        <b>Shift is closed.</b><br>
-        <span class="text-sm">
-          Please open new shit to create transactions.
-        </span>
-      </Message>
-
-      <!-- Warning Shift -->
       <ShiftStatus />
 
       <!-- Products Tab -->
@@ -63,7 +51,6 @@ const isWeb = computed(() => deviceType.value === 'web');
 
 // Computed for Shift
 const {
-  isShiftClosed,
   isShiftUserCanManage,
   currentShift,
   fetchShift,
