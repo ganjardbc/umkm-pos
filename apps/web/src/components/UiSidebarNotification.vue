@@ -19,7 +19,7 @@
       position="right"
       class="ui-sidebar-notification__popper"
     >
-      <div class="space-y-2">
+      <div class="w-full pb-3">
         <div class="text-base font-medium">
           Notifications(0)
         </div>
@@ -33,13 +33,14 @@
         />
       </div>
 
-      <div class="px-2 pb-2">
+      <div class="w-full pt-3">
         <Button
           severity="secondary"
           variant="outlined"
           size="small"
           label="View All"
           fluid
+          @click="onRouteViewAll"
         />
       </div>
     </Popover>
@@ -47,11 +48,19 @@
 </template>
 <script setup lang="ts">
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 import UiEmptyState from '@/components/UiEmptyState.vue';
+
+const router = useRouter();
 
 const opNotificationMenu = ref();
 const openNotificationMenu = (event: MouseEvent) => {
   opNotificationMenu.value.toggle(event);
+};
+
+const onRouteViewAll = () => {
+  opNotificationMenu.value.hide();
+  router.push('/notification');
 };
 </script>
 <style>
