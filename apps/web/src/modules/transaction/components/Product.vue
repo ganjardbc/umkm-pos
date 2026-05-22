@@ -190,11 +190,6 @@ const addProductToCart = (product: any) => {
 
   if (product.stock_qty > 0) {
     posStore.addToCart(product);
-    showToast({
-      type: 'success',
-      title: 'Success',
-      message: `${product.name} added to cart`,
-    });
   } else {
     showToast({
       type: 'warn',
