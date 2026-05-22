@@ -66,6 +66,7 @@ declare module 'vue' {
     UiSidebarMenu: typeof import('./src/components/UiSidebarMenu.vue')['default']
     UiSidebarMenuItem: typeof import('./src/components/UiSidebarMenuItem.vue')['default']
     UiSidebarMenuSectionHeader: typeof import('./src/components/UiSidebarMenuSectionHeader.vue')['default']
+    UiSidebarNotification: typeof import('./src/components/UiSidebarNotification.vue')['default']
     UiSidebarOutlet: typeof import('./src/components/UiSidebarOutlet.vue')['default']
     UiSidebarProfile: typeof import('./src/components/UiSidebarProfile.vue')['default']
     UiSidebarSubmenuContainer: typeof import('./src/components/UiSidebarSubmenuContainer.vue')['default']

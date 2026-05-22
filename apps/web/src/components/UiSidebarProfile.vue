@@ -4,19 +4,15 @@
       class="ui-sidebar-profile__toggle ui-sidebar-profile__toggle--dark"
       @click="openProfileMenu"
     >
-      <Tag
-        v-if="isWeb"
-        :severity="isUserInShift ? 'success' : 'secondary'"
-        :value="isUserInShift ? 'In Shift' : 'Not Shift'"
-        class="text-xs! font-medium!"
-      />
-      <Avatar
-        :image="avatarUrl || undefined"
-        :label="avatarUrl ? undefined : personalInfo?.user?.name?.charAt(0)"
-        size="small"
-        shape="circle"
-        class="ui-sidebar-profile__avatar"
-      />
+      <OverlayBadge :severity="isUserInShift ? 'success' : 'danger'">
+        <Avatar
+          :image="avatarUrl || undefined"
+          :label="avatarUrl ? undefined : personalInfo?.user?.name?.charAt(0)"
+          size="small"
+          shape="circle"
+          class="ui-sidebar-profile__avatar"
+        />
+      </OverlayBadge>
     </div>
     <Popover
       ref="opProfileMenu"

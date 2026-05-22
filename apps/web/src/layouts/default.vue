@@ -63,15 +63,6 @@
           :icon="isDark ? 'pi pi-sun' : 'pi pi-moon'"
           @click="toggleDarkMode"
         />
-        <router-link to="/notification">
-          <Button
-            severity="secondary" 
-            variant="outlined"
-            size="medium"
-            icon="pi pi-bell"
-            @click="isMobile ? handleOpenSidebar() : null"
-          />
-        </router-link>
         <router-link to="/settings">
           <Button
             severity="secondary" 
@@ -159,12 +150,18 @@
               @navigate="isMobile ? handleOpenSidebar() : null"
             />
 
-            <Divider layout="vertical" />
-            
-            <UiSidebarProfile
-              :is-collapsed="isSmallSidebar"
-              @navigate="isMobile ? handleOpenSidebar() : null"
-            />
+            <Divider layout="vertical" class="mx-2!" />
+
+            <div class="flex items-center gap-1">
+              <UiSidebarNotification
+                :is-collapsed="isSmallSidebar"
+                @navigate="isMobile ? handleOpenSidebar() : null"
+              />
+              <UiSidebarProfile
+                :is-collapsed="isSmallSidebar"
+                @navigate="isMobile ? handleOpenSidebar() : null"
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -203,6 +200,7 @@ import { getOutletShift } from '@/modules/shift/services/api.ts';
 import UiSidebarMenu from '@/components/UiSidebarMenu.vue';
 import UiSidebarOutlet from '@/components/UiSidebarOutlet.vue';
 import UiSidebarProfile from '@/components/UiSidebarProfile.vue';
+import UiSidebarNotification from '@/components/UiSidebarNotification.vue';
 
 const ENABLE_DARKMODE_TOGGLE = false;
 
