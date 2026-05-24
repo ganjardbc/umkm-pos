@@ -1,0 +1,23 @@
+CREATE TABLE `notifications` (
+  `id` char(36) NOT NULL DEFAULT (uuid()),
+  `merchant_id` char(36) NOT NULL,
+  `user_id` char(36) DEFAULT NULL,
+  `outlet_id` char(36) DEFAULT NULL,
+  `title` varchar(150) NOT NULL,
+  `message` text NOT NULL,
+  `type` varchar(50) NOT NULL,
+  `is_read` tinyint(1) NOT NULL DEFAULT 0,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `created_by` char(36) DEFAULT NULL,
+  `updated_by` char(36) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_notifications_merchant` (`merchant_id`),
+  KEY `idx_notifications_user` (`user_id`),
+  KEY `idx_notifications_outlet` (`outlet_id`),
+  KEY `idx_notifications_is_read` (`is_read`),
+  KEY `idx_notifications_created_at` (`created_at`),
+  CONSTRAINT `notifications_ibfk_merchant` FOREIGN KEY (`merchant_id`) REFERENCES `merchants` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `notifications_ibfk_outlet` FOREIGN KEY (`outlet_id`) REFERENCES `outlets` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `notifications_ibfk_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
+);
