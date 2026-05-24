@@ -1,3 +1,4 @@
 export const getters = {
-	// Add your getters here
+  hasUnread: (state: any) => state.unreadCount > 0,
+  hasItems: (state: any) => state.items.length > 0,
 };
