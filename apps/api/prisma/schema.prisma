@@ -61,15 +61,37 @@ model outlets {
   created_by    String?         @db.Char(36)
   updated_by    String?         @db.Char(36)
   merchants     merchants       @relation(fields: [merchant_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "outlets_ibfk_1")
-  daily_reports daily_reports[]
-  shifts        shifts[]
-  transactions  transactions[]
-  user_roles    user_roles[]
+  daily_reports  daily_reports[]
+  shifts         shifts[]
+  transactions   transactions[]
+  user_roles     user_roles[]
+  notifications  notifications[]
   upload        uploads?        @relation(fields: [logo_upload_id], references: [id], onDelete: SetNull, map: "outlets_ibfk_logo_upload")
 
   @@unique([merchant_id, slug], map: "unique_merchant_slug")
   @@index([merchant_id], map: "idx_outlets_merchant")
   @@index([logo_upload_id], map: "idx_outlets_logo_upload")
+}
+
+
+
+model notifications {
+  id         String    @id @default(dbgenerated("(uuid())")) @db.Char(36)
+  user_id    String    @db.Char(36)
+  outlet_id  String?   @db.Char(36)
+  title      String    @db.VarChar(255)
+  message    String    @db.Text
+  type       String    @default("general") @db.VarChar(50)
+  is_read    Boolean   @default(false)
+  created_at DateTime  @default(now()) @db.Timestamp(0)
+  updated_at DateTime  @default(now()) @db.Timestamp(0)
+  users      users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "notifications_ibfk_1")
+  outlets    outlets?  @relation(fields: [outlet_id], references: [id], onDelete: SetNull, onUpdate: NoAction, map: "notifications_ibfk_2")
+
+  @@index([user_id], map: "idx_notifications_user")
+  @@index([outlet_id], map: "idx_notifications_outlet")
+  @@index([is_read], map: "idx_notifications_is_read")
+  @@index([created_at], map: "idx_notifications_created")
 }
 
 model permissions {
@@ -338,6 +360,7 @@ model users {
   user_roles           user_roles[]
   shift_participants   shift_participants[]
   shift_audit_logs     shift_audit_logs[]
+  notifications        notifications[]
   merchants            merchants            @relation(fields: [merchant_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "users_ibfk_1")
   upload               uploads?             @relation(fields: [avatar_upload_id], references: [id], onDelete: SetNull, map: "users_ibfk_avatar_upload")
 

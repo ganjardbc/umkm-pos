@@ -2,6 +2,7 @@ import {
   PREFIX_ROUTE_PATH,
   PREFIX_ROUTE_NAME,
 } from '@/modules/notification/services/constants.ts';
+import { READ } from '@/modules/notification/services/rbac.ts';
 
 export default [
   {
@@ -22,7 +23,8 @@ export default [
           route: PREFIX_ROUTE_PATH,
           isActive: true,
         },
-      ]
+      ],
+      permission: [READ],
     }
   },
 ];
