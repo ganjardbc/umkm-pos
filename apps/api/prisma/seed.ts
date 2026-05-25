@@ -696,6 +696,10 @@ async function main() {
     // Transactions
     { code: 'transaction.create', description: 'Create transactions (POS)' },
     { code: 'transaction.read', description: 'Read transactions' },
+    { code: 'transaction.cancel', description: 'Cancel transactions' },
+    // Notifications
+    { code: 'notification.read', description: 'Read notifications' },
+    { code: 'notification.update', description: 'Mark notifications as read/unread' },
     // Reports & Stock
     { code: 'report.read', description: 'Read reports & dashboard' },
     { code: 'stock.adjust', description: 'Adjust stock manually' },
@@ -759,6 +763,9 @@ async function main() {
     'category.delete',
     'transaction.create',
     'transaction.read',
+    'transaction.cancel',
+    'notification.read',
+    'notification.update',
     'report.read',
     'stock.adjust',
     'stock.read',
@@ -789,6 +796,9 @@ async function main() {
     'category.update',
     'category.delete',
     'transaction.read',
+    'transaction.cancel',
+    'notification.read',
+    'notification.update',
     'report.read',
     'stock.adjust',
     'stock.read',
@@ -805,6 +815,8 @@ async function main() {
     'category.read',
     'transaction.create',
     'transaction.read',
+    'notification.read',
+    'notification.update',
     'upload.create',
     'upload.read',
   ].map(pid);
@@ -818,6 +830,7 @@ async function main() {
     'user.read',
     'product.read',
     'transaction.read',
+    'notification.read',
     'report.read',
     'stock.read',
     'upload.read',
