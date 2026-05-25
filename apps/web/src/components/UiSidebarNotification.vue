@@ -4,7 +4,7 @@
       class="ui-sidebar-notification__toggle"
       @click="openNotificationMenu"
     >
-      <OverlayBadge severity="success">
+      <OverlayBadge :value="unreadCount" severity="danger">
         <Button
           severity="secondary" 
           variant="text"
@@ -21,7 +21,7 @@
     >
       <div class="w-full pb-3">
         <div class="text-sm font-medium">
-          Notifications(0)
+          Notifications({{ unreadCount }})
         </div>
       </div>
 
@@ -47,7 +47,8 @@
   </div>
 </template>
 <script setup lang="ts">
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
+import { getListNotification } from '@/modules/notification/services/api.ts';
 import { useRouter } from 'vue-router';
 import UiEmptyState from '@/components/UiEmptyState.vue';
 
@@ -58,10 +59,23 @@ const openNotificationMenu = (event: MouseEvent) => {
   opNotificationMenu.value.toggle(event);
 };
 
+const unreadCount = ref(0);
+
+const loadUnreadCount = async () => {
+  try {
+    const response = await getListNotification({ page: 1, limit: 5 });
+    unreadCount.value = response?.data?.meta?.unreadCount || 0;
+  } catch {
+    unreadCount.value = 0;
+  }
+};
+
 const onRouteViewAll = () => {
   opNotificationMenu.value.hide();
   router.push('/notification');
 };
+
+onMounted(loadUnreadCount);
 </script>
 <style>
 @import 'tailwindcss';
