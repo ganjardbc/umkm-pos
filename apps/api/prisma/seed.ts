@@ -950,6 +950,60 @@ async function main() {
   console.log(`✅ ${userRolesData.length} user-role assignments seeded\n`);
 
   // 9. Daily Reports (aggregated report rows)
+  console.log('🔔 Seeding notifications...');
+
+  const notificationsData = [
+    {
+      user_id: adminUser.id,
+      outlet_id: adminOutlet.id,
+      title: 'Welcome to UMKM POS',
+      message: 'Your admin account is ready to manage outlets and users.',
+      type: 'system',
+      is_read: false,
+    },
+    {
+      user_id: ownerUser.id,
+      outlet_id: mainOutlet.id,
+      title: 'Stock alert',
+      message: 'Arabica Beans stock is running low. Please restock soon.',
+      type: 'inventory',
+      is_read: false,
+    },
+    {
+      user_id: storeManagerUser.id,
+      outlet_id: mainOutlet.id,
+      title: 'Shift reminder',
+      message: 'Please review and close yesterday shift report.',
+      type: 'shift',
+      is_read: true,
+    },
+    {
+      user_id: cashierUser.id,
+      outlet_id: secondOutlet.id,
+      title: 'New order support',
+      message: 'A pending order requires confirmation at the cashier.',
+      type: 'transaction',
+      is_read: false,
+    },
+  ];
+
+  await prisma.notifications.deleteMany({
+    where: {
+      OR: notificationsData.map((item) => ({
+        user_id: item.user_id,
+        outlet_id: item.outlet_id,
+        title: item.title,
+      })),
+    },
+  });
+
+  for (const notification of notificationsData) {
+    await prisma.notifications.create({
+      data: notification,
+    });
+  }
+  console.log(`✅ ${notificationsData.length} notifications seeded\n`);
+
   console.log('📊 Seeding daily reports...');
 
   const today = new Date();
