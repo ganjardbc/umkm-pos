@@ -3,13 +3,15 @@
   "private": true,
   "packageManager": "pnpm@10.22.0",
   "scripts": {
-    "dev:web": "pnpm --filter umkm-pos-app dev",
-    "dev:api": "pnpm --filter @umkm-pos/shared-types build && pnpm --filter umkm-pos-api start:dev",
-    "dev:landing": "pnpm --filter @umkm-pos/landing dev",
-    "dev:api:only": "pnpm --filter umkm-pos-api start:dev",
-    "build": "pnpm -r build",
-    "test": "pnpm -r --if-present test",
-    "lint": "pnpm -r --if-present lint",
-    "format": "pnpm -r --if-present format"
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "test": "turbo test",
+    "lint": "turbo lint",
+    "format": "turbo format",
+    "preview": "turbo preview",
+    "typecheck": "turbo typecheck"
+  },
+  "devDependencies": {
+    "turbo": "^2.4.0"
   }
 }
