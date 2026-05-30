@@ -12,7 +12,7 @@ export class LocalStorageDriver implements StorageDriver {
 
   constructor() {
     this.uploadDir = join(process.cwd(), 'uploads');
-    this.baseUrl = (process.env.APP_URL || 'http://localhost:3000').replace(
+    this.baseUrl = (process.env.APP_URL || 'http://localhost:3030').replace(
       /\/+$/,
       '',
     );
