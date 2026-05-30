@@ -4,23 +4,30 @@
     modal
     :class="{
       'w-full': true,
-      'max-w-md': !isPaymentMethodCash,
-      'max-w-4xl': isPaymentMethodCash,
+      'max-w-4xl': true,
     }"
     header="Continue Payment"
   >
-    <div class="space-y-4">
-      <UiFormGroup label="Payment Method" variant="vertical">
-        <Select
-          v-model="payment_method"
-          :options="paymentMethods"
-          option-label="label"
-          option-value="value"
-          placeholder="Select Payment Method"
-          fluid
-        />
-      </UiFormGroup>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+      <button
+        v-for="method in paymentMethods"
+        :key="method.value"
+        type="button"
+        class="rounded-lg border px-2 py-4 text-center transition-all duration-150 cursor-pointer"
+        :class="[
+          payment_method === method.value
+            ? 'border-primary bg-primary/10 text-primary dark:border-primary-400 dark:bg-primary-500/20 dark:text-primary-300'
+            : 'border-gray-200 dark:border-dark! bg-white dark:bg-dark! text-gray-400',
+        ]"
+        @click="payment_method = method.value"
+      >
+        <div class="text-sm font-semibold">{{ method.label }}</div>
+      </button>
+    </div>
 
+    <Divider />
+
+    <div class="space-y-4 min-h-86">
       <div v-if="!isPaymentMethodCash" class="flex items-center justify-between p-3 bg-gray-100 dark:bg-dark! rounded-lg">
         <span class="text-sm text-gray-700 dark:text-gray-300">Total Payment</span>
         <span class="text-base font-semibold text-primary dark:text-primary-400">{{ getCurrency(totalAmount) }}</span>
@@ -109,10 +116,10 @@
       </div>
     </div>
 
-    <Divider />
+    <Divider class="mb-0!" />
     
     <template #footer>
-      <div class="w-full flex gap-2 pt-4">
+      <div class="w-full flex gap-4">
         <Button
           label="Back"
           severity="secondary"
@@ -152,11 +159,10 @@ const emit = defineEmits<{
 }>();
 
 const paymentMethods = ref([
-  { label: 'Cash', value: 'cash' },
-  { label: 'Debit Card', value: 'debit' },
-  { label: 'Credit Card', value: 'credit' },
-  { label: 'E-Wallet', value: 'e-wallet' },
-  { label: 'QRIS', value: 'qris' },
+  { label: 'Cash', value: 'cash', description: 'Pay with cash amount' },
+  { label: 'Debit Card', value: 'debit', description: 'Use EDC debit terminal' },
+  { label: 'E-Wallet', value: 'e-wallet', description: 'Customer pays via e-wallet app' },
+  { label: 'QRIS', value: 'qris', description: 'Scan and pay using QRIS' },
 ]);
 
 const cashBills = [1000, 2000, 5000, 10000, 20000, 50000, 100000];

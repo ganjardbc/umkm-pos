@@ -48,10 +48,6 @@ import { PERMISSIONS as PERMISSION_PERMISSIONS } from '@/modules/permission/serv
 import { PREFIX_ROUTE_PATH as PRP_REPORTS } from '@/modules/reports/services/constants';
 import { PERMISSIONS as REPORTS_PERMISSIONS } from '@/modules/reports/services/rbac.ts';
 
-// Notifications
-import { PREFIX_ROUTE_PATH as PRP_NOTIFICATION } from '@/modules/notification/services/constants';
-import { PERMISSIONS as NOTIFICATION_PERMISSIONS } from '@/modules/notification/services/rbac.ts';
-
 export default [
   {
     icon: 'pi pi-objects-column',
@@ -129,13 +125,6 @@ export default [
     featureFlag: DEFAULT_FEATURE_FLAG,
     permissions: PERMISSION_PERMISSIONS,
     route: PRP_PERMISSION,
-  },
-  {
-    icon: 'pi pi-bell',
-    label: 'Notifications',
-    featureFlag: DEFAULT_FEATURE_FLAG,
-    permissions: NOTIFICATION_PERMISSIONS,
-    route: PRP_NOTIFICATION,
   },
   {
     icon: 'pi pi-download',

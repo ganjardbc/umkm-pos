@@ -8,7 +8,7 @@
     <div v-if="loading" class="text-sm text-gray-500">Loading notifications...</div>
     <div v-else-if="error" class="text-sm text-red-500">{{ error }}</div>
     <div v-else-if="!notifications.length" class="w-full flex flex-col justify-center items-center" style="height: calc(100vh - 220px);">
-      <UiEmptyState icon="pi pi-bell" title="There is no notifications" description="You don't have new notifications for now." />
+      <UiEmptyState icon="pi pi-bell-slash" title="There is no notifications" description="You don't have new notifications for now." />
     </div>
 
     <div v-else class="space-y-3">
