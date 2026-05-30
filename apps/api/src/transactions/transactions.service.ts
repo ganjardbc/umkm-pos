@@ -4,7 +4,6 @@ import {
   BadRequestException,
   UnauthorizedException,
   ForbiddenException,
-  Logger,
 } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
@@ -13,37 +12,10 @@ import { ShiftsService } from '../shifts/shifts.service';
 
 @Injectable()
 export class TransactionsService {
-  private readonly logger = new Logger(TransactionsService.name);
   constructor(
     private prisma: PrismaService,
     private shiftsService: ShiftsService,
   ) {}
-
-  private async logLegacyDriftIfAny(merchantId: string, productId: string) {
-    try {
-      const product = await this.prisma.products.findFirst({
-        where: { id: productId, merchant_id: merchantId },
-        select: { id: true, stock_qty: true },
-      });
-      if (!product) return;
-
-      const aggregate = await (this.prisma.outlet_product_inventory as any).aggregate?.({
-        where: { merchant_id: merchantId, product_id: productId },
-        _sum: { stock_qty: true },
-      });
-
-      const outletTotal = Number(aggregate?._sum?.stock_qty ?? 0);
-      if (product.stock_qty !== outletTotal) {
-        this.logger.warn(
-          `Legacy stock drift detected for product ${productId}: products.stock_qty=${product.stock_qty}, outlet_total=${outletTotal}`,
-        );
-      }
-    } catch (error) {
-      this.logger.warn(
-        `Unable to run legacy drift check for product ${productId}: ${(error as Error).message}`,
-      );
-    }
-  }
 
   async findAll(
     merchantId: string,
@@ -285,7 +257,7 @@ export class TransactionsService {
         })),
       });
 
-      // Decrement outlet stock, keep legacy product stock dual-write, and write logs
+      // Decrement stock in selling outlet and write movement logs
       for (const item of itemsData) {
         await tx.outlet_product_inventory.update({
           where: {
@@ -298,26 +270,6 @@ export class TransactionsService {
             stock_qty: { decrement: item.qty },
             updated_by: userId,
             updated_at: new Date(),
-          },
-        });
-
-        await tx.products.update({
-          where: { id: item.product_id },
-          data: {
-            stock_qty: { decrement: item.qty },
-            updated_by: userId,
-            updated_at: new Date(),
-          },
-        });
-
-        await tx.stock_logs.create({
-          data: {
-            product_id: item.product_id,
-            change_qty: -item.qty,
-            reason: 'sale',
-            ref_id: transaction.id,
-            created_by: userId,
-            updated_by: userId,
           },
         });
 
@@ -345,11 +297,6 @@ export class TransactionsService {
       where: { id: result.id },
       include: { transaction_items: true },
     });
-    await Promise.all(
-      [...new Set(itemsData.map((item) => item.product_id))].map((productId) =>
-        this.logLegacyDriftIfAny(merchantId, productId),
-      ),
-    );
     return response;
   }
 
@@ -408,28 +355,6 @@ export class TransactionsService {
             },
           });
 
-          // Increment product stock
-          await tx.products.update({
-            where: { id: item.product_id },
-            data: {
-              stock_qty: { increment: item.qty },
-              updated_by: userId,
-              updated_at: new Date(),
-            },
-          });
-
-          // Create stock log for cancellation
-          await tx.stock_logs.create({
-            data: {
-              product_id: item.product_id,
-              change_qty: item.qty,
-              reason: 'cancellation',
-              ref_id: id,
-              created_by: userId,
-              updated_by: userId,
-            },
-          });
-
           await tx.inventory_movements.create({
             data: {
               merchant_id: merchantId,
@@ -455,15 +380,6 @@ export class TransactionsService {
       where: { id: result.id },
       include: { transaction_items: true },
     });
-    await Promise.all(
-      [
-        ...new Set(
-          transaction.transaction_items
-            .map((item) => item.product_id)
-            .filter((id): id is string => Boolean(id)),
-        ),
-      ].map((productId) => this.logLegacyDriftIfAny(merchantId, productId)),
-    );
     return response;
   }
 }

@@ -9,7 +9,6 @@ describe('StockService', () => {
   const mockPrisma = {
     products: {
       findFirst: jest.fn(),
-      update: jest.fn(),
     },
     outlets: {
       findFirst: jest.fn(),
@@ -20,9 +19,6 @@ describe('StockService', () => {
       create: jest.fn(),
       findMany: jest.fn(),
       count: jest.fn(),
-    },
-    stock_logs: {
-      create: jest.fn(),
     },
     inventory_movements: {
       create: jest.fn(),
@@ -95,17 +91,10 @@ describe('StockService', () => {
         product_id: 'product-1',
         stock_qty: 10,
       };
-      const updatedProduct = {
-        id: 'product-1',
-        stock_qty: 110,
-      };
-      const legacyLog = { id: 'legacy-log-1' };
       const movement = { id: 'movement-1' };
 
       mockPrisma.$transaction.mockResolvedValue([
         updatedInventory,
-        updatedProduct,
-        legacyLog,
         movement,
       ]);
 
@@ -122,10 +111,10 @@ describe('StockService', () => {
 
       expect(mockPrisma.$transaction).toHaveBeenCalledTimes(1);
       expect(result.outlet_inventory.stock_qty).toBe(10);
-      expect(result.product_legacy_stock.stock_qty).toBe(110);
+      expect(result.movement).toEqual(movement);
     });
 
-    it('should update outlet inventory and perform legacy dual-write on successful adjustment', async () => {
+    it('should update outlet inventory and movement log on successful adjustment', async () => {
       mockPrisma.products.findFirst.mockResolvedValue({
         id: 'product-1',
         merchant_id: merchantId,
@@ -148,17 +137,10 @@ describe('StockService', () => {
         product_id: 'product-1',
         stock_qty: 8,
       };
-      const updatedProduct = {
-        id: 'product-1',
-        stock_qty: 103,
-      };
-      const legacyLog = { id: 'legacy-log-1' };
       const movement = { id: 'movement-1' };
 
       mockPrisma.$transaction.mockResolvedValue([
         updatedInventory,
-        updatedProduct,
-        legacyLog,
         movement,
       ]);
 
@@ -176,8 +158,6 @@ describe('StockService', () => {
 
       expect(mockPrisma.$transaction).toHaveBeenCalledTimes(1);
       expect(result.outlet_inventory.stock_qty).toBe(8);
-      expect(result.product_legacy_stock.stock_qty).toBe(103);
-      expect(result.legacy_log).toEqual(legacyLog);
       expect(result.movement).toEqual(movement);
     });
 

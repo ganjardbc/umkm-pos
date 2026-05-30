@@ -14,7 +14,6 @@ describe('TransactionsService', () => {
     },
     products: {
       findMany: jest.fn(),
-      update: jest.fn(),
     },
     outlet_product_inventory: {
       findMany: jest.fn(),
@@ -29,9 +28,6 @@ describe('TransactionsService', () => {
     },
     transaction_items: {
       createMany: jest.fn(),
-    },
-    stock_logs: {
-      create: jest.fn(),
     },
     inventory_movements: {
       create: jest.fn(),
@@ -110,7 +106,7 @@ describe('TransactionsService', () => {
       ).rejects.toThrow(BadRequestException);
     });
 
-    it('should perform outlet stock decrement and dual-write logs on successful sale', async () => {
+    it('should perform outlet stock decrement and write inventory movement on successful sale', async () => {
       mockPrisma.outlets.findFirst.mockResolvedValue({
         id: 'outlet-1',
         merchant_id: merchantId,
@@ -149,12 +145,6 @@ describe('TransactionsService', () => {
           outlet_product_inventory: {
             update: jest.fn().mockResolvedValue({}),
           },
-          products: {
-            update: jest.fn().mockResolvedValue({}),
-          },
-          stock_logs: {
-            create: jest.fn().mockResolvedValue({}),
-          },
           inventory_movements: {
             create: jest.fn().mockResolvedValue({}),
           },
@@ -172,8 +162,6 @@ describe('TransactionsService', () => {
             },
           }),
         );
-        expect(tx.products.update).toHaveBeenCalled();
-        expect(tx.stock_logs.create).toHaveBeenCalled();
         expect(tx.inventory_movements.create).toHaveBeenCalled();
 
         return result;
@@ -205,7 +193,7 @@ describe('TransactionsService', () => {
     const merchantId = 'merchant-1';
     const userId = 'user-1';
 
-    it('should restore stock only to transaction outlet and perform dual-write logs', async () => {
+    it('should restore stock only to transaction outlet and write inventory movement', async () => {
       mockPrisma.outlets.findMany.mockResolvedValue([{ id: 'outlet-1' }]);
       mockPrisma.transactions.findFirst.mockResolvedValue({
         id: 'tx-1',
@@ -227,12 +215,6 @@ describe('TransactionsService', () => {
           outlet_product_inventory: {
             update: jest.fn().mockResolvedValue({}),
           },
-          products: {
-            update: jest.fn().mockResolvedValue({}),
-          },
-          stock_logs: {
-            create: jest.fn().mockResolvedValue({}),
-          },
           inventory_movements: {
             create: jest.fn().mockResolvedValue({}),
           },
@@ -248,15 +230,6 @@ describe('TransactionsService', () => {
                 product_id: 'product-1',
               },
             },
-          }),
-        );
-        expect(tx.products.update).toHaveBeenCalled();
-        expect(tx.stock_logs.create).toHaveBeenCalledWith(
-          expect.objectContaining({
-            data: expect.objectContaining({
-              reason: 'cancellation',
-              ref_id: 'tx-1',
-            }),
           }),
         );
         expect(tx.inventory_movements.create).toHaveBeenCalledWith(

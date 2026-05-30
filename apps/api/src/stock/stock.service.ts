@@ -2,7 +2,6 @@ import {
   Injectable,
   BadRequestException,
   NotFoundException,
-  Logger,
 } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 import { CreateStockAdjustmentDto } from './dto/create-stock-adjustment.dto';
@@ -10,34 +9,7 @@ import { PaginationDto } from '../common/dto/pagination.dto';
 
 @Injectable()
 export class StockService {
-  private readonly logger = new Logger(StockService.name);
   constructor(private prisma: PrismaService) {}
-
-  private async logLegacyDriftIfAny(merchantId: string, productId: string) {
-    try {
-      const product = await this.prisma.products.findFirst({
-        where: { id: productId, merchant_id: merchantId },
-        select: { id: true, stock_qty: true },
-      });
-      if (!product) return;
-
-      const aggregate = await (this.prisma.outlet_product_inventory as any).aggregate?.({
-        where: { merchant_id: merchantId, product_id: productId },
-        _sum: { stock_qty: true },
-      });
-
-      const outletTotal = Number(aggregate?._sum?.stock_qty ?? 0);
-      if (product.stock_qty !== outletTotal) {
-        this.logger.warn(
-          `Legacy stock drift detected for product ${productId}: products.stock_qty=${product.stock_qty}, outlet_total=${outletTotal}`,
-        );
-      }
-    } catch (error) {
-      this.logger.warn(
-        `Unable to run legacy drift check for product ${productId}: ${(error as Error).message}`,
-      );
-    }
-  }
 
   async findInventory(
     merchantId: string,
@@ -127,7 +99,7 @@ export class StockService {
             select: { id: true, name: true, slug: true },
           },
           products: {
-            select: { id: true, name: true, slug: true, stock_qty: true },
+            select: { id: true, name: true, slug: true },
           },
         },
         orderBy: { created_at: 'desc' },
@@ -145,7 +117,7 @@ export class StockService {
    * - Validates product belongs to this merchant.
    * - change_qty must be non-zero.
    * - Prevents stock from going below 0.
-   * - Updates product.stock_qty and writes stock_logs atomically.
+   * - Updates outlet-level inventory and writes inventory movements atomically.
    */
   async adjust(
     dto: CreateStockAdjustmentDto,
@@ -224,33 +196,10 @@ export class StockService {
           },
         });
 
-    // Atomic update: adjust outlet stock + write movement + compatibility legacy write
-    const [updatedInventory, updatedProduct, legacyLog, movement] =
+    // Atomic update: adjust outlet stock + write movement
+    const [updatedInventory, movement] =
         await this.prisma.$transaction([
         upsertedInventory,
-        this.prisma.products.update({
-          where: { id: dto.product_id },
-          data: {
-            stock_qty: { increment: dto.change_qty },
-            updated_by: userId,
-            updated_at: new Date(),
-          },
-        }),
-        this.prisma.stock_logs.create({
-          data: {
-            product_id: dto.product_id,
-            change_qty: dto.change_qty,
-            reason: dto.reason,
-            ref_id: null,
-            created_by: userId,
-            updated_by: userId,
-          },
-          include: {
-            products: {
-              select: { id: true, name: true, slug: true, stock_qty: true },
-            },
-          },
-        }),
         this.prisma.inventory_movements.create({
           data: {
             merchant_id: merchantId,
@@ -276,19 +225,12 @@ export class StockService {
         }),
       ]);
 
-    await this.logLegacyDriftIfAny(merchantId, dto.product_id);
-
     return {
       outlet_inventory: {
         outlet_id: updatedInventory.outlet_id,
         product_id: updatedInventory.product_id,
         stock_qty: updatedInventory.stock_qty,
       },
-      product_legacy_stock: {
-        id: updatedProduct.id,
-        stock_qty: updatedProduct.stock_qty,
-      },
-      legacy_log: legacyLog,
       movement,
     };
   }
