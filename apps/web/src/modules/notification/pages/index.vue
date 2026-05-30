@@ -5,7 +5,10 @@
       <Button label="Mark all as read" size="small" @click="handleMarkAll" :disabled="!unreadCount" />
     </div>
 
-    <div v-if="loading" class="text-sm text-gray-500">Loading notifications...</div>
+    <UiLoading
+      v-if="loading"
+      message="Loading notifications..."
+    />
     <div v-else-if="error" class="text-sm text-red-500">{{ error }}</div>
     <div v-else-if="!notifications.length" class="w-full flex flex-col justify-center items-center" style="height: calc(100vh - 220px);">
       <UiEmptyState icon="pi pi-bell-slash" title="There is no notifications" description="You don't have new notifications for now." />
@@ -28,6 +31,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import UiEmptyState from '@/components/UiEmptyState.vue';
+import UiLoading from '@/components/UiLoading.vue';
 import { getListNotification, markAllNotificationAsRead, markNotificationAsRead } from '@/modules/notification/services/api.ts';
 
 const notifications = ref<any[]>([]);
