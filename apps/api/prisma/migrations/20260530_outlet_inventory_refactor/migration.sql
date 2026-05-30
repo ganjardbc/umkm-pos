@@ -26,6 +26,7 @@ CREATE TABLE `inventory_movements` (
   `outlet_id` char(36) NOT NULL,
   `product_id` char(36) NOT NULL,
   `change_qty` int NOT NULL,
+  `stock_after` int NULL,
   `reason` varchar(50) NOT NULL,
   `ref_type` varchar(50) DEFAULT NULL,
   `ref_id` char(36) DEFAULT NULL,

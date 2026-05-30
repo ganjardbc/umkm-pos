@@ -323,6 +323,86 @@ describe('ProductsService', () => {
     });
   });
 
+  describe('findOne', () => {
+    const merchantId = 'merchant-1';
+
+    it('should return product detail with outlet inventory when outlet_id is provided', async () => {
+      mockPrisma.outlets.findFirst.mockResolvedValue({
+        id: 'outlet-1',
+        merchant_id: merchantId,
+      });
+      mockPrisma.products.findFirst.mockResolvedValue({
+        id: 'product-1',
+        merchant_id: merchantId,
+        name: 'Product 1',
+        slug: 'product-1',
+        stock_qty: 999,
+        min_stock: 9,
+        image_upload_id: null,
+      });
+      mockPrisma.outlet_product_inventory.findMany.mockResolvedValue([]);
+      (mockPrisma.outlet_product_inventory as any).findFirst = jest
+        .fn()
+        .mockResolvedValue({
+          id: 'inv-1',
+          outlet_id: 'outlet-1',
+          product_id: 'product-1',
+          stock_qty: 12,
+          min_stock: 3,
+          is_active: true,
+        });
+
+      const result = await service.findOne('product-1', merchantId, 'outlet-1');
+
+      expect(mockPrisma.outlets.findFirst).toHaveBeenCalledWith({
+        where: { id: 'outlet-1', merchant_id: merchantId },
+      });
+      expect((mockPrisma.outlet_product_inventory as any).findFirst).toHaveBeenCalled();
+      expect(result.stock_qty).toBe(12);
+      expect(result.min_stock).toBe(3);
+      expect(result.inventory).toEqual(
+        expect.objectContaining({
+          outlet_id: 'outlet-1',
+          stock_qty: 12,
+          min_stock: 3,
+          is_active: true,
+        }),
+      );
+    });
+
+    it('should throw NotFoundException when outlet_id does not belong to merchant', async () => {
+      mockPrisma.outlets.findFirst.mockResolvedValue(null);
+
+      await expect(
+        service.findOne('product-1', merchantId, 'bad-outlet'),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('should return zero outlet stock when inventory row is missing', async () => {
+      mockPrisma.outlets.findFirst.mockResolvedValue({
+        id: 'outlet-1',
+        merchant_id: merchantId,
+      });
+      mockPrisma.products.findFirst.mockResolvedValue({
+        id: 'product-1',
+        merchant_id: merchantId,
+        name: 'Product 1',
+        slug: 'product-1',
+        stock_qty: 500,
+        min_stock: 20,
+        image_upload_id: null,
+      });
+      (mockPrisma.outlet_product_inventory as any).findFirst = jest
+        .fn()
+        .mockResolvedValue(null);
+
+      const result = await service.findOne('product-1', merchantId, 'outlet-1');
+      expect(result.stock_qty).toBe(0);
+      expect(result.min_stock).toBe(0);
+      expect(result.inventory).toBeNull();
+    });
+  });
+
   describe('update', () => {
     const merchantId = 'merchant-1';
     const userId = 'user-1';

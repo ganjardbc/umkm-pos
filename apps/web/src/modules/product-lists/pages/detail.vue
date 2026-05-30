@@ -152,7 +152,7 @@
             </Column>
             <Column field="stock_qty" header="Stock After">
               <template #body="slotProps">
-                {{ slotProps.data.products?.stock_qty }}
+                {{ slotProps.data?.stock_after ?? '-' }}
               </template>
             </Column>
             <Column field="reason" header="Reason">

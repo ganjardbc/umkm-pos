@@ -2,6 +2,7 @@ import {
   Injectable,
   BadRequestException,
   NotFoundException,
+  Logger,
 } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 import { CreateStockAdjustmentDto } from './dto/create-stock-adjustment.dto';
@@ -9,7 +10,34 @@ import { PaginationDto } from '../common/dto/pagination.dto';
 
 @Injectable()
 export class StockService {
+  private readonly logger = new Logger(StockService.name);
   constructor(private prisma: PrismaService) {}
+
+  private async logLegacyDriftIfAny(merchantId: string, productId: string) {
+    try {
+      const product = await this.prisma.products.findFirst({
+        where: { id: productId, merchant_id: merchantId },
+        select: { id: true, stock_qty: true },
+      });
+      if (!product) return;
+
+      const aggregate = await (this.prisma.outlet_product_inventory as any).aggregate?.({
+        where: { merchant_id: merchantId, product_id: productId },
+        _sum: { stock_qty: true },
+      });
+
+      const outletTotal = Number(aggregate?._sum?.stock_qty ?? 0);
+      if (product.stock_qty !== outletTotal) {
+        this.logger.warn(
+          `Legacy stock drift detected for product ${productId}: products.stock_qty=${product.stock_qty}, outlet_total=${outletTotal}`,
+        );
+      }
+    } catch (error) {
+      this.logger.warn(
+        `Unable to run legacy drift check for product ${productId}: ${(error as Error).message}`,
+      );
+    }
+  }
 
   async findInventory(
     merchantId: string,
@@ -229,6 +257,7 @@ export class StockService {
             outlet_id: dto.outlet_id,
             product_id: dto.product_id,
             change_qty: dto.change_qty,
+            stock_after: newStock,
             reason: dto.reason,
             ref_type: 'manual_adjustment',
             ref_id: null,
@@ -246,6 +275,8 @@ export class StockService {
           },
         }),
       ]);
+
+    await this.logLegacyDriftIfAny(merchantId, dto.product_id);
 
     return {
       outlet_inventory: {
