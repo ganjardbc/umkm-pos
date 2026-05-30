@@ -3,6 +3,7 @@ export default {
     fitur: 'Features',
     harga: 'Pricing',
     testimoni: 'Testimonials',
+    register: 'Register',
   },
   hero: {
     tagline: 'The simple point of sale for UMKM.',
@@ -67,6 +68,28 @@ export default {
       { quote: 'I used to struggle with financial reports. Now I just check the dashboard, done!', name: 'Budi Santoso', role: 'Food Stall Owner' },
       { quote: 'The multi-outlet feature is amazing. I can monitor all stores from one place.', name: 'Dewi Lestari', role: 'Fashion Store Owner' },
     ],
+  },
+  register: {
+    kicker: 'Create New Account',
+    title: 'Start Using UMKM POS',
+    subtitle: 'Fill in the form below to create a new customer account.',
+    fields: {
+      name: 'Full Name',
+      email: 'Email',
+      password: 'Password',
+      merchantName: 'Merchant Name',
+      merchantSlug: 'Merchant Slug',
+      outletName: 'Outlet Name',
+      outletSlug: 'Outlet Slug',
+    },
+    actions: {
+      submit: 'Register Now',
+      loading: 'Processing...',
+    },
+    messages: {
+      success: 'Registration successful. Please continue login in the web app.',
+      failed: 'Registration failed. Please try again.',
+    },
   },
   footer: {
     hakCipta: 'UMKM POS. All rights reserved.',
