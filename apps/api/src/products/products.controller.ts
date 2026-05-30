@@ -73,8 +73,9 @@ export class ProductsController {
   findOne(
     @Param('id') id: string,
     @CurrentUser('merchant_id') merchantId: string,
+    @Query('outlet_id') outletId?: string,
   ) {
-    return this.productsService.findOne(id, merchantId);
+    return this.productsService.findOne(id, merchantId, outletId);
   }
 
   @Patch(':id')
