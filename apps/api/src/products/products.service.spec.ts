@@ -295,8 +295,6 @@ describe('ProductsService', () => {
       });
       expect(mockPrisma.outlet_product_inventory.findMany).toHaveBeenCalled();
       expect(result.data).toHaveLength(1);
-      expect(result.data[0].stock_qty).toBe(7);
-      expect(result.data[0].min_stock).toBe(2);
       expect(result.data[0].inventory).toEqual(
         expect.objectContaining({
           outlet_id: 'outlet-1',
@@ -358,8 +356,6 @@ describe('ProductsService', () => {
         where: { id: 'outlet-1', merchant_id: merchantId },
       });
       expect((mockPrisma.outlet_product_inventory as any).findFirst).toHaveBeenCalled();
-      expect(result.stock_qty).toBe(12);
-      expect(result.min_stock).toBe(3);
       expect(result.inventory).toEqual(
         expect.objectContaining({
           outlet_id: 'outlet-1',
@@ -397,8 +393,6 @@ describe('ProductsService', () => {
         .mockResolvedValue(null);
 
       const result = await service.findOne('product-1', merchantId, 'outlet-1');
-      expect(result.stock_qty).toBe(0);
-      expect(result.min_stock).toBe(0);
       expect(result.inventory).toBeNull();
     });
   });

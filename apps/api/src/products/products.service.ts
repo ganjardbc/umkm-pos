@@ -171,20 +171,57 @@ export class ProductsService {
       }
     }
 
-    return this.prisma.products.create({
+    const { outlet_id, stock_qty, min_stock, ...productPayload } = dto;
+
+    if (outlet_id) {
+      const outlet = await this.prisma.outlets.findFirst({
+        where: { id: outlet_id, merchant_id: merchantId },
+      });
+      if (!outlet) {
+        throw new NotFoundException(`Outlet with ID ${outlet_id} not found`);
+      }
+    }
+
+    const created = await this.prisma.products.create({
       data: {
-        ...dto,
+        ...productPayload,
         merchant_id: merchantId,
         price: dto.price,
         cost: dto.cost ?? 0,
-        stock_qty: dto.stock_qty ?? 0,
-        min_stock: dto.min_stock ?? 0,
+        stock_qty: 0,
+        min_stock: 0,
         is_active: dto.is_active ?? true,
         created_by: userId,
         updated_by: userId,
       },
       include: { merchants: true, product_categories: true, upload: true },
     });
+
+    if (outlet_id) {
+      await this.prisma.outlet_product_inventory.upsert({
+        where: {
+          outlet_id_product_id: { outlet_id, product_id: created.id },
+        },
+        update: {
+          stock_qty: stock_qty ?? 0,
+          min_stock: min_stock ?? 0,
+          updated_by: userId,
+          updated_at: new Date(),
+        },
+        create: {
+          merchant_id: merchantId,
+          outlet_id,
+          product_id: created.id,
+          stock_qty: stock_qty ?? 0,
+          min_stock: min_stock ?? 0,
+          is_active: true,
+          created_by: userId,
+          updated_by: userId,
+        },
+      });
+    }
+
+    return created;
   }
 
   async update(
@@ -228,10 +265,42 @@ export class ProductsService {
       }
     }
 
+    const { outlet_id, stock_qty, min_stock, ...productPayload } = dto as any;
+
+    if (outlet_id) {
+      const outlet = await this.prisma.outlets.findFirst({
+        where: { id: outlet_id, merchant_id: merchantId },
+      });
+      if (!outlet) {
+        throw new NotFoundException(`Outlet with ID ${outlet_id} not found`);
+      }
+      await this.prisma.outlet_product_inventory.upsert({
+        where: {
+          outlet_id_product_id: { outlet_id, product_id: id },
+        },
+        update: {
+          ...(stock_qty !== undefined ? { stock_qty } : {}),
+          ...(min_stock !== undefined ? { min_stock } : {}),
+          updated_by: userId,
+          updated_at: new Date(),
+        },
+        create: {
+          merchant_id: merchantId,
+          outlet_id,
+          product_id: id,
+          stock_qty: stock_qty ?? 0,
+          min_stock: min_stock ?? 0,
+          is_active: true,
+          created_by: userId,
+          updated_by: userId,
+        },
+      });
+    }
+
     return this.prisma.products.update({
       where: { id },
       data: {
-        ...dto,
+        ...productPayload,
         updated_by: userId,
         updated_at: new Date(),
       },
