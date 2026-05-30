@@ -222,6 +222,7 @@ import { zodResolver } from '@primevue/forms/resolvers/zod';
 import { getErrorMessage } from '@/helpers/utils.ts';
 import { showToast } from '@/helpers/toast.ts';
 import { showLoading, hideLoading } from '@/helpers/loading.ts';
+import { getOutlet } from '@/helpers/auth.ts';
 import { postProduct, setProductImage } from '@/modules/product-lists/services/api';
 import { getActiveCategories } from '@/modules/product-categories/services/api';
 import { useFileUpload } from '@/composables/useFileUpload';
@@ -265,6 +266,7 @@ const onFormSubmit = async ({ valid, values }: any) => {
       showLoading();
 
       const payload = {
+        outlet_id: getOutlet()?.id,
         slug: values?.slug,
         name: values?.name,
         category_id: values?.category_id,

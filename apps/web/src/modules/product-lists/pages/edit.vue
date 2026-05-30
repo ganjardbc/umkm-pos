@@ -232,6 +232,7 @@ const onFormSubmit = async ({ valid, values }: any) => {
       showLoading();
 
       const payload = {
+        outlet_id: getOutlet()?.id,
         name: values?.name,
         category_id: values?.category_id,
         price: values?.price,
