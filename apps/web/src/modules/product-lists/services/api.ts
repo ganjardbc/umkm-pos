@@ -8,10 +8,14 @@ export const getListProduct = async (data: any, options: any = {}) => {
   );
 };
 
-export const getDetailProduct = async (id: string | number, options: any = {}) => {
+export const getDetailProduct = async (
+  id: string | number,
+  params: any = {},
+  options: any = {},
+) => {
   return await api.get(
     `/api/v1/products/${id}`,
-    { ...(options || {}) },
+    { params, ...(options || {}) },
   );
 };
 
@@ -52,5 +56,4 @@ export const getProductStock = async (data: any, options: any = {}) => {
     { params: data, ...(options || {}) },
   );
 };
-
 

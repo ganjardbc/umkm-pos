@@ -152,7 +152,7 @@
             </Column>
             <Column field="stock_qty" header="Stock After">
               <template #body="slotProps">
-                {{ slotProps.data.products?.stock_qty }}
+                {{ slotProps.data?.stock_after ?? '-' }}
               </template>
             </Column>
             <Column field="reason" header="Reason">
@@ -190,6 +190,7 @@ import { showToast } from '@/helpers/toast.ts';
 import { showLoading, hideLoading } from '@/helpers/loading.ts';
 import { isHasPermission } from '@/helpers/auth.ts';
 import { getDetailProduct, getProductStock, postAdjustStock } from '@/modules/product-lists/services/api';
+import { getOutlet } from '@/helpers/auth.ts';
 import { PREFIX_ROUTE_NAME } from '@/modules/product-lists/services/constants';
 import { UPDATE, ADJUST } from '@/modules/product-lists/services/rbac';
 import UiCard from '@/components/UiCard.vue';
@@ -210,9 +211,11 @@ const productDetail = ref<any>(null);
 
 const fetchDetail = async () => {
   try {
-    const response = await getDetailProduct(productID.value);
+    const outlet = getOutlet();
+    const response = await getDetailProduct(productID.value, {
+      outlet_id: outlet?.id,
+    });
     const { data } = response?.data || {};
-
     productDetail.value = data || null;
   } catch (error) {
     showToast({
@@ -240,6 +243,7 @@ const fetchStockLogs = async () => {
       page: stockPagination.value.page,
       limit: stockPagination.value.rows,
       product_id: productID.value,
+      outlet_id: getOutlet()?.id,
       search: stockForm.value.search || undefined,
     };
     const response = await getProductStock(payload);
@@ -295,7 +299,10 @@ const submitAdjustStockModal = async (payload: any) => {
   try {
     showLoading();
 
-    const response = await postAdjustStock(payload);
+    const response = await postAdjustStock({
+      ...payload,
+      outlet_id: getOutlet()?.id,
+    });
     const { success } = response?.data || {};
     
     if (success) {

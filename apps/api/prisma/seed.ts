@@ -253,7 +253,64 @@ async function main() {
     `✅ User created: ${storeManagerUser.name} (${storeManagerUser.email})\n`,
   );
 
-  // 4. Create Products (for both merchants)
+  // 4. Create Product Categories
+  console.log('📁 Creating product categories...');
+
+  const adminSystemCategory = await prisma.product_categories.upsert({
+    where: {
+      merchant_id_name: {
+        merchant_id: adminMerchant.id,
+        name: 'System',
+      },
+    },
+    update: {},
+    create: {
+      id: '550e8400-e29b-41d4-a716-446655440025',
+      merchant_id: adminMerchant.id,
+      name: 'System',
+      description: 'System default category for admin merchant',
+      is_active: true,
+    },
+  });
+  console.log('✅ Category created: System (admin merchant)');
+
+  const beverageCategory = await prisma.product_categories.upsert({
+    where: {
+      merchant_id_name: {
+        merchant_id: merchant.id,
+        name: 'Beverages',
+      },
+    },
+    update: {},
+    create: {
+      id: '550e8400-e29b-41d4-a716-446655440026',
+      merchant_id: merchant.id,
+      name: 'Beverages',
+      description: 'Coffee, tea, and bottled drinks',
+      is_active: true,
+    },
+  });
+  console.log('✅ Category created: Beverages');
+
+  const snackCategory = await prisma.product_categories.upsert({
+    where: {
+      merchant_id_name: {
+        merchant_id: merchant.id,
+        name: 'Snacks',
+      },
+    },
+    update: {},
+    create: {
+      id: '550e8400-e29b-41d4-a716-446655440027',
+      merchant_id: merchant.id,
+      name: 'Snacks',
+      description: 'Ready-to-eat light snacks',
+      is_active: true,
+    },
+  });
+  console.log('✅ Category created: Snacks\n');
+
+  // 5. Create Products (for both merchants)
   console.log('🛒 Creating products...');
 
   // Products for Admin Merchant
@@ -268,6 +325,7 @@ async function main() {
     create: {
       id: '550e8400-e29b-41d4-a716-446655440030',
       merchant_id: adminMerchant.id,
+      category_id: adminSystemCategory.id,
       slug: 'admin-product',
       name: 'Admin Product',
       category: 'System',
@@ -292,6 +350,7 @@ async function main() {
     create: {
       id: '550e8400-e29b-41d4-a716-446655440031',
       merchant_id: merchant.id,
+      category_id: beverageCategory.id,
       slug: 'kopi-hitam',
       name: 'Kopi Hitam',
       category: 'Beverages',
@@ -315,6 +374,7 @@ async function main() {
     create: {
       id: '550e8400-e29b-41d4-a716-446655440032',
       merchant_id: merchant.id,
+      category_id: beverageCategory.id,
       slug: 'teh-manis',
       name: 'Teh Manis',
       category: 'Beverages',
@@ -338,6 +398,7 @@ async function main() {
     create: {
       id: '550e8400-e29b-41d4-a716-446655440033',
       merchant_id: merchant.id,
+      category_id: beverageCategory.id,
       slug: 'air-mineral',
       name: 'Air Mineral',
       category: 'Beverages',
@@ -348,9 +409,81 @@ async function main() {
       is_active: true,
     },
   });
-  console.log('✅ Product created: Air Mineral (air-mineral)\n');
+  console.log('✅ Product created: Air Mineral (air-mineral)');
 
-  // 5. Create Shifts (cashier shifts)
+  await prisma.products.upsert({
+    where: {
+      merchant_id_slug: {
+        merchant_id: merchant.id,
+        slug: 'roti-bakar',
+      },
+    },
+    update: {},
+    create: {
+      id: '550e8400-e29b-41d4-a716-446655440034',
+      merchant_id: merchant.id,
+      category_id: snackCategory.id,
+      slug: 'roti-bakar',
+      name: 'Roti Bakar',
+      category: 'Snacks',
+      price: 12000,
+      cost: 4500,
+      stock_qty: 80,
+      min_stock: 8,
+      is_active: true,
+    },
+  });
+  console.log('✅ Product created: Roti Bakar (roti-bakar)');
+
+  await prisma.products.upsert({
+    where: {
+      merchant_id_slug: {
+        merchant_id: merchant.id,
+        slug: 'kentang-goreng',
+      },
+    },
+    update: {},
+    create: {
+      id: '550e8400-e29b-41d4-a716-446655440035',
+      merchant_id: merchant.id,
+      category_id: snackCategory.id,
+      slug: 'kentang-goreng',
+      name: 'Kentang Goreng',
+      category: 'Snacks',
+      price: 14000,
+      cost: 5500,
+      stock_qty: 60,
+      min_stock: 8,
+      is_active: true,
+    },
+  });
+  console.log('✅ Product created: Kentang Goreng (kentang-goreng)');
+
+  await prisma.products.upsert({
+    where: {
+      merchant_id_slug: {
+        merchant_id: merchant.id,
+        slug: 'es-kopi-susu',
+      },
+    },
+    update: {},
+    create: {
+      id: '550e8400-e29b-41d4-a716-446655440036',
+      merchant_id: merchant.id,
+      category_id: beverageCategory.id,
+      slug: 'es-kopi-susu',
+      name: 'Es Kopi Susu',
+      category: 'Beverages',
+      price: 18000,
+      cost: 6500,
+      stock_qty: 90,
+      min_stock: 10,
+      is_active: true,
+    },
+  });
+  console.log('✅ Product created: Es Kopi Susu (es-kopi-susu)\n');
+
+  // 6. Create Shifts (cashier shifts)
   console.log('⏰ Creating shifts...');
 
   const SHIFT_1_ID = '550e8400-e29b-41d4-a716-446655440041'; // closed shift (main-branch, cashier)

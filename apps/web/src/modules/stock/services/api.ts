@@ -7,6 +7,13 @@ export const getListStock = async (data: any, options: any = {}) => {
   );
 };
 
+export const getListInventory = async (data: any, options: any = {}) => {
+  return await api.get(
+    '/api/v1/stock/inventory',
+    { params: data, ...(options || {}) },
+  );
+};
+
 export const adjustStock = async (data: any, options: any = {}) => {
   return await api.post(
     `/api/v1/stock/adjust`,

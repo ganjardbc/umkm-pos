@@ -33,10 +33,30 @@
             </UiFormGroup>
           </div>
           <Divider />
+          <UiFormGroup label="Adjustment Type" variant="vertical">
+            <Select
+              name="adjustment_type"
+              :options="adjustmentTypeOptions"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Select adjustment type"
+              @update:modelValue="onAdjustmentTypeChange"
+              fluid
+            />
+            <Message
+              v-if="$form.adjustment_type?.invalid"
+              severity="error"
+              size="small"
+              variant="simple"
+            >
+              {{ $form.adjustment_type.error?.message }}
+            </Message>
+          </UiFormGroup>
           <UiFormGroup label="Change Quantity" variant="vertical">
             <InputNumber
               name="change_qty"
-              placeholder="Enter positive or negative number"
+              placeholder="Enter quantity"
+              :min="1"
               fluid
             />
             <Message
@@ -47,7 +67,7 @@
             >
               {{ $form.change_qty.error?.message }}
             </Message>
-            <small class="text-gray-500">Use positive numbers to add stock, negative to reduce</small>
+            <small class="text-gray-500">Quantity is always positive. Type controls add or reduce.</small>
           </UiFormGroup>
           <UiFormGroup label="Reason" variant="vertical">
             <Select
@@ -92,10 +112,11 @@
 </template>
 <script lang="ts" setup>
 import type { AdjustStock } from '@/modules/product-lists/services/types';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { z } from 'zod';
 import { zodResolver } from '@primevue/forms/resolvers/zod';
 import { showConfirm } from '@/helpers/toast.ts';
+import { getOutlet } from '@/helpers/auth.ts';
 import UiFormGroup from '@/components/UiFormGroup.vue';
 
 const emits = defineEmits(['submit', 'cancel']);
@@ -108,25 +129,61 @@ const visibility = defineModel<boolean>("visibility", {
   required: true
 });
 
-const reasonOptions = [
+const allReasonOptions = [
   { label: 'Restock', value: 'restock' },
+  { label: 'Correction (+)', value: 'correction_plus' },
+  { label: 'Stock Opname Adjustment', value: 'opname_adjustment' },
   { label: 'Damage', value: 'damage' },
-  { label: 'Correction', value: 'correction' },
-  { label: 'Manual', value: 'manual' },
+  { label: 'Expired', value: 'expired' },
+  { label: 'Shrinkage', value: 'shrinkage' },
+  { label: 'Correction (-)', value: 'correction_minus' },
 ];
 
+const adjustmentTypeOptions = [
+  { label: 'Add Stock', value: 'increase' },
+  { label: 'Reduce Stock', value: 'decrease' },
+];
+const selectedAdjustmentType = ref<'increase' | 'decrease'>('increase');
+
+const reasonOptionsByType = {
+  increase: ['restock', 'correction_plus', 'opname_adjustment'],
+  decrease: ['damage', 'expired', 'shrinkage', 'correction_minus', 'opname_adjustment'],
+} as const;
+
+const reasonOptions = computed(() => {
+  const type = selectedAdjustmentType.value;
+  if (type === 'increase') {
+    return allReasonOptions.filter((item) =>
+      reasonOptionsByType.increase.includes(item.value as any),
+    );
+  }
+  if (type === 'decrease') {
+    return allReasonOptions.filter((item) =>
+      reasonOptionsByType.decrease.includes(item.value as any),
+    );
+  }
+  return [];
+});
+
+const onAdjustmentTypeChange = (value: 'increase' | 'decrease') => {
+  selectedAdjustmentType.value = value;
+};
+
 const initialValues = ref<AdjustStock>({
+  outlet_id: '',
   product_id: '',
-  change_qty: 0,
+  adjustment_type: 'increase',
+  change_qty: '',
   reason: '',
   note: ''
-});
+} as any);
 
 const resolver = ref(zodResolver(
   z.object({
-    change_qty: z.number().refine((val) => val !== 0, {
-      message: 'Change quantity cannot be zero.'
+    adjustment_type: z.enum(['increase', 'decrease'], {
+      message: 'Adjustment type is required.',
     }),
+    change_qty: z.number().min(1, { message: 'Quantity must be at least 1.' }),
     reason: z.string().min(1, { message: 'Reason is required.' }),
     note: z.string().optional()
   })
@@ -135,7 +192,10 @@ const resolver = ref(zodResolver(
 const onFormSubmit = (event: any) => {
   const { valid, values } = event as { valid: boolean; values: any };
   if (valid) {
-    const newStock = (props.product?.stock_qty || 0) + values.change_qty;
+    const signedQty = values.adjustment_type === 'decrease'
+      ? -Math.abs(values.change_qty)
+      : Math.abs(values.change_qty);
+    const newStock = (props.product?.stock_qty || 0) + signedQty;
     
     showConfirm({
       header: 'Confirm Stock Adjustment',
@@ -145,8 +205,9 @@ const onFormSubmit = (event: any) => {
       type: 'warn',
       accept: () => {
         const payload = {
+          outlet_id: getOutlet()?.id || '',
           product_id: props.product?.id,
-          change_qty: values.change_qty,
+          change_qty: signedQty,
           reason: values.reason,
           note: values.note || ''
         };

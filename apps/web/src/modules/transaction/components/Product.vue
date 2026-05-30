@@ -106,6 +106,7 @@ import { onMounted, ref, computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useAuthStore } from '@/modules/auth/stores/index.ts';
 import { getErrorMessage, getCurrency } from '@/helpers/utils.ts';
+import { getOutlet } from '@/helpers/auth.ts';
 import { getListProduct } from '@/modules/product-lists/services/api';
 import { showToast } from '@/helpers/toast.ts';
 import { usePosStore } from '@/modules/transaction/stores-pos';
@@ -144,10 +145,10 @@ const fetchProduct = async () => {
     const payload = {
       page: pagination.value.page,
       limit: pagination.value.rows,
+      outlet_id: getOutlet()?.id,
     }
     const response = await getListProduct(payload);
     const { data, meta } = response?.data?.data || {};
-
     products.value = data || [];
     pagination.value.totalRecords = meta?.total;
     pagination.value.pageCount = meta?.totalPages;

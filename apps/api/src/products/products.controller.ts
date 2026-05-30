@@ -20,10 +20,10 @@ import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { SetProductImageDto } from './dto/set-product-image.dto';
+import { ProductsQueryDto } from './dto/products-query.dto';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { RequirePermission } from '../common/decorators/require-permission.decorator';
 import { PermissionGuard } from '../common/guards/permission.guard';
-import { PaginationDto } from '../common/dto/pagination.dto';
 
 @ApiTags('Products')
 @ApiBearerAuth()
@@ -54,9 +54,9 @@ export class ProductsController {
   @ApiResponse({ status: 200, description: 'Return all products (paginated)' })
   findAll(
     @CurrentUser('merchant_id') merchantId: string,
-    @Query() pagination: PaginationDto,
+    @Query() query: ProductsQueryDto,
   ) {
-    return this.productsService.findAll(merchantId, pagination);
+    return this.productsService.findAll(merchantId, query);
   }
 
   @Get(':id')
@@ -73,8 +73,9 @@ export class ProductsController {
   findOne(
     @Param('id') id: string,
     @CurrentUser('merchant_id') merchantId: string,
+    @Query('outlet_id') outletId?: string,
   ) {
-    return this.productsService.findOne(id, merchantId);
+    return this.productsService.findOne(id, merchantId, outletId);
   }
 
   @Patch(':id')

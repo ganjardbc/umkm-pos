@@ -73,7 +73,7 @@ export class CreateProductDto {
 
   @ApiPropertyOptional({
     example: 100,
-    description: 'Initial stock quantity',
+    description: 'Initial stock quantity (saved in outlet_product_inventory)',
     default: 0,
   })
   @IsOptional()
@@ -83,13 +83,21 @@ export class CreateProductDto {
 
   @ApiPropertyOptional({
     example: 10,
-    description: 'Minimum stock alert threshold',
+    description: 'Minimum stock alert threshold (saved in outlet_product_inventory)',
     default: 0,
   })
   @IsOptional()
   @IsNumber()
   @Min(0)
   min_stock?: number;
+
+  @ApiPropertyOptional({
+    example: '550e8400-e29b-41d4-a716-446655440021',
+    description: 'Outlet ID for inventory write on create/update',
+  })
+  @IsOptional()
+  @IsUUID()
+  outlet_id?: string;
 
   @ApiPropertyOptional({
     example: true,

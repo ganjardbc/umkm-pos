@@ -189,6 +189,7 @@ import { getErrorMessage } from '@/helpers/utils.ts';
 import { showToast } from '@/helpers/toast.ts';
 import { showLoading, hideLoading } from '@/helpers/loading.ts';
 import { putProduct, getDetailProduct, setProductImage, removeProductImage } from '@/modules/product-lists/services/api';
+import { getOutlet } from '@/helpers/auth.ts';
 import { getActiveCategories } from '@/modules/product-categories/services/api';
 import { useFileUpload } from '@/composables/useFileUpload';
 import UiCard from '@/components/UiCard.vue';
@@ -231,6 +232,7 @@ const onFormSubmit = async ({ valid, values }: any) => {
       showLoading();
 
       const payload = {
+        outlet_id: getOutlet()?.id,
         name: values?.name,
         category_id: values?.category_id,
         price: values?.price,
@@ -269,7 +271,9 @@ const onCancel = () => {
 // Fetch Detail
 const fetchDetail = async () => {
   try {
-    const response = await getDetailProduct(productID.value);
+    const response = await getDetailProduct(productID.value, {
+      outlet_id: getOutlet()?.id,
+    });
     const { data } = response?.data || {};
     const { name, category_id, price, cost, min_stock, is_active, thumbnail, upload } = data || {};
 

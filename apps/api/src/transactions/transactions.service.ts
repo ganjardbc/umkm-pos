@@ -152,7 +152,17 @@ export class TransactionsService {
 
     const productMap = new Map(products.map((p) => [p.id, p]));
 
-    // 3. Validate stock availability
+    const inventoryRows = await this.prisma.outlet_product_inventory.findMany({
+      where: {
+        merchant_id: merchantId,
+        outlet_id: dto.outlet_id,
+        product_id: { in: productIds },
+        is_active: true,
+      },
+    });
+    const inventoryMap = new Map(inventoryRows.map((row) => [row.product_id, row]));
+
+    // 3. Validate stock availability at outlet level
     let totalAmount = 0;
     const itemsData: {
       product_id: string;
@@ -160,13 +170,20 @@ export class TransactionsService {
       price_snapshot: number;
       qty: number;
       subtotal: number;
+      stock_after: number;
     }[] = [];
 
     for (const item of dto.items) {
       const product = productMap.get(item.product_id)!;
-      if (product.stock_qty < item.qty) {
+      const outletInventory = inventoryMap.get(item.product_id);
+      if (!outletInventory) {
+        throw new NotFoundException(
+          `Inventory for product "${product.name}" was not found in this outlet`,
+        );
+      }
+      if (outletInventory.stock_qty < item.qty) {
         throw new BadRequestException(
-          `Insufficient stock for product "${product.name}". Available: ${product.stock_qty}, Requested: ${item.qty}`,
+          `Insufficient stock for product "${product.name}" in this outlet. Available: ${outletInventory.stock_qty}, Requested: ${item.qty}`,
         );
       }
 
@@ -180,6 +197,7 @@ export class TransactionsService {
         price_snapshot: price,
         qty: item.qty,
         subtotal,
+        stock_after: outletInventory.stock_qty - item.qty,
       });
     }
 
@@ -239,10 +257,15 @@ export class TransactionsService {
         })),
       });
 
-      // Decrement product stock and write stock_logs
+      // Decrement stock in selling outlet and write movement logs
       for (const item of itemsData) {
-        await tx.products.update({
-          where: { id: item.product_id },
+        await tx.outlet_product_inventory.update({
+          where: {
+            outlet_id_product_id: {
+              outlet_id: dto.outlet_id,
+              product_id: item.product_id,
+            },
+          },
           data: {
             stock_qty: { decrement: item.qty },
             updated_by: userId,
@@ -250,11 +273,15 @@ export class TransactionsService {
           },
         });
 
-        await tx.stock_logs.create({
+        await tx.inventory_movements.create({
           data: {
+            merchant_id: merchantId,
+            outlet_id: dto.outlet_id,
             product_id: item.product_id,
             change_qty: -item.qty,
+            stock_after: item.stock_after,
             reason: 'sale',
+            ref_type: 'transaction',
             ref_id: transaction.id,
             created_by: userId,
             updated_by: userId,
@@ -266,10 +293,11 @@ export class TransactionsService {
     });
 
     // Return full transaction with items
-    return this.prisma.transactions.findFirst({
+    const response = await this.prisma.transactions.findFirst({
       where: { id: result.id },
       include: { transaction_items: true },
     });
+    return response;
   }
 
   async cancel(id: string, merchantId: string, userId: string) {
@@ -313,9 +341,13 @@ export class TransactionsService {
       // Restore stock for each item and create cancellation logs
       for (const item of transaction.transaction_items) {
         if (item.product_id) {
-          // Increment product stock
-          await tx.products.update({
-            where: { id: item.product_id },
+          const restoredInventory = await tx.outlet_product_inventory.update({
+            where: {
+              outlet_id_product_id: {
+                outlet_id: transaction.outlet_id,
+                product_id: item.product_id,
+              },
+            },
             data: {
               stock_qty: { increment: item.qty },
               updated_by: userId,
@@ -323,12 +355,15 @@ export class TransactionsService {
             },
           });
 
-          // Create stock log for cancellation
-          await tx.stock_logs.create({
+          await tx.inventory_movements.create({
             data: {
+              merchant_id: merchantId,
+              outlet_id: transaction.outlet_id,
               product_id: item.product_id,
               change_qty: item.qty,
-              reason: 'cancellation',
+              stock_after: restoredInventory.stock_qty,
+              reason: 'sale_cancel',
+              ref_type: 'transaction_cancel',
               ref_id: id,
               created_by: userId,
               updated_by: userId,
@@ -341,9 +376,10 @@ export class TransactionsService {
     });
 
     // Return cancelled transaction with items
-    return this.prisma.transactions.findFirst({
+    const response = await this.prisma.transactions.findFirst({
       where: { id: result.id },
       include: { transaction_items: true },
     });
+    return response;
   }
 }
