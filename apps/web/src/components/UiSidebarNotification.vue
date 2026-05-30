@@ -4,7 +4,9 @@
       class="ui-sidebar-notification__toggle"
       @click="openNotificationMenu"
     >
-      <OverlayBadge :value="unreadCount" severity="danger">
+      <OverlayBadge
+        :severity="unreadCount > 0 ? 'success' : 'secondary'"
+      >
         <Button
           severity="secondary" 
           variant="text"
