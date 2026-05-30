@@ -7,6 +7,19 @@ import { PrismaService } from '../database/prisma.service';
 import { CreateStockAdjustmentDto } from './dto/create-stock-adjustment.dto';
 import { PaginationDto } from '../common/dto/pagination.dto';
 
+const INCREASE_REASONS = new Set([
+  'restock',
+  'correction_plus',
+  'opname_adjustment',
+]);
+const DECREASE_REASONS = new Set([
+  'damage',
+  'expired',
+  'shrinkage',
+  'correction_minus',
+  'opname_adjustment',
+]);
+
 @Injectable()
 export class StockService {
   constructor(private prisma: PrismaService) {}
@@ -126,6 +139,16 @@ export class StockService {
   ) {
     if (dto.change_qty === 0) {
       throw new BadRequestException('change_qty must not be 0');
+    }
+    if (dto.change_qty > 0 && !INCREASE_REASONS.has(dto.reason)) {
+      throw new BadRequestException(
+        `reason "${dto.reason}" is not valid for positive change_qty`,
+      );
+    }
+    if (dto.change_qty < 0 && !DECREASE_REASONS.has(dto.reason)) {
+      throw new BadRequestException(
+        `reason "${dto.reason}" is not valid for negative change_qty`,
+      );
     }
 
     // Validate product belongs to this merchant

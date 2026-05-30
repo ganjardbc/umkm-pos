@@ -12,8 +12,11 @@ import {
 export const ADJUSTMENT_REASONS = [
   'restock',
   'damage',
-  'correction',
-  'manual',
+  'expired',
+  'shrinkage',
+  'correction_plus',
+  'correction_minus',
+  'opname_adjustment',
 ] as const;
 
 export type AdjustmentReason = (typeof ADJUSTMENT_REASONS)[number];

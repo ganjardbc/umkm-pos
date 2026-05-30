@@ -65,7 +65,7 @@ describe('StockService', () => {
             outlet_id: 'outlet-1',
             product_id: 'product-1',
             change_qty: -1,
-            reason: 'manual',
+            reason: 'damage',
           },
           merchantId,
           userId,
@@ -187,6 +187,36 @@ describe('StockService', () => {
             change_qty: -5,
             reason: 'damage',
           },
+          merchantId,
+          userId,
+        ),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('should reject invalid reason for positive change_qty', async () => {
+      await expect(
+        service.adjust(
+          {
+            outlet_id: 'outlet-1',
+            product_id: 'product-1',
+            change_qty: 5,
+            reason: 'damage',
+          } as any,
+          merchantId,
+          userId,
+        ),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('should reject invalid reason for negative change_qty', async () => {
+      await expect(
+        service.adjust(
+          {
+            outlet_id: 'outlet-1',
+            product_id: 'product-1',
+            change_qty: -5,
+            reason: 'restock',
+          } as any,
           merchantId,
           userId,
         ),
