@@ -1,0 +1,13 @@
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import { IsOptional, IsUUID } from 'class-validator';
+import { PaginationDto } from '../../common/dto/pagination.dto';
+
+export class ProductsQueryDto extends PaginationDto {
+  @ApiPropertyOptional({
+    description: 'Outlet ID to include outlet-level inventory in product list',
+    example: '550e8400-e29b-41d4-a716-446655440021',
+  })
+  @IsOptional()
+  @IsUUID()
+  outlet_id?: string;
+}

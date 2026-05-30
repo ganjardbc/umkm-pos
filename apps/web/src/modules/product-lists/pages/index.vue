@@ -149,6 +149,7 @@ import { onMounted, ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { getNoTable, getErrorMessage, getCurrency, formatDateTime } from '@/helpers/utils.ts';
 import { getListProduct, deleteProduct, postAdjustStock } from '@/modules/product-lists/services/api';
+import { getOutlet } from '@/helpers/auth.ts';
 import { showToast, showConfirm } from '@/helpers/toast.ts';
 import { showLoading, hideLoading } from '@/helpers/loading.ts';
 import { isHasPermission } from '@/helpers/auth.ts';
@@ -180,10 +181,12 @@ const pagination = ref({
 const fetchProduct = async () => {
   try {
     loading.value = true;
+    const outlet = getOutlet();
 
     const payload = {
       page: pagination.value.page,
       limit: pagination.value.rows,
+      outlet_id: outlet?.id,
     }
     const response = await getListProduct(payload);
     const { data, meta } = response?.data?.data || {};
@@ -293,7 +296,11 @@ const submitAdjustStockModal = async (payload: any) => {
   try {
     showLoading();
 
-    const response = await postAdjustStock(payload);
+    const outlet = getOutlet();
+    const response = await postAdjustStock({
+      ...payload,
+      outlet_id: outlet?.id,
+    });
     const { success } = response?.data || {};
     
     if (success) {

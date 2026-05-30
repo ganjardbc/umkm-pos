@@ -152,7 +152,17 @@ export class TransactionsService {
 
     const productMap = new Map(products.map((p) => [p.id, p]));
 
-    // 3. Validate stock availability
+    const inventoryRows = await this.prisma.outlet_product_inventory.findMany({
+      where: {
+        merchant_id: merchantId,
+        outlet_id: dto.outlet_id,
+        product_id: { in: productIds },
+        is_active: true,
+      },
+    });
+    const inventoryMap = new Map(inventoryRows.map((row) => [row.product_id, row]));
+
+    // 3. Validate stock availability at outlet level
     let totalAmount = 0;
     const itemsData: {
       product_id: string;
@@ -164,9 +174,15 @@ export class TransactionsService {
 
     for (const item of dto.items) {
       const product = productMap.get(item.product_id)!;
-      if (product.stock_qty < item.qty) {
+      const outletInventory = inventoryMap.get(item.product_id);
+      if (!outletInventory) {
+        throw new NotFoundException(
+          `Inventory for product "${product.name}" was not found in this outlet`,
+        );
+      }
+      if (outletInventory.stock_qty < item.qty) {
         throw new BadRequestException(
-          `Insufficient stock for product "${product.name}". Available: ${product.stock_qty}, Requested: ${item.qty}`,
+          `Insufficient stock for product "${product.name}" in this outlet. Available: ${outletInventory.stock_qty}, Requested: ${item.qty}`,
         );
       }
 
@@ -239,8 +255,22 @@ export class TransactionsService {
         })),
       });
 
-      // Decrement product stock and write stock_logs
+      // Decrement outlet stock, keep legacy product stock dual-write, and write logs
       for (const item of itemsData) {
+        await tx.outlet_product_inventory.update({
+          where: {
+            outlet_id_product_id: {
+              outlet_id: dto.outlet_id,
+              product_id: item.product_id,
+            },
+          },
+          data: {
+            stock_qty: { decrement: item.qty },
+            updated_by: userId,
+            updated_at: new Date(),
+          },
+        });
+
         await tx.products.update({
           where: { id: item.product_id },
           data: {
@@ -255,6 +285,20 @@ export class TransactionsService {
             product_id: item.product_id,
             change_qty: -item.qty,
             reason: 'sale',
+            ref_id: transaction.id,
+            created_by: userId,
+            updated_by: userId,
+          },
+        });
+
+        await tx.inventory_movements.create({
+          data: {
+            merchant_id: merchantId,
+            outlet_id: dto.outlet_id,
+            product_id: item.product_id,
+            change_qty: -item.qty,
+            reason: 'sale',
+            ref_type: 'transaction',
             ref_id: transaction.id,
             created_by: userId,
             updated_by: userId,
@@ -313,6 +357,20 @@ export class TransactionsService {
       // Restore stock for each item and create cancellation logs
       for (const item of transaction.transaction_items) {
         if (item.product_id) {
+          await tx.outlet_product_inventory.update({
+            where: {
+              outlet_id_product_id: {
+                outlet_id: transaction.outlet_id,
+                product_id: item.product_id,
+              },
+            },
+            data: {
+              stock_qty: { increment: item.qty },
+              updated_by: userId,
+              updated_at: new Date(),
+            },
+          });
+
           // Increment product stock
           await tx.products.update({
             where: { id: item.product_id },
@@ -329,6 +387,20 @@ export class TransactionsService {
               product_id: item.product_id,
               change_qty: item.qty,
               reason: 'cancellation',
+              ref_id: id,
+              created_by: userId,
+              updated_by: userId,
+            },
+          });
+
+          await tx.inventory_movements.create({
+            data: {
+              merchant_id: merchantId,
+              outlet_id: transaction.outlet_id,
+              product_id: item.product_id,
+              change_qty: item.qty,
+              reason: 'sale_cancel',
+              ref_type: 'transaction_cancel',
               ref_id: id,
               created_by: userId,
               updated_by: userId,

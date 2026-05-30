@@ -14,4 +14,12 @@ export class StockLogsQueryDto extends PaginationDto {
   @IsOptional()
   @IsUUID()
   product_id?: string;
+
+  @ApiPropertyOptional({
+    description: 'Filter logs by outlet ID',
+    example: '550e8400-e29b-41d4-a716-446655440021',
+  })
+  @IsOptional()
+  @IsUUID()
+  outlet_id?: string;
 }

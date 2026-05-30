@@ -486,12 +486,12 @@ const submitRegistration = async () => {
 }
 
 /* Dark mode styling for StepPanel */
-:global(.dark) .p-steppanel {
+.dark .p-steppanel {
   background-color: var(--dark-bg);
   color: var(--dark-text);
 }
 
-:global(.dark) .p-steppanel-content {
+.dark .p-steppanel-content {
   background-color: var(--dark-bg);
   color: var(--dark-text);
 }

@@ -42,6 +42,8 @@ model merchants {
   products           products[]
   users              users[]
   product_categories product_categories[]
+  outlet_product_inventory outlet_product_inventory[]
+  inventory_movements inventory_movements[]
   upload             uploads?             @relation(fields: [logo_upload_id], references: [id], onDelete: SetNull, map: "merchants_ibfk_logo_upload")
 
   @@index([logo_upload_id], map: "idx_merchants_logo_upload")
@@ -66,6 +68,8 @@ model outlets {
   transactions   transactions[]
   user_roles     user_roles[]
   notifications  notifications[]
+  outlet_product_inventory outlet_product_inventory[]
+  inventory_movements inventory_movements[]
   upload        uploads?        @relation(fields: [logo_upload_id], references: [id], onDelete: SetNull, map: "outlets_ibfk_logo_upload")
 
   @@unique([merchant_id, slug], map: "unique_merchant_slug")
@@ -146,12 +150,60 @@ model products {
   product_categories product_categories? @relation(fields: [category_id], references: [id], onDelete: SetNull, onUpdate: NoAction, map: "products_ibfk_category")
   upload             uploads?            @relation(fields: [image_upload_id], references: [id], onDelete: SetNull, onUpdate: NoAction, map: "products_ibfk_image_upload")
   stock_logs         stock_logs[]
+  outlet_product_inventory outlet_product_inventory[]
+  inventory_movements inventory_movements[]
   transaction_items  transaction_items[]
 
   @@unique([merchant_id, slug], map: "unique_merchant_slug")
   @@index([is_active], map: "idx_products_active")
   @@index([merchant_id], map: "idx_products_merchant")
   @@index([category_id], map: "idx_products_category")
+}
+
+model outlet_product_inventory {
+  id         String   @id @default(dbgenerated("(uuid())")) @db.Char(36)
+  merchant_id String  @db.Char(36)
+  outlet_id  String   @db.Char(36)
+  product_id String   @db.Char(36)
+  stock_qty  Int      @default(0)
+  min_stock  Int      @default(0)
+  is_active  Boolean  @default(true)
+  created_at DateTime @default(now()) @db.Timestamp(0)
+  updated_at DateTime @default(now()) @db.Timestamp(0)
+  created_by String?  @db.Char(36)
+  updated_by String?  @db.Char(36)
+  merchants  merchants @relation(fields: [merchant_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  outlets    outlets   @relation(fields: [outlet_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  products   products  @relation(fields: [product_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([outlet_id, product_id], map: "unique_outlet_product_inventory")
+  @@index([merchant_id], map: "idx_outlet_product_inventory_merchant")
+  @@index([outlet_id], map: "idx_outlet_product_inventory_outlet")
+  @@index([product_id], map: "idx_outlet_product_inventory_product")
+}
+
+model inventory_movements {
+  id         String   @id @default(dbgenerated("(uuid())")) @db.Char(36)
+  merchant_id String  @db.Char(36)
+  outlet_id  String   @db.Char(36)
+  product_id String   @db.Char(36)
+  change_qty Int
+  reason     String   @db.VarChar(50)
+  ref_type   String?  @db.VarChar(50)
+  ref_id     String?  @db.Char(36)
+  note       String?  @db.VarChar(255)
+  created_at DateTime @default(now()) @db.Timestamp(0)
+  updated_at DateTime @default(now()) @db.Timestamp(0)
+  created_by String?  @db.Char(36)
+  updated_by String?  @db.Char(36)
+  merchants  merchants @relation(fields: [merchant_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  outlets    outlets   @relation(fields: [outlet_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  products   products  @relation(fields: [product_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([merchant_id], map: "idx_inventory_movements_merchant")
+  @@index([outlet_id], map: "idx_inventory_movements_outlet")
+  @@index([product_id], map: "idx_inventory_movements_product")
+  @@index([ref_id], map: "idx_inventory_movements_ref")
 }
 
 model role_permissions {

@@ -45,6 +45,7 @@ export interface FormEdit {
 };
 
 export interface AdjustStock {
+  outlet_id: string,
   product_id: string,
   change_qty: number,
   reason: string,

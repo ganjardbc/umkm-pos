@@ -32,12 +32,41 @@ export class StockController {
     @CurrentUser('merchant_id') merchantId: string,
     @Query() query: StockLogsQueryDto,
   ) {
-    const { product_id, page, limit } = query;
+    const { product_id, outlet_id, page, limit } = query;
 
     // Create pagination object from query params
     const pagination = Object.assign(new StockLogsQueryDto(), { page, limit });
 
-    return this.stockService.findLogs(merchantId, product_id, pagination);
+    return this.stockService.findLogs(
+      merchantId,
+      product_id,
+      outlet_id,
+      pagination,
+    );
+  }
+
+  @Get('inventory')
+  @RequirePermission('stock.read')
+  @ApiOperation({
+    summary:
+      'List inventory rows for the current merchant (optionally filter by outlet and low stock)',
+  })
+  findInventory(
+    @CurrentUser('merchant_id') merchantId: string,
+    @Query('outlet_id') outletId?: string,
+    @Query('low_stock_only') lowStockOnly?: string,
+    @Query() pagination?: StockLogsQueryDto,
+  ) {
+    const page = pagination?.page;
+    const limit = pagination?.limit;
+    const pager = Object.assign(new StockLogsQueryDto(), { page, limit });
+
+    return this.stockService.findInventory(
+      merchantId,
+      outletId,
+      lowStockOnly === 'true',
+      pager,
+    );
   }
 
   @Post('adjust')

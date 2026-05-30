@@ -8,6 +8,7 @@ import { PrismaService } from '../database/prisma.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { PaginationDto } from '../common/dto/pagination.dto';
+import { ProductsQueryDto } from './dto/products-query.dto';
 import { CategoriesService } from './categories/categories.service';
 import { UploadsService } from '../uploads/uploads.service';
 
@@ -24,15 +25,23 @@ export class ProductsService {
 
     return {
       ...product,
-      thumbnail: (await this.uploadsService.generateSignedUrl(product.image_upload_id))
-        .url,
+      thumbnail: (await this.uploadsService.generateSignedUrl(product.image_upload_id)).url,
     };
   }
 
-  async findAll(merchantId: string, pagination: PaginationDto) {
-    const { page = 1, limit = 10 } = pagination;
-    const skip = pagination.skip;
+  async findAll(merchantId: string, query: ProductsQueryDto) {
+    const { page = 1, limit = 10, outlet_id } = query;
+    const skip = query.skip;
     const where = { merchant_id: merchantId };
+
+    if (outlet_id) {
+      const outlet = await this.prisma.outlets.findFirst({
+        where: { id: outlet_id, merchant_id: merchantId },
+      });
+      if (!outlet) {
+        throw new NotFoundException(`Outlet with ID ${outlet_id} not found`);
+      }
+    }
 
     const [data, total] = await this.prisma.$transaction([
       this.prisma.products.findMany({
@@ -49,8 +58,42 @@ export class ProductsService {
       data.map((product) => this.attachSignedUrl(product)),
     );
 
+    let inventoryMap = new Map<string, any>();
+    if (outlet_id && dataWithSignedUrls.length > 0) {
+      const inventories = await this.prisma.outlet_product_inventory.findMany({
+        where: {
+          merchant_id: merchantId,
+          outlet_id,
+          product_id: { in: dataWithSignedUrls.map((product) => product.id) },
+        },
+      });
+      inventoryMap = new Map(
+        inventories.map((inventory) => [inventory.product_id, inventory]),
+      );
+    }
+
+    const hydratedProducts = dataWithSignedUrls.map((product) => {
+      if (!outlet_id) return product;
+
+      const inventory = inventoryMap.get(product.id);
+      return {
+        ...product,
+        stock_qty: inventory?.stock_qty ?? 0,
+        min_stock: inventory?.min_stock ?? 0,
+        inventory: inventory
+          ? {
+              id: inventory.id,
+              outlet_id: inventory.outlet_id,
+              stock_qty: inventory.stock_qty,
+              min_stock: inventory.min_stock,
+              is_active: inventory.is_active,
+            }
+          : null,
+      };
+    });
+
     return {
-      data: dataWithSignedUrls,
+      data: hydratedProducts,
       meta: PaginationDto.calculateMeta(total, page, limit),
     };
   }

@@ -189,7 +189,8 @@ import { getErrorMessage, getCurrency, formatDateTime, getNoTable } from '@/help
 import { showToast } from '@/helpers/toast.ts';
 import { showLoading, hideLoading } from '@/helpers/loading.ts';
 import { isHasPermission } from '@/helpers/auth.ts';
-import { getDetailProduct, getProductStock, postAdjustStock } from '@/modules/product-lists/services/api';
+import { getDetailProduct, getListProduct, getProductStock, postAdjustStock } from '@/modules/product-lists/services/api';
+import { getOutlet } from '@/helpers/auth.ts';
 import { PREFIX_ROUTE_NAME } from '@/modules/product-lists/services/constants';
 import { UPDATE, ADJUST } from '@/modules/product-lists/services/rbac';
 import UiCard from '@/components/UiCard.vue';
@@ -210,10 +211,27 @@ const productDetail = ref<any>(null);
 
 const fetchDetail = async () => {
   try {
-    const response = await getDetailProduct(productID.value);
-    const { data } = response?.data || {};
+    const outlet = getOutlet();
 
-    productDetail.value = data || null;
+    const [detailResponse, outletProductsResponse] = await Promise.all([
+      getDetailProduct(productID.value),
+      getListProduct({
+        page: 1,
+        limit: 100,
+        outlet_id: outlet?.id,
+      }),
+    ]);
+
+    const { data } = detailResponse?.data || {};
+    const outletProducts = outletProductsResponse?.data?.data?.data || [];
+    const outletProduct = outletProducts.find((item: any) => item.id === productID.value);
+
+    productDetail.value = {
+      ...(data || {}),
+      stock_qty: outletProduct?.stock_qty ?? 0,
+      min_stock: outletProduct?.min_stock ?? 0,
+      inventory: outletProduct?.inventory ?? null,
+    };
   } catch (error) {
     showToast({
       type: 'error',
@@ -240,6 +258,7 @@ const fetchStockLogs = async () => {
       page: stockPagination.value.page,
       limit: stockPagination.value.rows,
       product_id: productID.value,
+      outlet_id: getOutlet()?.id,
       search: stockForm.value.search || undefined,
     };
     const response = await getProductStock(payload);
@@ -295,7 +314,10 @@ const submitAdjustStockModal = async (payload: any) => {
   try {
     showLoading();
 
-    const response = await postAdjustStock(payload);
+    const response = await postAdjustStock({
+      ...payload,
+      outlet_id: getOutlet()?.id,
+    });
     const { success } = response?.data || {};
     
     if (success) {

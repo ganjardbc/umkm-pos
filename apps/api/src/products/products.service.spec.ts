@@ -13,6 +13,12 @@ describe('ProductsService', () => {
   let prisma: PrismaService;
 
   const mockPrisma = {
+    outlets: {
+      findFirst: jest.fn(),
+    },
+    outlet_product_inventory: {
+      findMany: jest.fn(),
+    },
     products: {
       findFirst: jest.fn(),
       findMany: jest.fn(),
@@ -238,6 +244,82 @@ describe('ProductsService', () => {
         }),
         include: { merchants: true, product_categories: true, upload: true },
       });
+    });
+  });
+
+  describe('findAll', () => {
+    const merchantId = 'merchant-1';
+
+    it('should return paginated products with outlet inventory when outlet_id is provided', async () => {
+      const pagination = Object.assign(new PaginationDto(), {
+        page: 1,
+        limit: 10,
+        outlet_id: 'outlet-1',
+      });
+
+      const mockProducts = [
+        {
+          id: 'product-1',
+          merchant_id: merchantId,
+          name: 'Product 1',
+          slug: 'product-1',
+          stock_qty: 99,
+          min_stock: 5,
+          image_upload_id: null,
+        },
+      ];
+
+      mockPrisma.outlets.findFirst.mockResolvedValue({
+        id: 'outlet-1',
+        merchant_id: merchantId,
+      });
+      mockPrisma.$transaction.mockResolvedValue([mockProducts, 1]);
+      mockPrisma.outlet_product_inventory.findMany.mockResolvedValue([
+        {
+          id: 'inv-1',
+          outlet_id: 'outlet-1',
+          product_id: 'product-1',
+          stock_qty: 7,
+          min_stock: 2,
+          is_active: true,
+        },
+      ]);
+
+      const result = await service.findAll(
+        merchantId,
+        pagination as any,
+      );
+
+      expect(mockPrisma.outlets.findFirst).toHaveBeenCalledWith({
+        where: { id: 'outlet-1', merchant_id: merchantId },
+      });
+      expect(mockPrisma.outlet_product_inventory.findMany).toHaveBeenCalled();
+      expect(result.data).toHaveLength(1);
+      expect(result.data[0].stock_qty).toBe(7);
+      expect(result.data[0].min_stock).toBe(2);
+      expect(result.data[0].inventory).toEqual(
+        expect.objectContaining({
+          outlet_id: 'outlet-1',
+          stock_qty: 7,
+          min_stock: 2,
+          is_active: true,
+        }),
+      );
+      expect(result.meta.total).toBe(1);
+    });
+
+    it('should throw NotFoundException when outlet_id does not belong to merchant', async () => {
+      const pagination = Object.assign(new PaginationDto(), {
+        page: 1,
+        limit: 10,
+        outlet_id: 'outlet-x',
+      });
+
+      mockPrisma.outlets.findFirst.mockResolvedValue(null);
+
+      await expect(
+        service.findAll(merchantId, pagination as any),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 

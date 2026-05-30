@@ -64,6 +64,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import { getNoTable, getErrorMessage, formatDateTime } from '@/helpers/utils.ts';
+import { getOutlet } from '@/helpers/auth.ts';
 import { getListStock } from '@/modules/stock/services/api.ts';
 import { showToast } from '@/helpers/toast.ts';
 import UiCard from '@/components/UiCard.vue';
@@ -86,6 +87,7 @@ const fetchStock = async () => {
     const payload = {
       page: pagination.value.page,
       limit: pagination.value.rows,
+      outlet_id: getOutlet()?.id,
     }
     const response = await getListStock(payload);
     const { data, meta } = response?.data?.data || {};

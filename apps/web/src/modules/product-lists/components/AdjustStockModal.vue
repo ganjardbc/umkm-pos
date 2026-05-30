@@ -96,6 +96,7 @@ import { ref } from 'vue';
 import { z } from 'zod';
 import { zodResolver } from '@primevue/forms/resolvers/zod';
 import { showConfirm } from '@/helpers/toast.ts';
+import { getOutlet } from '@/helpers/auth.ts';
 import UiFormGroup from '@/components/UiFormGroup.vue';
 
 const emits = defineEmits(['submit', 'cancel']);
@@ -116,6 +117,7 @@ const reasonOptions = [
 ];
 
 const initialValues = ref<AdjustStock>({
+  outlet_id: '',
   product_id: '',
   change_qty: 0,
   reason: '',
@@ -145,6 +147,7 @@ const onFormSubmit = (event: any) => {
       type: 'warn',
       accept: () => {
         const payload = {
+          outlet_id: getOutlet()?.id || '',
           product_id: props.product?.id,
           change_qty: values.change_qty,
           reason: values.reason,

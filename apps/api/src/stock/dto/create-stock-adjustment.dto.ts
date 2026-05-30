@@ -20,6 +20,14 @@ export type AdjustmentReason = (typeof ADJUSTMENT_REASONS)[number];
 
 export class CreateStockAdjustmentDto {
   @ApiProperty({
+    example: '550e8400-e29b-41d4-a716-446655440021',
+    description: 'Outlet ID where stock should be adjusted',
+  })
+  @IsNotEmpty()
+  @IsUUID()
+  outlet_id: string;
+
+  @ApiProperty({
     example: '550e8400-e29b-41d4-a716-446655440031',
     description: 'Product ID to adjust',
   })

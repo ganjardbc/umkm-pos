@@ -24,6 +24,18 @@
       "description": "Merchant UUID for scoped requests"
     },
     {
+      "key": "outlet_id",
+      "value": "550e8400-e29b-41d4-a716-446655440021",
+      "type": "string",
+      "description": "Active outlet UUID for outlet-scoped inventory requests"
+    },
+    {
+      "key": "product_id",
+      "value": "550e8400-e29b-41d4-a716-446655440031",
+      "type": "string",
+      "description": "Product UUID for detail and stock requests"
+    },
+    {
       "key": "upload_id",
       "value": "",
       "type": "string",
@@ -648,7 +660,7 @@
           "response": []
         },
         {
-          "name": "Get All Products",
+          "name": "Get All Products (Merchant Catalog)",
           "request": {
             "method": "GET",
             "header": [],
@@ -670,6 +682,40 @@
                   "key": "limit",
                   "value": "10",
                   "description": "Items per page (1-100, default: 10)"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Products (Outlet Inventory View)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/products?page=1&limit=10&outlet_id={{outlet_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "products"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number (default: 1)"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Items per page (1-100, default: 10)"
+                },
+                {
+                  "key": "outlet_id",
+                  "value": "{{outlet_id}}",
+                  "description": "Outlet UUID to enrich products with outlet-level stock"
                 }
               ]
             }
@@ -1168,6 +1214,53 @@
                   "disabled": true
                 },
                 {
+                  "key": "outlet_id",
+                  "value": "{{outlet_id}}",
+                  "description": "Optional: Filter logs by outlet UUID",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number (default: 1)"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Items per page (1-100, default: 10)"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Outlet Inventory",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/stock/inventory?outlet_id={{outlet_id}}&page=1&limit=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "stock",
+                "inventory"
+              ],
+              "query": [
+                {
+                  "key": "outlet_id",
+                  "value": "{{outlet_id}}",
+                  "description": "Optional: Filter inventory rows by outlet UUID"
+                },
+                {
+                  "key": "low_stock_only",
+                  "value": "false",
+                  "description": "Optional: true to only show stock_qty <= min_stock",
+                  "disabled": true
+                },
+                {
                   "key": "page",
                   "value": "1",
                   "description": "Page number (default: 1)"
@@ -1204,7 +1297,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"product_id\": \"550e8400-e29b-41d4-a716-446655440031\",\n  \"change_qty\": 10,\n  \"reason\": \"restock\",\n  \"note\": \"Restocked from supplier delivery\"\n}",
+              "raw": "{\n  \"outlet_id\": \"{{outlet_id}}\",\n  \"product_id\": \"{{product_id}}\",\n  \"change_qty\": 10,\n  \"reason\": \"restock\",\n  \"note\": \"Restocked from supplier delivery\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
