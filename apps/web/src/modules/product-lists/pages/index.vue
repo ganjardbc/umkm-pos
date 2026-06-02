@@ -68,12 +68,16 @@
         </Column>
         <Column field="min_stock" header="Min Stock" class="min-w-38">
           <template #body="slotProps">
-            {{ slotProps.data.min_stock }}
+            <span :class="slotProps.data.min_stock && 'text-primary-600'">
+              {{ slotProps.data.min_stock }}
+            </span>
           </template>
         </Column>
         <Column field="stock_qty" header="Qty" class="min-w-28">
           <template #body="slotProps">
-            {{ slotProps.data.stock_qty }}
+            <span :class="slotProps.data.min_stock && 'text-primary-600'">
+              {{ slotProps.data.stock_qty }}
+            </span>
           </template>
         </Column>
         <Column field="created_at" header="Created At" class="min-w-48">
