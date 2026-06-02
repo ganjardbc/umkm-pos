@@ -94,13 +94,13 @@
             />
           </template>
         </Column>
-        <Column field="action" header="#" class="w-[184px]">
+        <Column field="action" header="#" class="w-46">
           <template #body="slotProps">
             <div class="flex gap-2">
               <Button
                 severity="secondary" 
                 variant="outlined"
-                icon="pi pi-plus"
+                icon="pi pi-cog"
                 size="small"
                 :disabled="!isCanAdjust"
                 @click="onAddjustProduct(slotProps.data)"

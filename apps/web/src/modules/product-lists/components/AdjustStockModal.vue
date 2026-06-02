@@ -34,15 +34,22 @@
           </div>
           <Divider />
           <UiFormGroup label="Adjustment Type" variant="vertical">
-            <Select
-              name="adjustment_type"
-              :options="adjustmentTypeOptions"
-              optionLabel="label"
-              optionValue="value"
-              placeholder="Select adjustment type"
-              @update:modelValue="onAdjustmentTypeChange"
-              fluid
-            />
+            <div class="grid grid-cols-2 gap-2">
+              <button
+                v-for="method in adjustmentTypeOptions"
+                :key="method.value"
+                type="button"
+                class="rounded-lg border px-2 py-4 text-center transition-all duration-150 cursor-pointer"
+                :class="[
+                  selectedAdjustmentType === method.value
+                    ? 'border-primary bg-primary/10 text-primary dark:border-primary-400 dark:bg-primary-500/20 dark:text-primary-300'
+                    : 'border-gray-200 dark:border-dark! bg-white dark:bg-dark! text-gray-400',
+                ]"
+                @click="onAdjustmentTypeChange(method.value as any)"
+              >
+                <div class="text-sm font-semibold">{{ method.label }}</div>
+              </button>
+            </div>
             <Message
               v-if="$form.adjustment_type?.invalid"
               severity="error"

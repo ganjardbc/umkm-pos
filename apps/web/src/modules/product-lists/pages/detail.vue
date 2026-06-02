@@ -114,7 +114,7 @@
             Stock History
           </h1>
           <Button
-            icon="pi pi-plus"
+            icon="pi pi-cog"
             label="Adjust Stock"
             size="small"
             :disabled="!isCanAdjust"
