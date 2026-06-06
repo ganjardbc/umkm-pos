@@ -67,6 +67,14 @@
             <p class="text-base mt-1 capitalize">{{ transactionDetail.payment_method }}</p>
           </div>
           <div>
+            <label class="text-sm font-medium text-gray-500">Order Source</label>
+            <p class="text-base mt-1 capitalize">{{ transactionDetail.order_source || 'pos' }}</p>
+          </div>
+          <div>
+            <label class="text-sm font-medium text-gray-500">Order Status</label>
+            <p class="text-base mt-1 capitalize">{{ transactionDetail.order_status || '-' }}</p>
+          </div>
+          <div>
             <label class="text-sm font-medium text-gray-500">Offline Mode</label>
             <div class="mt-1">
               <Tag
@@ -82,6 +90,18 @@
           <div>
             <label class="text-sm font-medium text-gray-500">Updated At</label>
             <p class="text-base mt-1">{{ formatDateTime(transactionDetail.updated_at) }}</p>
+          </div>
+          <div>
+            <label class="text-sm font-medium text-gray-500">Customer</label>
+            <p class="text-base mt-1">{{ transactionDetail.customer_name_snapshot || transactionDetail.users?.name || '-' }}</p>
+          </div>
+          <div>
+            <label class="text-sm font-medium text-gray-500">Phone</label>
+            <p class="text-base mt-1">{{ transactionDetail.customer_phone_snapshot || '-' }}</p>
+          </div>
+          <div>
+            <label class="text-sm font-medium text-gray-500">Table</label>
+            <p class="text-base mt-1">{{ transactionDetail.store_tables?.name || '-' }}</p>
           </div>
         </div>
       </div>
@@ -125,6 +145,11 @@
           <Column field="subtotal" header="Subtotal" class="min-w-28">
             <template #body="slotProps">
               {{ getCurrency(slotProps.data.subtotal) }}
+            </template>
+          </Column>
+          <Column field="customer_note" header="Note" class="min-w-48">
+            <template #body="slotProps">
+              {{ slotProps.data.customer_note || '-' }}
             </template>
           </Column>
         </DataTable>

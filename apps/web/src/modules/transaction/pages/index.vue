@@ -23,6 +23,20 @@
       />
     </div>
 
+    <div class="flex gap-2 items-center overflow-x-auto">
+      <div class="text-sm text-gray-400">
+        Order:
+      </div>
+      <Tag
+        v-for="(status, index) in orderStatusFilters"
+        :key="index"
+        :value="status.label"
+        :severity="filter.order_status === status.value ? 'warning' : 'secondary'"
+        class="cursor-pointer! rounded-full! px-3! py-1!"
+        @click="handleOrderStatusFilter(status)"
+      />
+    </div>
+
     <UiCard class="p-0! gap-0! overflow-hidden!">
       <DataTable
         :value="transactions"
@@ -42,7 +56,15 @@
         </Column>
         <Column field="users" header="Users" class="min-w-48">
           <template #body="slotProps">
-            {{ slotProps.data.users?.name }}
+            {{ slotProps.data.customer_name_snapshot || slotProps.data.users?.name || '-' }}
+          </template>
+        </Column>
+        <Column field="order_source" header="Source" class="min-w-32">
+          <template #body="slotProps">
+            <Tag
+              :value="slotProps.data.order_source === 'customer_catalog' ? 'Customer Catalog' : 'POS'"
+              :severity="slotProps.data.order_source === 'customer_catalog' ? 'warning' : 'info'"
+            />
           </template>
         </Column>
         <Column field="payment_method" header="Payment" class="min-w-28">
@@ -80,11 +102,19 @@
         </Column>
         <Column field="is_cancelled" header="Status">
           <template #body="slotProps">
-            <Tag
-              :value="slotProps.data.is_cancelled ? 'Cancelled' : 'Active'"
-              :severity="slotProps.data.is_cancelled ? 'danger' : 'info'"
-              class="capitalize"
-            />
+            <div class="flex flex-col gap-1">
+              <Tag
+                :value="slotProps.data.is_cancelled ? 'Cancelled' : 'Active'"
+                :severity="slotProps.data.is_cancelled ? 'danger' : 'info'"
+                class="capitalize"
+              />
+              <Tag
+                v-if="slotProps.data.order_source === 'customer_catalog'"
+                :value="slotProps.data.order_status"
+                severity="warning"
+                class="capitalize"
+              />
+            </div>
           </template>
         </Column>
         <Column field="action" header="#">
@@ -105,6 +135,15 @@
                 size="small"
                 :disabled="!isCanPrint || slotProps.data.is_cancelled"
                 @click="openPrintReceipt(slotProps.data)"
+              />
+              <Button
+                v-if="slotProps.data.order_source === 'customer_catalog' && slotProps.data.order_status !== 'selesai'"
+                severity="warning"
+                variant="outlined"
+                icon="pi pi-arrow-right"
+                size="small"
+                :disabled="!isCanUpdateStatus"
+                @click="advanceStatus(slotProps.data)"
               />
               <Button
                 severity="danger" 
@@ -138,7 +177,7 @@ import { type ReceiptData } from '../utils/receiptGenerator';
 import { onMounted, ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { getNoTable, getErrorMessage, getCurrency, formatDateTime } from '@/helpers/utils.ts';
-import { getListTransaction, postCancelTransaction } from '@/modules/transaction/services/api.ts';
+import { getListTransaction, patchTransactionStatus, postCancelTransaction } from '@/modules/transaction/services/api.ts';
 import { showToast, showConfirm } from '@/helpers/toast.ts';
 import { showLoading, hideLoading } from '@/helpers/loading.ts';
 import { getOutlet } from '@/helpers/auth.ts';
@@ -147,7 +186,7 @@ import UiCard from '@/components/UiCard.vue';
 import UiSearch from '@/components/UiSearch.vue';
 import UiPagination from '@/components/UiPagination.vue';
 import ReceiptModal from '@/modules/transaction/components/ReceiptModal.vue';
-import { READ, PRINT, CANCEL } from '@/modules/transaction/services/rbac.ts';
+import { READ, PRINT, CANCEL, UPDATE_STATUS } from '@/modules/transaction/services/rbac.ts';
 import { PREFIX_ROUTE_NAME } from '@/modules/transaction/services/constants.ts';
 
 const router = useRouter();
@@ -157,11 +196,20 @@ const outlet = getOutlet();
 const isCanPrint = computed(() => isHasPermission(PRINT));
 const iscanDetail = computed(() => isHasPermission(READ));
 const isCanCancel = computed(() => isHasPermission(CANCEL));
+const isCanUpdateStatus = computed(() => isHasPermission(UPDATE_STATUS));
 
 const listOfCancellFilters = [
   { label: 'All Status', value: null },
   { label: 'Active', value: false },
   { label: 'Cancelled', value: true },
+];
+const orderStatusFilters = [
+  { label: 'All Orders', value: null },
+  { label: 'Menunggu', value: 'menunggu_konfirmasi' },
+  { label: 'Diterima', value: 'diterima' },
+  { label: 'Diproses', value: 'diproses' },
+  { label: 'Sampai', value: 'sampai' },
+  { label: 'Selesai', value: 'selesai' },
 ];
 
 // Fetch Data
@@ -170,6 +218,7 @@ const transactions = ref([]);
 const filter = ref({
   outlet_id: outlet?.id,
   is_cancelled: null,
+  order_status: null,
 });
 const pagination = ref({
   page: 1,
@@ -187,6 +236,7 @@ const fetchTransaction = async () => {
       page: pagination.value.page,
       limit: pagination.value.rows,
       is_cancelled: filter.value.is_cancelled,
+      order_status: filter.value.order_status,
     }
     const response = await getListTransaction(payload);
     const { data, meta } = response?.data?.data || {};
@@ -222,6 +272,16 @@ const cancelReceiptModal = () => {
 const openPrintReceipt = (transaction: any) => {
   selectedTransaction.value = transaction;
   showReceiptModal.value = true;
+};
+
+const nextStatusMap: Record<string, any> = {
+  menunggu_konfirmasi: { order_status: 'diterima' },
+  diterima: { order_status: 'diproses' },
+  diproses: { order_status: 'sampai' },
+  sampai: {
+    order_status: 'selesai',
+    payment_method: 'cash',
+  },
 };
 
 // Actions
@@ -263,6 +323,24 @@ const onCancelTransaction = (transaction: any) => {
   });
 };
 
+const advanceStatus = async (transaction: any) => {
+  try {
+    const payload = { ...nextStatusMap[transaction.order_status] };
+    if (payload.order_status === 'selesai') {
+      payload.cash_received = Number(transaction.total_amount);
+      payload.change_amount = 0;
+    }
+    await patchTransactionStatus(transaction.id, payload);
+    fetchTransaction();
+  } catch (error) {
+    showToast({
+      type: 'error',
+      title: 'Failed to update status.',
+      message: getErrorMessage(error) || 'There was an error.',
+    });
+  }
+};
+
 // Detail Transactions
 const openDetail = (transaction: any) => {
   router.push({
@@ -274,6 +352,11 @@ const openDetail = (transaction: any) => {
 // Filters
 const handleCancelFilters =  (cancel: any) => {
   filter.value.is_cancelled = cancel.value;
+  fetchTransaction();
+};
+
+const handleOrderStatusFilter = (status: any) => {
+  filter.value.order_status = status.value;
   fetchTransaction();
 };
 

@@ -71,19 +71,6 @@
           <div class="text-lg font-bold text-primary dark:text-primary-400">
             {{ getCurrency(product.price) }}
           </div>
-
-          <!-- <Divider />
-
-          <Button
-            severity="secondary"
-            variant="outlined"
-            size="small"
-            icon="pi pi-shopping-cart"
-            label="Add to Cart"
-            fluid
-            :disabled="!isUserInShift"
-            @click="addProductToCart(product)"
-          /> -->
         </div>
       </UiCard>
     </div>

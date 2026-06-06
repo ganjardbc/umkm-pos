@@ -28,3 +28,15 @@ export const postCancelTransaction = async (id: string | number, options: any = 
     { ...(options || {}) },
   );
 };
+
+export const patchTransactionStatus = async (
+  id: string | number,
+  data: any,
+  options: any = {},
+) => {
+  return await api.patch(
+    `/api/v1/transactions/${id}/status`,
+    data,
+    { ...(options || {}) },
+  );
+};

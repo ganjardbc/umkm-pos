@@ -64,6 +64,14 @@
             {{ $form.location.error?.message }}
           </Message>
         </UiFormGroup>
+        <UiFormGroup label="Guest Secret Code" variant="vertical">
+          <InputText
+            name="guest_session_secret"
+            type="text"
+            placeholder="DEMO123"
+            fluid
+          />
+        </UiFormGroup>
         <UiFileUpload
           :previewUrl="imagePreview"
           @select="onUploadImage"
@@ -131,6 +139,7 @@ const initialValues = ref<FormCreate>({
   slug: '',
   name: '',
   location: '',
+  guest_session_secret: '',
   logo: '',
   is_active: true
 });
@@ -140,6 +149,7 @@ const resolver = ref(zodResolver(
     slug: z.string().min(1, { message: 'Slug is required.' }),
     name: z.string().min(1, { message: 'Name is required.' }),
     location: z.string().min(1, { message: 'Location is required.' }),
+    guest_session_secret: z.string().optional(),
     is_active: z.boolean()
   })
 ));
@@ -154,6 +164,7 @@ const onFormSubmit = async (event: any) => {
         slug: values?.slug,
         name: values?.name,
         location: values?.location,
+        guest_session_secret: values?.guest_session_secret,
         logo: values?.logo,
         is_active: values?.is_active,
       };
