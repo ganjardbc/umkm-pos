@@ -1,4 +1,4 @@
-import { IsOptional, IsUUID, IsBoolean } from 'class-validator';
+import { IsOptional, IsUUID, IsBoolean, IsString } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { PaginationDto } from '../../common/dto/pagination.dto';
@@ -27,4 +27,28 @@ export class FindAllTransactionsDto extends PaginationDto {
   })
   @IsBoolean()
   is_cancelled?: boolean;
+
+  @ApiPropertyOptional({
+    description: 'Filter by order status',
+    example: 'menunggu_konfirmasi',
+  })
+  @IsOptional()
+  @IsString()
+  order_status?: string;
+
+  @ApiPropertyOptional({
+    description: 'Filter by order source',
+    example: 'customer_catalog',
+  })
+  @IsOptional()
+  @IsString()
+  order_source?: string;
+
+  @ApiPropertyOptional({
+    description: 'Filter by table ID',
+    example: '550e8400-e29b-41d4-a716-446655440021',
+  })
+  @IsOptional()
+  @IsUUID()
+  table_id?: string;
 }
