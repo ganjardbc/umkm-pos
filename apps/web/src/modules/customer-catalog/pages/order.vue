@@ -22,12 +22,10 @@
 
     <template v-else>
       <UiCard>
-        <template #header>
-          <div class="flex items-center justify-between gap-3">
-            <h1 class="text-lg font-semibold">Informasi Pesanan</h1>
-            <Tag :value="getCustomerCatalogStatusLabel(order.order_status)" severity="warning" />
-          </div>
-        </template>
+        <div class="flex items-center justify-between gap-3">
+          <h1 class="text-lg font-semibold">Informasi Pesanan</h1>
+          <Tag :value="getCustomerCatalogStatusLabel(order.order_status)" severity="warning" />
+        </div>
 
         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div>
@@ -50,9 +48,7 @@
       </UiCard>
 
       <UiCard>
-        <template #header>
-          <h1 class="text-lg font-semibold">Items</h1>
-        </template>
+        <h1 class="text-lg font-semibold">Items</h1>
 
         <DataTable :value="order.transaction_items || []" tableStyle="min-width: 48rem">
           <template #empty>

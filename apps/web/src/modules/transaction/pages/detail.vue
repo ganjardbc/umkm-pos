@@ -72,7 +72,7 @@
           </div>
           <div>
             <label class="text-sm font-medium text-gray-500">Order Status</label>
-            <p class="text-base mt-1 capitalize">{{ transactionDetail.order_status || '-' }}</p>
+            <p class="text-base mt-1">{{ getOrderStatusLabel(transactionDetail.order_status) }}</p>
           </div>
           <div>
             <label class="text-sm font-medium text-gray-500">Offline Mode</label>
@@ -203,6 +203,7 @@ import { showLoading, hideLoading } from '@/helpers/loading.ts';
 import { isHasPermission } from '@/helpers/auth.ts';
 import { getDetailTransaction, postCancelTransaction } from '@/modules/transaction/services/api.ts';
 import { PRINT, CANCEL } from '@/modules/transaction/services/rbac.ts';
+import { getOrderStatusLabel } from '@/modules/transaction/services/status-labels.ts';
 import ReceiptModal from '@/modules/transaction/components/ReceiptModal.vue';
 
 import UiCard from '@/components/UiCard.vue';

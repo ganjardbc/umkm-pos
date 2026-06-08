@@ -7,7 +7,7 @@
       <div class="rounded-lg bg-white p-4 shadow-xl dark:bg-dark-secondary">
         <div class="flex items-center justify-between gap-3">
           <div class="flex min-w-0 items-center gap-3">
-            <div class="flex h-10 w-10 items-center justify-center rounded bg-gray-100 dark:bg-dark">
+            <div class="flex h-12 w-12 items-center justify-center rounded bg-gray-100 dark:bg-dark">
               <i class="pi pi-shopping-cart text-primary" />
             </div>
             <div class="min-w-0">

@@ -46,7 +46,7 @@
         icon="pi pi-cart-plus"
         variant="outlined"
         class="w-full!"
-        :disabled="product.stock_qty <= 0"
+        :disabled="product.stock_qty <= 0 || product.stock_qty <= product.min_stock"
         @click.stop="$emit('add', product)"
       />
     </div>

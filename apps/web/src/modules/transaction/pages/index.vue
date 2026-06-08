@@ -62,7 +62,7 @@
         <Column field="order_source" header="Source" class="min-w-32">
           <template #body="slotProps">
             <Tag
-              :value="slotProps.data.order_source === 'customer_catalog' ? 'Customer Catalog' : 'POS'"
+              :value="slotProps.data.order_source === 'customer_catalog' ? 'CC' : 'POS'"
               :severity="slotProps.data.order_source === 'customer_catalog' ? 'warning' : 'info'"
             />
           </template>
@@ -100,9 +100,9 @@
             />
           </template>
         </Column>
-        <Column field="is_cancelled" header="Status">
+        <Column field="is_cancelled" header="Status" class="min-w-48">
           <template #body="slotProps">
-            <div class="flex flex-col gap-1">
+            <div class="flex gap-1">
               <Tag
                 :value="slotProps.data.is_cancelled ? 'Cancelled' : 'Active'"
                 :severity="slotProps.data.is_cancelled ? 'danger' : 'info'"
@@ -110,7 +110,7 @@
               />
               <Tag
                 v-if="slotProps.data.order_source === 'customer_catalog'"
-                :value="slotProps.data.order_status"
+                :value="getOrderStatusLabel(slotProps.data.order_status)"
                 severity="warning"
                 class="capitalize"
               />
@@ -138,7 +138,7 @@
               />
               <Button
                 v-if="slotProps.data.order_source === 'customer_catalog' && slotProps.data.order_status !== 'selesai'"
-                severity="warning"
+                severity="success"
                 variant="outlined"
                 icon="pi pi-arrow-right"
                 size="small"
@@ -187,6 +187,7 @@ import UiSearch from '@/components/UiSearch.vue';
 import UiPagination from '@/components/UiPagination.vue';
 import ReceiptModal from '@/modules/transaction/components/ReceiptModal.vue';
 import { READ, PRINT, CANCEL, UPDATE_STATUS } from '@/modules/transaction/services/rbac.ts';
+import { getOrderStatusLabel } from '@/modules/transaction/services/status-labels.ts';
 import { PREFIX_ROUTE_NAME } from '@/modules/transaction/services/constants.ts';
 
 const router = useRouter();
