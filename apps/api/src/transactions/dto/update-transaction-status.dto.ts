@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber, IsOptional, IsString, MaxLength, Min } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString, MaxLength, Min } from 'class-validator';
 
 export class UpdateTransactionStatusDto {
   @ApiProperty({
@@ -37,4 +37,12 @@ export class UpdateTransactionStatusDto {
   @IsNumber()
   @Min(0)
   change_amount?: number;
+
+  @ApiPropertyOptional({
+    example: false,
+    description: 'Mark transaction as offline order',
+  })
+  @IsOptional()
+  @IsBoolean()
+  is_offline?: boolean;
 }
