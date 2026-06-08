@@ -211,6 +211,29 @@ export class CustomerCatalogService {
     );
   }
 
+  async getOrder(sessionToken: string, id: string) {
+    const session = await this.resolveSession(sessionToken);
+    const transaction = await this.prisma.transactions.findFirst({
+      where: {
+        id,
+        customer_session_id: session.id,
+        order_source: 'customer_catalog',
+        is_cancelled: false,
+      },
+      include: {
+        transaction_items: true,
+        store_tables: true,
+        customer_sessions: true,
+      },
+    });
+
+    if (!transaction) {
+      throw new NotFoundException(`Order with ID ${id} not found`);
+    }
+
+    return transaction;
+  }
+
   private async resolveSession(sessionToken: string) {
     const session = await this.prisma.customer_sessions.findFirst({
       where: {

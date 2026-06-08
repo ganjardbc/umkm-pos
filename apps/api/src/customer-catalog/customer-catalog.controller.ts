@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Headers, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Headers, Param, Post, Query } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Public } from '../common/decorators/public.decorator';
 import { CustomerCatalogService } from './customer-catalog.service';
@@ -55,5 +55,14 @@ export class CustomerCatalogController {
     @Body() dto: CreateTransactionDto,
   ) {
     return this.customerCatalogService.createOrder(sessionToken, dto);
+  }
+
+  @Get('catalog/orders/:id')
+  @ApiOperation({ summary: 'Get customer catalog order detail' })
+  getOrder(
+    @Headers('x-customer-session-token') sessionToken: string,
+    @Param('id') id: string,
+  ) {
+    return this.customerCatalogService.getOrder(sessionToken, id);
   }
 }

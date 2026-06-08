@@ -30,9 +30,12 @@ export class ProductsService {
   }
 
   async findAll(merchantId: string, query: ProductsQueryDto) {
-    const { page = 1, limit = 10, outlet_id } = query;
+    const { page = 1, limit = 10, outlet_id, category_id } = query;
     const skip = query.skip;
-    const where = { merchant_id: merchantId };
+    const where = {
+      merchant_id: merchantId,
+      ...(category_id && { category_id }),
+    };
 
     if (outlet_id) {
       const outlet = await this.prisma.outlets.findFirst({

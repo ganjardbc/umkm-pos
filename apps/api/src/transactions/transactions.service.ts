@@ -350,11 +350,17 @@ export class TransactionsService {
   ) {
     const cashierId = await this.resolveCashierForPos(dto, merchantId, userId);
     const prepared = await this.prepareTransactionPayload(dto, merchantId, userId, true);
+    const tableId = dto.table_id ?? null;
+
+    if (tableId) {
+      await this.assertTableBelongsToOutlet(tableId, dto.outlet_id, merchantId);
+    }
 
     const result = await this.prisma.$transaction(async (tx) => {
       const transaction = await tx.transactions.create({
         data: {
           outlet_id: dto.outlet_id,
+          table_id: tableId,
           user_id: userId,
           shift_id: dto.shift_id ?? null,
           cashier_id: cashierId,
@@ -400,7 +406,7 @@ export class TransactionsService {
 
     return this.prisma.transactions.findFirst({
       where: { id: result.id },
-      include: { transaction_items: true },
+      include: { transaction_items: true, store_tables: true },
     });
   }
 

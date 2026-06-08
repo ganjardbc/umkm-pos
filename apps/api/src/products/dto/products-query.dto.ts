@@ -10,4 +10,12 @@ export class ProductsQueryDto extends PaginationDto {
   @IsOptional()
   @IsUUID()
   outlet_id?: string;
+
+  @ApiPropertyOptional({
+    description: 'Filter products by category ID',
+    example: '550e8400-e29b-41d4-a716-446655440022',
+  })
+  @IsOptional()
+  @IsUUID()
+  category_id?: string;
 }
