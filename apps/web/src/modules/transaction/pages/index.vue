@@ -11,7 +11,7 @@
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 xl:flex gap-3 xl:items-end">
-        <div class="min-w-0 xl:w-38">
+        <div class="min-w-0 xl:w-48">
           <Select
             v-model="filter.is_cancelled"
             :options="listOfCancelFilters"
@@ -23,7 +23,7 @@
           />
         </div>
 
-        <div class="min-w-0 xl:w-38">
+        <div class="min-w-0 xl:w-48">
           <Select
             v-model="filter.order_status"
             :options="orderStatusFilters"
@@ -37,131 +37,128 @@
       </div>
     </div>
 
-    <UiCard class="p-0! gap-0! overflow-hidden!">
-      <DataTable
-        :value="transactions"
-        :loading="loading"
-        dataKey="id"
-        tableStyle="min-width: 50rem;"
+    <UiLoading
+      v-if="loading"
+      message="Loading notifications..."
+    />
+
+    <div v-else-if="transactions.length === 0" class="flex flex-col items-center justify-center py-16 text-gray-400">
+      <i class="pi pi-inbox mb-3 text-4xl" />
+      <p class="text-sm">Transactions are empty.</p>
+    </div>
+
+    <div v-else class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <UiCard
+        v-for="(trx, index) in transactions"
+        :key="trx.id"
+        class="relative overflow-hidden"
       >
-        <template #empty>
-          <span class="w-full text-center flex justify-center">
-            Transactions are empty.
+        <div class="flex items-start justify-between gap-2">
+          <div class="min-w-0 flex-1">
+            <p class="truncate text-sm font-semibold text-slate-900 dark:text-slate-50">
+              {{ trx.customer_name_snapshot || trx.users?.name || '-' }}
+            </p>
+            <p class="mt-0.5 text-xs text-slate-400">
+              #{{ getNoTable(index, pagination.page, pagination.rows) }}
+            </p>
+          </div>
+          <div class="flex shrink-0 gap-1">
+            <Tag
+              :value="trx.is_cancelled ? 'Cancelled' : 'Active'"
+              :severity="trx.is_cancelled ? 'danger' : 'info'"
+              class="capitalize text-xs!"
+            />
+            <Tag
+              v-if="trx.order_source === 'customer_catalog'"
+              :value="getOrderStatusLabel(trx.order_status)"
+              severity="warning"
+              class="capitalize text-xs!"
+            />
+          </div>
+        </div>
+
+        <Divider class="my-0!" />
+
+        <div class="grid grid-cols-2 gap-y-2 text-xs">
+          <span class="text-slate-400">Source</span>
+          <span class="text-right">
+            <Tag
+              :value="trx.order_source === 'customer_catalog' ? 'CC' : 'POS'"
+              :severity="trx.order_source === 'customer_catalog' ? 'warning' : 'info'
+"
+              class="text-xs!"
+            />
           </span>
-        </template>
-        <Column field="no" header="NO" class="w-18">
-          <template #body="slotProps">
-            {{ getNoTable(slotProps.index, pagination.page, pagination.rows) }}
-          </template>
-        </Column>
-        <Column field="users" header="Users" class="min-w-48">
-          <template #body="slotProps">
-            {{ slotProps.data.customer_name_snapshot || slotProps.data.users?.name || '-' }}
-          </template>
-        </Column>
-        <Column field="order_source" header="Source" class="min-w-32">
-          <template #body="slotProps">
+
+          <span class="text-slate-400">Mode</span>
+          <span class="text-right">
             <Tag
-              :value="slotProps.data.order_source === 'customer_catalog' ? 'CC' : 'POS'"
-              :severity="slotProps.data.order_source === 'customer_catalog' ? 'warning' : 'info'"
+              :value="trx.is_offline ? 'Offline' : 'Online'"
+              :severity="trx.is_offline ? 'danger' : 'success'"
+              class="capitalize text-xs!"
             />
-          </template>
-        </Column>
-        <Column field="payment_method" header="Payment" class="min-w-28">
-          <template #body="slotProps">
-            <span class="capitalize">
-              {{ slotProps.data.payment_method }}
-            </span>
-          </template>
-        </Column>
-        <Column field="total_amount" header="Total" class="min-w-38">
-          <template #body="slotProps">
-            {{ getCurrency(slotProps.data.total_amount) }}
-          </template>
-        </Column>
-        <Column field="transaction_items" header="Items">
-          <template #body="slotProps">
-            <span class="capitalize">
-              {{ slotProps.data.transaction_items?.length || 0 }}x
-            </span>
-          </template>
-        </Column>
-        <Column field="created_at" header="Created At" class="min-w-48">
-          <template #body="slotProps">
-            {{ formatDateTime(slotProps.data.created_at) }}
-          </template>
-        </Column>
-        <Column field="is_offline" header="Mode">
-          <template #body="slotProps">
-            <Tag
-              :value="slotProps.data.is_offline ? 'Offline' : 'Online'"
-              :severity="slotProps.data.is_offline ? 'danger' : 'success'"
-              class="capitalize"
+          </span>
+
+          <span class="text-slate-400">Payment</span>
+          <span class="text-right capitalize text-slate-700 dark:text-slate-300">{{ trx.payment_method }}</span>
+
+          <span class="text-slate-400">Items</span>
+          <span class="text-right text-slate-700 dark:text-slate-300">{{ trx.transaction_items?.length || 0 }}x</span>
+
+          <span class="text-slate-400">Date</span>
+          <span class="text-right text-slate-700 dark:text-slate-300">{{ formatDateTime(trx.created_at) }}</span>
+        </div>
+
+        <Divider class="my-0!" />
+
+        <div class="flex items-center justify-between">
+          <span class="text-lg font-bold text-primary dark:text-primary-400">
+            {{ getCurrency(trx.total_amount) }}
+          </span>
+          <div class="flex gap-1">
+            <Button
+              severity="secondary"
+              variant="outlined"
+              icon="pi pi-eye"
+              size="small"
+              :disabled="!iscanDetail"
+              @click="openDetail(trx)"
             />
-          </template>
-        </Column>
-        <Column field="is_cancelled" header="Status" class="min-w-48">
-          <template #body="slotProps">
-            <div class="flex gap-1">
-              <Tag
-                :value="slotProps.data.is_cancelled ? 'Cancelled' : 'Active'"
-                :severity="slotProps.data.is_cancelled ? 'danger' : 'info'"
-                class="capitalize"
-              />
-              <Tag
-                v-if="slotProps.data.order_source === 'customer_catalog'"
-                :value="getOrderStatusLabel(slotProps.data.order_status)"
-                severity="warning"
-                class="capitalize"
-              />
-            </div>
-          </template>
-        </Column>
-        <Column field="action" header="#">
-          <template #body="slotProps">
-            <div class="flex gap-2">
-              <Button
-                severity="secondary" 
-                variant="outlined"
-                icon="pi pi-eye"
-                size="small"
-                :disabled="!iscanDetail"
-                @click="openDetail(slotProps.data)"
-              />
-              <Button
-                severity="secondary" 
-                variant="outlined"
-                icon="pi pi-print"
-                size="small"
-                :disabled="!isCanPrint || slotProps.data.is_cancelled"
-                @click="openPrintReceipt(slotProps.data)"
-              />
-              <Button
-                v-if="slotProps.data.order_source === 'customer_catalog' && slotProps.data.order_status !== 'selesai'"
-                severity="success"
-                variant="outlined"
-                icon="pi pi-arrow-right"
-                size="small"
-                :disabled="!isCanUpdateStatus"
-                @click="advanceStatus(slotProps.data)"
-              />
-              <Button
-                severity="danger" 
-                variant="outlined"
-                icon="pi pi-times"
-                size="small"
-                :disabled="!isCanCancel || slotProps.data.is_cancelled"
-                @click="onCancelTransaction(slotProps.data)"
-              />
-            </div>
-          </template>
-        </Column>
-      </DataTable>
-      <UiPagination
-        v-model="pagination"
-        @page="onPageChange"
-      />
-    </UiCard>
+            <Button
+              severity="secondary"
+              variant="outlined"
+              icon="pi pi-print"
+              size="small"
+              :disabled="!isCanPrint || trx.is_cancelled"
+              @click="openPrintReceipt(trx)"
+            />
+            <Button
+              v-if="trx.order_source === 'customer_catalog' && trx.order_status !== 'selesai'"
+              severity="success"
+              variant="outlined"
+              icon="pi pi-arrow-right"
+              size="small"
+              :disabled="!isCanUpdateStatus"
+              @click="advanceStatus(trx)"
+            />
+            <Button
+              severity="danger"
+              variant="outlined"
+              icon="pi pi-times"
+              size="small"
+              :disabled="!isCanCancel || trx.is_cancelled"
+              @click="onCancelTransaction(trx)"
+            />
+          </div>
+        </div>
+      </UiCard>
+    </div>
+
+    <UiPagination
+      v-model="pagination"
+      class="px-0!"
+      @page="onPageChange"
+    />
   </div>
 
   <ReceiptModal
@@ -169,6 +166,15 @@
     v-model:visibility="showReceiptModal"
     :selected="selectedTransaction"
     @cancel="cancelReceiptModal"
+  />
+
+  <PaymentModal
+    v-model:visibility="showPaymentModal"
+    v-model:paymentMethod="paymentPayload.payment_method"
+    v-model:isOffline="paymentPayload.is_offline"
+    v-model:cashAmount="paymentPayload.cash_received"
+    :totalAmount="paymentPayload.total_amount"
+    @confirm="confirmPayment"
   />
 </template>
 
@@ -185,7 +191,9 @@ import { isHasPermission } from '@/helpers/auth.ts';
 import UiCard from '@/components/UiCard.vue';
 import UiSearch from '@/components/UiSearch.vue';
 import UiPagination from '@/components/UiPagination.vue';
+import UiLoading from '@/components/UiLoading.vue';
 import ReceiptModal from '@/modules/transaction/components/ReceiptModal.vue';
+import PaymentModal from '@/modules/transaction/components/PaymentModal.vue';
 import { READ, PRINT, CANCEL, UPDATE_STATUS } from '@/modules/transaction/services/rbac.ts';
 import { getOrderStatusLabel } from '@/modules/transaction/services/status-labels.ts';
 import { PREFIX_ROUTE_NAME } from '@/modules/transaction/services/constants.ts';
@@ -215,7 +223,7 @@ const orderStatusFilters = [
 
 // Fetch Data
 const loading = ref(false);
-const transactions = ref([]);
+const transactions = ref<any[]>([]);
 const filter = ref({
   outlet_id: outlet?.id,
   is_cancelled: null,
@@ -279,10 +287,58 @@ const nextStatusMap: Record<string, any> = {
   menunggu_konfirmasi: { order_status: 'diterima' },
   diterima: { order_status: 'diproses' },
   diproses: { order_status: 'sampai' },
-  sampai: {
-    order_status: 'selesai',
+};
+
+// Payment Modal
+const showPaymentModal = ref(false);
+const paymentTarget = ref<any>(null);
+const paymentPayload = ref({
+  total_amount: 0,
+  payment_method: 'cash',
+  cash_received: 0,
+  is_offline: false,
+});
+
+const openPaymentModal = (transaction: any) => {
+  paymentTarget.value = transaction;
+  paymentPayload.value = {
+    total_amount: Number(transaction.total_amount),
     payment_method: 'cash',
-  },
+    cash_received: 0,
+    is_offline: transaction.is_offline || false,
+  };
+  showPaymentModal.value = true;
+};
+
+const confirmPayment = async () => {
+  try {
+    showLoading();
+    const payload: any = {
+      order_status: 'selesai',
+      payment_method: paymentPayload.value.payment_method,
+      is_offline: paymentPayload.value.is_offline,
+    };
+    if (payload.payment_method === 'cash') {
+      payload.cash_received = Number(paymentPayload.value.cash_received);
+      payload.change_amount = Math.max(0, payload.cash_received - paymentPayload.value.total_amount);
+    }
+    await patchTransactionStatus(paymentTarget.value.id, payload);
+    showPaymentModal.value = false;
+    showToast({
+      type: 'success',
+      title: 'Success',
+      message: 'Payment completed successfully.',
+    });
+    fetchTransaction();
+  } catch (error) {
+    showToast({
+      type: 'error',
+      title: 'Error.',
+      message: getErrorMessage(error) || 'Failed to process payment.',
+    });
+  } finally {
+    hideLoading();
+  }
 };
 
 // Actions
@@ -325,12 +381,12 @@ const onCancelTransaction = (transaction: any) => {
 };
 
 const advanceStatus = async (transaction: any) => {
+  if (transaction.order_status === 'sampai') {
+    openPaymentModal(transaction);
+    return;
+  }
   try {
     const payload = { ...nextStatusMap[transaction.order_status] };
-    if (payload.order_status === 'selesai') {
-      payload.cash_received = Number(transaction.total_amount);
-      payload.change_amount = 0;
-    }
     await patchTransactionStatus(transaction.id, payload);
     fetchTransaction();
   } catch (error) {
