@@ -1,40 +1,40 @@
 <template>
   <div class="w-full space-y-4">
-    <div class="flex-1">
-      <UiSearch
-        v-model="form.search"
-        type="search"
-        class="w-full"
-        @input="search"
-      />
-    </div>
-
-    <div class="flex gap-2 items-center">
-      <div class="text-sm text-gray-400">
-        Status:
+    <div class="flex flex-col xl:flex-row gap-3 xl:items-end">
+      <div class="flex-1 min-w-0">
+        <UiSearch
+          v-model="form.search"
+          type="search"
+          class="w-full"
+          @input="search"
+        />
       </div>
-      <Tag
-        v-for="(cancel, index) in listOfCancellFilters"
-        :key="index"
-        :value="cancel.label "
-        :severity="filter.is_cancelled === cancel.value ? 'success' : 'secondary'"
-        class="cursor-pointer! rounded-full! px-3! py-1!"
-        @click="handleCancelFilters(cancel)"
-      />
-    </div>
 
-    <div class="flex gap-2 items-center overflow-x-auto">
-      <div class="text-sm text-gray-400">
-        Order:
+      <div class="grid grid-cols-1 sm:grid-cols-2 xl:flex gap-3 xl:items-end">
+        <div class="min-w-0 xl:w-38">
+          <Select
+            v-model="filter.is_cancelled"
+            :options="listOfCancelFilters"
+            option-label="label"
+            option-value="value"
+            placeholder="Status"
+            class="w-full"
+            @change="applyFilters"
+          />
+        </div>
+
+        <div class="min-w-0 xl:w-38">
+          <Select
+            v-model="filter.order_status"
+            :options="orderStatusFilters"
+            option-label="label"
+            option-value="value"
+            placeholder="Order Status"
+            class="w-full"
+            @change="applyFilters"
+          />
+        </div>
       </div>
-      <Tag
-        v-for="(status, index) in orderStatusFilters"
-        :key="index"
-        :value="status.label"
-        :severity="filter.order_status === status.value ? 'warning' : 'secondary'"
-        class="cursor-pointer! rounded-full! px-3! py-1!"
-        @click="handleOrderStatusFilter(status)"
-      />
     </div>
 
     <UiCard class="p-0! gap-0! overflow-hidden!">
@@ -198,7 +198,7 @@ const iscanDetail = computed(() => isHasPermission(READ));
 const isCanCancel = computed(() => isHasPermission(CANCEL));
 const isCanUpdateStatus = computed(() => isHasPermission(UPDATE_STATUS));
 
-const listOfCancellFilters = [
+const listOfCancelFilters = [
   { label: 'All Status', value: null },
   { label: 'Active', value: false },
   { label: 'Cancelled', value: true },
@@ -350,13 +350,8 @@ const openDetail = (transaction: any) => {
 };
 
 // Filters
-const handleCancelFilters =  (cancel: any) => {
-  filter.value.is_cancelled = cancel.value;
-  fetchTransaction();
-};
-
-const handleOrderStatusFilter = (status: any) => {
-  filter.value.order_status = status.value;
+const applyFilters = () => {
+  pagination.value.page = 1;
   fetchTransaction();
 };
 

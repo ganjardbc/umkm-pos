@@ -60,10 +60,13 @@
           @remove="onRemoveImage"
         />
         <UiFormGroup label="Active Status" variant="vertical">
-          <Checkbox
-            name="is_active"
-            binary
-          />
+          <div class="flex items-center gap-2">
+            <Checkbox
+              name="is_active"
+              binary
+            />
+            <label class="text-sm text-gray-700">Outlet is active</label>
+          </div>
           <Message
             v-if="$form.is_active?.invalid"
             severity="error"

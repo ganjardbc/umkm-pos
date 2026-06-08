@@ -11,5 +11,8 @@ export interface CatalogCartItem {
 export function state() {
   return {
     cartItems: [] as CatalogCartItem[],
+    session: null as any,
+    latestOrder: null as any,
+    sessionStatus: 'active',
   };
 }

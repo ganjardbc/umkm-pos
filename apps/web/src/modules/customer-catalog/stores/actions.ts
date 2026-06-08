@@ -1,6 +1,55 @@
 import type { CatalogCartItem } from './state';
+import { clearCustomerSession, getCustomerSession } from '@/helpers/customer-session.ts';
+import {
+  getCustomerSessionMe,
+  getCustomerSessionStatus,
+  postCatalogOrder,
+} from '../services/api.ts';
 
 export const actions = {
+  hydrateSession() {
+    (this as any).session = getCustomerSession();
+    return (this as any).session;
+  },
+
+  async loadSession() {
+    const response = await getCustomerSessionMe();
+    const data = response.data?.data || null;
+    (this as any).session = data || getCustomerSession();
+    (this as any).latestOrder = data?.latest_transaction || null;
+    (this as any).sessionStatus = data?.status || (this as any).sessionStatus || 'active';
+    return data;
+  },
+
+  async pollSessionStatus() {
+    const response = await getCustomerSessionStatus();
+    const data = response.data?.data || {};
+    (this as any).sessionStatus = data.session_status || 'active';
+    if (data.latest_transaction) {
+      const currentOrder = (this as any).latestOrder;
+      (this as any).latestOrder = currentOrder?.id === data.latest_transaction.id
+        ? { ...currentOrder, ...data.latest_transaction }
+        : data.latest_transaction;
+    }
+    return data;
+  },
+
+  resetSession() {
+    clearCustomerSession();
+    (this as any).session = null;
+    (this as any).latestOrder = null;
+    (this as any).sessionStatus = 'active';
+    (this as any).clearCart();
+  },
+
+  async submitOrder(payload: any) {
+    const response = await postCatalogOrder(payload);
+    const order = response.data?.data || null;
+    (this as any).latestOrder = order;
+    (this as any).clearCart();
+    return order;
+  },
+
   addToCart(product: any) {
     const existingItem = (this as any).cartItems.find(
       (item: CatalogCartItem) => item.id === product.id,

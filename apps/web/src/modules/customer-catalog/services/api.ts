@@ -31,3 +31,7 @@ export const getCatalogTables = async (outletId: string) => {
 export const postCatalogOrder = async (data: any) => {
   return customerApi.post('/api/v1/catalog/orders', data);
 };
+
+export const getCatalogOrder = async (orderId: string) => {
+  return customerApi.get(`/api/v1/catalog/orders/${orderId}`);
+};

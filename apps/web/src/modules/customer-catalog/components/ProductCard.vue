@@ -1,10 +1,7 @@
 <template>
-  <button
-    class="overflow-hidden rounded-2xl shadow-sm transition-all hover:shadow-lg bg-white dark:bg-dark cursor-pointer"
-    @click="$emit('add', product)"
-  >
-    <div class="relative space-y-3 p-3">
-      <div class="relative aspect-video overflow-hidden rounded-xl bg-slate-100 dark:bg-dark-secondary flex items-center justify-center">
+  <div class="overflow-hidden rounded-xl shadow-sm transition-all hover:shadow-lg bg-white dark:bg-dark-secondary">
+    <div class="relative p-3 grid grid-cols-[68px_1fr] md:grid-cols-1 gap-4">
+      <div class="relative aspect-square md:aspect-video overflow-hidden rounded-xl bg-slate-100 dark:bg-dark flex items-center justify-center">
         <img
           v-if="product.thumbnail"
           :src="product.thumbnail"
@@ -13,7 +10,7 @@
         >
         <i
           v-else
-          class="pi pi-image text-4xl! text-slate-300 dark:text-slate-600"
+          class="pi pi-image text-xl! text-slate-300 dark:text-slate-600"
         />
       </div>
 
@@ -24,8 +21,8 @@
         class="absolute right-3 top-3 text-xs!"
       />
 
-      <div class="text-left space-y-1">
-        <div class="truncate text-base font-semibold text-slate-900 dark:text-slate-50">
+      <div class="flex-1 text-left space-y-1">
+        <div class="truncate text-sm font-semibold text-slate-900 dark:text-slate-50">
           {{ product.name }}
         </div>
         <div class="flex items-center justify-between gap-4">
@@ -36,13 +33,24 @@
             {{ product.stock_qty }}x
           </div>
         </div>
-      </div>
-
-      <div class="text-left text-lg font-bold text-primary dark:text-primary-400">
-        {{ getCurrency(product.price) }}
+        <div class="text-left text-sm font-bold text-primary dark:text-primary-400">
+          {{ getCurrency(product.price) }}
+        </div>
       </div>
     </div>
-  </button>
+
+    <div class="px-3 pb-4">
+      <Button
+        size="small"
+        label="Tambah ke Keranjang"
+        icon="pi pi-cart-plus"
+        variant="outlined"
+        class="w-full!"
+        :disabled="product.stock_qty <= 0"
+        @click.stop="$emit('add', product)"
+      />
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">

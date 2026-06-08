@@ -43,6 +43,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { getCustomerCatalogStatusLabel } from '../services/status-labels.ts';
 
 const props = defineProps<{
   session: any;
@@ -57,7 +58,9 @@ defineEmits<{
 const outlet = computed(() => props.session?.outlets || null);
 
 const orderStatusText = computed(() => {
-  if (props.latestOrder?.order_status) return props.latestOrder.order_status;
+  if (props.latestOrder?.order_status) {
+    return getCustomerCatalogStatusLabel(props.latestOrder.order_status);
+  }
   return 'belum ada order';
 });
 

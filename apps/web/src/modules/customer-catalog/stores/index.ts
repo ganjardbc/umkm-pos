@@ -7,4 +7,8 @@ export const useCatalogStore = defineStore('catalogCart', {
   state,
   getters,
   actions,
+  persist: {
+    key: 'CUSTOMER_CART',
+    pick: ['cartItems'],
+  },
 });

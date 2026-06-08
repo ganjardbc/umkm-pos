@@ -58,7 +58,7 @@ const submit = async () => {
     const { data } = response.data || {};
     setCustomerSession(data);
     router.push({
-      name: 'customer-catalog-browse',
+      name: 'customer-catalog-home',
       params: { outletId: form.outlet_id },
     });
   } catch (error) {

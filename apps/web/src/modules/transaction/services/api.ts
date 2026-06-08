@@ -22,6 +22,16 @@ export const postTransaction = async (data: any, options: any = {}) => {
   );
 };
 
+export const getOutletTables = async (outletId: string, options: any = {}) => {
+  return await api.get(
+    `/api/v1/outlets/${outletId}/tables`,
+    {
+      params: { active_only: true },
+      ...(options || {}),
+    },
+  );
+};
+
 export const postCancelTransaction = async (id: string | number, options: any = {}) => {
   return await api.post(
     `/api/v1/transactions/${id}/cancel`,
