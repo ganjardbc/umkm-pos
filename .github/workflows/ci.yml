@@ -108,7 +108,7 @@ jobs:
             ${{ runner.os }}-pnpm-
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile=false
+        run: pnpm install --frozen-lockfile
 
       - name: Build shared-types (impact dependency)
         run: pnpm --filter @umkm-pos/shared-types --prod install && pnpm --filter @umkm-pos/shared-types build
