@@ -111,7 +111,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build shared-types (impact dependency)
-        run: pnpm --filter @umkm-pos/shared-types --prod install && pnpm --filter @umkm-pos/shared-types build
+        run: pnpm --filter @umkm-pos/shared-types build
 
       - name: Typecheck and build web
         run: pnpm --filter umkm-pos-app build
