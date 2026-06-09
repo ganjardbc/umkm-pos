@@ -221,8 +221,8 @@ importers:
         specifier: ^4.1.12
         version: 4.3.0(vite@8.0.13(@types/node@24.12.4)(esbuild@0.27.7)(jiti@2.7.0)(terser@5.47.1))
       '@umkm-pos/shared-types':
-        specifier: file:./vendor/shared-types
-        version: file:apps/web/vendor/shared-types
+        specifier: workspace:*
+        version: link:../../packages/shared-types
       axios:
         specifier: ^1.11.0
         version: 1.16.1
@@ -1995,9 +1995,6 @@ packages:
   '@typescript-eslint/visitor-keys@8.59.3':
     resolution: {integrity: sha512-f1UQF7ggd42YiwI5wGrRaPsa+P0CINBlrkLPmGfpq/u/I/oVtecoEIfFR9ag/oa1sLOsRNZ6xehf6qMZhQGBDg==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
-
-  '@umkm-pos/shared-types@file:apps/web/vendor/shared-types':
-    resolution: {directory: apps/web/vendor/shared-types, type: directory}
 
   '@ungap/structured-clone@1.3.1':
     resolution: {integrity: sha512-mUFwbeTqrVgDQxFveS+df2yfap6iuP20NAKAsBt5jDEoOTDew+zwLAOilHCeQJOVSvmgCX4ogqIrA0mnyr08yQ==}
@@ -7089,8 +7086,6 @@ snapshots:
     dependencies:
       '@typescript-eslint/types': 8.59.3
       eslint-visitor-keys: 5.0.1
-
-  '@umkm-pos/shared-types@file:apps/web/vendor/shared-types': {}
 
   '@ungap/structured-clone@1.3.1': {}
 
