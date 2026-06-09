@@ -1,7 +1,7 @@
 {
   "name": "umkm-pos",
   "private": true,
-  "packageManager": "pnpm@10.22.0",
+  "packageManager": "pnpm@9.15.9",
   "scripts": {
     "dev": "turbo dev",
     "build": "turbo build",
