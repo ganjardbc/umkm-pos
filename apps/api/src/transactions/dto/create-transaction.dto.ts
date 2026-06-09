@@ -28,6 +28,15 @@ export class TransactionItemInputDto {
   @IsInt()
   @Min(1)
   qty: number;
+
+  @ApiPropertyOptional({
+    example: 'Tanpa bawang',
+    description: 'Optional note from customer for this item',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(255)
+  customer_note?: string;
 }
 
 export class CreateTransactionDto {
@@ -73,6 +82,59 @@ export class CreateTransactionDto {
   @IsString()
   @MaxLength(120)
   device_id?: string;
+
+  @ApiPropertyOptional({
+    example: 'customer_catalog',
+    description: 'Order source (pos or customer_catalog)',
+    default: 'pos',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(50)
+  order_source?: string;
+
+  @ApiPropertyOptional({
+    example: 'menunggu_konfirmasi',
+    description: 'Order status for customer catalog flow',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(50)
+  order_status?: string;
+
+  @ApiPropertyOptional({
+    example: '550e8400-e29b-41d4-a716-446655440051',
+    description: 'Customer session ID for guest orders',
+  })
+  @IsOptional()
+  @IsUUID()
+  customer_session_id?: string;
+
+  @ApiPropertyOptional({
+    example: '550e8400-e29b-41d4-a716-446655440061',
+    description: 'Store table ID',
+  })
+  @IsOptional()
+  @IsUUID()
+  table_id?: string;
+
+  @ApiPropertyOptional({
+    example: 'Budi',
+    description: 'Customer name snapshot',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(150)
+  customer_name_snapshot?: string;
+
+  @ApiPropertyOptional({
+    example: '08123456789',
+    description: 'Customer phone snapshot',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(50)
+  customer_phone_snapshot?: string;
 
   @ApiProperty({
     type: [TransactionItemInputDto],

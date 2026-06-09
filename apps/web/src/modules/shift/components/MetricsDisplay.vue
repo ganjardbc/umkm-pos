@@ -36,7 +36,7 @@
                 {{ slotProps.index + 1 }}
               </template>
             </Column>
-            <Column field="user_name" header="Name" class="min-w-68">
+            <Column field="user_name" header="Name" class="min-w-48">
               <template #body="slotProps">
                 {{ slotProps.data.user_name }}
               </template>
@@ -56,7 +56,7 @@
                 {{ formatCurrency(slotProps.data.average_transaction_amount) }}
               </template>
             </Column>
-            <Column field="participation_duration_minutes" header="Duration" class="min-w-30">
+            <Column field="participation_duration_minutes" header="Duration" class="min-w-32">
               <template #body="slotProps">
                 {{ formatDuration(slotProps.data.participation_duration_minutes) }}
               </template>
@@ -66,7 +66,7 @@
                 {{ formatDate(slotProps.data.participant_added_at) }}
               </template>
             </Column>
-            <Column field="status" header="Status" class="min-w-38">
+            <Column field="status" header="Status" class="min-w-58">
               <template #body="slotProps">
                 <div class="flex justify-start gap-2">
                   <Tag

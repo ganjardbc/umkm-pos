@@ -3,7 +3,7 @@
   <UiConfirmDialog />
   <UiGlobalLoading />
 
-  <component :is="!isAuthRoute ? DefaultLayout : AuthLayout">
+  <component :is="currentLayout">
     <router-view />
   </component>
 </template>
@@ -15,6 +15,7 @@ import { storeToRefs } from 'pinia';
 
 import DefaultLayout from '@/layouts/default.vue';
 import AuthLayout from '@/layouts/auth.vue';
+import CustomerLayout from '@/layouts/customer.vue';
 
 import UiToast from '@/components/UiToast.vue';
 import UiConfirmDialog from '@/components/UiConfirmDialog.vue';
@@ -35,10 +36,11 @@ const router = useRouter();
 const authStore = useAuthStore();
 const { deviceType } = storeToRefs(authStore);
 
-const isAuthRoute = computed(() => {
-  return router.currentRoute.value.matched.some(
-    (record) => record.meta.layout === 'auth'
-  );
+const currentLayout = computed(() => {
+  const layout = router.currentRoute.value.meta?.layout;
+  if (layout === 'auth') return AuthLayout;
+  if (layout === 'customer') return CustomerLayout;
+  return DefaultLayout;
 });
 
 // Watch device type changes (example logic, can be modified as needed)

@@ -100,6 +100,7 @@
 
         <div class="flex justify-end gap-4 pb-4">
           <Button
+            type="button"
             severity="secondary"
             label="Cancel"
             size="medium"
@@ -187,9 +188,6 @@ const initialValues = ref<AdjustStock>({
 
 const resolver = ref(zodResolver(
   z.object({
-    adjustment_type: z.enum(['increase', 'decrease'], {
-      message: 'Adjustment type is required.',
-    }),
     change_qty: z.number().min(1, { message: 'Quantity must be at least 1.' }),
     reason: z.string().min(1, { message: 'Reason is required.' }),
     note: z.string().optional()
@@ -197,9 +195,9 @@ const resolver = ref(zodResolver(
 ));
 
 const onFormSubmit = (event: any) => {
-  const { valid, values } = event as { valid: boolean; values: any };
+  const { valid, values = {} } = event as { valid: boolean; values?: any };
   if (valid) {
-    const signedQty = values.adjustment_type === 'decrease'
+    const signedQty = selectedAdjustmentType.value === 'decrease'
       ? -Math.abs(values.change_qty)
       : Math.abs(values.change_qty);
     const newStock = (props.product?.stock_qty || 0) + signedQty;

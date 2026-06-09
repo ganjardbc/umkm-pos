@@ -87,13 +87,16 @@ async function main() {
         slug: 'main-branch',
       },
     },
-    update: {},
+    update: {
+      guest_session_secret: 'DEMO123',
+    },
     create: {
       id: '550e8400-e29b-41d4-a716-446655440021',
       merchant_id: merchant.id,
       slug: 'main-branch',
       name: 'Main Branch',
       location: 'Jl. Ahmad Yani No. 1, Jakarta',
+      guest_session_secret: 'DEMO123',
       is_active: true,
     },
   });
@@ -106,19 +109,71 @@ async function main() {
         slug: 'second-branch',
       },
     },
-    update: {},
+    update: {
+      guest_session_secret: 'DEMO456',
+    },
     create: {
       id: '550e8400-e29b-41d4-a716-446655440022',
       merchant_id: merchant.id,
       slug: 'second-branch',
       name: 'Second Branch',
       location: 'Jl. Sudirman No. 88, Jakarta',
+      guest_session_secret: 'DEMO456',
       is_active: true,
     },
   });
   console.log(
     `✅ Outlet created: ${secondOutlet.name} (${secondOutlet.slug})\n`,
   );
+
+  console.log('🪑 Creating store tables...');
+  const tablesSeed = [
+    {
+      id: '550e8400-e29b-41d4-a716-446655440101',
+      merchant_id: merchant.id,
+      outlet_id: mainOutlet.id,
+      code: 'A1',
+      name: 'Meja A1',
+      capacity: 4,
+    },
+    {
+      id: '550e8400-e29b-41d4-a716-446655440102',
+      merchant_id: merchant.id,
+      outlet_id: mainOutlet.id,
+      code: 'A2',
+      name: 'Meja A2',
+      capacity: 4,
+    },
+    {
+      id: '550e8400-e29b-41d4-a716-446655440103',
+      merchant_id: merchant.id,
+      outlet_id: secondOutlet.id,
+      code: 'B1',
+      name: 'Meja B1',
+      capacity: 2,
+    },
+  ];
+
+  for (const table of tablesSeed) {
+    await prisma.store_tables.upsert({
+      where: {
+        outlet_id_code: {
+          outlet_id: table.outlet_id,
+          code: table.code,
+        },
+      },
+      update: {
+        name: table.name,
+        capacity: table.capacity,
+        is_active: true,
+      },
+      create: {
+        ...table,
+        is_active: true,
+      },
+    });
+  }
+  console.log(`✅ ${tablesSeed.length} store tables seeded\n`);
 
   // 3. Create Users
   console.log('👤 Creating users...');
@@ -830,6 +885,7 @@ async function main() {
     { code: 'transaction.create', description: 'Create transactions (POS)' },
     { code: 'transaction.read', description: 'Read transactions' },
     { code: 'transaction.cancel', description: 'Cancel transactions' },
+    { code: 'transaction.update_status', description: 'Update customer catalog order status' },
     // Notifications
     { code: 'notification.read', description: 'Read notifications' },
     { code: 'notification.update', description: 'Mark notifications as read/unread' },
@@ -897,6 +953,7 @@ async function main() {
     'transaction.create',
     'transaction.read',
     'transaction.cancel',
+    'transaction.update_status',
     'notification.read',
     'notification.update',
     'report.read',
@@ -930,6 +987,7 @@ async function main() {
     'category.delete',
     'transaction.read',
     'transaction.cancel',
+    'transaction.update_status',
     'notification.read',
     'notification.update',
     'report.read',
@@ -948,6 +1006,7 @@ async function main() {
     'category.read',
     'transaction.create',
     'transaction.read',
+    'transaction.update_status',
     'notification.read',
     'notification.update',
     'upload.create',

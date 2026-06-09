@@ -36,3 +36,33 @@ export const deleteOutlet = async (id: string | number, options: any = {}) => {
     { ...(options || {}) },
   );
 };
+
+export const getOutletTables = async (outletId: string | number, params: any = {}, options: any = {}) => {
+  return await api.get(
+    `/api/v1/outlets/${outletId}/tables`,
+    { params, ...(options || {}) },
+  );
+};
+
+export const postOutletTable = async (outletId: string | number, data: any, options: any = {}) => {
+  return await api.post(
+    `/api/v1/outlets/${outletId}/tables`,
+    data,
+    { ...(options || {}) },
+  );
+};
+
+export const patchOutletTable = async (outletId: string | number, id: string | number, data: any, options: any = {}) => {
+  return await api.patch(
+    `/api/v1/outlets/${outletId}/tables/${id}`,
+    data,
+    { ...(options || {}) },
+  );
+};
+
+export const deleteOutletTable = async (outletId: string | number, id: string | number, options: any = {}) => {
+  return await api.delete(
+    `/api/v1/outlets/${outletId}/tables/${id}`,
+    { ...(options || {}) },
+  );
+};

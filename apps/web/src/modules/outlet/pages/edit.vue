@@ -46,16 +46,27 @@
             {{ $form.location.error?.message }}
           </Message>
         </UiFormGroup>
+        <UiFormGroup label="Guest Secret Code" variant="vertical">
+          <InputText
+            name="guest_session_secret"
+            type="text"
+            placeholder="DEMO123"
+            fluid
+          />
+        </UiFormGroup>
         <UiFileUpload
           :previewUrl="imagePreview"
           @select="onUploadImage"
           @remove="onRemoveImage"
         />
         <UiFormGroup label="Active Status" variant="vertical">
-          <Checkbox
-            name="is_active"
-            binary
-          />
+          <div class="flex items-center gap-2">
+            <Checkbox
+              name="is_active"
+              binary
+            />
+            <label class="text-sm text-gray-700">Outlet is active</label>
+          </div>
           <Message
             v-if="$form.is_active?.invalid"
             severity="error"
@@ -117,6 +128,7 @@ const {
 const initialValues = ref<FormEdit>({
   name: '',
   location: '',
+  guest_session_secret: '',
   is_active: true
 });
 
@@ -124,6 +136,7 @@ const resolver = ref(zodResolver(
   z.object({
     name: z.string().min(1, { message: 'Name is required.' }),
     location: z.string().min(1, { message: 'Location is required.' }),
+    guest_session_secret: z.string().optional(),
     is_active: z.boolean()
   })
 ));
@@ -137,6 +150,7 @@ const onFormSubmit = async (event: any) => {
       const payload = {
         name: values?.name,
         location: values?.location,
+        guest_session_secret: values?.guest_session_secret,
         is_active: values?.is_active,
       };
       const response = await putOutlet(outletID.value, payload);
@@ -171,11 +185,12 @@ const fetchDetail = async () => {
   try {
     const response = await getDetailOutlet(outletID.value);
     const { data } = response?.data || {};
-    const { name, location, is_active, logo } = data || {};
+    const { name, location, guest_session_secret, is_active, logo } = data || {};
 
     initialValues.value = {
       name,
       location,
+      guest_session_secret,
       is_active
     };
 

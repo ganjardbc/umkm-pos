@@ -143,6 +143,35 @@
       }"
     >
       <div class="pos-cart__section space-y-2">
+        <UiFormGroup label="Table" variant="vertical">
+          <div class="flex gap-2">
+            <Dropdown
+              v-model="transactionForm.table_id"
+              :options="tableOptions"
+              option-label="label"
+              option-value="id"
+              placeholder="No table selected"
+              class="w-full"
+              :loading="isLoadingTables"
+              :disabled="!transactionForm.outlet_id || tableOptions.length === 0"
+              show-clear
+            />
+            <Button
+              v-if="transactionForm.table_id"
+              severity="secondary"
+              variant="outlined"
+              icon="pi pi-times"
+              aria-label="Clear table"
+              @click="transactionForm.table_id = ''"
+            />
+          </div>
+          <p
+            v-if="!isLoadingTables && transactionForm.outlet_id && tableOptions.length === 0"
+            class="text-xs text-gray-400"
+          >
+            No active tables configured for this outlet.
+          </p>
+        </UiFormGroup>
         <div class="flex items-center justify-between">
           <span class="text-sm">
             Total ({{ posStore.cartItemCount }})
@@ -227,7 +256,7 @@ import { usePosStore } from '@/modules/transaction/stores-pos';
 import { getCurrency } from '@/helpers/utils.ts';
 import { useGlobalLoading } from '@/composables/useGlobalLoading.ts';
 import { showConfirm, showToast } from '@/helpers/toast.ts';
-import { postTransaction } from '@/modules/transaction/services/api.ts';
+import { getOutletTables, postTransaction } from '@/modules/transaction/services/api.ts';
 import UiCard from '@/components/UiCard.vue';
 import PaymentModal from '@/modules/transaction/components/PaymentModal.vue';
 
@@ -255,11 +284,14 @@ const isCheckingOut = ref(false);
 const transactionForm = ref({
   outlet_id: '',
   shift_id: '',
+  table_id: '',
   payment_method: 'cash',
   is_offline: true,
   device_id: `device-${Date.now()}`,
 });
 
+const tableOptions = ref<any[]>([]);
+const isLoadingTables = ref(false);
 const cashPaidAmount = ref<number>(0);
 const showPaymentModal = ref(false);
 const isCashPayment = computed(() => transactionForm.value.payment_method === 'cash');
@@ -267,6 +299,35 @@ const hasInsufficientCash = computed(() => isCashPayment.value && cashPaidAmount
 const cashChangeAmount = computed(() =>
   isCashPayment.value ? Math.max(0, cashPaidAmount.value - posStore.cartTotal) : 0,
 );
+
+const fetchTables = async (outletId: string) => {
+  if (!outletId) {
+    tableOptions.value = [];
+    transactionForm.value.table_id = '';
+    return;
+  }
+
+  try {
+    isLoadingTables.value = true;
+    const response = await getOutletTables(outletId);
+    tableOptions.value = (response?.data?.data || []).map((table: any) => ({
+      ...table,
+      label: table.code ? `${table.name} (${table.code})` : table.name,
+    }));
+
+    if (
+      transactionForm.value.table_id &&
+      !tableOptions.value.some((table) => table.id === transactionForm.value.table_id)
+    ) {
+      transactionForm.value.table_id = '';
+    }
+  } catch (error) {
+    console.error('Failed to fetch outlet tables:', error);
+    tableOptions.value = [];
+  } finally {
+    isLoadingTables.value = false;
+  }
+};
 
 // Cart Items
 const removeItem = (productId: string) => {
@@ -366,6 +427,7 @@ const onCheckout = async () => {
       payment_method: transactionForm.value.payment_method,
       is_offline: transactionForm.value.is_offline,
       device_id: transactionForm.value.device_id,
+      table_id: transactionForm.value.table_id || undefined,
       cash_received: isCashPayment.value ? cashPaidAmount.value : undefined,
       change_amount: isCashPayment.value ? cashChangeAmount.value : undefined,
       items: posStore.cartItems.map(item => ({
@@ -420,6 +482,7 @@ const openCloseCart = () => {
 
 watch(() => props.outletId, (newVal: string) => {
   transactionForm.value.outlet_id = newVal;
+  fetchTables(newVal);
 }, { immediate: true });
 
 watch(() => props.shiftId, (newVal: string) => {

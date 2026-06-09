@@ -36,6 +36,15 @@ export class CreateOutletDto {
   location?: string;
 
   @ApiPropertyOptional({
+    example: 'DEMO123',
+    description: 'Secret code used by guest session flow',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(50)
+  guest_session_secret?: string;
+
+  @ApiPropertyOptional({
     example: 'https://example.com/outlet-logo.png',
     description: 'Logo URL',
   })

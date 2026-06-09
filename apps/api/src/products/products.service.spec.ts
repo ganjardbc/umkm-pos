@@ -306,6 +306,29 @@ describe('ProductsService', () => {
       expect(result.meta.total).toBe(1);
     });
 
+    it('should filter products by category_id', async () => {
+      const pagination = Object.assign(new PaginationDto(), {
+        page: 1,
+        limit: 10,
+        category_id: 'category-1',
+      });
+
+      mockPrisma.$transaction.mockResolvedValue([[], 0]);
+
+      await service.findAll(merchantId, pagination as any);
+
+      expect(mockPrisma.products.findMany).toHaveBeenCalledWith({
+        where: { merchant_id: merchantId, category_id: 'category-1' },
+        include: { merchants: true, product_categories: true, upload: true },
+        orderBy: { created_at: 'desc' },
+        skip: pagination.skip,
+        take: pagination.limit,
+      });
+      expect(mockPrisma.products.count).toHaveBeenCalledWith({
+        where: { merchant_id: merchantId, category_id: 'category-1' },
+      });
+    });
+
     it('should throw NotFoundException when outlet_id does not belong to merchant', async () => {
       const pagination = Object.assign(new PaginationDto(), {
         page: 1,

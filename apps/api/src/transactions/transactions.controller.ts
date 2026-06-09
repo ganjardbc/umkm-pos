@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Patch,
   Body,
   Param,
   Query,
@@ -17,6 +18,7 @@ import { TransactionsService } from './transactions.service';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { CancelTransactionDto } from './dto/cancel-transaction.dto';
 import { FindAllTransactionsDto } from './dto/find-all-transactions.dto';
+import { UpdateTransactionStatusDto } from './dto/update-transaction-status.dto';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { RequirePermission } from '../common/decorators/require-permission.decorator';
 import { PermissionGuard } from '../common/guards/permission.guard';
@@ -73,6 +75,9 @@ export class TransactionsController {
       query.outlet_id,
       query.is_cancelled,
       query,
+      query.order_status,
+      query.order_source,
+      query.table_id,
     );
   }
 
@@ -109,5 +114,17 @@ export class TransactionsController {
     @CurrentUser('id') userId: string,
   ) {
     return this.transactionsService.cancel(id, merchantId, userId);
+  }
+
+  @Patch(':id/status')
+  @RequirePermission('transaction.update_status')
+  @ApiOperation({ summary: 'Update order status for customer catalog transactions' })
+  updateStatus(
+    @Param('id') id: string,
+    @Body() dto: UpdateTransactionStatusDto,
+    @CurrentUser('merchant_id') merchantId: string,
+    @CurrentUser('id') userId: string,
+  ) {
+    return this.transactionsService.updateStatus(id, dto, merchantId, userId);
   }
 }

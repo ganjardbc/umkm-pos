@@ -88,8 +88,6 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: 10
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -110,7 +108,7 @@ jobs:
             ${{ runner.os }}-pnpm-
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile=false
+        run: pnpm install --frozen-lockfile
 
       - name: Build shared-types (impact dependency)
         run: pnpm --filter @umkm-pos/shared-types build
@@ -134,8 +132,6 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: 10
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -160,6 +156,9 @@ jobs:
 
       - name: Build shared-types (impact dependency)
         run: pnpm --filter @umkm-pos/shared-types build
+
+      - name: Generate Prisma Client
+        run: pnpm --filter umkm-pos-api exec prisma generate
 
       - name: Lint API
         run: pnpm --filter umkm-pos-api lint

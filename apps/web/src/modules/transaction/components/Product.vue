@@ -1,12 +1,34 @@
 <template>
   <div class="pos-product">
-    <div class="flex-1">
+    <div class="w-full space-y-4 bg-dark-primary dark:bg-dark!">
       <UiSearch
         v-model="form.search"
         type="search"
         class="w-full"
         @input="search"
       />
+  
+      <div
+        v-if="!loadingCategory && listOfCategories && listOfCategories.length > 0"
+        class="pos-product__categories"
+      >
+        <Tag
+          value="All Categories"
+          :severity="!form.category_id ? 'success' : 'secondary'"
+          :outlined="!!form.category_id"
+          class="cursor-pointer px-4! py-2!"
+          @click="selectCategory(null)"
+        />
+        <Tag
+          v-for="category in listOfCategories"
+          :key="category.id"
+          :value="category.name"
+          :severity="form.category_id === category.id ? 'success' : 'secondary'"
+          :outlined="form.category_id !== category.id"
+          class="cursor-pointer px-4! py-2!"
+          @click="selectCategory(category.id)"
+        />
+      </div>
     </div>
 
     <div
@@ -71,19 +93,6 @@
           <div class="text-lg font-bold text-primary dark:text-primary-400">
             {{ getCurrency(product.price) }}
           </div>
-
-          <!-- <Divider />
-
-          <Button
-            severity="secondary"
-            variant="outlined"
-            size="small"
-            icon="pi pi-shopping-cart"
-            label="Add to Cart"
-            fluid
-            :disabled="!isUserInShift"
-            @click="addProductToCart(product)"
-          /> -->
         </div>
       </UiCard>
     </div>
@@ -114,6 +123,7 @@ import UiSearch from '@/components/UiSearch.vue';
 import UiPagination from '@/components/UiPagination.vue';
 import UiCard from '@/components/UiCard.vue';
 import UiLoading from '@/components/UiLoading.vue';
+import { getActiveCategories } from '@/modules/product-categories/services/api';
 
 const posStore = usePosStore();
 
@@ -146,6 +156,7 @@ const fetchProduct = async () => {
       page: pagination.value.page,
       limit: pagination.value.rows,
       outlet_id: getOutlet()?.id,
+      ...(form.value.category_id && { category_id: form.value.category_id }),
     }
     const response = await getListProduct(payload);
     const { data, meta } = response?.data?.data || {};
@@ -172,10 +183,38 @@ const onPageChange = (event: any) => {
 // Search
 const form = ref({
   search: '',
+  category_id: null as string | null,
 });
 
 const search = () => {
   console.log(form.value);
+};
+
+// Categories
+const listOfCategories = ref<any[]>([]);
+const loadingCategory = ref(false);
+
+const fetchCategories = async () => {
+  try {
+    loadingCategory.value = true;
+
+    const response = await getActiveCategories({ page: 1 });
+    const { data } = response?.data || {};
+
+    listOfCategories.value = data || [];
+  } catch (err) {
+    console.warn('fetch categories', err);
+  } finally {
+    loadingCategory.value = false;
+  }
+};
+
+const selectCategory = (categoryId: string | null) => {
+  if (form.value.category_id === categoryId) return;
+
+  form.value.category_id = categoryId;
+  pagination.value.page = 1;
+  fetchProduct();
 };
 
 // Cart
@@ -208,6 +247,7 @@ const isMobile = computed(() => deviceType.value === 'mobile');
 const isWeb = computed(() => deviceType.value === 'web');
 
 onMounted(() => {
+  fetchCategories();
   fetchProduct();
 });
 </script>
@@ -220,5 +260,14 @@ onMounted(() => {
 
 .pos-product__content {
   @apply grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4;
+}
+
+.pos-product__categories {
+  @apply flex items-center gap-2 overflow-x-auto pb-1;
+  scrollbar-width: none;
+}
+
+.pos-product__categories::-webkit-scrollbar {
+  display: none;
 }
 </style>

@@ -44,6 +44,8 @@ model merchants {
   product_categories product_categories[]
   outlet_product_inventory outlet_product_inventory[]
   inventory_movements inventory_movements[]
+  store_tables       store_tables[]
+  customer_sessions  customer_sessions[]
   upload             uploads?             @relation(fields: [logo_upload_id], references: [id], onDelete: SetNull, map: "merchants_ibfk_logo_upload")
 
   @@index([logo_upload_id], map: "idx_merchants_logo_upload")
@@ -55,6 +57,7 @@ model outlets {
   slug          String          @db.VarChar(120)
   name          String          @db.VarChar(150)
   location      String?         @db.Text
+  guest_session_secret String?  @db.VarChar(50)
   logo          String?         @db.Text
   logo_upload_id String?        @db.Char(36)
   is_active     Boolean         @default(true)
@@ -70,6 +73,8 @@ model outlets {
   notifications  notifications[]
   outlet_product_inventory outlet_product_inventory[]
   inventory_movements inventory_movements[]
+  store_tables   store_tables[]
+  customer_sessions customer_sessions[]
   upload        uploads?        @relation(fields: [logo_upload_id], references: [id], onDelete: SetNull, map: "outlets_ibfk_logo_upload")
 
   @@unique([merchant_id, slug], map: "unique_merchant_slug")
@@ -314,6 +319,7 @@ model transaction_items {
   price_snapshot        Decimal      @db.Decimal(14, 2)
   qty                   Int
   subtotal              Decimal      @db.Decimal(14, 2)
+  customer_note         String?      @db.VarChar(255)
   created_at            DateTime     @default(now()) @db.Timestamp(0)
   updated_at            DateTime     @default(now()) @db.Timestamp(0)
   created_by            String?      @db.Char(36)
@@ -347,13 +353,24 @@ model uploads {
 model transactions {
   id                String              @id @default(dbgenerated("(uuid())")) @db.Char(36)
   outlet_id         String              @db.Char(36)
-  user_id           String              @db.Char(36)
+  user_id           String?             @db.Char(36)
   shift_id          String?             @db.Char(36)
   cashier_id        String?             @db.Char(36)
-  payment_method    String              @db.VarChar(50)
+  payment_method    String              @default("pending") @db.VarChar(50)
   total_amount      Decimal             @db.Decimal(14, 2)
   cash_received     Decimal?            @db.Decimal(14, 2)
   change_amount     Decimal?            @db.Decimal(14, 2)
+  order_source      String              @default("pos") @db.VarChar(50)
+  order_status      String              @default("selesai") @db.VarChar(50)
+  customer_session_id String?           @db.Char(36)
+  table_id          String?             @db.Char(36)
+  customer_name_snapshot String?        @db.VarChar(150)
+  customer_phone_snapshot String?       @db.VarChar(50)
+  ordered_at        DateTime?           @db.Timestamp(0)
+  accepted_at       DateTime?           @db.Timestamp(0)
+  processed_at      DateTime?           @db.Timestamp(0)
+  served_at         DateTime?           @db.Timestamp(0)
+  completed_at      DateTime?           @db.Timestamp(0)
   is_offline        Boolean             @default(false)
   device_id         String?             @db.VarChar(120)
   created_at        DateTime            @default(now()) @db.Timestamp(0)
@@ -363,9 +380,11 @@ model transactions {
   is_cancelled      Boolean             @default(false)
   transaction_items transaction_items[]
   outlets           outlets             @relation(fields: [outlet_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "transactions_ibfk_1")
-  users             users               @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "transactions_ibfk_2")
+  users             users?              @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "transactions_ibfk_2")
   shifts            shifts?             @relation(fields: [shift_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "transactions_ibfk_3")
   cashier           users?              @relation("cashier_transactions", fields: [cashier_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "transactions_ibfk_cashier")
+  customer_sessions customer_sessions?  @relation(fields: [customer_session_id], references: [id], onDelete: SetNull, onUpdate: NoAction, map: "transactions_ibfk_customer_session")
+  store_tables      store_tables?       @relation(fields: [table_id], references: [id], onDelete: SetNull, onUpdate: NoAction, map: "transactions_ibfk_table")
 
   @@index([is_cancelled], map: "idx_tx_cancelled")
   @@index([created_at], map: "idx_tx_created")
@@ -373,6 +392,59 @@ model transactions {
   @@index([shift_id], map: "idx_transactions_shift_id")
   @@index([cashier_id], map: "idx_transactions_cashier_id")
   @@index([user_id], map: "idx_tx_user")
+  @@index([order_status], map: "idx_tx_order_status")
+  @@index([order_source], map: "idx_tx_order_source")
+  @@index([table_id], map: "idx_tx_table")
+  @@index([customer_session_id], map: "idx_tx_customer_session")
+}
+
+model store_tables {
+  id                String              @id @default(dbgenerated("(uuid())")) @db.Char(36)
+  merchant_id       String              @db.Char(36)
+  outlet_id         String              @db.Char(36)
+  code              String              @db.VarChar(50)
+  name              String              @db.VarChar(150)
+  capacity          Int?
+  is_active         Boolean             @default(true)
+  created_at        DateTime            @default(now()) @db.Timestamp(0)
+  updated_at        DateTime            @default(now()) @db.Timestamp(0)
+  created_by        String?             @db.Char(36)
+  updated_by        String?             @db.Char(36)
+  merchants         merchants           @relation(fields: [merchant_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  outlets           outlets             @relation(fields: [outlet_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  transactions      transactions[]
+  customer_sessions customer_sessions[]
+
+  @@unique([outlet_id, code], map: "unique_outlet_table_code")
+  @@index([merchant_id], map: "idx_store_tables_merchant")
+  @@index([outlet_id], map: "idx_store_tables_outlet")
+  @@index([is_active], map: "idx_store_tables_active")
+}
+
+model customer_sessions {
+  id                String              @id @default(dbgenerated("(uuid())")) @db.Char(36)
+  merchant_id       String              @db.Char(36)
+  outlet_id         String              @db.Char(36)
+  session_token     String              @unique(map: "unique_customer_session_token") @db.VarChar(120)
+  secret_code       String              @db.VarChar(50)
+  customer_name     String              @db.VarChar(150)
+  customer_phone    String?             @db.VarChar(50)
+  selected_table_id String?             @db.Char(36)
+  status            String              @default("active") @db.VarChar(30)
+  expires_at        DateTime            @db.Timestamp(0)
+  created_at        DateTime            @default(now()) @db.Timestamp(0)
+  updated_at        DateTime            @default(now()) @db.Timestamp(0)
+  created_by        String?             @db.Char(36)
+  updated_by        String?             @db.Char(36)
+  merchants         merchants           @relation(fields: [merchant_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  outlets           outlets             @relation(fields: [outlet_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  store_tables      store_tables?       @relation(fields: [selected_table_id], references: [id], onDelete: SetNull, onUpdate: NoAction)
+  transactions      transactions[]
+
+  @@index([merchant_id], map: "idx_customer_sessions_merchant")
+  @@index([outlet_id], map: "idx_customer_sessions_outlet")
+  @@index([status], map: "idx_customer_sessions_status")
+  @@index([expires_at], map: "idx_customer_sessions_expires_at")
 }
 
 model user_roles {
