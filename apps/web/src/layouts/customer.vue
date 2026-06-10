@@ -56,6 +56,14 @@
       </nav>
 
       <main class="customer-layout__content" :class="contentPaddingClass">
+        <Message
+          v-if="showShiftClosedMessage"
+          severity="warn"
+          :closable="false"
+          class="mb-4"
+        >
+          Outlet belum menerima pesanan karena shift kasir belum dibuka.
+        </Message>
         <router-view />
       </main>
 
@@ -63,6 +71,7 @@
         v-if="showCartFooter"
         :items="catalogStore.cartItems"
         :total="catalogStore.cartTotal"
+        :disabled="!catalogStore.isShiftOpen"
         @open="goTo('customer-catalog-cart')"
       />
     </template>
@@ -70,7 +79,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { getErrorMessage } from '@/helpers/utils.ts';
 import { showToast } from '@/helpers/toast.ts';
@@ -91,6 +100,9 @@ const customerInitial = computed(() =>
 );
 const showCartFooter = computed(() =>
   ['customer-catalog-home', 'customer-catalog-browse'].includes(String(route.name)),
+);
+const showShiftClosedMessage = computed(() =>
+  Boolean(catalogStore.shiftStatus) && !catalogStore.shiftStatusLoading && !catalogStore.isShiftOpen,
 );
 const pageTitle = computed(() => {
   const titles: Record<string, string> = {
@@ -138,6 +150,7 @@ const initializeSession = async () => {
 
   try {
     await catalogStore.loadSession();
+    await catalogStore.refreshShiftStatus(route.params.outletId as string);
     pollTimer = window.setInterval(async () => {
       try {
         const data = await catalogStore.pollSessionStatus();
@@ -158,7 +171,7 @@ const initializeSession = async () => {
   }
 };
 
-watch(() => route.name, initializeSession, { immediate: true });
+onMounted(initializeSession);
 
 onBeforeUnmount(() => {
   if (pollTimer) window.clearInterval(pollTimer);

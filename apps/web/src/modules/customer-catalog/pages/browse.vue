@@ -21,6 +21,7 @@
         v-for="product in products"
         :key="product.id"
         :product="product"
+        :disabled="!catalogStore.isShiftOpen"
         @add="handleAddToCart"
       />
     </div>
@@ -81,6 +82,15 @@ const loadProducts = async () => {
 };
 
 const handleAddToCart = (product: any) => {
+  if (!catalogStore.isShiftOpen) {
+    showToast({
+      type: 'warn',
+      title: 'Shift belum dibuka',
+      message: 'Outlet belum menerima pesanan saat ini.',
+    });
+    return;
+  }
+
   if (product.stock_qty <= 0) {
     showToast({
       type: 'warn',

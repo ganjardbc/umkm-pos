@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full h-full flex items-center justify-center px-4">
+  <div class="w-full h-dvh flex items-center justify-center px-4">
     <div class="rounded-xl bg-white p-6 shadow-lg backdrop-blur dark:bg-dark space-y-6">
       <div class="space-y-2 text-center">
         <p class="text-sm font-semibold uppercase tracking-[0.3em] text-amber-600 dark:text-amber-400">

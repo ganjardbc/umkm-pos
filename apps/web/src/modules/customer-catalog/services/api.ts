@@ -12,6 +12,12 @@ export const getCustomerSessionStatus = async () => {
   return customerApi.get('/api/v1/catalog/session/status');
 };
 
+export const getCatalogShiftStatus = async (outletId: string) => {
+  return customerApi.get('/api/v1/catalog/shift-status', {
+    params: { outlet_id: outletId },
+  });
+};
+
 export const getCatalogCategories = async (outletId: string) => {
   return customerApi.get('/api/v1/catalog/categories', {
     params: { outlet_id: outletId },

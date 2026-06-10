@@ -17,7 +17,7 @@
       <Tag
         v-if="product.stock_qty <= product.min_stock"
         severity="warn"
-        value="Low Stock"
+        value="Stok Kosong"
         class="absolute right-3 top-3 text-xs!"
       />
 
@@ -46,7 +46,7 @@
         icon="pi pi-cart-plus"
         variant="outlined"
         class="w-full!"
-        :disabled="product.stock_qty <= 0 || product.stock_qty <= product.min_stock"
+        :disabled="disabled || product.stock_qty <= 0 || product.stock_qty <= product.min_stock"
         @click.stop="$emit('add', product)"
       />
     </div>
@@ -58,6 +58,7 @@ import { getCurrency } from '@/helpers/utils.ts';
 
 defineProps<{
   product: any;
+  disabled?: boolean;
 }>();
 
 defineEmits<{

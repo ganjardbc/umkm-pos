@@ -1,6 +1,7 @@
 import type { CatalogCartItem } from './state';
 import { clearCustomerSession, getCustomerSession } from '@/helpers/customer-session.ts';
 import {
+  getCatalogShiftStatus,
   getCustomerSessionMe,
   getCustomerSessionStatus,
   postCatalogOrder,
@@ -21,6 +22,24 @@ export const actions = {
     return data;
   },
 
+  async refreshShiftStatus(outletId: string) {
+    if (!outletId) return null;
+
+    try {
+      (this as any).shiftStatusLoading = true;
+      const response = await getCatalogShiftStatus(outletId);
+      const data = response.data?.data || {};
+      (this as any).shiftStatus = {
+        is_open: data.is_open === true,
+        shift_id: data.shift_id || null,
+        status: data.status || 'closed',
+      };
+      return (this as any).shiftStatus;
+    } finally {
+      (this as any).shiftStatusLoading = false;
+    }
+  },
+
   async pollSessionStatus() {
     const response = await getCustomerSessionStatus();
     const data = response.data?.data || {};
@@ -39,6 +58,8 @@ export const actions = {
     (this as any).session = null;
     (this as any).latestOrder = null;
     (this as any).sessionStatus = 'active';
+    (this as any).shiftStatus = null;
+    (this as any).shiftStatusLoading = false;
     (this as any).clearCart();
   },
 

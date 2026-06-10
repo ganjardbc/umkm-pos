@@ -142,6 +142,7 @@
             label="Buat Pesanan"
             icon="pi pi-check"
             :loading="isSubmitting"
+            :disabled="!catalogStore.isShiftOpen"
             @click="confirmSubmitOrder"
           />
         </div>
@@ -193,6 +194,15 @@ const onClearCart = () => {
 const confirmSubmitOrder = () => {
   if (isSubmitting.value) return;
 
+  if (!catalogStore.isShiftOpen) {
+    showToast({
+      type: 'warn',
+      title: 'Shift belum dibuka',
+      message: 'Outlet belum menerima pesanan saat ini.',
+    });
+    return;
+  }
+
   if (!selectedTableId.value) {
     showToast({ type: 'warn', title: 'Pilih meja dulu.', message: 'Meja wajib dipilih.' });
     return;
@@ -211,6 +221,16 @@ const confirmSubmitOrder = () => {
 const submitOrder = async () => {
   try {
     isSubmitting.value = true;
+    await catalogStore.refreshShiftStatus(outletId);
+    if (!catalogStore.isShiftOpen) {
+      showToast({
+        type: 'warn',
+        title: 'Shift belum dibuka',
+        message: 'Outlet belum menerima pesanan saat ini.',
+      });
+      return;
+    }
+
     await catalogStore.submitOrder({
       outlet_id: outletId,
       table_id: selectedTableId.value,

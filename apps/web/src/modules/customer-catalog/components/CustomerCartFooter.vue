@@ -24,6 +24,7 @@
             variant="outlined"
             icon="pi pi-arrow-right"
             size="small"
+            :disabled="disabled"
             @click="$emit('open')"
           />
         </div>
@@ -40,6 +41,7 @@ const props = defineProps<{
   items: any[];
   total: number;
   withBottomMenu?: boolean;
+  disabled?: boolean;
 }>();
 
 defineEmits<{
