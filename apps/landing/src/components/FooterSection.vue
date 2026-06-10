@@ -4,11 +4,6 @@
       <div class="flex items-center gap-3">
         <img :src="logo" alt="UMKM POS" class="h-12" />
       </div>
-      <div class="flex gap-6 text-sm">
-        <a href="#features" class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors">{{ t.nav.fitur }}</a>
-        <a href="#pricing" class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors">{{ t.nav.harga }}</a>
-        <a href="#testimonials" class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors">{{ t.nav.testimoni }}</a>
-      </div>
       <p class="text-gray-400 dark:text-gray-500 text-xs">{{ t.footer.hakCipta }}</p>
     </div>
   </footer>

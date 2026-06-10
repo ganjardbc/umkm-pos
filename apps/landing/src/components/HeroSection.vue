@@ -1,11 +1,7 @@
 <template>
-  <section id="hero" class="w-full pt-12 bg-cream dark:bg-gray-950">
+  <section id="hero" class="w-full pt-16 bg-cream dark:bg-gray-950">
     <div class="max-w-6xl mx-auto px-4 py-12 grid md:grid-cols-[1fr_380px] items-center">
       <div class="flex-1 flex flex-col justify-center">
-        <div class="flex gap-4 items-center mb-4">
-          <img :src="logo" alt="UMKM POS" class="h-12" />
-        </div>
-        
         <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-navy dark:text-white leading-tight">
           UMKM POS
         </h1>
@@ -63,7 +59,6 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import logo from '/logo.png'
 import banner from '/banner.png'
 
 const baseUrl = import.meta.env.VITE_WEB_BASE_URL || 'http://localhost:5173'

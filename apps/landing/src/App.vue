@@ -5,7 +5,7 @@
         <a href="#hero" class="flex items-center gap-2">
           <img :src="logo" alt="UMKM POS" class="h-12" />
         </a>
-        <nav class="flex-1 hidden md:flex items-center gap-6">
+        <nav class="hidden md:flex items-center gap-6">
           <a href="#features" class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">{{ t.nav.fitur }}</a>
           <a href="#pricing" class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">{{ t.nav.harga }}</a>
           <a href="#testimonials" class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">{{ t.nav.testimoni }}</a>
