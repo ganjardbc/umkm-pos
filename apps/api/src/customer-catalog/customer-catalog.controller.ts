@@ -30,6 +30,12 @@ export class CustomerCatalogController {
     return this.customerCatalogService.getSessionStatus(sessionToken);
   }
 
+  @Get('catalog/shift-status')
+  @ApiOperation({ summary: 'Get current open shift status for outlet' })
+  getShiftStatus(@Query('outlet_id') outletId: string) {
+    return this.customerCatalogService.getShiftStatus(outletId);
+  }
+
   @Get('catalog/categories')
   @ApiOperation({ summary: 'List active categories for customer catalog' })
   listCategories(@Query('outlet_id') outletId: string) {

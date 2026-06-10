@@ -157,7 +157,7 @@ export class TransactionsService {
         data: {
           outlet_id: orderDto.outlet_id,
           user_id: null,
-          shift_id: null,
+          shift_id: orderDto.shift_id ?? null,
           cashier_id: null,
           payment_method: 'pending',
           total_amount: prepared.totalAmount,

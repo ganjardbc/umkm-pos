@@ -93,13 +93,23 @@ export class CustomerCatalogService {
     };
   }
 
-  async listCategories(outletId: string) {
-    const outlet = await this.prisma.outlets.findFirst({
-      where: { id: outletId, is_active: true },
-    });
-    if (!outlet) {
-      throw new NotFoundException('Outlet not found');
+  async getShiftStatus(outletId: string) {
+    if (!outletId) {
+      throw new BadRequestException('outlet_id is required');
     }
+
+    await this.resolveOutlet(outletId);
+    const shift = await this.findOpenShift(outletId);
+
+    return {
+      is_open: Boolean(shift),
+      shift_id: shift?.id ?? null,
+      status: shift?.status ?? 'closed',
+    };
+  }
+
+  async listCategories(outletId: string) {
+    const outlet = await this.resolveOutlet(outletId);
 
     return this.prisma.product_categories.findMany({
       where: {
@@ -115,12 +125,7 @@ export class CustomerCatalogService {
       throw new BadRequestException('outlet_id is required');
     }
 
-    const outlet = await this.prisma.outlets.findFirst({
-      where: { id: query.outlet_id, is_active: true },
-    });
-    if (!outlet) {
-      throw new NotFoundException('Outlet not found');
-    }
+    const outlet = await this.resolveOutlet(query.outlet_id);
 
     const { page = 1, limit = 10 } = query;
     const where = {
@@ -178,12 +183,7 @@ export class CustomerCatalogService {
   }
 
   async listTables(outletId: string) {
-    const outlet = await this.prisma.outlets.findFirst({
-      where: { id: outletId, is_active: true },
-    });
-    if (!outlet) {
-      throw new NotFoundException('Outlet not found');
-    }
+    await this.resolveOutlet(outletId);
 
     return this.prisma.store_tables.findMany({
       where: {
@@ -200,9 +200,15 @@ export class CustomerCatalogService {
       throw new UnauthorizedException('Session does not match outlet');
     }
 
+    const shift = await this.findOpenShift(dto.outlet_id);
+    if (!shift) {
+      throw new BadRequestException('Shift outlet belum dibuka');
+    }
+
     return this.transactionsService.createCatalogOrder(
       {
         ...dto,
+        shift_id: shift.id,
         customer_session_id: session.id,
         customer_name_snapshot: session.customer_name,
         customer_phone_snapshot: session.customer_phone ?? undefined,
@@ -232,6 +238,31 @@ export class CustomerCatalogService {
     }
 
     return transaction;
+  }
+
+  private async resolveOutlet(outletId: string) {
+    if (!outletId) {
+      throw new BadRequestException('outlet_id is required');
+    }
+
+    const outlet = await this.prisma.outlets.findFirst({
+      where: { id: outletId, is_active: true },
+    });
+    if (!outlet) {
+      throw new NotFoundException('Outlet not found');
+    }
+
+    return outlet;
+  }
+
+  private async findOpenShift(outletId: string) {
+    return this.prisma.shifts.findFirst({
+      where: {
+        outlet_id: outletId,
+        status: 'open',
+      },
+      orderBy: { start_time: 'desc' },
+    });
   }
 
   private async resolveSession(sessionToken: string) {
