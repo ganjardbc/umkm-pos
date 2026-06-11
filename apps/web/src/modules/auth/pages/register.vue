@@ -12,12 +12,12 @@
 
         <StepPanels>
           <!-- Step 1: User Information -->
-          <StepPanel :value="1">
+          <StepPanel v-slot="{ activateCallback }" :value="1">
             <Form
               v-slot="$form"
               :resolver="userResolver"
               :initialValues="userFormValues"
-              @submit="onUserFormSubmit"
+              @submit="(e) => onUserFormSubmit(e, activateCallback)"
               class="flex flex-col gap-4 w-full pt-4"
             >
               <UiFormGroup label="Full Name" variant="vertical">
@@ -106,12 +106,12 @@
           </StepPanel>
 
           <!-- Step 2: Merchant Information -->
-          <StepPanel :value="2">
+          <StepPanel v-slot="{ activateCallback }" :value="2">
             <Form
               v-slot="$form"
               :resolver="merchantResolver"
               :initialValues="merchantFormValues"
-              @submit="onMerchantFormSubmit"
+              @submit="(e) => onMerchantFormSubmit(e, activateCallback)"
               class="flex flex-col gap-4 w-full pt-4"
             >
               <UiFormGroup label="Merchant Name" variant="vertical">
@@ -195,7 +195,7 @@
                   label="Back"
                   class="w-full"
                   :disabled="loading"
-                  @click="activeStep = 1"
+                  @click="activateCallback('1')"
                 />
                 <Button
                   type="submit"
@@ -209,7 +209,7 @@
           </StepPanel>
 
           <!-- Step 3: Outlet Information -->
-          <StepPanel :value="3">
+          <StepPanel v-slot="{ activateCallback }" :value="3">
             <Form
               v-slot="$form"
               :resolver="outletResolver"
@@ -280,7 +280,7 @@
                   label="Back"
                   class="w-full"
                   :disabled="loading"
-                  @click="activeStep = 2"
+                  @click="activateCallback('2')"
                 />
                 <Button
                   type="submit"
@@ -359,10 +359,10 @@ const userResolver = ref(zodResolver(
   })
 ));
 
-const onUserFormSubmit = ({ valid, values }: { valid: boolean; values: any }) => {
+const onUserFormSubmit = ({ valid, values }: { valid: boolean; values: any }, activateCallback: (step: string) => void) => {
   if (valid) {
     userFormValues.value = values;
-    activeStep.value = 2;
+    activateCallback('2');
   }
 };
 
@@ -390,10 +390,10 @@ const onMerchantNameChange = (name: string, form: any) => {
   form.slug.value = slug;
 };
 
-const onMerchantFormSubmit = ({ valid, values }: { valid: boolean; values: any }) => {
+const onMerchantFormSubmit = ({ valid, values }: { valid: boolean; values: any }, activateCallback: (step: string) => void) => {
   if (valid) {
     merchantFormValues.value = values;
-    activeStep.value = 3;
+    activateCallback('3');
   }
 };
 
