@@ -4,16 +4,25 @@
       <div class="flex-1">
         <InputText v-model="search" fluid placeholder="Cari menu..." />
       </div>
-      <div class="md:w-64">
-        <Select
-          v-model="selectedCategory"
-          :options="categoryOptions"
-          optionLabel="name"
-          optionValue="id"
-          placeholder="Kategori"
-          class="w-full"
-        />
-      </div>
+    </div>
+
+    <div class="flex flex-wrap gap-2">
+      <Tag
+        value="All Categories"
+        :severity="!selectedCategory ? 'success' : 'secondary'"
+        :outlined="!!selectedCategory"
+        class="cursor-pointer px-4! py-2!"
+        @click="selectedCategory = ''"
+      />
+      <Tag
+        v-for="cat in categories"
+        :key="cat.id"
+        :value="cat.name"
+        :severity="selectedCategory === cat.id ? 'success' : 'secondary'"
+        :outlined="selectedCategory !== cat.id"
+        class="cursor-pointer px-4! py-2!"
+        @click="selectedCategory = cat.id"
+      />
     </div>
 
     <div class="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
@@ -36,7 +45,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { getErrorMessage } from '@/helpers/utils.ts';
 import { showToast } from '@/helpers/toast.ts';
@@ -54,11 +63,6 @@ const products = ref<any[]>([]);
 const selectedCategory = ref('');
 const search = ref('');
 const loading = ref(false);
-
-const categoryOptions = computed(() => [
-  { id: '', name: 'All Categories' },
-  ...categories.value,
-]);
 
 const loadProducts = async () => {
   try {
