@@ -101,9 +101,15 @@ log_info "API directory: $API_DIR"
 
 # Validate Environment File
 if [ ! -f "$ENV_FILE" ]; then
-  log_error "Environment file not found at: $ENV_FILE"
-  log_info "Please copy .env.example to .env and configure the variables."
-  exit 1
+  # Fallback to root .env if default API .env doesn't exist
+  if [ -f "$WORKSPACE_ROOT/.env" ]; then
+    log_warn "Environment file not found at $ENV_FILE. Sourcing root .env at $WORKSPACE_ROOT/.env instead."
+    ENV_FILE="$WORKSPACE_ROOT/.env"
+  else
+    log_error "Environment file not found at: $ENV_FILE"
+    log_info "Please make sure a .env file exists either in apps/api/.env or in the workspace root."
+    exit 1
+  fi
 fi
 log_success "Environment file found: $ENV_FILE"
 

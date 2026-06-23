@@ -23,7 +23,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1.0.3
+        uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
@@ -34,7 +34,7 @@ jobs:
             
             # 1. Navigate to the project folder on the VPS
             # (Ensure this path matches your VPS setup)
-            cd ${{ secrets.DEPLOY_PATH || '/var/www/umkm-pos' }}
+            cd ${{ secrets.DEPLOY_PATH || '$HOME/devbox/workspace/umkm-pos' }}
             
             log_info() {
               echo -e "[INFO] $1"
