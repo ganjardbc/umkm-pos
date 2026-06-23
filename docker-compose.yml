@@ -24,7 +24,7 @@ services:
       - JWT_EXPIRES_IN=7d
       - API_PREFIX=api
       - API_VERSION=v1
-      - CORS_ORIGIN=http://localhost:3000
+      - CORS_ORIGIN=https://app.insell.web.id,https://www.insell.web.id,https://insell.web.id,http://localhost:3000
     depends_on:
       - umkm-pos-db
     networks:
