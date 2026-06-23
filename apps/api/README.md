@@ -301,6 +301,36 @@ npm run start:dev
 
 ---
 
+# 🚀 Deployment
+
+We provide an automated deployment script for the API module (`apps/api/deploy.sh`). The script supports both Docker Compose and bare-metal Node.js / PM2 process environments.
+
+### Usage
+
+Run the deployment script from `apps/api`:
+
+```bash
+# Run interactively (will ask for mode)
+./deploy.sh
+
+# Run directly in Docker Compose mode
+./deploy.sh --mode docker
+
+# Run directly in PM2 / Local mode
+./deploy.sh --mode pm2
+```
+
+### Options
+
+- `-m, --mode <docker|pm2>`: Specify the deployment mode.
+- `--skip-tests`: Skip running tests before deploying.
+- `--skip-build`: Skip recompiling the API or workspace packages.
+- `--skip-migrations`: Skip applying Prisma migrations (`prisma migrate deploy`).
+- `--env <path>`: Specify a custom environment variable file.
+
+---
+
+
 # 📘 API Documentation
 
 Swagger enabled:

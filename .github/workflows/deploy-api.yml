@@ -1,0 +1,52 @@
+name: Deploy API to VPS
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - 'apps/api/**'
+      - 'packages/shared-types/**'
+      - 'pnpm-lock.yaml'
+      - '.github/workflows/deploy-api.yml'
+  workflow_dispatch: # Allow manual trigger from GitHub UI
+
+jobs:
+  deploy:
+    name: Deploy to VPS
+    runs-on: ubuntu-latest
+    
+    # Optional: ensure tests pass first in CI before deploying
+    # if you want to integrate this, you can put it in ci.yml or depend on it.
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          port: ${{ secrets.DEPLOY_PORT || 22 }}
+          script: |
+            echo "=== SSH Session Started ==="
+            
+            # 1. Navigate to the project folder on the VPS
+            # (Ensure this path matches your VPS setup)
+            cd ${{ secrets.DEPLOY_PATH || '/var/www/umkm-pos' }}
+            
+            log_info() {
+              echo -e "[INFO] $1"
+            }
+            
+            log_info "Fetching latest changes from Git..."
+            git fetch --all
+            git reset --hard origin/main
+            
+            log_info "Executing deployment script..."
+            # Run deploy.sh with the preferred mode: docker or pm2
+            # You can customize the flags below as needed
+            ./apps/api/deploy.sh --mode docker --skip-tests
+            
+            echo "=== SSH Session Completed ==="

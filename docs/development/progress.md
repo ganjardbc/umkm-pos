@@ -6,7 +6,7 @@
 MVP Core:        ████████████░░░░  75% complete
 Reporting:       ██████░░░░░░░░░░  40% complete
 Self-Order:      ████████░░░░░░░░  50% complete
-Production:      ██░░░░░░░░░░░░░░  10% complete
+Production:      ███░░░░░░░░░░░░░  20% complete
 ```
 
 ---
@@ -92,6 +92,13 @@ Production:      ██░░░░░░░░░░░░░░  10% complete
 [DONE] Merchant logo
 [DONE] Outlet logo
 [DONE] User avatar
+```
+
+### Phase 12 (Production Readiness)
+
+```txt
+[DONE] Deployment script for apps/api (deploy.sh)
+[DONE] GitHub Actions workflow for auto-deploy to VPS (deploy-api.yml)
 ```
 
 ---
