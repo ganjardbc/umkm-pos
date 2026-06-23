@@ -98,7 +98,7 @@ Production:      ███░░░░░░░░░░░░░  20% complete
 
 ```txt
 [DONE] Deployment script for apps/api (deploy.sh)
-[DONE] GitHub Actions workflow for auto-deploy to VPS (deploy-api.yml)
+[DONE] GitHub Actions workflow integration for auto-deploy to VPS (ci.yml)
 ```
 
 ---

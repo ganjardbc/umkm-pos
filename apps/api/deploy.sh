@@ -248,8 +248,8 @@ deploy_docker() {
   fi
   log_success "Database is ready."
   
-  log_info "Starting API service..."
-  $DOCKER_COMPOSE_CMD up -d umkm-pos-api
+  log_info "Starting API service (forcing container recreation with new image)..."
+  $DOCKER_COMPOSE_CMD up -d --force-recreate --no-deps umkm-pos-api
   
   if [ "$SKIP_MIGRATIONS" = false ]; then
     log_info "Running database migrations inside API container..."
