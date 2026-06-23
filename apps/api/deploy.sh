@@ -222,7 +222,7 @@ deploy_docker() {
   
   if [ "$SKIP_BUILD" = false ]; then
     log_info "Building docker images..."
-    $DOCKER_COMPOSE_CMD build umkm-pos-api
+    $DOCKER_COMPOSE_CMD build --no-cache umkm-pos-api
   fi
   
   log_info "Starting DB service..."
