@@ -1,10 +1,11 @@
 {
   "name": "umkm-pos",
   "private": true,
+  "version": "1.0.0",
   "packageManager": "pnpm@9.15.9",
   "scripts": {
-    "dev": "turbo dev",
-    "build": "turbo build",
+    "dev": "node scripts/add-version.js && turbo dev",
+    "build": "node scripts/add-version.js && turbo build",
     "test": "turbo test",
     "lint": "turbo lint",
     "format": "turbo format",
