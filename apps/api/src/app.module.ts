@@ -23,6 +23,7 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { StoreTablesModule } from './store-tables/store-tables.module';
 import { CustomerCatalogModule } from './customer-catalog/customer-catalog.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
+import { HealthModule } from './health/health.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
     NotificationsModule,
     StoreTablesModule,
     CustomerCatalogModule,
+    HealthModule,
   ],
   controllers: [AppController],
   providers: [
