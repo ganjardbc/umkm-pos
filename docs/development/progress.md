@@ -4,7 +4,7 @@
 
 ```txt
 MVP Core:        ████████████░░░░  75% complete
-Reporting:       ██████░░░░░░░░░░  40% complete
+Reporting:       ████████░░░░░░░░  50% complete
 Self-Order:      ████████░░░░░░░░  50% complete
 Production:      ███░░░░░░░░░░░░░  20% complete
 ```
@@ -14,7 +14,6 @@ Production:      ███░░░░░░░░░░░░░  20% complete
 ## Current Tasks (In Progress)
 
 ```txt
-- Dashboard summary stats (RPT-001)
 - Daily report date range filter (RPT-002)
 - Customer order submit flow (CSO-001)
 - Notification UI (NOTIF-001)
@@ -73,6 +72,12 @@ Production:      ███░░░░░░░░░░░░░  20% complete
 [DONE] Stock log (audit trail)
 [DONE] Manual stock adjustment
 [DONE] Inventory movements log
+```
+
+### Phase 7 (Reports & Dashboard)
+
+```txt
+[DONE] Dashboard summary stats (RPT-001)
 ```
 
 ### Phase 8 (Customer Self-Order - partial)

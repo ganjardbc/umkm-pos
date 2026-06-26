@@ -15,7 +15,7 @@ Priority: HIGH | MEDIUM | LOW
 ### RPT-001 — Dashboard Summary Stats
 
 ```txt
-Status: TODO
+Status: DONE
 Priority: HIGH
 Description:
   Halaman dashboard menampilkan:
