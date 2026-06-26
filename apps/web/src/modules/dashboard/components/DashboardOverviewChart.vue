@@ -14,28 +14,28 @@
       <div v-else-if="data">
         <!-- Summary Metrics Cards -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6">
-          <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-3 md:p-4">
+          <div class="bg-linear-to-br from-blue-50 to-blue-100 rounded-lg p-3 md:p-4">
             <div class="text-xs md:text-sm text-blue-600 font-medium mb-1">Total Sales</div>
             <div class="text-lg md:text-2xl font-bold text-blue-900">
               {{ formatCurrency(data.summary.total_sales) }}
             </div>
           </div>
           
-          <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-3 md:p-4">
+          <div class="bg-linear-to-br from-green-50 to-green-100 rounded-lg p-3 md:p-4">
             <div class="text-xs md:text-sm text-green-600 font-medium mb-1">Total Transactions</div>
             <div class="text-lg md:text-2xl font-bold text-green-900">
               {{ formatNumber(data.summary.total_transactions) }}
             </div>
           </div>
           
-          <div class="bg-gradient-to-br from-amber-50 to-amber-100 rounded-lg p-3 md:p-4">
+          <div class="bg-linear-to-br from-amber-50 to-amber-100 rounded-lg p-3 md:p-4">
             <div class="text-xs md:text-sm text-amber-600 font-medium mb-1">Avg Daily Sales</div>
             <div class="text-lg md:text-2xl font-bold text-amber-900">
               {{ formatCurrency(data.summary.avg_daily_sales) }}
             </div>
           </div>
           
-          <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-3 md:p-4">
+          <div class="bg-linear-to-br from-purple-50 to-purple-100 rounded-lg p-3 md:p-4">
             <div class="text-xs md:text-sm text-purple-600 font-medium mb-1">Total Days</div>
             <div class="text-lg md:text-2xl font-bold text-purple-900">
               {{ formatNumber(data.summary.total_days) }}

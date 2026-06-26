@@ -55,7 +55,7 @@
             />
           </template>
         </Column>
-        <Column field="action" header="#" class="w-[48px]">
+        <Column field="action" header="#" class="w-12">
           <template #body="slotProps">
             <div class="flex gap-2">
               <Button

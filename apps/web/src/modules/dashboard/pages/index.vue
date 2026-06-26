@@ -23,6 +23,15 @@
       {{ dateRangeError }}
     </Message>
 
+    <!-- Summary Stats -->
+    <SummaryStats
+      :sales-today="salesToday"
+      :transactions-today="transactionsToday"
+      :low-stock-count="lowStockCount"
+      :active-shifts-count="activeShiftsCount"
+      :loading="statsLoading"
+    />
+
     <!-- Sales Summary Chart -->
     <SalesSummaryChart
       :data="salesSummaryData"
@@ -78,14 +87,24 @@ import {
   getTopProducts,
   getOutletComparison,
 } from '@/modules/dashboard/services/api.ts';
+import { getListInventory } from '@/modules/stock/services/api.ts';
+import { getListShift } from '@/modules/shift/services/api.ts';
 import SalesSummaryChart from '@/modules/dashboard/components/SalesSummaryChart.vue';
 import DailyReportsChart from '@/modules/dashboard/components/DailyReportsChart.vue';
 import TopProductsChart from '@/modules/dashboard/components/TopProductsChart.vue';
 import OutletComparisonChart from '@/modules/dashboard/components/OutletComparisonChart.vue';
+import SummaryStats from '@/modules/dashboard/components/SummaryStats.vue';
 
 // Date range state
 const dateRange = ref<Date[] | null>(null);
 const dateRangeError = ref<string | null>(null);
+
+// Summary stats states
+const salesToday = ref<number>(0);
+const transactionsToday = ref<number>(0);
+const lowStockCount = ref<number>(0);
+const activeShiftsCount = ref<number>(0);
+const statsLoading = ref<boolean>(false);
 
 // Chart data states
 const salesSummaryData = ref<SalesSummaryResponse['data'] | null>(null);
@@ -99,14 +118,12 @@ const salesSummaryLoading = ref<boolean>(false);
 const dailyReportsLoading = ref<boolean>(false);
 const topProductsLoading = ref<boolean>(false);
 const outletComparisonLoading = ref<boolean>(false);
-const dashboardOverviewLoading = ref<boolean>(false);
 
 // Error states
 const salesSummaryError = ref<string | null>(null);
 const dailyReportsError = ref<string | null>(null);
 const topProductsError = ref<string | null>(null);
 const outletComparisonError = ref<string | null>(null);
-const dashboardOverviewError = ref<string | null>(null);
 
 const outlet = getOutlet();
 
@@ -137,12 +154,7 @@ const initializeDateRange = () => {
 const validateDateRange = (): boolean => {
   dateRangeError.value = null;
 
-  if (!dateRange.value || dateRange.value.length !== 2) {
-    dateRangeError.value = 'Please select both start and end dates';
-    return false;
-  }
-
-  const [start, end] = dateRange.value;
+  const [start, end] = dateRange.value ?? [];
 
   if (!start || !end) {
     dateRangeError.value = 'Please select both start and end dates';
@@ -162,6 +174,23 @@ const validateDateRange = (): boolean => {
   return true;
 };
 
+const formattedDateRange = computed(() => {
+  if (!dateRange.value || dateRange.value.length !== 2) {
+    return null;
+  }
+
+  const [start, end] = dateRange.value;
+
+  if (!start || !end) {
+    return null;
+  }
+
+  return {
+    date_from: formatDate(start),
+    date_to: formatDate(end),
+  };
+});
+
 const params = computed(() => {
   if (!formattedDateRange.value) {
     return null;
@@ -172,6 +201,70 @@ const params = computed(() => {
     outlet_id: outlet?.id,
   };
 });
+
+/**
+ * Fetch summary stats (Sales Today, Transactions Today, Low Stock Items, Active Shifts)
+ */
+const fetchSummaryStats = async () => {
+  statsLoading.value = true;
+  try {
+    const todayStr = formatDate(new Date());
+    
+    // Fetch sales summary for today
+    const summaryParams = {
+      date_from: todayStr,
+      date_to: todayStr,
+      outlet_id: outlet?.id,
+    };
+
+    // Fetch low stock inventory count
+    const inventoryParams = {
+      outlet_id: outlet?.id,
+      low_stock_only: 'true',
+      limit: 1, // We only need the total count from metadata
+    };
+
+    // Fetch active shifts
+    const shiftParams = {
+      outlet_id: outlet?.id,
+      status: 'open',
+      limit: 1, // We only need the total count from metadata
+    };
+
+    const [summaryRes, inventoryRes, shiftsRes] = await Promise.allSettled([
+      getSalesSummary(summaryParams),
+      getListInventory(inventoryParams),
+      getListShift(shiftParams),
+    ]);
+
+    if (summaryRes.status === 'fulfilled') {
+      salesToday.value = summaryRes.value.total_sales;
+      transactionsToday.value = summaryRes.value.total_transactions;
+    } else {
+      console.error('Failed to fetch today\'s sales summary:', summaryRes.reason);
+      salesToday.value = 0;
+      transactionsToday.value = 0;
+    }
+
+    if (inventoryRes.status === 'fulfilled') {
+      lowStockCount.value = inventoryRes.value.data?.data?.meta?.total ?? 0;
+    } else {
+      console.error('Failed to fetch low stock count:', inventoryRes.reason);
+      lowStockCount.value = 0;
+    }
+
+    if (shiftsRes.status === 'fulfilled') {
+      activeShiftsCount.value = shiftsRes.value.data?.data?.meta?.total ?? 0;
+    } else {
+      console.error('Failed to fetch active shifts count:', shiftsRes.reason);
+      activeShiftsCount.value = 0;
+    }
+  } catch (error) {
+    console.error('Error fetching summary stats:', error);
+  } finally {
+    statsLoading.value = false;
+  }
+};
 
 /**
  * Fetch all reports data from API endpoints
@@ -188,16 +281,13 @@ const fetchAllReports = async () => {
   dailyReportsLoading.value = true;
   topProductsLoading.value = true;
   outletComparisonLoading.value = true;
-  dashboardOverviewLoading.value = true;
 
   // Clear all error states
   salesSummaryError.value = null;
   dailyReportsError.value = null;
   topProductsError.value = null;
   outletComparisonError.value = null;
-  dashboardOverviewError.value = null;
 
-  // Fetch all endpoints in parallel
   const results = await Promise.allSettled([
     getSalesSummary(params.value),
     getDailyReports(params.value),
@@ -249,26 +339,6 @@ const fetchAllReports = async () => {
   }
   outletComparisonLoading.value = false;
 };
-
-/**
- * Computed property for formatted date range (for API calls)
- */
-const formattedDateRange = computed(() => {
-  if (!dateRange.value || dateRange.value.length !== 2) {
-    return null;
-  }
-
-  const [start, end] = dateRange.value;
-  
-  if (!start || !end) {
-    return null;
-  }
-
-  return {
-    date_from: formatDate(start),
-    date_to: formatDate(end),
-  };
-});
 
 /**
  * Retry functions for each chart
@@ -354,20 +424,15 @@ const retryOutletComparison = async () => {
 watch(dateRange, () => {
   if (dateRange.value && dateRange.value.length === 2) {
     const isValid = validateDateRange();
-    
     if (isValid) {
-      // Trigger API calls when date range is valid
       fetchAllReports();
     }
   }
-}, { deep: true });
+});
 
-/**
- * Initialize on component mount
- */
 onMounted(() => {
   initializeDateRange();
-  // The watch will automatically trigger fetchAllReports when dateRange is set
+  fetchSummaryStats();
 });
 </script>
 
