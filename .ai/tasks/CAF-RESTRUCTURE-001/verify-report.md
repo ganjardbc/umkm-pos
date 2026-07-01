@@ -210,3 +210,26 @@ Rules berikut dari `.claude/agents/code-reviewer.md` belum tercakup di `reviewer
 **Catatan:** `.agents/skills/code-review/SKILL.md` memiliki `name: code-reviewer` tapi ini adalah definisi skill di sistem lama (`.agents/`), bukan referensi ke agent file. Penghapusan `.agents/` direncanakan di PR terpisah sesuai plan.md.
 
 **Total agents di .claude/agents/ sekarang:** 7 (code-reviewer.md dihapus)
+
+---
+
+## Step 7 — ADR dari Kiro Archive (chore/caf-adr-archive)
+
+### File yang Dibuat
+
+| File | Sumber Archive | Keputusan |
+|---|---|---|
+| `docs/decisions/adr-003-merchant-access-control.md` | `MERCHANT_ACCESS_CONTROL.md` | Platform admin diidentifikasi via merchant slug `merchant-admin`, bukan flag atau role khusus |
+| `docs/decisions/adr-004-dto-inheritance-for-query-params.md` | `STOCK_API_ANOMALY_ANALYSIS.md` + `STOCK_API_FIX_SUMMARY.md` | Endpoint dengan pagination + filter wajib pakai DTO inheritance (`XxxQueryDto extends PaginationDto`) |
+
+### Status adr-005
+
+**NOT FOUND.** `docs/decisions/adr-005-*.md` tidak ditemukan di branch manapun. Sesuai instruksi, file ini tidak dibuat di PR ini — catat sebagai pending.
+
+| ADR | Status |
+|---|---|
+| adr-001-multi-tenant-data-scoping.md | ✅ Ada (dibuat di chore/caf-adr-fundamental) |
+| adr-002-db-first-schema-convention.md | ✅ Ada (dibuat di chore/caf-adr-fundamental) |
+| adr-003-merchant-access-control.md | ✅ Ada (dibuat di PR ini) |
+| adr-004-dto-inheritance-for-query-params.md | ✅ Ada (dibuat di PR ini) |
+| adr-005-product-category-as-dedicated-table.md | ⏳ Pending — belum dibuat |
