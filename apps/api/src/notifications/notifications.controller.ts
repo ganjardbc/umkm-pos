@@ -17,28 +17,42 @@ export class NotificationsController {
   @RequirePermission('notification.read')
   @ApiOperation({ summary: 'Get notifications list' })
   @ApiResponse({ status: 200, description: 'Notifications fetched successfully' })
-  findAll(@CurrentUser('id') userId: string, @CurrentUser('outlet_id') outletId: string, @Query() query: ListNotificationsDto) {
-    return this.notificationsService.findAll(userId, outletId, query);
+  findAll(
+    @CurrentUser('id') userId: string,
+    @Query() query: ListNotificationsDto,
+  ) {
+    return this.notificationsService.findAll(userId, query.outlet_id, query);
   }
 
   @Get(':id')
   @RequirePermission('notification.read')
   @ApiOperation({ summary: 'Get notification detail' })
-  findOne(@Param('id') id: string, @CurrentUser('id') userId: string, @CurrentUser('outlet_id') outletId: string) {
+  findOne(
+    @Param('id') id: string,
+    @CurrentUser('id') userId: string,
+    @Query('outlet_id') outletId?: string,
+  ) {
     return this.notificationsService.findOne(id, userId, outletId);
   }
 
   @Patch(':id/read')
   @RequirePermission('notification.update')
   @ApiOperation({ summary: 'Mark one notification as read' })
-  markAsRead(@Param('id') id: string, @CurrentUser('id') userId: string, @CurrentUser('outlet_id') outletId: string) {
+  markAsRead(
+    @Param('id') id: string,
+    @CurrentUser('id') userId: string,
+    @Query('outlet_id') outletId?: string,
+  ) {
     return this.notificationsService.markAsRead(id, userId, outletId);
   }
 
   @Patch('read-all')
   @RequirePermission('notification.update')
   @ApiOperation({ summary: 'Mark all notifications as read' })
-  markAllAsRead(@CurrentUser('id') userId: string, @CurrentUser('outlet_id') outletId: string) {
+  markAllAsRead(
+    @CurrentUser('id') userId: string,
+    @Query('outlet_id') outletId?: string,
+  ) {
     return this.notificationsService.markAllAsRead(userId, outletId);
   }
 }

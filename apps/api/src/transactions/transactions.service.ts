@@ -10,6 +10,7 @@ import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { PaginationDto } from '../common/dto/pagination.dto';
 import { ShiftsService } from '../shifts/shifts.service';
 import { UpdateTransactionStatusDto } from './dto/update-transaction-status.dto';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 const ORDER_SOURCE_POS = 'pos';
 const ORDER_SOURCE_CUSTOMER = 'customer_catalog';
@@ -33,6 +34,7 @@ export class TransactionsService {
   constructor(
     private prisma: PrismaService,
     private shiftsService: ShiftsService,
+    private eventEmitter: EventEmitter2,
   ) {}
 
   async findAll(
@@ -199,10 +201,14 @@ export class TransactionsService {
       return transaction;
     });
 
-    return this.prisma.transactions.findFirst({
+    const transaction = await this.prisma.transactions.findFirst({
       where: { id: result.id },
       include: { transaction_items: true, store_tables: true, customer_sessions: true },
     });
+
+    this.eventEmitter.emit('order.created', transaction);
+
+    return transaction;
   }
 
   async updateStatus(

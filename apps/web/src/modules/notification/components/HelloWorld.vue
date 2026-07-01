@@ -6,10 +6,8 @@
 </template>
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useNotificationStore } from '@/modules/notification/stores';
 
-const notificationStore = useNotificationStore();
-const message = ref(notificationStore.message);
+const message = ref('Hello notification Feature!');
 </script>
 
 <style scoped>

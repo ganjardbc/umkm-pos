@@ -86,7 +86,7 @@ model outlets {
 
 model notifications {
   id         String    @id @default(dbgenerated("(uuid())")) @db.Char(36)
-  user_id    String    @db.Char(36)
+  user_id    String?   @db.Char(36)
   outlet_id  String?   @db.Char(36)
   title      String    @db.VarChar(255)
   message    String    @db.Text
@@ -94,7 +94,7 @@ model notifications {
   is_read    Boolean   @default(false)
   created_at DateTime  @default(now()) @db.Timestamp(0)
   updated_at DateTime  @default(now()) @db.Timestamp(0)
-  users      users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "notifications_ibfk_1")
+  users      users?    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "notifications_ibfk_1")
   outlets    outlets?  @relation(fields: [outlet_id], references: [id], onDelete: SetNull, onUpdate: NoAction, map: "notifications_ibfk_2")
 
   @@index([user_id], map: "idx_notifications_user")

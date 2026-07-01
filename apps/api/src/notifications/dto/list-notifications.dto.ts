@@ -1,6 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsBoolean, IsInt, IsOptional, Min } from 'class-validator';
+import { IsBoolean, IsInt, IsOptional, IsUUID, Min } from 'class-validator';
 
 export class ListNotificationsDto {
   @ApiPropertyOptional({ default: 1 })
@@ -22,4 +22,9 @@ export class ListNotificationsDto {
   @Transform(({ value }) => value === 'true' || value === true)
   @IsBoolean()
   unread?: boolean;
+
+  @ApiPropertyOptional({ description: 'Filter by outlet ID' })
+  @IsOptional()
+  @IsUUID()
+  outlet_id?: string;
 }

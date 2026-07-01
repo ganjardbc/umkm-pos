@@ -183,7 +183,7 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, computed, ref, watch } from "vue";
+import { onMounted, onUnmounted, computed, ref, watch } from "vue";
 import { useRoute, useRouter } from 'vue-router';
 import defaultIcon from '@/assets/logo.png';
 import defaultLogo from '@/assets/insell-logo.png';
@@ -201,6 +201,8 @@ import UiSidebarMenu from '@/components/UiSidebarMenu.vue';
 import UiSidebarOutlet from '@/components/UiSidebarOutlet.vue';
 import UiSidebarProfile from '@/components/UiSidebarProfile.vue';
 import UiSidebarNotification from '@/components/UiSidebarNotification.vue';
+import { useSocket } from '@/composables/useSocket';
+import { useNotificationStore } from '@/modules/notification/stores/index.ts';
 
 const ENABLE_DARKMODE_TOGGLE = false;
 
@@ -281,9 +283,18 @@ watch(
   { immediate: true },
 );
 
+const { connectSocket, disconnectSocket } = useSocket();
+const notificationStore = useNotificationStore();
+
 onMounted(() => {
   initializeTheme();
   fetchOutletShift();
+  connectSocket();
+  notificationStore.fetchNotifications();
+});
+
+onUnmounted(() => {
+  disconnectSocket();
 });
 </script>
 <style scoped>

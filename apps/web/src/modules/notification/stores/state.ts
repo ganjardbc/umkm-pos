@@ -1,7 +1,8 @@
 export function state() {
-	return {
-    message: 'Hello World',
-
-		// Add your state properties here
-	};
+  return {
+    notifications: [] as any[],
+    unreadCount: 0,
+    loading: false,
+    error: '',
+  };
 }
