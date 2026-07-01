@@ -556,6 +556,33 @@ Bypass RBAC permission check
 
 ---
 
+# AI Tooling
+
+## RTK (Rust Token Killer)
+
+RTK is a token-optimized CLI proxy. Always prefix shell commands with `rtk` to reduce token consumption by 60–90%.
+
+```bash
+rtk git status
+rtk pnpm test
+rtk ls src/
+rtk grep "pattern" src/
+rtk find "*.ts" .
+rtk gh pr list
+rtk npx prisma studio
+```
+
+Meta commands:
+
+```bash
+rtk gain              # Show token savings
+rtk gain --history    # Command history with savings
+rtk discover          # Find missed RTK opportunities
+rtk proxy <cmd>       # Run raw without filtering (for debugging)
+```
+
+---
+
 # AI Agent Working Rules
 
 Saat mengerjakan task:

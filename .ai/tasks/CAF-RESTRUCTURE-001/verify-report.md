@@ -233,3 +233,75 @@ Rules berikut dari `.claude/agents/code-reviewer.md` belum tercakup di `reviewer
 | adr-003-merchant-access-control.md | ✅ Ada (dibuat di PR ini) |
 | adr-004-dto-inheritance-for-query-params.md | ✅ Ada (dibuat di PR ini) |
 | adr-005-product-category-as-dedicated-table.md | ⏳ Pending — belum dibuat |
+
+---
+
+## Step 8 — Hapus .agents/ (chore/caf-remove-legacy-agents)
+
+### Dependensi yang Diselesaikan
+
+| Dependensi | Status | Detail |
+|---|---|---|
+| RTK rules → AGENTS.md | ✅ Done | Section "AI Tooling" + RTK added to AGENTS.md sebelum "AI Agent Working Rules" |
+| task-done + secutiry-check → task-completion.md | ✅ Done | Security greps section + Hard Stop Conditions section ditambahkan |
+
+### Apa yang Dimigrasi ke AGENTS.md
+
+Dari `.agents/rules/antigravity-rtk-rules.md`:
+- Section baru `# AI Tooling` dengan subsection `## RTK (Rust Token Killer)`
+- Contoh perintah: `rtk git status`, `rtk pnpm test`, dll.
+- Meta commands: `rtk gain`, `rtk discover`, `rtk proxy`
+
+### Apa yang Ditambahkan ke task-completion.md
+
+Dari `.agents/skills/secutiry-check/SKILL.md` + `.agents/skills/task-done/SKILL.md`:
+
+| Section baru | Sumber |
+|---|---|
+| `# Security Greps (Backend Tasks)` | `secutiry-check/SKILL.md` — 6 grep commands ready-to-run |
+| `# Hard Stop Conditions` | `task-done/SKILL.md` hard stops + `secutiry-check/SKILL.md` hard fail conditions |
+| Update `# Pull Request Checklist` | Tambah "Security greps clean" item |
+
+### File yang Dihapus (git rm -r .agents/)
+
+```
+.agents/rules/antigravity-rtk-rules.md
+.agents/skills/add-api-module/SKILL.md
+.agents/skills/add-web-module/SKILL.md
+.agents/skills/code-review/SKILL.md
+.agents/skills/db-migrate/SKILL.md
+.agents/skills/implement-task/SKILL.md
+.agents/skills/secutiry-check/SKILL.md
+.agents/skills/task-done/SKILL.md
+```
+
+Semua konten sudah ter-cover:
+
+| File | Cover oleh |
+|---|---|
+| `antigravity-rtk-rules.md` | AGENTS.md section "AI Tooling" |
+| `code-review/SKILL.md` | `.claude/agents/reviewer.md` (100% identik, di-merge di step 6) |
+| `secutiry-check/SKILL.md` | `.ai/workflows/task-completion.md` (grep commands) + `.claude/agents/reviewer.md` |
+| `task-done/SKILL.md` | `.ai/workflows/task-completion.md` (hard stops, DoD) |
+| `add-api-module/SKILL.md` | `.claude/agents/backend.md` |
+| `add-web-module/SKILL.md` | `.claude/agents/frontend.md` |
+| `implement-task/SKILL.md` | `.claude/agents/backend.md` + `.claude/agents/frontend.md` |
+| `db-migrate/SKILL.md` | `.claude/agents/backend.md` |
+
+### Referensi .agents/ di Luar File Historis
+
+| File | Jenis referensi | Aksi |
+|---|---|---|
+| `docs/development/conventions.md:24` | Directory tree listing | ✅ Dihapus dari tree |
+| `.kiro/` | Tidak ditemukan referensi | — |
+| `.opencode` / config runner lain | Tidak ditemukan file | — |
+
+### pnpm Build
+
+```
+Tasks:    4 successful, 4 total
+Cached:    4 cached, 4 total
+Time:    42ms >>> FULL TURBO
+```
+
+**Status: PASS** — tidak ada regresi. Semua perubahan adalah Markdown dan YAML, tidak ada TypeScript atau Vue yang diubah.

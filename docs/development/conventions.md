@@ -21,7 +21,6 @@ umkm-pos/
 │   └── eslint-config/
 ├── docs/
 ├── .ai/
-├── .agents/
 ├── package.json
 ├── pnpm-workspace.yaml
 └── turbo.json
