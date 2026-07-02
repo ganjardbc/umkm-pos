@@ -126,6 +126,15 @@ PATCH  /product-categories/:id — Update category
 DELETE /product-categories/:id — Delete category
 ```
 
+Query params untuk `GET /products`:
+
+```txt
+outlet_id    — include outlet-level inventory in product list
+category_id  — filter by category
+search       — search products by name (case-insensitive)
+page, limit
+```
+
 ---
 
 ## Transaction Endpoints

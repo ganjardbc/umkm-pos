@@ -25,16 +25,19 @@ export class ProductsService {
 
     return {
       ...product,
-      thumbnail: (await this.uploadsService.generateSignedUrl(product.image_upload_id)).url,
+      thumbnail: (
+        await this.uploadsService.generateSignedUrl(product.image_upload_id)
+      ).url,
     };
   }
 
   async findAll(merchantId: string, query: ProductsQueryDto) {
-    const { page = 1, limit = 10, outlet_id, category_id } = query;
+    const { page = 1, limit = 10, outlet_id, category_id, search } = query;
     const skip = query.skip;
     const where = {
       merchant_id: merchantId,
       ...(category_id && { category_id }),
+      ...(search && { name: { contains: search } }),
     };
 
     if (outlet_id) {
