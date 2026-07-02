@@ -146,11 +146,13 @@ Jika ada: wajib tagged template literal, bukan string concatenation.
 Jangan mark DONE jika ada:
 
 * TypeScript error
-* Lint error (severity `error`)
+* Lint error (severity `error`) pada FILE YANG DIUBAH task ini (bukan pre-existing violations di file lain)
 * `merchant_id` diambil dari body/dto bukan `currentUser`
 * HTTP route tanpa `@RequirePermission` atau `@Public()`
 * Logging raw password/token/secret
 * `$queryRaw` dengan string concatenation
+
+Catatan pre-existing violations: jika lint error muncul di file yang disentuh tapi errornya BUKAN dari perubahan task ini, agent boleh fix sekalian jika sepele (1-2 baris), ATAU laporkan di verify-report.md sebagai "pre-existing, out of scope" dengan detail line & rule — JANGAN retry berulang atau set status NEEDS_HUMAN untuk error yang bukan buatan task ini.
 
 ---
 
@@ -160,7 +162,7 @@ Before marking task DONE:
 
 * Dokumentasi updated
 * No TypeScript errors
-* No lint errors
+* No lint errors pada changed files
 * No multi-tenant violations (merchant_id scope)
 * No permission violations
 * No duplicate types
@@ -176,7 +178,17 @@ Before marking task DONE:
 ```bash
 # Dari root
 pnpm typecheck
-pnpm lint
+
+# Lint scoped ke file yang berubah (agent Quality Gate):
+git diff --name-only origin/main...HEAD -- 'apps/web/src/**/*.ts' 'apps/web/src/**/*.vue' \
+  | grep -E '\.(ts|vue)$' | sed 's|^apps/web/||' \
+  | xargs -r pnpm --filter umkm-pos-app exec -- eslint --fix   # jika frontend berubah
+git diff --name-only origin/main...HEAD -- 'apps/api/src/**/*.ts' \
+  | grep -E '\.ts$' | sed 's|^apps/api/||' \
+  | xargs -r pnpm --filter umkm-pos-api exec -- eslint --fix   # jika api berubah
+
+# Full workspace lint (untuk audit manual / CI berkala — BUKAN blocker per-task):
+# pnpm turbo lint
 
 # API specific
 pnpm --filter umkm-pos-api test

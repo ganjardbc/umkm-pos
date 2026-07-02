@@ -180,7 +180,10 @@ Jalankan dari root:
 pnpm typecheck
 ```
 ```bash
-pnpm lint
+git diff --name-only origin/main...HEAD -- 'apps/api/src/**/*.ts' \
+  | grep -E '\.ts$' \
+  | sed 's|^apps/api/||' \
+  | xargs -r pnpm --filter umkm-pos-api exec -- eslint --fix
 ```
 ```bash
 pnpm --filter umkm-pos-api test
@@ -216,7 +219,7 @@ Kriteria FAIL (jangan lanjut jika ini ditemukan):
 
 ```
 [ ] pnpm typecheck — PASS
-[ ] pnpm lint — PASS
+[ ] lint (changed files) — PASS
 [ ] pnpm --filter umkm-pos-api test — PASS (atau SKIP dengan alasan)
 [ ] merchant_id scope check — PASS
 [ ] RBAC coverage check — PASS
@@ -240,7 +243,7 @@ Kriteria FAIL (jangan lanjut jika ini ditemukan):
 
 ## Quality Gate
 - Typecheck: PASS
-- Lint: PASS
+- Lint (changed files): PASS
 - Test: PASS / SKIP (alasan)
 - Multi-tenant scope: PASS
 - RBAC coverage: PASS
@@ -272,3 +275,4 @@ Jika masih FAIL setelah 3 attempt: tulis `Status: NEEDS_HUMAN` di verify-report.
 - Jangan sentuh `apps/web/` kecuali update `packages/shared-types`
 - Jangan skip `pnpm typecheck` walau "yakin tidak ada error"
 - Jangan auto-merge branch — buat branch dan buka PR saja
+- Jika lint error muncul di file yang disentuh tapi errornya BUKAN dari perubahan task ini (pre-existing violation): boleh fix sekalian jika sepele (1-2 baris), ATAU laporkan di verify-report.md sebagai "pre-existing, out of scope" dengan detail line & rule — JANGAN retry berulang atau set status NEEDS_HUMAN untuk error yang bukan buatan task ini

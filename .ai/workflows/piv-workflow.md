@@ -86,7 +86,12 @@ Backend Agent, Frontend Agent (self-verify), lalu QA Agent (independent verify)
 ### Commands wajib (jalankan semua, catat output)
 ```bash
 pnpm typecheck
-pnpm lint
+git diff --name-only origin/main...HEAD -- 'apps/web/src/**/*.ts' 'apps/web/src/**/*.vue' \
+  | grep -E '\.(ts|vue)$' | sed 's|^apps/web/||' \
+  | xargs -r pnpm --filter umkm-pos-app exec -- eslint --fix   # jika frontend berubah
+git diff --name-only origin/main...HEAD -- 'apps/api/src/**/*.ts' \
+  | grep -E '\.ts$' | sed 's|^apps/api/||' \
+  | xargs -r pnpm --filter umkm-pos-api exec -- eslint --fix   # jika api berubah
 pnpm --filter umkm-pos-api test          # jika backend berubah
 pnpm --filter umkm-pos-app build         # jika frontend berubah
 ```

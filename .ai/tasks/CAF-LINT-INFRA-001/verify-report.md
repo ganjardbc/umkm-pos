@@ -1,78 +1,76 @@
-# CAF-LINT-INFRA-001 — Verify Report
+# CAF-LINT-INFRA-001 — Verify Report (Scoped Lint Implementation)
 
-Branch: `chore/caf-lint-infra-fix`
-
-## Checklist
-
-| Langkah | Status | Detail |
-|---------|--------|--------|
-| 1. apps/web: ESLint installed | ✅ | `eslint`, `@eslint/js`, `typescript-eslint`, `eslint-plugin-vue`, `eslint-config-prettier`, `globals` ditambah ke devDependencies |
-| 1. apps/web: eslint.config.mjs dibuat | ✅ | Flat config dengan `@typescript-eslint/recommended` + `eslint-plugin-vue` flat/recommended + prettier. Rules relaxed: `no-explicit-any: off`. |
-| 1. apps/web: script "lint" ditambah | ✅ | `"lint": "eslint \"src/**/*.{ts,vue}\" --fix"` |
-| 2. apps/api: dist/** ditambah ke ignores | ✅ | `ignores: ['eslint.config.mjs', 'dist/**', 'node_modules/**']` |
-| 3. components.d.ts: untracked | ✅ | Ditambah ke `.gitignore`, `git rm --cached` dijalankan |
+Branch: `chore/caf-scoped-lint`
 
 ---
 
-## Hasil `pnpm turbo lint` (root)
+## Files Updated
 
+| File | Changes |
+|------|---------|
+| `.claude/agents/frontend.md` | VERIFY bash (scoped command + grep/sed fix), Verify Checklist item, Quality Gate template, Batasan (pre-existing clause) |
+| `.claude/agents/backend.md` | VERIFY bash (scoped command + grep/sed fix), Verify Checklist item, Quality Gate template, Batasan (pre-existing clause) |
+| `.ai/workflows/task-completion.md` | Commands to Run (scoped + turbo as non-blocker comment), Hard Stop Conditions (scope qualifier), PR Checklist, pre-existing violation note |
+| `.ai/workflows/piv-workflow.md` | Commands wajib (scoped commands) |
+
+---
+
+## Sanity Check: Scoped Lint Commands
+
+### Issue found during testing (deviation from original plan)
+
+Original plan command used `xargs -r pnpm --filter <pkg> exec -- eslint` directly. Two problems:
+
+1. **Path prefix mismatch:** `pnpm exec` runs ESLint from the workspace dir (`apps/web`), but `git diff --name-only` returns repo-root paths (`apps/web/src/...`). ESLint couldn't find files → exit 2.
+2. **RTK footer injection:** RTK proxy appends `--- Changes ---` to git output. `xargs` picked up `---`, `Changes`, `---` as file arguments.
+
+### Fix applied
+
+Added `grep -E` + `sed` to the pipeline:
+
+```bash
+# Web
+git diff --name-only origin/main...HEAD -- 'apps/web/src/**/*.ts' 'apps/web/src/**/*.vue' \
+  | grep -E '\.(ts|vue)$' | sed 's|^apps/web/||' \
+  | xargs -r pnpm --filter umkm-pos-app exec -- eslint --fix
+
+# API
+git diff --name-only origin/main...HEAD -- 'apps/api/src/**/*.ts' \
+  | grep -E '\.ts$' | sed 's|^apps/api/||' \
+  | xargs -r pnpm --filter umkm-pos-api exec -- eslint --fix
 ```
-Tasks:    1 successful, 2 total
-Cached:   1 cached, 2 total (api dari cache)
-Failed:   umkm-pos-app#lint
-```
 
-**Sebelum task ini:** Turbo hanya menjalankan 1 task (api). Web di-skip karena tidak ada script lint.
-**Setelah task ini:** Turbo menjalankan 2 tasks — api (pass) + web (fail dengan violations pre-existing).
+- `grep -E '\.(ts|vue)$'` — strips RTK footer + any non-file lines
+- `sed 's|^apps/web/||'` — converts repo-root path to workspace-relative path
 
-Infrastruktur Quality Gate berfungsi: web tidak lagi di-skip diam-diam.
+### Sanity check results
 
----
+| Command | Exit | Notes |
+|---------|------|-------|
+| Web scoped lint | 1 | Pre-existing violations — see below |
+| API scoped lint | 0 | Clean |
+| xargs -r on empty input | 0 | Confirmed no-op behavior |
 
-## apps/api lint
+### Pre-existing violations (web — out of scope)
 
-```
-✅ 0 problems
-```
+These errors are in files changed by commit `91c5bf4` (prior branch work, not this task):
 
----
+| File | Line | Rule |
+|------|------|------|
+| `src/components/UiSidebarMenu.vue` | 16:11 | `vue/no-use-v-if-with-v-for` |
+| `src/modules/auth/pages/index.vue` | 126:32 | `no-unsafe-optional-chaining` |
+| `src/modules/auth/pages/register.vue` | 454:31 | `no-unsafe-optional-chaining` |
 
-## apps/web lint — Non-auto-fixable violations (pre-existing, OUT OF SCOPE)
-
-Setelah `--fix` dijalankan, 17 masalah tersisa:
-
-| File | Line | Rule | Severity | Catatan |
-|------|------|------|----------|---------|
-| `src/components/TemplateCreate.vue` | 3:19 | `vue/no-parsing-error` | error | `v-bind="$attrs, { novalidate: true }"` — comma expression invalid di template |
-| `src/components/UiSearch.vue` | 4:16 | `vue/no-mutating-props` | error | Direct mutation of modelValue prop |
-| `src/components/UiSidebarMenu.vue` | 16:11 | `vue/no-use-v-if-with-v-for` | error | v-if harus di wrapper element |
-| `src/components/UiSidebarOutlet.vue` | 85, 104, 105 | `@typescript-eslint/no-unused-vars` | error | 3 unused imports |
-| `src/modules/auth/pages/index.vue` | 126:32 | `no-unsafe-optional-chaining` | error | Optional chaining in spread/arithmetic |
-| `src/modules/auth/pages/register.vue` | 454:31 | `no-unsafe-optional-chaining` | error | Optional chaining in spread/arithmetic |
-| `src/modules/dashboard/pages/__tests__/apiFetching.test.ts` | 260:16 | `@typescript-eslint/no-unused-vars` | error | Unused `error` in catch |
-| `src/modules/shift/pages/CurrentShift.vue` | 32:7 | `@typescript-eslint/no-unused-vars` | error | Unused `emit` |
-| `src/components/UiAdvanceFilter.vue` | 35, 42 | `vue/require-explicit-emits` | warning | Emitted events not declared |
-| `src/components/UiEmptyState.vue` | 26:3 | `vue/require-default-prop` | warning | Prop 'icon' missing default |
-| `src/components/UiSidebarMenu.vue` | 11, 21 | `vue/require-explicit-emits` | warning | Emitted events not declared |
-| `src/modules/transaction/components/ReceiptModal.vue` | 50:3 | `vue/no-required-prop-with-default` | warning | Required prop with default |
-| `src/modules/transaction/components/ReceiptPreview.vue` | 93:3 | `vue/no-required-prop-with-default` | warning | Required prop with default |
-
-**Total: 10 errors, 7 warnings** — semua pre-existing, tidak menyentuh kode baru.
+Per pre-existing violation clause now documented in all agent definitions and task-completion.md: these are "pre-existing, out of scope" — not a Hard Stop for this task.
 
 ---
 
-## Catatan: RTK + pnpm lint
+## Acceptance Criteria
 
-`pnpm lint` (root) → RTK wrapper → gagal parse turbo output sebagai ESLint JSON → exit code 2.
-Workaround: gunakan `pnpm turbo lint` langsung untuk hasil yang akurat dari root.
-Ini bukan masalah ESLint infra, ini RTK integration issue terpisah.
-
----
-
-## Files Changed
-
-- `apps/web/package.json` — tambah lint script + ESLint devDependencies
-- `apps/web/eslint.config.mjs` — baru (dibuat)
-- `apps/web/.gitignore` — tambah `components.d.ts`
-- `apps/api/eslint.config.mjs` — tambah `dist/**` ke ignores
-- `pnpm-lock.yaml` — updated (ESLint packages web)
+- [x] `.claude/agents/frontend.md` — VERIFY bash, Checklist item, Quality Gate label, Batasan pre-existing clause
+- [x] `.claude/agents/backend.md` — VERIFY bash, Checklist item, Quality Gate label, Batasan pre-existing clause
+- [x] `.ai/workflows/task-completion.md` — Commands (scoped + turbo note), Hard Stop scope qualifier, PR Checklist, pre-existing note
+- [x] `.ai/workflows/piv-workflow.md` — Commands wajib updated
+- [x] Commands tested: working correctly (grep/sed fix applied)
+- [x] `xargs -r` no-op on empty input confirmed
+- [x] RTK footer issue identified and resolved

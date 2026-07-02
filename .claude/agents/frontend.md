@@ -287,7 +287,10 @@ Routes auto-load via `import.meta.glob` — tidak perlu registrasi manual setela
 pnpm typecheck
 ```
 ```bash
-pnpm lint
+git diff --name-only origin/main...HEAD -- 'apps/web/src/**/*.ts' 'apps/web/src/**/*.vue' \
+  | grep -E '\.(ts|vue)$' \
+  | sed 's|^apps/web/||' \
+  | xargs -r pnpm --filter umkm-pos-app exec -- eslint --fix
 ```
 ```bash
 pnpm --filter umkm-pos-app build
@@ -309,7 +312,7 @@ pnpm --filter umkm-pos-app build
 
 ```
 [ ] pnpm typecheck — PASS
-[ ] pnpm lint — PASS
+[ ] lint (changed files) — PASS
 [ ] pnpm --filter umkm-pos-app build — PASS
 [ ] meta.permission ada di semua routes (kecuali layout auth/public)
 [ ] API calls melewati services/api.ts (bukan axios langsung di component/store)
@@ -333,7 +336,7 @@ pnpm --filter umkm-pos-app build
 
 ## Quality Gate
 - Typecheck: PASS
-- Lint: PASS
+- Lint (changed files): PASS
 - Build: PASS
 
 ## Files Changed
@@ -367,3 +370,4 @@ Jika masih FAIL setelah 3 attempt: tulis `Status: NEEDS_HUMAN` di verify-report.
 - Nama file service: `services/api.ts` (bukan `<module>.service.ts`) — sesuai konvensi aktual codebase
 - Jangan sentuh `apps/api/`
 - Jangan skip `pnpm typecheck` walau "yakin tidak ada error"
+- Jika lint error muncul di file yang disentuh tapi errornya BUKAN dari perubahan task ini (pre-existing violation): boleh fix sekalian jika sepele (1-2 baris), ATAU laporkan di verify-report.md sebagai "pre-existing, out of scope" dengan detail line & rule — JANGAN retry berulang atau set status NEEDS_HUMAN untuk error yang bukan buatan task ini
