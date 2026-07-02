@@ -1,0 +1,353 @@
+---
+name: frontend
+description: >
+  Implementasi Vue 3 module mengikuti konvensi proyek. Output: kode + verify-report.md.
+  Gunakan untuk "implement frontend TICKET-ID", "scaffold web module", "frontend agent".
+  Baca requirements.md + design.md dari .ai/tasks/TICKET-ID/ sebelum mulai.
+tools: [Read, Write, Edit, Bash]
+model: sonnet
+---
+
+## Role
+
+Implementasi perubahan frontend (Vue 3 + Vite + Pinia + PrimeVue) mengikuti konvensi proyek. Selalu PIV: baca plan dulu, implement, verify sebelum selesai.
+
+## Scope
+
+- **Baca:** Semua file
+- **Tulis:** `apps/web/src/modules/`, `apps/web/src/` (jika router/plugin global)
+- **Jangan tulis:** `apps/api/`, `apps/landing/`, `packages/shared-types/` (kecuali diminta eksplisit)
+
+## Tools yang Diizinkan
+
+Read, Write, Edit, Bash (untuk typecheck, lint, build)
+
+## Input
+
+```
+.ai/tasks/<TICKET-ID>/requirements.md   — apa yang harus diimplementasi
+.ai/tasks/<TICKET-ID>/design.md         — pendekatan teknis (jika ada)
+.ai/tasks/<TICKET-ID>/tasks.md          — task list
+```
+
+## Output
+
+```
+Kode di apps/web/src/modules/<module-name>/
+.ai/tasks/<TICKET-ID>/verify-report.md
+```
+
+## Pola Kerja (PIV)
+
+### PLAN — Baca sebelum sentuh kode
+
+```
+.ai/tasks/<TICKET-ID>/requirements.md
+.ai/tasks/<TICKET-ID>/design.md
+AGENTS.md
+apps/web/CLAUDE.md
+apps/web/src/modules/<module>/          — jika modul existing
+```
+
+### IMPLEMENT — Struktur modul wajib
+
+Directory: `apps/web/src/modules/<module-name>/`
+
+```
+<module-name>/
+├── pages/
+│   └── index.vue
+├── components/           (buat jika diperlukan)
+├── router/
+│   └── index.ts
+├── services/
+│   ├── constants.ts
+│   ├── rbac.ts
+│   └── api.ts
+├── stores/
+│   ├── state.ts
+│   ├── getters.ts
+│   ├── actions.ts
+│   └── index.ts
+└── README.md
+```
+
+#### `services/constants.ts`
+```ts
+export const PREFIX_ROUTE_PATH = '/<module-name>';
+export const PREFIX_ROUTE_NAME = '<module-name>';
+export const API_BASE = '/api/v1/<module-name>';
+```
+
+#### `services/rbac.ts`
+```ts
+export const READ = '<module-name>.read';
+export const WRITE = '<module-name>.write';
+export const DELETE = '<module-name>.delete';
+```
+
+#### `services/api.ts`
+```ts
+import http from '@/plugins/axios';
+import { API_BASE } from './constants';
+
+export const getItems = (params?: Record<string, any>) =>
+  http.get(API_BASE, { params });
+
+export const getItem = (id: string) =>
+  http.get(`${API_BASE}/${id}`);
+
+export const createItem = (data: any) =>
+  http.post(API_BASE, data);
+
+export const updateItem = (id: string, data: any) =>
+  http.patch(`${API_BASE}/${id}`, data);
+
+export const deleteItem = (id: string) =>
+  http.delete(`${API_BASE}/${id}`);
+```
+
+#### `stores/state.ts`
+```ts
+export function state() {
+  return {
+    items: [] as any[],
+    item: null as any,
+    loading: false,
+    error: '',
+    pagination: {
+      page: 1,
+      limit: 10,
+      total: 0,
+      total_pages: 0,
+    },
+  };
+}
+```
+
+#### `stores/getters.ts`
+```ts
+import type { State } from './index';
+
+export const getters = {
+  items: (state: State) => state.items,
+  item: (state: State) => state.item,
+  loading: (state: State) => state.loading,
+  pagination: (state: State) => state.pagination,
+};
+```
+
+#### `stores/actions.ts`
+
+> **Kapan isi actions.ts?** Hanya jika state perlu disharing antar komponen berbeda (misal: cart di customer-catalog, shift state di seluruh modul shift). Untuk halaman yang berdiri sendiri, biarkan kosong — page panggil service langsung.
+
+```ts
+// Kosong jika tidak ada shared state:
+export const actions = {
+  // Add your actions here
+};
+
+// Berisi jika butuh shared state lintas component:
+import * as Service from '../services/api';
+
+export const actions = {
+  async fetchItems(this: any, params?: Record<string, any>) {
+    this.loading = true;
+    try {
+      const res = await Service.getItems(params);
+      this.items = res.data.data;
+      if (res.data.meta) this.pagination = res.data.meta;
+    } catch (e: any) {
+      this.error = e.message;
+    } finally {
+      this.loading = false;
+    }
+  },
+};
+```
+
+#### `stores/index.ts`
+```ts
+import { defineStore } from 'pinia';
+import { state } from './state';
+import { getters } from './getters';
+import { actions } from './actions';
+
+export type State = ReturnType<typeof state>;
+
+export const use<Module>Store = defineStore('<module-name>', {
+  state,
+  getters,
+  actions,
+});
+```
+
+#### `router/index.ts`
+```ts
+import { PREFIX_ROUTE_PATH, PREFIX_ROUTE_NAME } from '../services/constants';
+import { READ } from '../services/rbac';
+
+export default [
+  {
+    path: PREFIX_ROUTE_PATH,
+    name: PREFIX_ROUTE_NAME,
+    component: () => import('../pages/index.vue'),
+    meta: {
+      title: '<Module Title>',
+      layout: 'default',
+      breadcrumbs: [
+        { label: 'Home', route: '/landing', isActive: false },
+        { label: '<Module Title>', route: PREFIX_ROUTE_PATH, isActive: true },
+      ],
+      permission: [READ],
+    },
+  },
+];
+```
+
+#### `pages/index.vue`
+
+Dua pola valid — pilih berdasarkan kebutuhan:
+
+**Pola A — Direct service call (state lokal, tidak disharing):**
+```vue
+<script setup lang="ts">
+import { ref, onMounted, computed } from 'vue';
+import { isHasPermission } from '@/helpers/auth';
+import { showToast } from '@/helpers/toast';
+import { getErrorMessage } from '@/helpers/utils';
+import { getItems } from '../services/api';
+import { PREFIX_ROUTE_NAME } from '../services/constants';
+import { UPDATE } from '../services/rbac';
+
+const items = ref<any[]>([]);
+const isCanUpdate = computed(() => isHasPermission(UPDATE));
+
+const fetchItems = async () => {
+  try {
+    const res = await getItems();
+    items.value = res.data?.data || [];
+  } catch (error) {
+    showToast({ type: 'error', title: 'Failed', message: getErrorMessage(error) });
+  }
+};
+
+onMounted(fetchItems);
+```
+
+Referensi: `docs/golden-examples/frontend/page.vue` (dari `product-categories/pages/detail.vue`).
+
+**Pola B — Via store (state disharing lintas component):**
+```vue
+<script setup lang="ts">
+import { onMounted } from 'vue';
+import { use<Module>Store } from '../stores';
+
+const store = use<Module>Store();
+
+onMounted(() => {
+  store.fetchItems();
+});
+</script>
+
+<template>
+  <div>
+    <h1 class="text-2xl font-bold mb-4"><Module Title></h1>
+  </div>
+</template>
+```
+
+**Pola C — Composable (shared state kompleks dengan computed guards):**
+Gunakan hanya jika sudah ada precedent kuat (lihat modul `shift/composables/useShift.ts`). Untuk modul baru, default ke Pola A atau B kecuali ada alasan jelas butuh computed guards/reactive singleton di luar Pinia store.
+
+Referensi: `docs/golden-examples/frontend/composable.ts` (catatan: contoh struktural, type safety `any` tidak untuk ditiru).
+
+### Auto-Registration
+
+Routes auto-load via `import.meta.glob` — tidak perlu registrasi manual setelah `router/index.ts` dibuat.
+
+### VERIFY — Wajib sebelum selesai
+
+```bash
+pnpm typecheck
+```
+```bash
+pnpm lint
+```
+```bash
+pnpm --filter umkm-pos-app build
+```
+
+### Frontend Self-Check
+
+```
+[ ] router/index.ts punya meta.permission menggunakan rbac constants
+[ ] Store files (state, getters, actions, index) terkompilasi dengan benar
+[ ] Service menggunakan @/plugins/axios (bukan raw fetch atau import axios langsung)
+[ ] Semua API call melewati services/api.ts — tidak ada axios.get/post langsung di component atau store
+[ ] RBAC gating via isHasPermission() dari @/helpers/auth (bukan hardcode role string)
+[ ] Route accessible di dev server
+```
+
+## Verify Checklist
+
+```
+[ ] pnpm typecheck — PASS
+[ ] pnpm lint — PASS
+[ ] pnpm --filter umkm-pos-app build — PASS
+[ ] meta.permission ada di semua routes (kecuali layout auth/public)
+[ ] API calls melewati services/api.ts (bukan axios langsung di component/store)
+[ ] Store menggunakan split-file pattern (state, getters, actions, index)
+[ ] actions.ts berisi logic hanya jika state disharing lintas component
+```
+
+## Output: verify-report.md
+
+```markdown
+## Ticket: <ID>
+## Agent: frontend
+## Status: SUCCESS / NEEDS_HUMAN
+
+## Attempt Log
+- Attempt 1: [PASS/FAIL — error jika fail]
+
+## Acceptance Criteria
+- [x] kriteria 1 — terpenuhi di ComponentName.vue baris N
+- [ ] kriteria 2 — FAIL: alasan
+
+## Quality Gate
+- Typecheck: PASS
+- Lint: PASS
+- Build: PASS
+
+## Files Changed
+- apps/web/src/modules/<module>/pages/index.vue
+- apps/web/src/modules/<module>/stores/actions.ts
+- ...
+
+## Catatan
+[Deviasi dari plan, jika ada]
+```
+
+## Retry Logic
+
+Jika verify gagal:
+1. Baca error TypeScript / lint dengan teliti
+2. Fix spesifik — jangan rewrite ulang store atau page
+3. Jalankan ulang yang gagal
+4. Maksimal 3 attempt
+
+Jika masih FAIL setelah 3 attempt: tulis `Status: NEEDS_HUMAN` di verify-report.md, stop.
+
+## Batasan
+
+- Semua HTTP call **wajib melewati `services/api.ts`** — tidak boleh `axios.get(...)` atau `fetch(...)` langsung dari component, store action, atau composable
+- Component **boleh memanggil `services/api.ts` langsung** (tanpa store) untuk state lokal yang tidak disharing
+- `stores/actions.ts` berisi API call **hanya jika** state perlu disharing lintas component; boleh kosong jika tidak
+- Store harus split 4 file: state.ts, getters.ts, actions.ts, index.ts
+- Setiap route harus punya `meta.permission` (kecuali layout `auth` atau `public`)
+- Gunakan `@/plugins/axios` bukan `fetch` atau import axios langsung
+- RBAC gating UI gunakan `isHasPermission()` dari `@/helpers/auth`, bukan hardcode role/string
+- Nama file service: `services/api.ts` (bukan `<module>.service.ts`) — sesuai konvensi aktual codebase
+- Jangan sentuh `apps/api/`
+- Jangan skip `pnpm typecheck` walau "yakin tidak ada error"

@@ -87,6 +87,73 @@ Update Overall Progress dan Phase progress.
 
 ---
 
+# Security Greps (Backend Tasks)
+
+Run sebelum mark done. Ganti `<module>` dengan nama modul yang dikerjakan.
+
+### Multi-tenant scope
+
+```bash
+grep -rn "merchant_id" apps/api/src/<module>/ --include="*.ts" | grep "body\.\|dto\." | grep -v "//.*body\.\|//.*dto\."
+```
+
+Hasil → fix dulu. `merchant_id` harus dari `currentUser.merchantId`, bukan dari body/dto.
+
+### RBAC coverage
+
+```bash
+grep -n "@Get\|@Post\|@Patch\|@Delete\|@Put\|@RequirePermission\|@Public" apps/api/src/<module>/<module>.controller.ts
+```
+
+Setiap HTTP verb harus punya `@RequirePermission` atau `@Public()`.
+
+### Public route exposure
+
+```bash
+grep -rn "@Public()" apps/api/src/<module>/ --include="*.ts"
+```
+
+Setiap `@Public()` harus disengaja (auth, health check, catalog publik).
+
+### DTO validation
+
+```bash
+grep -n "body: any\|Body() body" apps/api/src/<module>/<module>.controller.ts
+```
+
+Tidak boleh ada `body: any` pada route non-trivial.
+
+### Password / secret exposure
+
+```bash
+grep -rn "console.log\|logger\." apps/api/src/<module>/ --include="*.ts" | grep -i "password\|token\|secret\|jwt"
+```
+
+Tidak boleh logging credentials.
+
+### SQL injection risk
+
+```bash
+grep -rn "\$queryRaw\|\$executeRaw" apps/api/src/<module>/ --include="*.ts"
+```
+
+Jika ada: wajib tagged template literal, bukan string concatenation.
+
+---
+
+# Hard Stop Conditions
+
+Jangan mark DONE jika ada:
+
+* TypeScript error
+* Lint error (severity `error`)
+* `merchant_id` diambil dari body/dto bukan `currentUser`
+* HTTP route tanpa `@RequirePermission` atau `@Public()`
+* Logging raw password/token/secret
+* `$queryRaw` dengan string concatenation
+
+---
+
 # Pull Request Checklist
 
 Before marking task DONE:
@@ -98,6 +165,7 @@ Before marking task DONE:
 * No permission violations
 * No duplicate types
 * Follows AGENTS.md
+* Security greps clean (lihat section di atas)
 * `pnpm typecheck` pass
 * `pnpm build` pass (jika feasible)
 
