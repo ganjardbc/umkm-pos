@@ -128,3 +128,43 @@ Sisa file tidak diubah — Batasan, Verify Checklist, Frontend Self-Check sudah 
 - `docs/golden-examples/frontend/page.vue` — baru
 - `docs/golden-examples/frontend/composable.ts` — baru
 - `docs/golden-examples/frontend/api.ts` — baru
+
+---
+
+## 6. Pola helpers/ (chore/caf-frontend-md-helpers-pattern)
+
+### Konteks
+
+`product-lists` Frontend Agent membuat `helpers/stock.ts` berisi pure function `isLowStock` untuk menghindari duplikasi antara `index.vue` dan `detail.vue`. Pola ini belum terdokumentasi.
+
+### Section yang Ditambahkan ke frontend.md
+
+**1. Folder opsional di struktur modul wajib (setelah `stores/`):**
+```
+├── helpers/              (buat jika perlu shared pure function)
+│   └── <nama>.ts
+```
+
+**2. Section baru "Kapan buat `helpers/`" (sebelum Auto-Registration):**
+
+Buat hanya jika:
+- Logic pure function (input → output, tanpa side-effect, tanpa API call, tanpa state)
+- Logic dipakai di 2+ file dalam module yang sama
+
+Jangan buat untuk:
+- Logic pakai 1 kali → taruh inline
+- Logic butuh API call → masuk `services/`
+- Logic butuh reactive state → masuk `stores/` atau composables
+
+**3. Checklist item baru di Frontend Self-Check:**
+```
+[ ] Logic yang dipakai berulang di 2+ file sudah di-extract ke helpers/ (bukan duplicate)
+```
+
+### TODO (tidak dieksekusi sekarang)
+
+Tambahkan `docs/golden-examples/frontend/stock.ts` sebagai contoh konkret pola `helpers/` di golden-examples berikutnya.
+
+### Files Changed
+
+- `.claude/agents/frontend.md` — tambah folder helpers/ di struktur, section Kapan buat helpers/, dan 1 checklist item
