@@ -73,7 +73,14 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label class="text-sm font-medium text-gray-500">Stock Quantity</label>
-            <p class="text-base mt-1">{{ productDetail.stock_qty }}</p>
+            <p class="text-base mt-1 flex items-center gap-2">
+              {{ productDetail.stock_qty }}
+              <Tag
+                v-if="isLowStock(productDetail)"
+                value="Low Stock"
+                severity="warn"
+              />
+            </p>
           </div>
           <div>
             <label class="text-sm font-medium text-gray-500">Minimum Stock</label>
@@ -197,6 +204,7 @@ import UiCard from '@/components/UiCard.vue';
 import UiSearch from '@/components/UiSearch.vue';
 import UiPagination from '@/components/UiPagination.vue';
 import AdjustStockModal from '@/modules/product-lists/components/AdjustStockModal.vue';
+import { isLowStock } from '@/modules/product-lists/helpers/stock';
 
 const route = useRoute();
 const router = useRouter();
