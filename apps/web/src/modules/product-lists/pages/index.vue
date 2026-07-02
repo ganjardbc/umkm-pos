@@ -68,14 +68,14 @@
         </Column>
         <Column field="min_stock" header="Min Stock" class="min-w-38">
           <template #body="slotProps">
-            <span :class="slotProps.data.min_stock && 'text-primary-600'">
+            <span>
               {{ slotProps.data.min_stock }}
             </span>
           </template>
         </Column>
         <Column field="stock_qty" header="Qty" class="min-w-28">
           <template #body="slotProps">
-            <span :class="slotProps.data.min_stock && 'text-primary-600'">
+            <span :class="isLowStock(slotProps.data) && 'text-orange-600'">
               {{ slotProps.data.stock_qty }}
             </span>
           </template>
@@ -163,6 +163,7 @@ import UiPagination from '@/components/UiPagination.vue';
 import { PREFIX_ROUTE_NAME } from '@/modules/product-lists/services/constants';
 import { CREATE, UPDATE, DELETE, ADJUST } from '@/modules/product-lists/services/rbac';
 import AdjustStockModal from '@/modules/product-lists/components/AdjustStockModal.vue';
+import { isLowStock } from '@/modules/product-lists/helpers/stock';
 
 const router = useRouter();
 
