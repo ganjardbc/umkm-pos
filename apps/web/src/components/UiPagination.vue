@@ -11,7 +11,7 @@
     <Paginator
       v-model="pagination"
       :rows="pagination?.rows"
-      :totalRecords="pagination?.totalRecords"
+      :total-records="pagination?.totalRecords"
       @page="onPageChange"
     />
   </div>

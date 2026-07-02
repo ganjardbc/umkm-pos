@@ -21,8 +21,8 @@
         <FileUpload
           mode="basic"
           accept="image/*"
-          :chooseLabel="previewUrl ? 'Change Image' : 'Choose Image'"
-          customUpload
+          :choose-label="previewUrl ? 'Change Image' : 'Choose Image'"
+          custom-upload
           @select="onSelect"
         />
         <Button

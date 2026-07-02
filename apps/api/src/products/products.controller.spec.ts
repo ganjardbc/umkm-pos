@@ -41,7 +41,10 @@ describe('ProductsController', () => {
   it('should pass outlet_id query through findAll', async () => {
     const merchantId = 'merchant-1';
     const query = { page: 1, limit: 10, outlet_id: 'outlet-1' };
-    const response = { data: [], meta: { total: 0, page: 1, limit: 10, totalPages: 0 } };
+    const response = {
+      data: [],
+      meta: { total: 0, page: 1, limit: 10, totalPages: 0 },
+    };
 
     mockProductsService.findAll.mockResolvedValue(response);
 
@@ -57,7 +60,11 @@ describe('ProductsController', () => {
 
     mockProductsService.findOne.mockResolvedValue(response);
 
-    const result = await controller.findOne('product-1', merchantId, 'outlet-1');
+    const result = await controller.findOne(
+      'product-1',
+      merchantId,
+      'outlet-1',
+    );
 
     expect(result).toEqual(response);
     expect(mockProductsService.findOne).toHaveBeenCalledWith(

@@ -5,9 +5,9 @@
     <Form
       v-slot="$form"
       :resolver="resolver"
-      :initialValues="initialValues"
-      @submit="onFormSubmit"
+      :initial-values="initialValues"
       class="flex flex-col gap-4 w-full pt-2"
+      @submit="onFormSubmit"
     >
       <UiFormGroup label="Email" variant="vertical">
         <InputText

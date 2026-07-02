@@ -112,8 +112,8 @@
             <Select
               v-model="selectedTableId"
               :options="tables"
-              optionLabel="name"
-              optionValue="id"
+              option-label="name"
+              option-value="id"
               placeholder="Pilih meja"
               class="mt-1 w-full"
             />

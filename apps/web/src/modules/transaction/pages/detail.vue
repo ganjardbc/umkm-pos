@@ -116,7 +116,7 @@
       </template>
 
       <div class="space-y-4">
-        <DataTable :value="transactionDetail.transaction_items" :loading="loading" tableStyle="min-width: 50rem">
+        <DataTable :value="transactionDetail.transaction_items" :loading="loading" table-style="min-width: 50rem">
           <template #empty>
             <span class="w-full text-center flex justify-center">
               No items in this transaction.

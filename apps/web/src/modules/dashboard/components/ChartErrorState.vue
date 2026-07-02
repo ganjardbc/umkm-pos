@@ -4,11 +4,11 @@
       <i class="pi pi-exclamation-triangle text-5xl text-red-500"></i>
       <p class="text-gray-700 font-medium">{{ error }}</p>
       <Button
-        @click="$emit('retry')"
         label="Retry"
         icon="pi pi-refresh"
         severity="secondary"
         size="small"
+        @click="$emit('retry')"
       />
     </div>
   </div>

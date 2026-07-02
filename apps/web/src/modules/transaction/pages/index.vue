@@ -170,10 +170,10 @@
 
   <PaymentModal
     v-model:visibility="showPaymentModal"
-    v-model:paymentMethod="paymentPayload.payment_method"
-    v-model:isOffline="paymentPayload.is_offline"
-    v-model:cashAmount="paymentPayload.cash_received"
-    :totalAmount="paymentPayload.total_amount"
+    v-model:payment-method="paymentPayload.payment_method"
+    v-model:is-offline="paymentPayload.is_offline"
+    v-model:cash-amount="paymentPayload.cash_received"
+    :total-amount="paymentPayload.total_amount"
     @confirm="confirmPayment"
   />
 </template>

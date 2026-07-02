@@ -19,7 +19,7 @@
     </div>
 
     <UiCard class="p-0! gap-0! overflow-hidden!">
-      <DataTable :value="merchants" :loading="loading" tableStyle="min-width: 50rem">
+      <DataTable :value="merchants" :loading="loading" table-style="min-width: 50rem">
         <template #empty>
           <span class="w-full text-center flex justify-center">
             Merchants are empty.

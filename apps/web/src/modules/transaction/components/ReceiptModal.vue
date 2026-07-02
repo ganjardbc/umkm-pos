@@ -23,8 +23,8 @@
           icon="pi pi-download"
           size="medium"
           fluid
-          @click="downloadReceipt"
           :loading="isDownloading"
+          @click="downloadReceipt"
         />
         <Button
           severity="secondary"

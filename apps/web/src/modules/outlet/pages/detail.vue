@@ -40,7 +40,8 @@
 
       <div class="space-y-4">
         <div v-if="outletDetail.logo" class="flex justify-center md:justify-start">
-          <img :src="outletDetail.logo" alt="Outlet Logo"
+          <img
+:src="outletDetail.logo" alt="Outlet Logo"
                class="w-32 h-32 rounded-lg object-cover border border-gray-200" />
         </div>
 

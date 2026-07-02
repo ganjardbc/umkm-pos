@@ -30,7 +30,8 @@
 
       <div class="space-y-4">
         <div v-if="merchantDetail.logo" class="flex justify-center md:justify-start">
-          <img :src="merchantDetail.logo" alt="Merchant Logo"
+          <img
+:src="merchantDetail.logo" alt="Merchant Logo"
                class="w-32 h-32 rounded-lg object-cover border border-gray-200" />
         </div>
 

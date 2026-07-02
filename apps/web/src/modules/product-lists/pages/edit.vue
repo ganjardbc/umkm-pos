@@ -10,9 +10,9 @@
       v-if="isLoaded"
       v-slot="$form"
       :resolver="resolver"
-      :initialValues="initialValues"
-      @submit="onFormSubmit"
+      :initial-values="initialValues"
       class="flex flex-col gap-4 w-full"
+      @submit="onFormSubmit"
     >
       <div class="w-full space-y-4">
         <UiFormGroup label="Name" variant="vertical">
@@ -140,8 +140,8 @@
               <FileUpload
                 mode="basic"
                 accept="image/*"
-                :chooseLabel="imagePreview ? 'Change Image' : 'Choose Image'"
-                customUpload
+                :choose-label="imagePreview ? 'Change Image' : 'Choose Image'"
+                custom-upload
                 @select="onUploadImage"
               />
               <Button

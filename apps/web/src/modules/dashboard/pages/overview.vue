@@ -12,7 +12,7 @@
         show-button-bar
         :manual-input="false"
         placeholder="Select date range"
-        showIcon
+        show-icon
         class="w-full md:w-80"
       />
     </div>

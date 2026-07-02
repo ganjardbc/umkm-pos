@@ -9,9 +9,9 @@
     <Form
       v-slot="$form"
       :resolver="resolver"
-      :initialValues="initialValues"
-      @submit="onFormSubmit"
+      :initial-values="initialValues"
       class="flex flex-col gap-4 w-full"
+      @submit="onFormSubmit"
     >
       <div class="w-full space-y-4">
         <UiFormGroup label="Code" variant="vertical">

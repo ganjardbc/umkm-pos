@@ -9,7 +9,7 @@
       show-button-bar
       :manual-input="false"
       placeholder="Select date range"
-      showIcon
+      show-icon
       class="w-full"
     />
     <!-- <div class="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">

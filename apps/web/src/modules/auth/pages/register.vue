@@ -16,9 +16,9 @@
             <Form
               v-slot="$form"
               :resolver="userResolver"
-              :initialValues="userFormValues"
-              @submit="(e) => onUserFormSubmit(e, activateCallback)"
+              :initial-values="userFormValues"
               class="flex flex-col gap-4 w-full pt-4"
+              @submit="(e) => onUserFormSubmit(e, activateCallback)"
             >
               <UiFormGroup label="Full Name" variant="vertical">
                 <InputText
@@ -110,9 +110,9 @@
             <Form
               v-slot="$form"
               :resolver="merchantResolver"
-              :initialValues="merchantFormValues"
-              @submit="(e) => onMerchantFormSubmit(e, activateCallback)"
+              :initial-values="merchantFormValues"
               class="flex flex-col gap-4 w-full pt-4"
+              @submit="(e) => onMerchantFormSubmit(e, activateCallback)"
             >
               <UiFormGroup label="Merchant Name" variant="vertical">
                 <InputText
@@ -121,7 +121,7 @@
                   placeholder="My Store"
                   fluid
                   :disabled="loading"
-                  @update:modelValue="(value: any) => onMerchantNameChange(value, $form)"
+                  @update:model-value="(value: any) => onMerchantNameChange(value, $form)"
                 />
                 <Message
                   v-if="$form.name?.invalid"
@@ -213,9 +213,9 @@
             <Form
               v-slot="$form"
               :resolver="outletResolver"
-              :initialValues="outletFormValues"
-              @submit="onOutletFormSubmit"
+              :initial-values="outletFormValues"
               class="flex flex-col gap-4 w-full pt-4"
+              @submit="onOutletFormSubmit"
             >
               <UiFormGroup label="Outlet Name" variant="vertical">
                 <InputText
@@ -224,7 +224,7 @@
                   placeholder="Main Branch"
                   fluid
                   :disabled="loading"
-                  @update:modelValue="(value: any) => onOutletNameChange(value, $form)"
+                  @update:model-value="(value: any) => onOutletNameChange(value, $form)"
                 />
                 <Message
                   v-if="$form.name?.invalid"

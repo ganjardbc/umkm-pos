@@ -15,7 +15,7 @@
       <Form
         v-slot="$form"
         :resolver="resolver"
-        :initialValues="initialValues"
+        :initial-values="initialValues"
         class="flex flex-col gap-4 w-full"
         @submit="onFormSubmit"
       >
@@ -80,8 +80,8 @@
             <Select
               name="reason"
               :options="reasonOptions"
-              optionLabel="label"
-              optionValue="value"
+              option-label="label"
+              option-value="value"
               placeholder="Select reason"
               fluid
             />

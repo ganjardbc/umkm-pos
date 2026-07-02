@@ -25,7 +25,7 @@
         <!-- Individual Metrics -->
         <div class="metrics-display__chart-container">
           <h4 class="chart-title">Participant Details</h4>
-          <DataTable :value="metrics" tableStyle="min-width: 50rem">
+          <DataTable :value="metrics" table-style="min-width: 50rem">
             <template #empty>
               <span class="w-full text-center flex justify-center">
                 Metrics are empty.

@@ -10,7 +10,7 @@
       v-if="isLoaded"
       v-slot="$form"
       :resolver="resolver"
-      :initialValues="initialValues"
+      :initial-values="initialValues"
       class="flex flex-col gap-4 w-full"
       @submit="onFormSubmit"
     >

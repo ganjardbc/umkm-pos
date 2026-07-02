@@ -9,7 +9,7 @@
     <Form
       v-slot="$form"
       :resolver="resolver"
-      :initialValues="initialValues"
+      :initial-values="initialValues"
       class="flex flex-col gap-4 w-full"
       @submit="onFormSubmit"
     >
@@ -20,7 +20,7 @@
             type="text"
             placeholder=""
             fluid
-            @update:modelValue="(value: any) => onNameChange(value, $form)"
+            @update:model-value="(value: any) => onNameChange(value, $form)"
           />
           <Message
             v-if="$form.name?.invalid"
@@ -174,8 +174,8 @@
               <FileUpload
                 mode="basic"
                 accept="image/*"
-                :chooseLabel="imagePreview ? 'Change Image' : 'Choose Image'"
-                customUpload
+                :choose-label="imagePreview ? 'Change Image' : 'Choose Image'"
+                custom-upload
                 @select="onUploadImage"
               />
               <Button

@@ -19,7 +19,7 @@
     </div>
 
     <UiCard class="p-0! gap-0! overflow-hidden!">
-      <DataTable :value="categories" :loading="loading" tableStyle="min-width: 50rem">
+      <DataTable :value="categories" :loading="loading" table-style="min-width: 50rem">
         <template #empty>
           <span class="w-full text-center flex justify-center">
             Categories are empty.

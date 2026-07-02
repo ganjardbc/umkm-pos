@@ -16,7 +16,7 @@
         <InputNumber v-model="form.capacity" fluid />
       </UiFormGroup>
       <div class="flex items-center gap-2">
-        <Checkbox v-model="form.is_active" binary inputId="table-active" />
+        <Checkbox v-model="form.is_active" binary input-id="table-active" />
         <label for="table-active">Active</label>
       </div>
       <Button label="Save" fluid @click="save" />

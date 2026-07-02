@@ -12,8 +12,8 @@
       >
         <!-- Submenu Items -->
         <SubmenuContainer
-          v-if="item?.menus"
           v-for="child in item.menus"
+          v-if="item?.menus"
           :key="child?.label"
           :item="child"
           :is-collapsed="isCollapsed"

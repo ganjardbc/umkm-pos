@@ -11,8 +11,8 @@
         icon="pi pi-download"
         :loading="isLoading"
         :disabled="isLoading || !!error"
-        @click="handleDownload"
         class="whitespace-nowrap"
+        @click="handleDownload"
       />
     </div>
 

@@ -68,8 +68,8 @@
             text
             severity="danger"
             size="small"
-            @click="confirmRemoveParticipant(participant)"
             :loading="loading"
+            @click="confirmRemoveParticipant(participant)"
           />
           <Button
             v-if="participant.participant_removed_at"
@@ -78,9 +78,9 @@
             text
             severity="success"
             size="small"
-            @click="confirmRestoreParticipant(participant)"
             :loading="loading"
             title="Restore participant"
+            @click="confirmRestoreParticipant(participant)"
           />
         </div>
       </div>
@@ -118,9 +118,9 @@
         />
         <Button
           label="Add"
-          @click="handleAddParticipant"
           :loading="loading"
           :disabled="!selectedUserId"
+          @click="handleAddParticipant"
         />
       </div>
     </div>

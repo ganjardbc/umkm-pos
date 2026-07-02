@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { PrismaService } from '../database/prisma.service';
 import { StartCustomerSessionDto } from './dto/start-customer-session.dto';
@@ -27,7 +32,10 @@ export class CustomerCatalogService {
       throw new NotFoundException('Outlet not found');
     }
 
-    if (!outlet.guest_session_secret || outlet.guest_session_secret !== dto.secret_code) {
+    if (
+      !outlet.guest_session_secret ||
+      outlet.guest_session_secret !== dto.secret_code
+    ) {
       throw new UnauthorizedException('Secret code is invalid');
     }
 

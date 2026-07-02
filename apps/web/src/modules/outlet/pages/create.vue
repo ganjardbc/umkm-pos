@@ -9,9 +9,9 @@
     <Form
       v-slot="$form"
       :resolver="resolver"
-      :initialValues="initialValues"
-      @submit="onFormSubmit"
+      :initial-values="initialValues"
       class="flex flex-col gap-4 w-full"
+      @submit="onFormSubmit"
     >
       <div class="w-full space-y-4">
         <UiFormGroup label="Name" variant="vertical">
@@ -20,7 +20,7 @@
             type="text"
             placeholder=""
             fluid
-            @update:modelValue="(value: any) => onNameChange(value, $form)"
+            @update:model-value="(value: any) => onNameChange(value, $form)"
           />
           <Message
             v-if="$form.name?.invalid"
@@ -73,7 +73,7 @@
           />
         </UiFormGroup>
         <UiFileUpload
-          :previewUrl="imagePreview"
+          :preview-url="imagePreview"
           @select="onUploadImage"
           @remove="onRemoveImage"
         />

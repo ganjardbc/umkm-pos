@@ -139,7 +139,7 @@
         />
 
         <div class="overflow-hidden">
-          <DataTable :value="stockLogs" :loading="loadingStockLogs" tableStyle="min-width: 50rem">
+          <DataTable :value="stockLogs" :loading="loadingStockLogs" table-style="min-width: 50rem">
             <template #empty>
               <span class="w-full text-center flex justify-center">
                 Stock histories are empty.

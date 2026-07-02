@@ -11,9 +11,9 @@
       v-if="step === 1 && isLoaded"
       v-slot="$form"
       :resolver="resolverStep1"
-      :initialValues="initialValuesStep1"
-      @submit="onFormSubmitStep1"
+      :initial-values="initialValuesStep1"
       class="flex flex-col gap-4 w-full"
+      @submit="onFormSubmitStep1"
     >
       <div class="w-full space-y-4">
         <Message
@@ -73,9 +73,9 @@
       v-if="step === 2 && isLoaded"
       v-slot="$form"
       :resolver="resolverStep2"
-      :initialValues="initialValuesStep2"
-      @submit="onFormSubmitStep2"
+      :initial-values="initialValuesStep2"
       class="flex flex-col gap-4 w-full"
+      @submit="onFormSubmitStep2"
     >
       <div class="w-full space-y-4">
         <Message
@@ -107,9 +107,9 @@
         <div class="text-sm">
           <button
             type="button"
-            @click="requestVerificationAgain"
             :disabled="resendCountdown > 0"
             class="text-blue-600 hover:text-blue-800 disabled:text-gray-400"
+            @click="requestVerificationAgain"
           >
             {{ resendCountdown > 0 ? `Resend in ${resendCountdown}s` : 'Resend Code' }}
           </button>

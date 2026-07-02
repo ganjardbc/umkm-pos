@@ -50,7 +50,7 @@
       <UiCard>
         <h1 class="text-lg font-semibold">Items</h1>
 
-        <DataTable :value="order.transaction_items || []" tableStyle="min-width: 48rem">
+        <DataTable :value="order.transaction_items || []" table-style="min-width: 48rem">
           <template #empty>
             <span class="flex w-full justify-center text-center">No items in this order.</span>
           </template>

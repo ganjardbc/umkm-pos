@@ -285,10 +285,7 @@ describe('ProductsService', () => {
         },
       ]);
 
-      const result = await service.findAll(
-        merchantId,
-        pagination as any,
-      );
+      const result = await service.findAll(merchantId, pagination as any);
 
       expect(mockPrisma.outlets.findFirst).toHaveBeenCalledWith({
         where: { id: 'outlet-1', merchant_id: merchantId },
@@ -378,7 +375,9 @@ describe('ProductsService', () => {
       expect(mockPrisma.outlets.findFirst).toHaveBeenCalledWith({
         where: { id: 'outlet-1', merchant_id: merchantId },
       });
-      expect((mockPrisma.outlet_product_inventory as any).findFirst).toHaveBeenCalled();
+      expect(
+        (mockPrisma.outlet_product_inventory as any).findFirst,
+      ).toHaveBeenCalled();
       expect(result.inventory).toEqual(
         expect.objectContaining({
           outlet_id: 'outlet-1',

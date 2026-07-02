@@ -1,34 +1,35 @@
 // @ts-check
 import eslint from '@eslint/js';
-import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
+import eslintConfigPrettier from 'eslint-config-prettier';
+import pluginVue from 'eslint-plugin-vue';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
   {
-    ignores: ['eslint.config.mjs', 'dist/**', 'node_modules/**'],
+    ignores: ['dist/**', 'node_modules/**', 'components.d.ts', 'vendor/**', 'src/vite-env.d.ts'],
   },
   eslint.configs.recommended,
   ...tseslint.configs.recommended,
-  eslintPluginPrettierRecommended,
+  ...pluginVue.configs['flat/recommended'],
+  eslintConfigPrettier,
   {
+    files: ['**/*.ts', '**/*.vue'],
     languageOptions: {
       globals: {
-        ...globals.node,
-        ...globals.jest,
+        ...globals.browser,
+        ...globals.es2021,
       },
-      sourceType: 'commonjs',
       parserOptions: {
+        parser: tseslint.parser,
         tsconfigRootDir: import.meta.dirname,
+        extraFileExtensions: ['.vue'],
       },
     },
   },
   {
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
-      '@typescript-eslint/no-floating-promises': 'off',
-      '@typescript-eslint/no-unsafe-argument': 'off',
-      '@typescript-eslint/no-unsafe-function-type': 'off',
       '@typescript-eslint/no-unused-vars': [
         'error',
         {
@@ -37,13 +38,8 @@ export default tseslint.config(
           caughtErrorsIgnorePattern: '^_',
         },
       ],
-      "prettier/prettier": ["error", { endOfLine: "auto" }],
-    },
-  },
-  {
-    files: ['**/*.spec.ts'],
-    rules: {
-      '@typescript-eslint/no-unused-vars': 'off',
+      'vue/multi-word-component-names': 'off',
+      'vue/no-v-html': 'off',
     },
   },
 );

@@ -2,7 +2,7 @@
   <div class="space-y-4">
     <div class="flex justify-between items-center">
       <h1 class="text-xl font-semibold">Notifications</h1>
-      <Button label="Mark all as read" size="small" @click="handleMarkAll" :disabled="!unreadCount" />
+      <Button label="Mark all as read" size="small" :disabled="!unreadCount" @click="handleMarkAll" />
     </div>
 
     <UiLoading
