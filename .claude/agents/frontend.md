@@ -69,6 +69,8 @@ Directory: `apps/web/src/modules/<module-name>/`
 │   ├── getters.ts
 │   ├── actions.ts
 │   └── index.ts
+├── helpers/              (buat jika perlu shared pure function)
+│   └── <nama>.ts
 └── README.md
 ```
 
@@ -262,6 +264,19 @@ Gunakan hanya jika sudah ada precedent kuat (lihat modul `shift/composables/useS
 
 Referensi: `docs/golden-examples/frontend/composable.ts` (catatan: contoh struktural, type safety `any` tidak untuk ditiru).
 
+### Kapan buat `helpers/`
+
+Buat `helpers/<nama>.ts` HANYA jika:
+- Logic berupa pure function (input → output, tanpa side-effect, tanpa API call, tanpa state)
+- Logic dipakai di 2+ file dalam module yang sama (pages, components, atau composables)
+
+Jangan buat `helpers/` untuk:
+- Logic yang cuma dipakai 1 kali (taruh inline di file yang pakai)
+- Logic yang butuh API call (itu masuk `services/`)
+- Logic yang butuh reactive state (itu masuk `stores/` atau composables)
+
+Contoh: `docs/golden-examples/frontend/` (lihat `stock.ts` sebagai referensi — TODO: tambahkan ke golden-examples).
+
 ### Auto-Registration
 
 Routes auto-load via `import.meta.glob` — tidak perlu registrasi manual setelah `router/index.ts` dibuat.
@@ -287,6 +302,7 @@ pnpm --filter umkm-pos-app build
 [ ] Semua API call melewati services/api.ts — tidak ada axios.get/post langsung di component atau store
 [ ] RBAC gating via isHasPermission() dari @/helpers/auth (bukan hardcode role string)
 [ ] Route accessible di dev server
+[ ] Logic yang dipakai berulang di 2+ file sudah di-extract ke helpers/ (bukan duplicate)
 ```
 
 ## Verify Checklist
