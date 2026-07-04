@@ -25,7 +25,9 @@ export class ProductsService {
 
     return {
       ...product,
-      thumbnail: (await this.uploadsService.generateSignedUrl(product.image_upload_id)).url,
+      thumbnail: (
+        await this.uploadsService.generateSignedUrl(product.image_upload_id)
+      ).url,
     };
   }
 

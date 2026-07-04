@@ -26,9 +26,7 @@ export class SettingsService {
 
   private async attachSignedAvatar<
     T extends { avatar_upload_id?: string | null; avatar?: string | null },
-  >(
-    user: T,
-  ): Promise<T> {
+  >(user: T): Promise<T> {
     if (!user?.avatar_upload_id) return user;
 
     return {

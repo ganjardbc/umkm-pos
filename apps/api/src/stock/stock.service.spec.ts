@@ -93,10 +93,7 @@ describe('StockService', () => {
       };
       const movement = { id: 'movement-1' };
 
-      mockPrisma.$transaction.mockResolvedValue([
-        updatedInventory,
-        movement,
-      ]);
+      mockPrisma.$transaction.mockResolvedValue([updatedInventory, movement]);
 
       const result = await service.adjust(
         {
@@ -139,10 +136,7 @@ describe('StockService', () => {
       };
       const movement = { id: 'movement-1' };
 
-      mockPrisma.$transaction.mockResolvedValue([
-        updatedInventory,
-        movement,
-      ]);
+      mockPrisma.$transaction.mockResolvedValue([updatedInventory, movement]);
 
       const result = await service.adjust(
         {
@@ -191,6 +185,34 @@ describe('StockService', () => {
           userId,
         ),
       ).rejects.toThrow(BadRequestException);
+    });
+
+    it('should reject when change_qty is 0', async () => {
+      await expect(
+        service.adjust(
+          {
+            outlet_id: 'outlet-1',
+            product_id: 'product-1',
+            change_qty: 0,
+            reason: 'restock',
+          } as any,
+          merchantId,
+          userId,
+        ),
+      ).rejects.toThrow(BadRequestException);
+
+      await expect(
+        service.adjust(
+          {
+            outlet_id: 'outlet-1',
+            product_id: 'product-1',
+            change_qty: 0,
+            reason: 'restock',
+          } as any,
+          merchantId,
+          userId,
+        ),
+      ).rejects.toThrow('change_qty must not be 0');
     });
 
     it('should reject invalid reason for positive change_qty', async () => {

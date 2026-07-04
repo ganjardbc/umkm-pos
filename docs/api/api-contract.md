@@ -173,6 +173,55 @@ POST   /stock/adjust         — Manual stock adjustment
 GET    /stock/inventory      — Current stock per outlet
 ```
 
+### POST /stock/adjust
+
+**Permission:** `stock.adjust`
+
+**Request Body:**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| product_id | string (UUID) | yes | Product to adjust |
+| outlet_id | string (UUID) | yes | Outlet inventory to update |
+| change_qty | integer | yes | Quantity change (positive to increase, negative to decrease); **must not be 0** |
+| reason | string | yes | Reason for adjustment (e.g., `restock`, `correction`, `damage`) |
+
+**Success Response (201):**
+
+```json
+{
+  "success": true,
+  "data": {
+    "outlet_inventory": {
+      "id": "uuid",
+      "outlet_id": "uuid",
+      "product_id": "uuid",
+      "stock_qty": 50,
+      "updated_at": "2026-01-15T10:30:00Z"
+    },
+    "inventory_movement": {
+      "id": "uuid",
+      "product_id": "uuid",
+      "outlet_id": "uuid",
+      "movement_type": "adjustment",
+      "quantity_change": 10,
+      "reason": "restock",
+      "created_at": "2026-01-15T10:30:00Z"
+    }
+  }
+}
+```
+
+**Error Responses (400):**
+
+| Case | Message | Description |
+|---|---|---|
+| `change_qty === 0` | `"change_qty must not be 0"` | Adjustment must increase or decrease stock, not remain unchanged |
+| `change_qty` results in `stock_qty < 0` | `"Insufficient stock. Current: X, Change: Y. Stock cannot go below 0."` | Cannot reduce stock below zero (e.g., current 5, trying to decrease by 10) |
+| Reason mismatch | `"Adjustment reason does not match direction"` | e.g., reason `"damage"` with positive `change_qty` |
+
+All error responses return HTTP 400 with `{ "success": false, "message": "...", "code": "..." }`
+
 ---
 
 ## Reports Endpoints

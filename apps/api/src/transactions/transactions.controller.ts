@@ -118,7 +118,9 @@ export class TransactionsController {
 
   @Patch(':id/status')
   @RequirePermission('transaction.update_status')
-  @ApiOperation({ summary: 'Update order status for customer catalog transactions' })
+  @ApiOperation({
+    summary: 'Update order status for customer catalog transactions',
+  })
   updateStatus(
     @Param('id') id: string,
     @Body() dto: UpdateTransactionStatusDto,
