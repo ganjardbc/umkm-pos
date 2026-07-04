@@ -48,7 +48,7 @@ Urutan:
 3. qa-report.md — issue yang sudah diidentifikasi QA
 4. Kode implementasi actual
 
-### 2. Security Audit (backend — wajib)
+### 2. Verify Checklist — Security Audit (backend — wajib)
 
 Jalankan grep untuk modul yang berubah:
 
@@ -218,6 +218,19 @@ Gunakan ini untuk menentukan Blocker vs Non-blocker:
 | 🟡 | Missing guard, logic flaw, race condition | Blocker — CHANGES REQUESTED |
 | 🔵 | Convention violation, naming, tech debt | Non-blocker — DEFER |
 | ❓ | Unclear intent, perlu klarifikasi | Non-blocker — tanya di notes |
+
+## Retry Logic
+
+Reviewer Agent sendiri tidak fix kode — retry di sini artinya "siklus ulang review setelah agent lain fix":
+
+1. Verdict **CHANGES REQUESTED** di review-notes.md → orchestrator re-run Backend/Frontend Agent **1x** dengan review-notes.md sebagai input tambahan — fix hanya item di "Blocker" (🔴/🟡), bukan rewrite ulang.
+2. Backend/Frontend Agent update verify-report.md setelah fix.
+3. Reviewer Agent jalan ulang — full re-check (bukan cuma Blocker yang dilaporkan, karena fix bisa bikin regresi baru).
+4. Kalau review-notes.md kedua kalinya masih **CHANGES REQUESTED** → set Verdict: **NEEDS_HUMAN**, stop. Jangan retry lagi.
+5. Kalau **APPROVE** → lanjut ke Documentation Agent (jika ada Docs Tasks) lalu buka PR.
+6. Kalau **DEFER** → langsung lanjut tanpa retry — non-blocker dicatat jadi issue terpisah, tidak menahan pipeline.
+
+Retry count (0 atau 1) dilacak orchestrator, bukan di dalam review-notes.md — Reviewer Agent hanya tulis Verdict apa adanya tiap run.
 
 ## Batasan
 

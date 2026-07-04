@@ -156,6 +156,8 @@ Jika status NEEDS_HUMAN, verify-report.md harus berisi:
 
 ## Pipeline Sequence
 
+Urutan berikut sinkron dengan implementasi nyata di caf-orchestrator (bukan lagi Documentation paralel sebelum QA — Reviewer Gate sudah masuk pipeline dengan retry sendiri):
+
 ```
 Developer/Linear Ticket
   ↓
@@ -166,26 +168,30 @@ Planner Agent
 [Architect Agent — opsional untuk task kompleks]
   → .ai/tasks/<ID>/design.md
   ↓
-Backend Agent (paralel dengan Frontend Agent jika memungkinkan)
-  → kode di apps/api/src/
-  → .ai/tasks/<ID>/verify-report.md (backend)
+Backend/Frontend Agent (loop, paralel jika memungkinkan)
+  → kode di apps/api/src/ dan/atau apps/web/src/modules/
+  → .ai/tasks/<ID>/verify-report.md
   ↓
-Frontend Agent
-  → kode di apps/web/src/modules/
-  → .ai/tasks/<ID>/verify-report.md (frontend)
+Verify-Report Gate
+  NEEDS_HUMAN → eskalasi, stop pipeline
+  SUCCESS ↓
   ↓
-Documentation Agent (paralel — tidak blocking)
+QA Gate
+  → .ai/tasks/<ID>/qa-report.md
+  FAIL → retry 1x (Backend/Frontend Agent fix qa-report.md findings) → QA run ulang
+    FAIL lagi setelah retry → NEEDS_HUMAN, stop pipeline
+  PASS ↓
+  ↓
+Reviewer Gate
+  → .ai/tasks/<ID>/review-notes.md
+  CHANGES REQUESTED → retry 1x (Backend/Frontend Agent fix review-notes.md Blocker items) → Reviewer run ulang
+    CHANGES REQUESTED lagi setelah retry → NEEDS_HUMAN, stop pipeline
+  APPROVE / DEFER ↓
+  ↓
+Documentation Agent (kalau ada Docs Tasks di tasks.md)
   → update docs/
   ↓
-QA Agent
-  → .ai/tasks/<ID>/qa-report.md
-  ↓
-Reviewer Agent
-  → .ai/tasks/<ID>/review-notes.md
-  ↓
-  APPROVE → buka PR + mention developer
-  CHANGES REQUESTED → kembali ke agent yang perlu fix
-  NEEDS_HUMAN → eskalasi, stop pipeline
+commit / push / buka PR + mention developer
 ```
 
 ---

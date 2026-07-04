@@ -128,4 +128,8 @@ sekarang karena orchestrator masih file-based + manual.
 
 - Konfirmasi: Opsi A (update dokumen) yang dimaksud, bukan Opsi B (bikin
   pipeline runner kode baru)?
-- Posisi Documentation Agent: paralel dengan QA/Reviewer, atau tunggu QA PASS dulu?
+- ~~Posisi Documentation Agent: paralel dengan QA/Reviewer, atau tunggu QA PASS dulu?~~
+  **Resolved:** lihat implementasi final di caf-orchestrator — Documentation Agent jalan
+  setelah Reviewer Gate APPROVE/DEFER, sebelum commit/push/PR (bukan paralel sebelum QA
+  seperti asumsi awal di plan ini). Detail urutan lengkap: `.ai/workflows/piv-workflow.md`
+  section "Pipeline Sequence".
