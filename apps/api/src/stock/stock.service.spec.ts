@@ -93,10 +93,7 @@ describe('StockService', () => {
       };
       const movement = { id: 'movement-1' };
 
-      mockPrisma.$transaction.mockResolvedValue([
-        updatedInventory,
-        movement,
-      ]);
+      mockPrisma.$transaction.mockResolvedValue([updatedInventory, movement]);
 
       const result = await service.adjust(
         {
@@ -139,10 +136,7 @@ describe('StockService', () => {
       };
       const movement = { id: 'movement-1' };
 
-      mockPrisma.$transaction.mockResolvedValue([
-        updatedInventory,
-        movement,
-      ]);
+      mockPrisma.$transaction.mockResolvedValue([updatedInventory, movement]);
 
       const result = await service.adjust(
         {

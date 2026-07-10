@@ -83,7 +83,8 @@ export class CreateProductDto {
 
   @ApiPropertyOptional({
     example: 10,
-    description: 'Minimum stock alert threshold (saved in outlet_product_inventory)',
+    description:
+      'Minimum stock alert threshold (saved in outlet_product_inventory)',
     default: 0,
   })
   @IsOptional()

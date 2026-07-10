@@ -72,6 +72,8 @@ src/
 | `@Public()` | Skip auth for endpoint |
 | `JwtAuthGuard` | Global JWT protection |
 | `PermissionGuard` | Permission-based access |
+| `@ScopeByOutlet(fieldPath)` | Validate outlet ownership via guard, scoped to caller's merchant |
+| `ScopeByOutletGuard`        | Guard untuk enforce @ScopeByOutlet metadata |
 | `TransformInterceptor` | Wrap responses in `{success, data}` |
 | `ValidationPipe` | DTO validation + transform |
 | `HttpExceptionFilter` | Standardize error responses |
