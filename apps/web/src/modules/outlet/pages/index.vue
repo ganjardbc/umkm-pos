@@ -50,7 +50,7 @@
             {{ slotProps.data.merchants.name }}
           </template>
         </Column>
-        <Column field="product_count" header="Produk" class="min-w-40">
+        <!-- <Column field="product_count" header="Produk" class="min-w-58">
           <template #body="slotProps">
             <Tag
               v-if="!slotProps.data.product_count"
@@ -59,7 +59,7 @@
             />
             <span v-else>{{ slotProps.data.product_count }}</span>
           </template>
-        </Column>
+        </Column> -->
         <Column field="created_at" header="Created At" class="min-w-48">
           <template #body="slotProps">
             {{ formatDateTime(slotProps.data.created_at) }}
