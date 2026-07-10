@@ -43,8 +43,25 @@ export class OutletsService {
       this.prisma.outlets.count({ where }),
     ]);
 
+    const outletIds = data.map((outlet) => outlet.id);
+
+    const productCounts = outletIds.length
+      ? await this.prisma.outlet_product_inventory.groupBy({
+          by: ['outlet_id'],
+          where: { merchant_id: merchantId, outlet_id: { in: outletIds } },
+          _count: { product_id: true },
+        })
+      : [];
+
+    const countMap = new Map(
+      productCounts.map((item) => [item.outlet_id, item._count.product_id]),
+    );
+
     const dataWithSignedUrls = await Promise.all(
-      data.map((outlet) => this.attachSignedUrl(outlet)),
+      data.map(async (outlet) => ({
+        ...(await this.attachSignedUrl(outlet)),
+        product_count: countMap.get(outlet.id) ?? 0,
+      })),
     );
 
     return {
