@@ -9,6 +9,17 @@
           @input="search"
         />
       </div>
+      <Dropdown
+        v-model="form.category_id"
+        :options="listOfCategories"
+        option-label="name"
+        option-value="id"
+        placeholder="All Categories"
+        showClear
+        class="w-full md:w-64"
+        :loading="loadingCategory"
+        @update:modelValue="onFilterChange"
+      />
       <Button
         icon="pi pi-plus"
         label="Add Product"
@@ -153,6 +164,7 @@ import { onMounted, ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { getNoTable, getErrorMessage, getCurrency, formatDateTime } from '@/helpers/utils.ts';
 import { getListProduct, deleteProduct, postAdjustStock } from '@/modules/product-lists/services/api';
+import { getActiveCategories } from '@/modules/product-categories/services/api';
 import { getOutlet } from '@/helpers/auth.ts';
 import { showToast, showConfirm } from '@/helpers/toast.ts';
 import { showLoading, hideLoading } from '@/helpers/loading.ts';
@@ -192,6 +204,8 @@ const fetchProduct = async () => {
       page: pagination.value.page,
       limit: pagination.value.rows,
       outlet_id: outlet?.id,
+      ...(form.value.search && { search: form.value.search }),
+      ...(form.value.category_id && { category_id: form.value.category_id }),
     }
     const response = await getListProduct(payload);
     const { data, meta } = response?.data?.data || {};
@@ -329,17 +343,46 @@ const submitAdjustStockModal = async (payload: any) => {
   }
 };
 
-// Search
-const form = ref({
+// Search & Filter
+const form = ref<{ search: string; category_id: string | null }>({
   search: '',
+  category_id: null,
 });
 
+let searchDebounceTimer: ReturnType<typeof setTimeout>;
 const search = () => {
-  console.log(form.value);
+  clearTimeout(searchDebounceTimer);
+  searchDebounceTimer = setTimeout(() => {
+    pagination.value.page = 1;
+    fetchProduct();
+  }, 300);
+};
+
+const onFilterChange = () => {
+  pagination.value.page = 1;
+  fetchProduct();
+};
+
+// Categories
+const listOfCategories = ref<any[]>([]);
+const loadingCategory = ref(false);
+
+const fetchCategories = async () => {
+  try {
+    loadingCategory.value = true;
+    const response = await getActiveCategories({ page: 1 });
+    const { data } = response?.data || {};
+    listOfCategories.value = data;
+  } catch (err) {
+    console.warn('fetch categories', err);
+  } finally {
+    loadingCategory.value = false;
+  }
 };
 
 onMounted(() => {
   fetchProduct();
+  fetchCategories();
 });
 </script>
 
