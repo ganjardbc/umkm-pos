@@ -1,205 +1,84 @@
-# PIV Workflow — Plan → Implement → Verify
+# PIV Workflow — umkm-pos / caf-orchestrator
 
-## Apa itu PIV
+> Turunan dari `CAF.md` § "Pola Kerja: PIV" → "Retry Bertingkat".
+> Dokumen ini SOP konkret, bukan template — kalau angka/nama variabel di sini beda dari kode
+> aktual, kode yang benar, laporkan supaya dokumen ini diupdate (dokumen hidup, bukan sekali-tempel).
 
-Semua agent di CAF mengikuti satu pola kerja:
+## Level 1 — Retry Internal Agent (PIV loop)
 
-```
-PLAN       → buat rencana tertulis, JANGAN sentuh kode
-IMPLEMENT  → eksekusi sesuai rencana
-VERIFY     → cek sendiri sebelum mengaku selesai
-              jika gagal → perbaiki dan coba lagi (max 3x)
-              jika masih gagal → stop, eskalasi ke developer
-```
+Terjadi **di dalam** satu invocation `claude --agent <name>` (Frontend Agent, Backend Agent, dst),
+di luar scope `caf-orchestrator`. Siklus: implement → verify (lint/typecheck/test) → kalau gagal,
+perbaiki dan ulangi.
 
-Ini bukan sekedar convention — ini hard requirement. Agent yang skip PLAN dan langsung IMPLEMENT akan menghasilkan kode yang tidak sesuai konvensi. Agent yang skip VERIFY akan menghasilkan verify-report.md palsu.
+- **Limit:** max 3x
+- **State:** hidup di proses/sesi agent itu sendiri, tidak persist ke file/variable orchestrator
+- **Kalau gagal terus setelah 3x:** agent menulis `verify-report.md` dengan `Status: NEEDS_HUMAN`,
+  orchestrator baca status ini dan stop pipeline (lihat Level 2)
 
----
+## Level 2 — Retry Lintas-Gate (QA gate & Reviewer gate)
 
-## Phase: PLAN
+Terjadi di `run-agent-pipeline.use-case.ts`, **setelah** Frontend/Backend Agent mengaku selesai
+(verify-report `SUCCESS`), saat QA Agent atau Reviewer Agent menemukan masalah.
 
-### Siapa yang eksekusi
-Planner Agent, Architect Agent
+| Gate | Counter | Limit | Trigger retry |
+|---|---|---|---|
+| QA | `qaRetryCount` | `MAX_QA_RETRIES = 1` | `qaReport.status === 'FAIL'` |
+| Reviewer | `reviewerRetryCount` | `MAX_REVIEWER_RETRIES = 1` | `reviewerReport.verdict === 'CHANGES_REQUESTED'` |
 
-### Apa yang harus dibaca sebelum mulai
-```
-.ai/tasks/<TICKET-ID>/           — artifact dari agent sebelumnya
-AGENTS.md                        — rules dan konvensi wajib
-apps/api/CLAUDE.md               — konvensi backend
-apps/web/CLAUDE.md               — konvensi frontend
-docs/development/backlog.md      — konteks task
-docs/api/api-contract.md         — endpoint yang sudah ada
-docs/database/database-design.md — schema saat ini
-```
+**Sifat counter (terverifikasi dari kode):**
+- **Independen** — dua variabel `let` terpisah, dua constant limit terpisah, tidak saling
+  memotong budget.
+- **Fresh tiap job run** — dideklarasikan lokal tepat sebelum loop gate masing-masing, jadi
+  otomatis mulai dari 0 tiap kali `execute()` dipanggil. Tidak ada logic reset eksplisit karena
+  memang tidak perlu — scoping-nya sendiri yang menjamin ini.
+- **Tidak terhubung ke Level 1** — retry internal PIV di Frontend Agent sudah selesai (proses
+  terpisah) sebelum Level 2 bahkan mulai; tidak ada shared budget antar level.
 
-### Output yang dihasilkan
-```
-.ai/tasks/<TICKET-ID>/requirements.md   — Planner
-.ai/tasks/<TICKET-ID>/tasks.md          — Planner
-.ai/tasks/<TICKET-ID>/design.md         — Architect (opsional, hanya task kompleks)
-```
+**Retry Reviewer tidak me-re-run QA** — kalau Reviewer minta perubahan, Frontend Agent revisi
+kode, tapi pipeline langsung lanjut ke Reviewer lagi, bukan balik ke QA gate.
 
-### Aturan PLAN
-- Jangan buka file editor kode selama phase ini
-- Jika tidak cukup konteks → baca lebih banyak file, jangan asumsi
-- requirements.md harus punya acceptance criteria yang measurable
-- tasks.md harus cukup konkret untuk dieksekusi tanpa ambiguitas
+**Kalau retry gate sudah habis (1x terpakai) dan masih gagal:**
+- Post comment ke Linear (ringkasan kegagalan)
+- `return` — **bukan** `throw`
+- Pipeline berhenti bersih, tidak lanjut ke gate berikutnya, tidak commit/push/PR
 
----
+## Level 3 — Retry Job/Queue (BullMQ)
 
-## Phase: IMPLEMENT
+`attempts: 3` di level job BullMQ. **Hanya untuk kegagalan infra** (exception/crash beneran yang
+membuat `execute()` throw — network timeout, proses Claude Code crash, dll), ditangkap oleh
+try/catch di `execute()`.
 
-### Siapa yang eksekusi
-Backend Agent, Frontend Agent
+**Tidak ikut ke-trigger saat gate exhausted** — karena Level 2 exit dengan `return`, bukan `throw`,
+BullMQ tidak melihat ini sebagai job failure. Ini keputusan desain sengaja: kegagalan kualitas
+(gate habis) punya jalur eskalasi sendiri (comment + stop), tidak boleh memicu restart seluruh
+pipeline dari awal.
 
-### Urutan wajib sebelum mulai
-1. Baca `requirements.md` + `tasks.md` + `design.md` (jika ada)
-2. Baca AGENTS.md (bukan dari memori)
-3. Baca `apps/api/CLAUDE.md` atau `apps/web/CLAUDE.md` sesuai scope
-
-### Urutan implementasi backend
-1. Schema change (jika ada) → migration
-2. DTOs dengan class-validator
-3. Service (business logic, merchant-scoped)
-4. Controller (thin, hanya routing)
-5. Module + App Module registration
-
-### Urutan implementasi frontend
-1. constants.ts + rbac.ts
-2. `<module>.service.ts` (API calls)
-3. stores/ (state, getters, actions, index)
-4. router/index.ts (dengan meta.permission)
-5. pages/ + components/
-
-### Aturan IMPLEMENT
-- Jangan sentuh scope di luar yang ditentukan di requirements.md
-- Jangan implement fitur yang tidak diminta ("while we're here")
-- Jika requirements.md tidak jelas → stop, tulis pertanyaan di verify-report.md, status NEEDS_HUMAN
-
----
-
-## Phase: VERIFY
-
-### Siapa yang eksekusi
-Backend Agent, Frontend Agent (self-verify), lalu QA Agent (independent verify)
-
-### Commands wajib (jalankan semua, catat output)
-```bash
-pnpm typecheck
-pnpm lint
-pnpm --filter umkm-pos-api test          # jika backend berubah
-pnpm --filter umkm-pos-app build         # jika frontend berubah
-```
-
-### Security checks (backend — wajib)
-```bash
-# Multi-tenant scope
-grep -rn "merchant_id" apps/api/src/<module>/ --include="*.ts"
-# RBAC coverage
-grep -n "@Get\|@Post\|@Patch\|@Delete\|@Put\|@RequirePermission\|@Public" apps/api/src/<module>/<module>.controller.ts
-```
-
-### Retry logic
+## Ringkasan Alur Kegagalan
 
 ```
-Attempt 1: jalankan verify → FAIL
-  → baca error output
-  → fix spesifik
-  → jalankan verify lagi
+Frontend Agent gagal verify 3x internal
+  → verify-report.md: NEEDS_HUMAN
+  → orchestrator baca status, stop (comment ke Linear)
 
-Attempt 2: verify → FAIL
-  → baca error dengan lebih teliti
-  → fix, jangan asumsi
+QA gate FAIL, retry 1x ke Frontend, masih FAIL
+  → comment ke Linear, return (clean stop)
+  → job dianggap selesai (bukan failed) — BullMQ TIDAK retry
 
-Attempt 3: verify → FAIL
-  → STOP
-  → tulis verify-report.md dengan Status: NEEDS_HUMAN
-  → sertakan error output exact
-  → jangan melanjutkan
+Reviewer gate CHANGES_REQUESTED, retry 1x ke Frontend, masih CHANGES_REQUESTED
+  → comment ke Linear, return (clean stop)
+  → job dianggap selesai (bukan failed) — BullMQ TIDAK retry
+
+Exception/crash beneran (network, proses crash, dll) di execute()
+  → throw, caught, job marked failed
+  → BullMQ retry otomatis, max 3 attempts
 ```
 
-### Aturan VERIFY
-- Jangan skip command verify walau "yakin pasti pass"
-- Jangan tulis "PASS" jika belum menjalankan command
-- Jika ada 1 `pnpm typecheck` error → fix dulu baru lanjut
-- verify-report.md harus berisi output actual, bukan summary
+## Catatan untuk Project Lain (website-cms-v2 / caf-orchestrator-cms)
 
----
-
-## Retry Escalation Format
-
-Jika status NEEDS_HUMAN, verify-report.md harus berisi:
-
-```markdown
-## Status: NEEDS_HUMAN
-
-## Attempt Log
-- Attempt 1: FAIL — TypeScript error: "Property 'x' does not exist on type 'Y'"
-- Attempt 2: FAIL — Sama setelah refactor
-- Attempt 3: FAIL — Error berbeda setelah coba pendekatan lain
-
-## Error Output (Attempt 3 — exact)
-```
-[paste output exact dari terminal]
-```
-
-## Apa yang Sudah Dicoba
-1. [pendekatan 1]
-2. [pendekatan 2]
-3. [pendekatan 3]
-
-## Pertanyaan untuk Developer
-- [pertanyaan spesifik yang butuh jawaban manusia]
-```
-
----
-
-## Pipeline Sequence
-
-Urutan berikut sinkron dengan implementasi nyata di caf-orchestrator (bukan lagi Documentation paralel sebelum QA — Reviewer Gate sudah masuk pipeline dengan retry sendiri):
-
-```
-Developer/Linear Ticket
-  ↓
-Planner Agent
-  → .ai/tasks/<ID>/requirements.md
-  → .ai/tasks/<ID>/tasks.md
-  ↓
-[Architect Agent — opsional untuk task kompleks]
-  → .ai/tasks/<ID>/design.md
-  ↓
-Backend/Frontend Agent (loop, paralel jika memungkinkan)
-  → kode di apps/api/src/ dan/atau apps/web/src/modules/
-  → .ai/tasks/<ID>/verify-report.md
-  ↓
-Verify-Report Gate
-  NEEDS_HUMAN → eskalasi, stop pipeline
-  SUCCESS ↓
-  ↓
-QA Gate
-  → .ai/tasks/<ID>/qa-report.md
-  FAIL → retry 1x (Backend/Frontend Agent fix qa-report.md findings) → QA run ulang
-    FAIL lagi setelah retry → NEEDS_HUMAN, stop pipeline
-  PASS ↓
-  ↓
-Reviewer Gate
-  → .ai/tasks/<ID>/review-notes.md
-  CHANGES REQUESTED → retry 1x (Backend/Frontend Agent fix review-notes.md Blocker items) → Reviewer run ulang
-    CHANGES REQUESTED lagi setelah retry → NEEDS_HUMAN, stop pipeline
-  APPROVE / DEFER ↓
-  ↓
-Documentation Agent (kalau ada Docs Tasks di tasks.md)
-  → update docs/
-  ↓
-commit / push / buka PR + mention developer
-```
-
----
-
-## Hard Rules
-
-1. **Tidak ada auto-merge** — review manusia wajib sebelum merge ke main
-2. **Tidak ada skip verify** — walau "simple bugfix"
-3. **Tidak ada asumsi merchant_id dari client** — selalu dari JWT
-4. **Tidak ada business logic di controller** — selalu di service
-5. **Status NEEDS_HUMAN = pipeline stop** — developer handle manual
+Kalau mengadaptasi pola ini ke Jira+GitLab, pastikan **prinsip yang sama** dipertahankan meski
+implementasi tracker beda:
+- Counter retry per-gate tetap independen dan lokal, jangan share budget
+- Gate-exhausted tetap `return` bersih + notifikasi (Telegram, di kasus website-cms-v2), bukan
+  `throw` yang memicu BullMQ retry
+- Kalau ada gate tambahan di masa depan (mis. Security Gate), ikuti pola yang sama: constant
+  limit sendiri, counter lokal sendiri, exit path sendiri

@@ -43,34 +43,6 @@ Cek indikasi tracker yang dipakai:
 
 Gunakan hasil ini untuk memilih varian **Layer 5** yang sesuai (lihat bagian bercabang di bawah).
 
-### Langkah 3b — Deteksi VCS Platform
-Cek remote git dan konfigurasi CI untuk menentukan platform version control:
-- `git remote -v` mengarah ke `github.com` → **GitHub** (PR, `gh` CLI, GitHub Actions)
-- `git remote -v` mengarah ke `gitlab.com` atau self-hosted GitLab → **GitLab** (Merge Request,
-  `glab` CLI, GitLab CI)
-- Tidak jelas → **tanyakan ke user**. Jangan asumsi GitHub sebagai default.
-
-Ini menentukan istilah ("PR" vs "MR"), tool CLI, dan format webhook di Layer 5 — dokumen ini
-memakai istilah "PR" secara default tapi ganti ke terminologi platform yang terdeteksi.
-
-### Langkah 3c — Deteksi Topologi Backend
-Cek apakah backend ada di dalam repo atau dimiliki tim/repo lain:
-- Ada folder backend (mis. `apps/api`, `server/`) dengan schema DB, controller, service sendiri
-  → **full-stack monorepo**, Backend Agent relevan dibuat.
-- Repo hanya berisi frontend yang consume API eksternal (`server/api/` cuma berisi mock/fixture,
-  tidak ada koneksi DB langsung, ada dokumentasi/OpenAPI spec dari tim lain) → **pure frontend
-  consumer**. Jangan buat Backend Agent — buat ADR yang menjelaskan batas ini (mis.
-  `adr-client-side-only-no-bff.md`) supaya Planner Agent tahu backend selalu di luar scope dan
-  gap kontrak API harus ditandai `OPEN QUESTION`/blocker, bukan diasumsikan bisa diimplementasi.
-
-### Langkah 3d — Deteksi Sensitivitas Keamanan/Compliance
-Cek indikasi domain sensitif: folder/kode terkait `auth`, `rbac`, `permission`, `encrypt`,
-`pii`, atau README yang menyebut compliance (SOC2, HIPAA, dst).
-- Kalau terdeteksi → tandai project sebagai **security-sensitive**. Ini menambah requirement di
-  Layer 1 (ADR wajib untuk enforcement layer & secret exposure) dan Layer 2 (`.claude/settings.json`
-  dengan Bash allow/deny rules sebagai defense-in-depth, bukan cuma scope di file agent markdown).
-- Kalau tidak terdeteksi → lewati, tidak perlu dipaksakan.
-
 ### Langkah 4 — Eksekusi Bertahap
 Jalankan **Fase 1 → Fase 4** sesuai urutan di bagian "Urutan Implementasi" di bawah.
 Setelah tiap fase selesai, **berhenti dan laporkan** ke user sebelum lanjut ke fase berikutnya —
@@ -112,6 +84,53 @@ VERIFY     → cek sendiri sebelum mengaku selesai (lint, typecheck, test)
 
 Ini mencegah dua masalah paling umum di AI coding: langsung coding tanpa arah, dan mengaku
 selesai tanpa verifikasi.
+
+### Retry Bertingkat (observasi produksi — bukan cuma 1 level)
+
+> Catatan implementasi nyata: begitu pipeline sampai ke tahap orchestration (Layer 5) dengan
+> lebih dari satu quality gate berurutan (mis. QA lalu Reviewer), retry ternyata tidak cukup
+> didefinisikan sebagai satu angka "max 3x" di satu tempat. Yang terjadi di produksi ada
+> **beberapa level retry yang independen**, masing-masing dengan tujuan dan jatah berbeda:
+
+1. **Retry internal agent (PIV loop)** — di dalam satu agent implementasi, siklus
+   implement → verify → (kalau gagal) perbaiki lagi, max N kali (default 3x). Ini yang
+   dijelaskan di pola PIV di atas.
+2. **Retry lintas-gate (cross-agent gate retry)** — kalau agent *berikutnya* dalam pipeline
+   (QA Agent atau Reviewer Agent) menemukan masalah **setelah** agent implementasi mengaku
+   selesai, sistem mengirim balik ke agent implementasi untuk revisi. Ini **retry terpisah**
+   dari retry internal PIV — biasanya jatahnya lebih kecil (mis. 1x per gate), dan dilacak
+   dengan counter sendiri per gate (mis. `qaRetryCount`, `reviewerRetryCount`), bukan berbagi
+   angka yang sama dengan retry internal.
+3. **Retry level job/queue** — di layer infrastruktur orchestration (mis. BullMQ `attempts`),
+   untuk menangani kegagalan infra (crash, network, timeout), **bukan** kegagalan logic/kualitas
+   kode. Jangan campur retry ini dengan retry #1 dan #2 — tujuannya beda (resiliensi infra,
+   bukan perbaikan kualitas hasil kerja agent).
+
+**Wajib didokumentasikan secara eksplisit di `.ai/workflows/piv-workflow.md` project kamu:**
+- Apakah tiap level retry di atas **independen** (counter sendiri-sendiri) atau **cumulative**
+  (berbagi satu budget total)? Jangan diasumsikan — ini harus diverifikasi langsung dari kode
+  orchestrator, karena ambiguitas di sini menyebabkan perilaku pipeline yang sulit ditebak
+  (mis. ticket yang sudah habis retry internal PIV tapi masih dapat jatah retry gate, atau
+  sebaliknya).
+- Apakah retry gate (#2) me-reset counter-nya setiap masuk gate baru, atau ikut terbawa dari
+  gate sebelumnya dalam satu ticket yang sama?
+- Kalau retry gate sudah habis dan masih gagal — next state apa yang dieksekusi (`NEEDS_HUMAN`
+  langsung, atau ada logic tambahan)?
+
+> **Referensi implementasi nyata (terverifikasi dari kode, bukan asumsi):** pola yang terbukti
+> jalan di produksi adalah setiap gate punya counter `let` lokal sendiri (mis. `qaRetryCount`,
+> `reviewerRetryCount`) yang dideklarasikan tepat sebelum loop retry gate tersebut, dengan
+> constant limit terpisah per gate (mis. `MAX_QA_RETRIES`, `MAX_REVIEWER_RETRIES`). Karena
+> local variable ini baru "lahir" di titik itu, otomatis mulai dari 0 tiap kali fungsi
+> orchestration dipanggil — tidak perlu logic reset eksplisit, dan tidak tersambung ke retry
+> internal PIV agent lain (yang state-nya hidup di proses/file terpisah).
+>
+> **Peringatan desain penting:** saat retry gate habis dan masih gagal, tangani dengan
+> `return` (clean stop) setelah post comment ke tracker — **jangan** `throw`. Kalau di-`throw`,
+> retry job-level (mis. BullMQ `attempts`) akan ikut ke-trigger dan me-restart **seluruh
+> pipeline dari awal**, padahal yang dibutuhkan cuma eskalasi ke manusia. Job-level retry
+> harus reserved untuk exception/crash infra beneran, bukan untuk kegagalan kualitas hasil
+> kerja agent yang sudah punya jalur eskalasinya sendiri.
 
 ---
 
@@ -171,13 +190,6 @@ docs/
 - Iteratif: tiap kali agent salah konvensi, update knowledge base-nya (lihat pola: convention
   yang muncul organik saat testing → didokumentasikan setelahnya, bukan diprediksi di awal)
 
-**Kalau project ditandai security-sensitive (Langkah 3d):**
-- ADR wajib mencakup: enforcement layer untuk RBAC/permission (di layer mana dicek — middleware,
-  composable, guard — dan kenapa di situ), serta larangan eksplisit expose secret/key di kode
-  client-side (mis. `NUXT_PUBLIC_*`/`NEXT_PUBLIC_*` env yang ke-bundle ke browser).
-- `CLAUDE.md`/`AGENTS.md` cantumkan larangan konkret dengan contoh salah, bukan cuma prinsip
-  abstrak "jaga keamanan".
-
 ---
 
 ### Layer 2 — Agent Definitions
@@ -236,18 +248,6 @@ Simpan di `.claude/agents/` (untuk Claude Code) atau folder equivalen untuk tool
 > (mis. parameter query yang belum ada di DTO backend) baru sering ketahuan di tahap ini, dan
 > itu tanda pipeline bekerja dengan benar, bukan tanda ticket-nya tidak lengkap.
 
-**Rule OPEN QUESTIONS (generalisasi, berlaku untuk semua agent, bukan cuma gap kontrak backend):**
-Klaim behavior apapun — komponen shared, service eksternal, sistem lain — yang cuma diinferensi
-dari **membaca kode tanpa menjalankan/mengetest**, wajib ditandai `OPEN QUESTION` di `tasks.md`
-atau `requirements.md`, bukan ditulis seolah sudah pasti. Ini mencegah Planner/agent implementasi
-membangun rencana di atas asumsi yang belum terverifikasi.
-
-**Defense-in-depth untuk security-sensitive project (Langkah 3d):**
-Selain scope yang didefinisikan di file agent markdown, tambahkan `.claude/settings.json`
-berisi Bash allow/deny rules eksplisit (mis. blok `curl`/`rm -rf` di luar workspace, blok akses
-ke `.env`). File markdown mendefinisikan *niat* scope; `settings.json` menegakkannya di level
-tool — jangan andalkan satu lapis saja untuk project dengan data sensitif.
-
 ---
 
 ### Layer 3 — Artifact Handoff
@@ -290,14 +290,6 @@ branch `ai-agent/{{TICKET-ID}}`.
 [deviasi dari plan, kalau ada]
 ```
 
-**Rule Retry Budget dan QA Handoff:**
-- Kalau QA Agent menemukan gap setelah implementasi agent sebelumnya sudah `SUCCESS` di quality
-  gate, fix atas temuan QA **melanjutkan Attempt Log yang sama** (mis. "Attempt 2: fix QA Finding
-  #1 dan #2"), bukan retry budget baru yang terpisah dari batas max 3x.
-- QA Agent **tidak boleh jalan** kalau status agent implementasi sebelumnya masih `NEEDS_HUMAN` —
-  itu precondition wajib dicek di awal `qa.md`, supaya QA tidak menguji kode yang penulisnya
-  sendiri sudah mengaku gagal.
-
 ---
 
 ### Layer 4 — Quality Gates
@@ -313,33 +305,20 @@ hasil deteksi — jangan asumsikan nama script tanpa verifikasi):
 {{PKG_MANAGER}} build       # wajib pass sebelum PR dibuka
 ```
 
-**Scoped lint vs full lint (Hard Stop yang adil):**
-Jalankan dua level lint, jangan cuma satu:
-- **Full lint** (`{{PKG_MANAGER}} lint` di seluruh repo) → non-blocking, untuk audit menyeluruh,
-  hasilnya dilaporkan tapi tidak menggagalkan task.
-- **Scoped lint** (hanya file yang diubah task ini, ambil dari
-  `git diff --name-only origin/main...HEAD`) → ini yang jadi Hard Stop quality gate. Agent hanya
-  boleh disalahkan atas kode yang benar-benar ia tulis, bukan pelanggaran pre-existing di file
-  lain yang kebetulan ada di repo yang sama.
-
-**Rule Baseline-Comparison untuk quality gate FAIL yang diklaim pre-existing:**
-Gate (`typecheck`/`test`/`build`) yang FAIL tetap boleh dilaporkan `Status: SUCCESS` **hanya**
-kalau semua syarat berikut dipenuhi — kalau tidak, FAIL tetap `NEEDS_HUMAN`:
-1. Dibuktikan pre-existing lewat baseline comparison (`git stash` lalu jalankan ulang gate yang
-   sama) — hasil FAIL harus **identik** sebelum dan sesudah perubahan task ini.
-2. Bukti comparison dicatat eksplisit di `Attempt Log`, bukan sekadar klaim "ini pre-existing"
-   tanpa langkah verifikasi yang ditunjukkan.
-3. FAIL tersebut dilaporkan sebagai temuan terpisah di `Catatan` — agent wajib merekomendasikan
-   pembuatan ticket terpisah untuk isu infra ini, dengan ringkasan error yang cukup untuk
-   di-follow-up manusia.
-4. Field `Quality Gate` di `verify-report.md` tetap jujur menunjukkan FAIL untuk gate yang gagal
-   — jangan ditulis PASS demi laporan terlihat bersih.
-
 **Buat file `.ai/workflows/task-completion.md`** berisi:
 - Definition of Done yang eksplisit
 - Commands yang harus dijalankan
 - Documentation update rules (endpoint baru → update api-contract.md, dst)
 - PR checklist sebelum branch dianggap siap
+
+**Buat/lengkapi file `.ai/workflows/piv-workflow.md`** berisi (lihat juga subsection
+"Retry Bertingkat" di atas):
+- SOP retry internal agent (max berapa kali, kapan eskalasi)
+- SOP retry lintas-gate per gate (QA, Reviewer, dst) — jatah masing-masing, nama counter,
+  independen atau cumulative terhadap retry internal
+- SOP retry level job/queue (kalau orchestrator dipakai) — beda tujuan dari 2 poin di atas,
+  jangan dicampur
+- Definisi eksplisit next-state kalau semua jatah retry di satu level habis
 
 **Tambahan yang direkomendasikan:**
 - Custom lint rule untuk aturan kritis yang tidak boleh dilanggar (spesifik ke domain project,
@@ -364,11 +343,8 @@ kalau semua syarat berikut dipenuhi — kalau tidak, FAIL tetap `NEEDS_HUMAN`:
 VPS kecil (~$5-6/bulan)
   └── Webhook Receiver (Express, ~150 baris)
         └── Spawn AI runner per-agent (on-demand, bukan nyala terus)
-              └── Akses MCP: {{TRACKER}} MCP + {{VCS}} MCP / gh CLI / glab CLI
+              └── Akses MCP: {{TRACKER}} MCP + GitHub MCP / gh CLI
 ```
-`{{VCS}}` diisi dari hasil deteksi Langkah 3b (GitHub atau GitLab). Kalau GitLab yang terdeteksi,
-ganti seluruh istilah "PR"/"Pull Request" di dokumen-dokumen turunan (`task-completion.md`,
-agent files) jadi "MR"/"Merge Request", dan `gh pr create` jadi `glab mr create`.
 
 #### Varian A — Linear
 ```
@@ -478,24 +454,16 @@ project-root/
 9. Evaluasi: seberapa akurat plan, seberapa bersih kode, berapa token terpakai
 
 ### Fase 3 — Otomasi (perlu konfirmasi eksplisit dari user sebelum mulai)
-Karena fase ini menyentuh infrastruktur nyata (server, kredensial), jalankan bertahap — jangan
-langsung full-otomatis di percobaan pertama:
-10. **PLAN infrastruktur** — spek VPS, struktur webhook receiver, skema keamanan (signature
-    verification)
-11. Setup VPS + deploy webhook receiver skeleton, **test lokal dulu** sebelum connect ke tracker
-12. Connect MCP tracker (Linear/Jira) sesuai Varian yang dipilih — baru setelah receiver sendiri
-    teruji jalan
-13. Aktifkan trigger otomatis dari webhook, lalu **test dengan 1 ticket nyata** — bandingkan
-    hasilnya dengan hasil test manual di Fase 2 poin 8 untuk pastikan behavior konsisten
-14. Tambah agent berikutnya (QA, Reviewer) satu per satu, setelah Planner + agent implementasi
-    stabil lewat trigger otomatis (bukan cuma stabil waktu manual)
+10. Setup VPS + webhook receiver
+11. Connect MCP tracker (Linear/Jira) sesuai Varian yang dipilih
+12. Aktifkan trigger otomatis dari webhook
+13. Tambah agent berikutnya (QA, Reviewer) satu per satu setelah Planner + agent implementasi stabil
 
 ### Fase 4 — Hardening
-15. Tambah custom lint rule untuk aturan kritis
-16. Tambah pembuatan PR/MR otomatis di akhir pipeline (`gh pr create` atau `glab mr create`,
-    sesuai VCS terdeteksi di Langkah 3b)
-17. Evaluasi swap/bandingkan AI runner (kalau relevan)
-18. AI PR/MR Reviewer + DevOps Agent
+14. Tambah custom lint rule untuk aturan kritis
+15. Tambah `gh pr create` otomatis di akhir pipeline
+16. Evaluasi swap/bandingkan AI runner (kalau relevan)
+17. AI PR Reviewer + DevOps Agent
 
 ---
 
@@ -517,11 +485,9 @@ langsung full-otomatis di percobaan pertama:
 | Kebutuhan | Pilihan Umum | Isi Project Ini |
 |---|---|---|
 | Ticket tracker | Linear / Jira / GitHub Issues | `{{TRACKER}}` |
-| VCS platform | GitHub / GitLab | `{{VCS}}` |
-| Topologi backend | Full-stack monorepo / pure frontend consumer | `{{BACKEND_TOPOLOGY}}` |
 | AI runner | Claude Code (default), OpenCode, dst | `{{AI_RUNNER}}` |
-| MCP | Tracker MCP + VCS MCP | `{{MCP_LIST}}` |
-| PR & branch | `gh`/`glab` CLI (fase awal), MCP (fase mature) | — |
+| MCP | Tracker MCP + GitHub MCP | `{{MCP_LIST}}` |
+| PR & branch | `gh` CLI (fase awal), MCP (fase mature) | — |
 | Webhook receiver | Node.js + Express | — |
 | Queue | `p-queue` (mencegah race condition) | — |
 | Runner infra | VPS kecil (Hetzner CX22 / DigitalOcean Droplet) | — |
@@ -539,8 +505,6 @@ Diisi AI di Langkah 2–3 sebelum generate file apapun.
 | `{{PKG_MANAGER}}` | `packageManager` di `package.json` root | `pnpm`, `npm`, `yarn` |
 | `{{apps_dir}}` / `{{packages_dir}}` | Struktur monorepo terdeteksi | `apps/`, `packages/` |
 | `{{TRACKER}}` | Hasil deteksi/konfirmasi Langkah 3 | `Linear`, `Jira`, `GitHub Issues` |
-| `{{VCS}}` | Hasil deteksi Langkah 3b | `GitHub`, `GitLab` |
-| `{{BACKEND_TOPOLOGY}}` | Hasil deteksi Langkah 3c | `full-stack monorepo`, `pure frontend consumer` |
 | `{{AI_RUNNER}}` | Folder config AI terdeteksi, atau tanya user | `Claude Code` |
 | `{{TICKET-ID}}` | Format key tracker yang dipilih | `ENG-123`, `#42` |
 
