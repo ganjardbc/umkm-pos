@@ -170,12 +170,18 @@ export class RbacController {
   @RequirePermission('role.assign')
   @ApiOperation({ summary: 'Assign a role to a user at a specific outlet' })
   @ApiResponse({ status: 201, description: 'Role assigned to user' })
+  @ApiResponse({ status: 404, description: 'Outlet not found' })
+  @ApiResponse({
+    status: 403,
+    description: 'Outlet does not belong to your merchant',
+  })
   @ApiResponse({ status: 409, description: 'Role already assigned' })
   assignRoleToUser(
     @Body() dto: AssignRoleDto,
     @CurrentUser('id') userId: string,
+    @CurrentUser('merchant_id') callerMerchantId: string,
   ) {
-    return this.rbacService.assignRoleToUser(dto, userId);
+    return this.rbacService.assignRoleToUser(dto, userId, callerMerchantId);
   }
 
   @Delete('user-roles')
@@ -183,8 +189,15 @@ export class RbacController {
   @ApiOperation({ summary: 'Revoke a role from a user at a specific outlet' })
   @ApiResponse({ status: 200, description: 'Role revoked from user' })
   @ApiResponse({ status: 404, description: 'Assignment not found' })
-  revokeRoleFromUser(@Body() dto: AssignRoleDto) {
-    return this.rbacService.revokeRoleFromUser(dto);
+  @ApiResponse({
+    status: 403,
+    description: 'Outlet does not belong to your merchant',
+  })
+  revokeRoleFromUser(
+    @Body() dto: AssignRoleDto,
+    @CurrentUser('merchant_id') callerMerchantId: string,
+  ) {
+    return this.rbacService.revokeRoleFromUser(dto, callerMerchantId);
   }
 
   @Get('users/:userId/roles')
