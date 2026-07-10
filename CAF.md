@@ -248,6 +248,31 @@ Simpan di `.claude/agents/` (untuk Claude Code) atau folder equivalen untuk tool
 > (mis. parameter query yang belum ada di DTO backend) baru sering ketahuan di tahap ini, dan
 > itu tanda pipeline bekerja dengan benar, bukan tanda ticket-nya tidak lengkap.
 
+### Pola: Read-Only Scanner Agent + Approval-Gate Command
+
+Untuk agent yang jalan **proaktif** (scan berkala, bukan dipicu 1 ticket spesifik — mis. audit
+technical debt, security scan, dependency check), pisahkan tegas dua tanggung jawab:
+
+1. **Agent scanner tetap read-only murni.** `tools:` frontmatter-nya cuma boleh baca (Read,
+   Bash untuk grep/git log/test coverage — tanpa Write/Edit di luar satu file laporan lokal).
+   Agent ini TIDAK boleh punya akses tulis ke sistem eksternal (tracker, VCS, notifikasi),
+   walaupun temuan hasil scan-nya "jelas benar" — false positive tetap mungkin, dan agent yang
+   proaktif/berkala berarti lebih sering jalan tanpa pengawasan langsung, jadi blast radius
+   kesalahan lebih besar dibanding agent yang dipicu 1 ticket dan direview manusia di ujungnya.
+2. **Aksi tulis ke sistem eksternal lewat command terpisah**, bukan lewat agent scanner itu
+   sendiri. Command ini baca laporan hasil scan, tampilkan tiap temuan **satu per satu** untuk
+   approval eksplisit (bukan approve-all), baru eksekusi aksi tulis untuk yang di-approve.
+
+**Kenapa dipisah, bukan cukup batasi jumlah usulan per run:** membatasi jumlah usulan (mis. "max
+5 temuan per minggu") mengontrol biaya, tapi tidak mengontrol kualitas — kalau agent yang sama
+juga punya akses tulis, sekali dia salah baca konteks, kesalahan itu langsung jadi artifact resmi
+(ticket, komentar, dst) tanpa filter manusia. Approval-gate terpisah menjaga titik kontrol
+kualitas tetap ada, sekecil apapun jumlah usulannya.
+
+**Konsisten dengan keputusan MCP vs API langsung:** command approval-gate ini jalan di sesi
+interaktif (dipicu manusia, bukan cron/webhook), jadi pakai MCP tracker yang sesuai — bukan
+direct API seperti yang dipakai orchestrator headless.
+
 ---
 
 ### Layer 3 — Artifact Handoff
