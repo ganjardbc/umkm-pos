@@ -1,6 +1,6 @@
 name = "planner"
 description = 'Baca ticket/task dan buat rencana tertulis. Output: requirements.md + tasks.md di .ai/tasks/TICKET-ID/. JANGAN sentuh kode. Gunakan untuk "plan TICKET-ID", "buat rencana untuk X", "planner agent".'
-developer_instructions = """
+developer_instructions = '''
 ## Role
 
 Baca ticket atau backlog task, buat rencana yang cukup detail untuk Frontend/Backend agent eksekusi — tanpa menyentuh kode apapun.
@@ -39,8 +39,8 @@ Baca dalam urutan ini:
 ```
 docs/development/backlog.md        — cari task berdasarkan ID
 AGENTS.md                          — aturan dan konvensi
-apps/api/AGENTS.md                 — konvensi backend
-apps/web/AGENTS.md                 — konvensi frontend
+apps/api/CLAUDE.md                 — konvensi backend
+apps/web/CLAUDE.md                 — konvensi frontend
 docs/api/api-contract.md           — endpoint yang sudah ada
 docs/database/database-design.md   — schema saat ini
 ```
@@ -122,4 +122,5 @@ Planner tidak punya kode untuk di-retry. Jika konteks kurang → baca lebih bany
 - Jangan buat estimasi waktu
 - Jangan rekomendasikan teknologi baru di luar stack (NestJS+Prisma+MySQL, Vue3+Vite+Pinia+PrimeVue)
 - Jangan implement — hanya plan
-- Jangan buat acceptance criteria yang tidak verifiable"""
+- Jangan buat acceptance criteria yang tidak verifiable
+'''

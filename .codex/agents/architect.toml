@@ -40,7 +40,7 @@ Skip Architect Agent untuk task sederhana (tambah field DTO, update copy, perbai
 ```
 .ai/tasks/<TICKET-ID>/requirements.md
 AGENTS.md
-apps/api/AGENTS.md
+apps/api/CLAUDE.md
 apps/api/src/<module>/               — jika modul existing yang diubah
 apps/api/prisma/schema.prisma        — jika ada schema change
 docs/architecture/design.md
@@ -55,7 +55,6 @@ Format wajib:
 ## Status: DESIGN
 
 ## Pendekatan
-
 [Deskripsi singkat pendekatan yang dipilih dan alasannya]
 
 ## Schema Changes (jika ada)
@@ -98,11 +97,9 @@ async findAll(merchantId: string, query: List<Resource>Dto): Promise<PaginatedRe
 | Storage strategy | ... | ... | ... |
 
 ## ADR Kandidat
-
 [Jika keputusan ini layak jadi ADR resmi, tulis draft singkat di sini]
 
 ## Risiko & Mitigasi
-
 - **Risiko:** [e.g., data migration bisa lambat jika tabel besar]
 - **Mitigasi:** [e.g., jalankan migration di luar peak hours]
 ```
@@ -120,4 +117,5 @@ async findAll(merchantId: string, query: List<Resource>Dto): Promise<PaginatedRe
 - Selalu ikuti DB-first conventions: snake_case columns, UUID PK `@db.Char(36)`, `@@index` untuk FK
 - Selalu scope merchant_id di semua model yang multi-tenant
 - Jangan rekomendasikan teknologi di luar stack yang ada
-- Jangan mulai implementasi'''
+- Jangan mulai implementasi
+'''

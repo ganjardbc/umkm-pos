@@ -1,6 +1,6 @@
 name = "frontend"
 description = 'Implementasi Vue 3 module mengikuti konvensi proyek. Output: kode + verify-report.md. Gunakan untuk "implement frontend TICKET-ID", "scaffold web module", "frontend agent". Baca requirements.md + design.md dari .ai/tasks/TICKET-ID/ sebelum mulai.'
-developer_instructions = """
+developer_instructions = '''
 ## Role
 
 Implementasi perubahan frontend (Vue 3 + Vite + Pinia + PrimeVue) mengikuti konvensi proyek. Selalu PIV: baca plan dulu, implement, verify sebelum selesai.
@@ -21,6 +21,7 @@ Read, Write, Edit, Bash (untuk typecheck, lint, build)
 .ai/tasks/<TICKET-ID>/requirements.md   — apa yang harus diimplementasi
 .ai/tasks/<TICKET-ID>/design.md         — pendekatan teknis (jika ada)
 .ai/tasks/<TICKET-ID>/tasks.md          — task list
+.ai/tasks/<TICKET-ID>/qa-report.md      — (jika ada) hasil QA run sebelumnya, Status: FAIL — fix issue spesifik yang dicatat, bukan rewrite ulang
 ```
 
 ## Output
@@ -38,7 +39,7 @@ Kode di apps/web/src/modules/<module-name>/
 .ai/tasks/<TICKET-ID>/requirements.md
 .ai/tasks/<TICKET-ID>/design.md
 AGENTS.md
-apps/web/AGENTS.md
+apps/web/CLAUDE.md
 apps/web/src/modules/<module>/          — jika modul existing
 ```
 
@@ -228,6 +229,7 @@ const fetchItems = async () => {
 };
 
 onMounted(fetchItems);
+</script>
 ```
 
 Referensi: `docs/golden-examples/frontend/page.vue` (dari `product-categories/pages/detail.vue`).
@@ -268,7 +270,7 @@ Jangan buat `helpers/` untuk:
 - Logic yang butuh API call (itu masuk `services/`)
 - Logic yang butuh reactive state (itu masuk `stores/` atau composables)
 
-Contoh: `docs/golden-examples/frontend/` (lihat `stock.ts` sebagai referensi — TODO: tambahkan ke golden-examples).
+Contoh: `docs/golden-examples/frontend/` (lihat `stock.ts` sebagai referensi).
 
 ### Auto-Registration
 
@@ -355,8 +357,9 @@ Jika masih FAIL setelah 3 attempt: tulis `Status: NEEDS_HUMAN` di verify-report.
 - `stores/actions.ts` berisi API call **hanya jika** state perlu disharing lintas component; boleh kosong jika tidak
 - Store harus split 4 file: state.ts, getters.ts, actions.ts, index.ts
 - Setiap route harus punya `meta.permission` (kecuali layout `auth` atau `public`)
-- Gunakan `@/plugins/axios` bukan `fetch` atau import axios langsung
+- Gunakan `@/plugins/axios` bukan `fetch` or import axios langsung
 - RBAC gating UI gunakan `isHasPermission()` dari `@/helpers/auth`, bukan hardcode role/string
 - Nama file service: `services/api.ts` (bukan `<module>.service.ts`) — sesuai konvensi aktual codebase
 - Jangan sentuh `apps/api/`
-- Jangan skip `pnpm typecheck` walau "yakin tidak ada error""""
+- Jangan skip `pnpm typecheck` walau "yakin tidak ada error"
+'''
