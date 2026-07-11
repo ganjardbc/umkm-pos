@@ -144,6 +144,18 @@ PASS — semua acceptance criteria terpenuhi, tidak ada critical issues.
 FAIL — [jumlah] critical issue ditemukan, perlu perbaikan sebelum PR.
 ```
 
+## Retry Logic
+
+QA Agent sendiri tidak fix bug — retry di sini artinya "siklus ulang QA setelah agent lain fix":
+
+1. Status **FAIL** di qa-report.md → orchestrator re-run Backend/Frontend Agent **1x** dengan qa-report.md sebagai input tambahan (lihat section Input Backend/Frontend Agent).
+2. Backend/Frontend Agent fix issue spesifik yang dicatat di qa-report.md (bukan rewrite ulang), lalu update verify-report.md.
+3. QA Agent jalan ulang — full re-check (bukan cuma issue yang dilaporkan, karena fix bisa bikin regresi baru).
+4. Kalau qa-report.md kedua kalinya masih **FAIL** → set Status: **NEEDS_HUMAN**, stop. Jangan retry lagi.
+5. Kalau **PASS** → lanjut ke Reviewer Agent.
+
+Retry count (0 atau 1) dilacak orchestrator, bukan di dalam qa-report.md — QA Agent hanya tulis Status apa adanya tiap run.
+
 ## Batasan
 
 - Jangan perbaiki kode — hanya laporkan

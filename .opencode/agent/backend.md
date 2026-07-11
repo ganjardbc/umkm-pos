@@ -27,6 +27,7 @@ Implementasi perubahan backend (NestJS + Prisma + MySQL) mengikuti konvensi proy
 .ai/tasks/<TICKET-ID>/requirements.md   — apa yang harus diimplementasi
 .ai/tasks/<TICKET-ID>/design.md         — pendekatan teknis (jika ada)
 .ai/tasks/<TICKET-ID>/tasks.md          — task list
+.ai/tasks/<TICKET-ID>/qa-report.md      — (jika ada) hasil QA run sebelumnya, Status: FAIL — fix issue spesifik yang dicatat, bukan rewrite ulang
 ```
 
 ## Output

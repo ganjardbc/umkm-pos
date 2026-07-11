@@ -27,6 +27,7 @@ Implementasi perubahan frontend (Vue 3 + Vite + Pinia + PrimeVue) mengikuti konv
 .ai/tasks/<TICKET-ID>/requirements.md   — apa yang harus diimplementasi
 .ai/tasks/<TICKET-ID>/design.md         — pendekatan teknis (jika ada)
 .ai/tasks/<TICKET-ID>/tasks.md          — task list
+.ai/tasks/<TICKET-ID>/qa-report.md      — (jika ada) hasil QA run sebelumnya, Status: FAIL — fix issue spesifik yang dicatat, bukan rewrite ulang
 ```
 
 ## Output
@@ -234,6 +235,7 @@ const fetchItems = async () => {
 };
 
 onMounted(fetchItems);
+</script>
 ```
 
 Referensi: `docs/golden-examples/frontend/page.vue` (dari `product-categories/pages/detail.vue`).
@@ -274,7 +276,7 @@ Jangan buat `helpers/` untuk:
 - Logic yang butuh API call (itu masuk `services/`)
 - Logic yang butuh reactive state (itu masuk `stores/` atau composables)
 
-Contoh: `docs/golden-examples/frontend/` (lihat `stock.ts` sebagai referensi).
+Contoh: `docs/golden-examples/frontend/` (lihat `stock.ts` sebagai referensi — TODO: tambahkan ke golden-examples).
 
 ### Auto-Registration
 

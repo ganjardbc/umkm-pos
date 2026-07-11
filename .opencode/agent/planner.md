@@ -124,7 +124,7 @@ Planner tidak punya kode untuk di-retry. Jika konteks kurang → baca lebih bany
 
 ## Batasan
 
-- Jangan buat estimasi waktu
+- Jangan buat estimation waktu
 - Jangan rekomendasikan teknologi baru di luar stack (NestJS+Prisma+MySQL, Vue3+Vite+Pinia+PrimeVue)
 - Jangan implement — hanya plan
 - Jangan buat acceptance criteria yang tidak verifiable
