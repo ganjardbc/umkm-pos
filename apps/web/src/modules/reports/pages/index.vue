@@ -66,6 +66,15 @@
         :error="outletsError"
         @download="downloadOutletComparison"
       />
+
+      <!-- Transaction Report Card -->
+      <ReportCard
+        title="Transaction Report"
+        description="Detailed transaction history with payment methods and status"
+        :loading="transactionsLoading"
+        :error="transactionsError"
+        @download="downloadTransactions"
+      />
     </div>
   </div>
 </template>
@@ -80,6 +89,7 @@ import {
   exportDailyReports,
   exportTopProducts,
   exportOutletComparison,
+  exportTransactionsCsv,
 } from '@/modules/reports/services/api.ts';
 import { downloadFile } from '@/helpers/download.ts';
 import { getOutlet } from '@/helpers/auth.ts';
@@ -95,12 +105,14 @@ const summaryLoading = ref(false);
 const dailyLoading = ref(false);
 const productsLoading = ref(false);
 const outletsLoading = ref(false);
+const transactionsLoading = ref(false);
 
 // Error states
 const summaryError = ref<string | null>(null);
 const dailyError = ref<string | null>(null);
 const productsError = ref<string | null>(null);
 const outletsError = ref<string | null>(null);
+const transactionsError = ref<string | null>(null);
 
 /**
  * Format a Date object to YYYY-MM-DD format for API calls
@@ -251,6 +263,22 @@ const downloadOutletComparison = async () => {
     outletsError.value = error instanceof Error ? error.message : 'Download failed';
   } finally {
     outletsLoading.value = false;
+  }
+};
+
+const downloadTransactions = async () => {
+  if (!params.value) return;
+
+  try {
+    transactionsLoading.value = true;
+    transactionsError.value = null;
+    const blob = await exportTransactionsCsv(params.value);
+    const timestamp = new Date().toISOString().split('T')[0];
+    downloadFile(blob, `Transaction_Report_${timestamp}.csv`);
+  } catch (error) {
+    transactionsError.value = error instanceof Error ? error.message : 'Download failed';
+  } finally {
+    transactionsLoading.value = false;
   }
 };
 

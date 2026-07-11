@@ -242,7 +242,10 @@ Components:
   - Outlet selector
   - Summary stats (total sales, total transaksi)
   - Daily breakdown table/chart
+  - Tombol "Export CSV" untuk laporan transaksi
 Data: GET /reports/daily
+Actions:
+  - GET /reports/export/transactions (download CSV)
 ```
 
 ---
