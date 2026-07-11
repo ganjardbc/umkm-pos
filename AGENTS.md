@@ -648,6 +648,35 @@ Before marking any task as DONE, read:
 
 ---
 
+# Custom Commands
+
+Four slash commands in `.claude/commands/`, split read-only vs write:
+
+```txt
+/audit-scan [scope]        — READ-ONLY. Auditor Agent scan, writes findings to
+                              .ai/audits/{scope-slug}-{date}.md. Never creates tickets.
+/audit-to-ticket [path]    — Reads an audit-report.md, walks findings one-by-one,
+                              creates a Linear issue ONLY per explicit per-item approval.
+/plan-ticket TICKET-ID     — READ-MOSTLY. Preview Planner Agent output for one ticket,
+                              writes to .ai/tasks/{TICKET-ID}/ only. Doesn't touch app code,
+                              doesn't trigger the full caf-orchestrator pipeline.
+/qa-check [area]           — READ-ONLY on app code (may run lint/typecheck/test via Bash).
+                              Reports, never auto-fixes.
+```
+
+## Read-Only Scanner + Approval-Gate Principle
+
+`/audit-scan` (the Auditor Agent) is deliberately read-only and cannot create
+tickets or touch external systems — creating a ticket is a human decision,
+kept in the separate `/audit-to-ticket` command which requires explicit
+per-item approval (never batch-approves). When adding a new proactive agent
+that inspects code, follow this same split: give the scanning agent
+read-only tools, and put any external write (Linear/GitHub/etc.) behind a
+separate command with a human approval gate — don't grant write access to an
+agent that runs proactively/unattended.
+
+---
+
 # Forbidden Actions
 
 ```txt
