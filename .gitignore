@@ -1,3 +1,4 @@
 node_modules
 .pnpm-store
 .turbo
+.opencode/opencode.json
