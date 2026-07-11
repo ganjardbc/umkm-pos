@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Headers, Param, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Headers,
+  Param,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Public } from '../common/decorators/public.decorator';
 import { CustomerCatalogService } from './customer-catalog.service';
@@ -10,7 +18,9 @@ import { CreateTransactionDto } from '../transactions/dto/create-transaction.dto
 @Controller()
 @Public()
 export class CustomerCatalogController {
-  constructor(private readonly customerCatalogService: CustomerCatalogService) {}
+  constructor(
+    private readonly customerCatalogService: CustomerCatalogService,
+  ) {}
 
   @Post('customer-sessions/start')
   @ApiOperation({ summary: 'Start guest customer session' })

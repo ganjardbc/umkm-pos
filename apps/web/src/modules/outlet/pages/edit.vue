@@ -91,6 +91,7 @@
           label="Save"
           size="medium"
           class="w-full md:w-[128px]"
+          :loading="isSubmitting"
         />
       </div>
     </Form>
@@ -117,6 +118,7 @@ const outletID = computed(() => route.params.id as string);
 
 const isLoaded = ref(false);
 const hasExistingLogo = ref(false);
+const isSubmitting = ref(false);
 
 const {
   selectedUploadId,
@@ -144,6 +146,7 @@ const resolver = ref(zodResolver(
 const onFormSubmit = async (event: any) => {
   const { valid, values } = event as { valid: boolean; values: any };
   if (valid) {
+    isSubmitting.value = true;
     try {
       showLoading();
 
@@ -172,6 +175,7 @@ const onFormSubmit = async (event: any) => {
       });
     } finally {
       hideLoading();
+      isSubmitting.value = false;
     }
   }
 };

@@ -324,28 +324,28 @@ export class AuthService {
           ur.outlets.logo,
         );
 
-      const rolePerms = ur.roles.role_permissions || [];
-      const permissions = rolePerms.map((rp) => ({
-        id: rp.permissions.id,
-        code: rp.permissions.code,
-        description: rp.permissions.description,
-      }));
+        const rolePerms = ur.roles.role_permissions || [];
+        const permissions = rolePerms.map((rp) => ({
+          id: rp.permissions.id,
+          code: rp.permissions.code,
+          description: rp.permissions.description,
+        }));
 
-      return {
-        outlet: {
-          id: ur.outlets.id,
-          name: ur.outlets.name,
-          slug: ur.outlets.slug,
-          logo: outletLogoUrl,
-          logo_upload_id: ur.outlets.logo_upload_id,
-        },
-        role: {
-          id: ur.roles.id,
-          name: ur.roles.name,
-          description: ur.roles.description,
-          permissions,
-        },
-      };
+        return {
+          outlet: {
+            id: ur.outlets.id,
+            name: ur.outlets.name,
+            slug: ur.outlets.slug,
+            logo: outletLogoUrl,
+            logo_upload_id: ur.outlets.logo_upload_id,
+          },
+          role: {
+            id: ur.roles.id,
+            name: ur.roles.name,
+            description: ur.roles.description,
+            permissions,
+          },
+        };
       }),
     );
   }
