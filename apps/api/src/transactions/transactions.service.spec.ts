@@ -187,6 +187,220 @@ describe('TransactionsService', () => {
       expect(result).toBeDefined();
       expect(mockPrisma.$transaction).toHaveBeenCalledTimes(1);
     });
+
+    it('should throw BadRequestException if cash_received is missing for cash payment', async () => {
+      mockPrisma.outlets.findFirst.mockResolvedValue({
+        id: 'outlet-1',
+        merchant_id: merchantId,
+      });
+
+      mockPrisma.products.findMany.mockResolvedValue([
+        {
+          id: 'product-1',
+          merchant_id: merchantId,
+          name: 'Product 1',
+          price: 10000,
+          stock_qty: 100,
+          is_active: true,
+        },
+      ]);
+
+      mockPrisma.outlet_product_inventory.findMany.mockResolvedValue([
+        {
+          id: 'inv-1',
+          merchant_id: merchantId,
+          outlet_id: 'outlet-1',
+          product_id: 'product-1',
+          stock_qty: 10,
+          is_active: true,
+        },
+      ]);
+
+      await expect(
+        service.create(
+          {
+            outlet_id: 'outlet-1',
+            payment_method: 'cash',
+            items: [{ product_id: 'product-1', qty: 1 }],
+          },
+          merchantId,
+          userId,
+        ),
+      ).rejects.toThrow(
+        new BadRequestException('cash_received is required for cash payment'),
+      );
+    });
+
+    it('should throw BadRequestException if cash_received is less than totalAmount', async () => {
+      mockPrisma.outlets.findFirst.mockResolvedValue({
+        id: 'outlet-1',
+        merchant_id: merchantId,
+      });
+
+      mockPrisma.products.findMany.mockResolvedValue([
+        {
+          id: 'product-1',
+          merchant_id: merchantId,
+          name: 'Product 1',
+          price: 10000,
+          stock_qty: 100,
+          is_active: true,
+        },
+      ]);
+
+      mockPrisma.outlet_product_inventory.findMany.mockResolvedValue([
+        {
+          id: 'inv-1',
+          merchant_id: merchantId,
+          outlet_id: 'outlet-1',
+          product_id: 'product-1',
+          stock_qty: 10,
+          is_active: true,
+        },
+      ]);
+
+      await expect(
+        service.create(
+          {
+            outlet_id: 'outlet-1',
+            payment_method: 'cash',
+            cash_received: 5000,
+            items: [{ product_id: 'product-1', qty: 1 }],
+          },
+          merchantId,
+          userId,
+        ),
+      ).rejects.toThrow(
+        new BadRequestException(
+          'cash_received must be greater than or equal to total_amount',
+        ),
+      );
+    });
+
+    it('should throw BadRequestException if change_amount does not match expected change', async () => {
+      mockPrisma.outlets.findFirst.mockResolvedValue({
+        id: 'outlet-1',
+        merchant_id: merchantId,
+      });
+
+      mockPrisma.products.findMany.mockResolvedValue([
+        {
+          id: 'product-1',
+          merchant_id: merchantId,
+          name: 'Product 1',
+          price: 10000,
+          stock_qty: 100,
+          is_active: true,
+        },
+      ]);
+
+      mockPrisma.outlet_product_inventory.findMany.mockResolvedValue([
+        {
+          id: 'inv-1',
+          merchant_id: merchantId,
+          outlet_id: 'outlet-1',
+          product_id: 'product-1',
+          stock_qty: 10,
+          is_active: true,
+        },
+      ]);
+
+      await expect(
+        service.create(
+          {
+            outlet_id: 'outlet-1',
+            payment_method: 'cash',
+            cash_received: 20000,
+            change_amount: 5000, // Expected: 10000
+            items: [{ product_id: 'product-1', qty: 1 }],
+          },
+          merchantId,
+          userId,
+        ),
+      ).rejects.toThrow(
+        new BadRequestException(
+          'change_amount does not match cash_received - total_amount',
+        ),
+      );
+    });
+
+    it('should calculate expected change if change_amount is empty string, null, or undefined', async () => {
+      mockPrisma.outlets.findFirst.mockResolvedValue({
+        id: 'outlet-1',
+        merchant_id: merchantId,
+      });
+
+      mockPrisma.products.findMany.mockResolvedValue([
+        {
+          id: 'product-1',
+          merchant_id: merchantId,
+          name: 'Product 1',
+          price: 10000,
+          stock_qty: 100,
+          is_active: true,
+        },
+      ]);
+
+      mockPrisma.outlet_product_inventory.findMany.mockResolvedValue([
+        {
+          id: 'inv-1',
+          merchant_id: merchantId,
+          outlet_id: 'outlet-1',
+          product_id: 'product-1',
+          stock_qty: 10,
+          is_active: true,
+        },
+      ]);
+
+      mockPrisma.$transaction.mockImplementation(async (callback: any) => {
+        const tx = {
+          transactions: {
+            create: jest.fn().mockResolvedValue({ id: 'tx-1' }),
+          },
+          transaction_items: {
+            createMany: jest.fn().mockResolvedValue({ count: 1 }),
+          },
+          outlet_product_inventory: {
+            update: jest.fn().mockResolvedValue({}),
+          },
+          inventory_movements: {
+            create: jest.fn().mockResolvedValue({}),
+          },
+        };
+
+        const result = await callback(tx);
+
+        expect(tx.transactions.create).toHaveBeenCalledWith(
+          expect.objectContaining({
+            data: expect.objectContaining({
+              cash_received: 20000,
+              change_amount: 10000,
+            }),
+          }),
+        );
+
+        return result;
+      });
+
+      mockPrisma.transactions.findFirst.mockResolvedValue({
+        id: 'tx-1',
+        transaction_items: [],
+      });
+
+      const result = await service.create(
+        {
+          outlet_id: 'outlet-1',
+          payment_method: 'cash',
+          cash_received: 20000,
+          change_amount: '' as any, // empty string
+          items: [{ product_id: 'product-1', qty: 1 }],
+        },
+        merchantId,
+        userId,
+      );
+
+      expect(result).toBeDefined();
+    });
   });
 
   describe('cancel', () => {

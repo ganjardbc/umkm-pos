@@ -297,7 +297,7 @@ const showPaymentModal = ref(false);
 const isCashPayment = computed(() => transactionForm.value.payment_method === 'cash');
 const hasInsufficientCash = computed(() => isCashPayment.value && cashPaidAmount.value < posStore.cartTotal);
 const cashChangeAmount = computed(() =>
-  isCashPayment.value ? Math.max(0, cashPaidAmount.value - posStore.cartTotal) : 0,
+  isCashPayment.value ? Number(Math.max(0, cashPaidAmount.value - posStore.cartTotal).toFixed(2)) : 0,
 );
 
 const fetchTables = async (outletId: string) => {

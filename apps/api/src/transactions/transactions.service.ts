@@ -140,7 +140,8 @@ export class TransactionsService {
       order_status: ORDER_STATUS_PENDING,
       payment_method: 'pending',
       is_offline: false,
-      customer_name_snapshot: dto.customer_name_snapshot ?? session.customer_name,
+      customer_name_snapshot:
+        dto.customer_name_snapshot ?? session.customer_name,
       customer_phone_snapshot:
         dto.customer_phone_snapshot ?? session.customer_phone ?? undefined,
     };
@@ -201,7 +202,11 @@ export class TransactionsService {
 
     return this.prisma.transactions.findFirst({
       where: { id: result.id },
-      include: { transaction_items: true, store_tables: true, customer_sessions: true },
+      include: {
+        transaction_items: true,
+        store_tables: true,
+        customer_sessions: true,
+      },
     });
   }
 
@@ -231,7 +236,12 @@ export class TransactionsService {
     }
 
     if (dto.order_status === ORDER_STATUS_COMPLETED) {
-      return this.finalizeCustomerOrder(transaction.id, dto, merchantId, userId);
+      return this.finalizeCustomerOrder(
+        transaction.id,
+        dto,
+        merchantId,
+        userId,
+      );
     }
 
     const data: Record<string, any> = {
@@ -240,8 +250,10 @@ export class TransactionsService {
       updated_at: new Date(),
     };
 
-    if (dto.order_status === ORDER_STATUS_ACCEPTED) data.accepted_at = new Date();
-    if (dto.order_status === ORDER_STATUS_PROCESSING) data.processed_at = new Date();
+    if (dto.order_status === ORDER_STATUS_ACCEPTED)
+      data.accepted_at = new Date();
+    if (dto.order_status === ORDER_STATUS_PROCESSING)
+      data.processed_at = new Date();
     if (dto.order_status === ORDER_STATUS_SERVED) data.served_at = new Date();
 
     return this.prisma.transactions.update({
@@ -349,7 +361,12 @@ export class TransactionsService {
     userId: string,
   ) {
     const cashierId = await this.resolveCashierForPos(dto, merchantId, userId);
-    const prepared = await this.prepareTransactionPayload(dto, merchantId, userId, true);
+    const prepared = await this.prepareTransactionPayload(
+      dto,
+      merchantId,
+      userId,
+      true,
+    );
     const tableId = dto.table_id ?? null;
 
     if (tableId) {
@@ -417,7 +434,9 @@ export class TransactionsService {
     userId: string,
   ) {
     if (!dto.payment_method) {
-      throw new BadRequestException('payment_method is required when completing an order');
+      throw new BadRequestException(
+        'payment_method is required when completing an order',
+      );
     }
 
     const transaction = await this.prisma.transactions.findFirst({
@@ -429,7 +448,9 @@ export class TransactionsService {
     });
 
     if (!transaction) {
-      throw new NotFoundException(`Transaction with ID ${transactionId} not found`);
+      throw new NotFoundException(
+        `Transaction with ID ${transactionId} not found`,
+      );
     }
 
     const itemsPayload = transaction.transaction_items
@@ -492,12 +513,20 @@ export class TransactionsService {
 
     return this.prisma.transactions.findFirst({
       where: { id: result.id },
-      include: { transaction_items: true, customer_sessions: true, store_tables: true },
+      include: {
+        transaction_items: true,
+        customer_sessions: true,
+        store_tables: true,
+      },
     });
   }
 
   private async prepareTransactionPayload(
-    dto: Partial<CreateTransactionDto> & { outlet_id: string; items: any[]; payment_method?: string },
+    dto: Partial<CreateTransactionDto> & {
+      outlet_id: string;
+      items: any[];
+      payment_method?: string;
+    },
     merchantId: string,
     userId?: string,
     validatePayment = true,
@@ -531,7 +560,9 @@ export class TransactionsService {
     });
 
     const productMap = new Map(products.map((p) => [p.id, p]));
-    const inventoryMap = new Map(inventoryRows.map((row) => [row.product_id, row]));
+    const inventoryMap = new Map(
+      inventoryRows.map((row) => [row.product_id, row]),
+    );
 
     let totalAmount = 0;
     const itemsData: Array<{
@@ -548,7 +579,9 @@ export class TransactionsService {
       const product = productMap.get(item.product_id);
       const outletInventory = inventoryMap.get(item.product_id);
       if (!product || !outletInventory) {
-        throw new NotFoundException(`Inventory for product ${item.product_id} was not found`);
+        throw new NotFoundException(
+          `Inventory for product ${item.product_id} was not found`,
+        );
       }
       if (outletInventory.stock_qty < item.qty) {
         throw new BadRequestException(
@@ -587,27 +620,57 @@ export class TransactionsService {
 
   private validatePayment(
     paymentMethod: string,
-    cashReceivedInput: number | undefined,
-    changeAmountInput: number | undefined,
+    cashReceivedInput: any,
+    changeAmountInput: any,
     totalAmount: number,
   ) {
-    const cashReceived = paymentMethod === 'cash' ? Number(cashReceivedInput ?? 0) : null;
-    const changeAmount = paymentMethod === 'cash' ? Number(changeAmountInput ?? 0) : null;
+    let cashReceived: number | null = null;
+    let changeAmount: number | null = null;
 
     if (paymentMethod === 'cash') {
-      if (cashReceived === null || Number.isNaN(cashReceived)) {
-        throw new BadRequestException('cash_received is required for cash payment');
+      const isCashReceivedEmpty =
+        cashReceivedInput === undefined ||
+        cashReceivedInput === null ||
+        (typeof cashReceivedInput === 'string' &&
+          cashReceivedInput.trim() === '');
+
+      if (isCashReceivedEmpty) {
+        throw new BadRequestException(
+          'cash_received is required for cash payment',
+        );
+      }
+      cashReceived = Number(cashReceivedInput);
+      if (Number.isNaN(cashReceived)) {
+        throw new BadRequestException(
+          'cash_received is required for cash payment',
+        );
       }
       if (cashReceived < totalAmount) {
-        throw new BadRequestException('cash_received must be greater than or equal to total_amount');
+        throw new BadRequestException(
+          'cash_received must be greater than or equal to total_amount',
+        );
       }
 
       const expectedChange = Number((cashReceived - totalAmount).toFixed(2));
-      if (changeAmount === null || Number.isNaN(changeAmount)) {
-        throw new BadRequestException('change_amount is required for cash payment');
-      }
-      if (Number(changeAmount.toFixed(2)) !== expectedChange) {
-        throw new BadRequestException('change_amount does not match cash_received - total_amount');
+      const isChangeAmountEmpty =
+        changeAmountInput === undefined ||
+        changeAmountInput === null ||
+        (typeof changeAmountInput === 'string' &&
+          changeAmountInput.trim() === '');
+
+      if (isChangeAmountEmpty) {
+        changeAmount = expectedChange;
+      } else {
+        const parsedChange = Number(changeAmountInput);
+        if (Number.isNaN(parsedChange)) {
+          changeAmount = expectedChange;
+        } else if (Number(parsedChange.toFixed(2)) !== expectedChange) {
+          throw new BadRequestException(
+            'change_amount does not match cash_received - total_amount',
+          );
+        } else {
+          changeAmount = expectedChange;
+        }
       }
     }
 
@@ -625,7 +688,9 @@ export class TransactionsService {
       await this.shiftsService.validateShiftOpen(dto.shift_id);
     } catch (error) {
       if (error instanceof NotFoundException) {
-        throw new BadRequestException('Shift is not available for transactions');
+        throw new BadRequestException(
+          'Shift is not available for transactions',
+        );
       }
       throw error;
     }
@@ -696,7 +761,10 @@ export class TransactionsService {
     return outlets.map((o) => o.id);
   }
 
-  private async assertOutletBelongsToMerchant(outletId: string, merchantId: string) {
+  private async assertOutletBelongsToMerchant(
+    outletId: string,
+    merchantId: string,
+  ) {
     const outlet = await this.prisma.outlets.findFirst({
       where: { id: outletId, merchant_id: merchantId },
     });

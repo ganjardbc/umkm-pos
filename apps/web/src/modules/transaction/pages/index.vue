@@ -320,7 +320,7 @@ const confirmPayment = async () => {
     };
     if (payload.payment_method === 'cash') {
       payload.cash_received = Number(paymentPayload.value.cash_received);
-      payload.change_amount = Math.max(0, payload.cash_received - paymentPayload.value.total_amount);
+      payload.change_amount = Number(Math.max(0, payload.cash_received - paymentPayload.value.total_amount).toFixed(2));
     }
     await patchTransactionStatus(paymentTarget.value.id, payload);
     showPaymentModal.value = false;
