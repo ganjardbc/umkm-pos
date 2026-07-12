@@ -23,8 +23,9 @@ export class UsersService {
 
     return {
       ...user,
-      avatar: (await this.uploadsService.generateSignedUrl(user.avatar_upload_id))
-        .url,
+      avatar: (
+        await this.uploadsService.generateSignedUrl(user.avatar_upload_id)
+      ).url,
     };
   }
 

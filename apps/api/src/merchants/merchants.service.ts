@@ -26,8 +26,9 @@ export class MerchantsService {
 
     return {
       ...merchant,
-      logo: (await this.uploadsService.generateSignedUrl(merchant.logo_upload_id))
-        .url,
+      logo: (
+        await this.uploadsService.generateSignedUrl(merchant.logo_upload_id)
+      ).url,
     };
   }
 
