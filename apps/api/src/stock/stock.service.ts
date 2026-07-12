@@ -51,7 +51,9 @@ export class StockService {
         where,
         include: {
           outlets: { select: { id: true, name: true, slug: true } },
-          products: { select: { id: true, name: true, slug: true, price: true } },
+          products: {
+            select: { id: true, name: true, slug: true, price: true },
+          },
         },
         orderBy: { created_at: 'desc' },
         skip,
@@ -64,7 +66,10 @@ export class StockService {
       ? data.filter((row) => row.stock_qty <= row.min_stock)
       : data;
 
-    return { data: filtered, meta: PaginationDto.calculateMeta(total, page, limit) };
+    return {
+      data: filtered,
+      meta: PaginationDto.calculateMeta(total, page, limit),
+    };
   }
 
   /**
@@ -220,33 +225,32 @@ export class StockService {
         });
 
     // Atomic update: adjust outlet stock + write movement
-    const [updatedInventory, movement] =
-        await this.prisma.$transaction([
-        upsertedInventory,
-        this.prisma.inventory_movements.create({
-          data: {
-            merchant_id: merchantId,
-            outlet_id: dto.outlet_id,
-            product_id: dto.product_id,
-            change_qty: dto.change_qty,
-            stock_after: newStock,
-            reason: dto.reason,
-            ref_type: 'manual_adjustment',
-            ref_id: null,
-            note: dto.note ?? null,
-            created_by: userId,
-            updated_by: userId,
+    const [updatedInventory, movement] = await this.prisma.$transaction([
+      upsertedInventory,
+      this.prisma.inventory_movements.create({
+        data: {
+          merchant_id: merchantId,
+          outlet_id: dto.outlet_id,
+          product_id: dto.product_id,
+          change_qty: dto.change_qty,
+          stock_after: newStock,
+          reason: dto.reason,
+          ref_type: 'manual_adjustment',
+          ref_id: null,
+          note: dto.note ?? null,
+          created_by: userId,
+          updated_by: userId,
+        },
+        include: {
+          products: {
+            select: { id: true, name: true, slug: true },
           },
-          include: {
-            products: {
-              select: { id: true, name: true, slug: true },
-            },
-            outlets: {
-              select: { id: true, name: true, slug: true },
-            },
+          outlets: {
+            select: { id: true, name: true, slug: true },
           },
-        }),
-      ]);
+        },
+      }),
+    ]);
 
     return {
       outlet_inventory: {

@@ -87,10 +87,20 @@ Data: GET /transactions/:id
 
 ## Produk
 
+### Product & Category Tabbed Dashboard
+
+```txt
+Route: /product
+Layout: default
+Components:
+  - TabView (Products & Categories)
+  - Sub-views loading lists
+```
+
 ### Product List
 
 ```txt
-Route: /products
+Route: /product/product-lists
 Layout: default
 Components:
   - Search + filter (category, status)
@@ -102,14 +112,58 @@ Data: GET /products
 ### Create / Edit Product
 
 ```txt
-Route: /products/create, /products/:id/edit
+Route: /product/product-lists/create, /product/product-lists/edit/:id
 Layout: default
 Components:
   - Form (nama, harga, cost, stok awal, kategori, foto)
   - Image uploader
+  - Breadcrumb: Home -> Products (kembali ke tab) -> Add/Edit (active, no route)
 Actions:
   - POST /products | PATCH /products/:id
   - POST /uploads (untuk foto)
+```
+
+### Product Detail
+
+```txt
+Route: /product/product-lists/detail/:id
+Layout: default
+Components:
+  - View details of a specific product
+  - Breadcrumb: Home -> Products (kembali ke tab) -> Detail (active, no route)
+```
+
+### Category List
+
+```txt
+Route: /product/product-categories
+Layout: default
+Components:
+  - DataTable (nama, deskripsi)
+  - Tombol tambah kategori
+Data: GET /product-categories
+```
+
+### Create / Edit Category
+
+```txt
+Route: /product/product-categories/create, /product/product-categories/edit/:id
+Layout: default
+Components:
+  - Form (nama, deskripsi)
+  - Breadcrumb: Home -> Categories (kembali ke tab) -> Add/Edit (active, no route)
+Actions:
+  - POST /product-categories | PATCH /product-categories/:id
+```
+
+### Category Detail
+
+```txt
+Route: /product/product-categories/detail/:id
+Layout: default
+Components:
+  - View details of a specific category
+  - Breadcrumb: Home -> Categories (kembali ke tab) -> Detail (active, no route)
 ```
 
 ---

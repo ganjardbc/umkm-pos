@@ -84,7 +84,6 @@ export default [
         },
         {
           label: 'Edit',
-          route: `${PREFIX_ROUTE_PATH}/edit`,
           isActive: true,
         },
       ]
@@ -111,7 +110,6 @@ export default [
         },
         {
           label: 'Detail',
-          route: `${PREFIX_ROUTE_PATH}/create`,
           isActive: true,
         },
       ]

@@ -42,7 +42,10 @@ describe('StockController', () => {
       page: 1,
       limit: 10,
     };
-    const response = { data: [], meta: { total: 0, page: 1, limit: 10, totalPages: 0 } };
+    const response = {
+      data: [],
+      meta: { total: 0, page: 1, limit: 10, totalPages: 0 },
+    };
 
     mockStockService.findLogs.mockResolvedValue(response);
 
@@ -59,7 +62,10 @@ describe('StockController', () => {
 
   it('should parse low_stock_only and pass outlet to findInventory', async () => {
     const merchantId = 'merchant-1';
-    const response = { data: [], meta: { total: 0, page: 1, limit: 10, totalPages: 0 } };
+    const response = {
+      data: [],
+      meta: { total: 0, page: 1, limit: 10, totalPages: 0 },
+    };
 
     mockStockService.findInventory.mockResolvedValue(response);
 
@@ -90,7 +96,11 @@ describe('StockController', () => {
       note: '',
     };
     const response = {
-      outlet_inventory: { outlet_id: 'outlet-1', product_id: 'product-1', stock_qty: 10 },
+      outlet_inventory: {
+        outlet_id: 'outlet-1',
+        product_id: 'product-1',
+        stock_qty: 10,
+      },
     };
 
     mockStockService.adjust.mockResolvedValue(response);
@@ -98,6 +108,10 @@ describe('StockController', () => {
     const result = await controller.adjust(dto as any, merchantId, userId);
 
     expect(result).toEqual(response);
-    expect(mockStockService.adjust).toHaveBeenCalledWith(dto, merchantId, userId);
+    expect(mockStockService.adjust).toHaveBeenCalledWith(
+      dto,
+      merchantId,
+      userId,
+    );
   });
 });

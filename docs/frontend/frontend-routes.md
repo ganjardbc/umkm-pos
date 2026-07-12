@@ -43,13 +43,16 @@ Setiap module memiliki `router/index.ts` sendiri.
 ### Produk
 
 ```txt
-/products            — Product list
-/products/create     — Create product
-/products/:id/edit   — Edit product
+/product                             — Product dashboard (contains products/categories tabs)
+/product/product-lists               — Product list
+/product/product-lists/create        — Create product
+/product/product-lists/edit/:id      — Edit product
+/product/product-lists/detail/:id    — Detail product
 
-/product-categories          — Category list
-/product-categories/create   — Create category
-/product-categories/:id/edit — Edit category
+/product/product-categories          — Category list
+/product/product-categories/create   — Create category
+/product/product-categories/edit/:id — Edit category
+/product/product-categories/detail/:id — Detail category
 ```
 
 ### Stok
