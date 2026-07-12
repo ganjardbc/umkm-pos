@@ -109,6 +109,7 @@
           label="Save"
           size="medium"
           class="w-full md:w-[128px]"
+          :loading="isSubmitting"
         />
       </div>
     </Form>
@@ -130,6 +131,8 @@ import UiCard from '@/components/UiCard.vue';
 import UiFormGroup from '@/components/UiFormGroup.vue';
 
 const router = useRouter();
+
+const isSubmitting = ref(false);
 
 const {
   selectedUploadId,
@@ -160,6 +163,7 @@ const resolver = ref(zodResolver(
 const onFormSubmit = async (event: any) => {
   const { valid, values } = event as { valid: boolean; values: any };
   if (valid) {
+    isSubmitting.value = true;
     try {
       showLoading();
 
@@ -188,6 +192,7 @@ const onFormSubmit = async (event: any) => {
       });
     } finally {
       hideLoading();
+      isSubmitting.value = false;
     }
   }
 };
