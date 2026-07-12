@@ -111,6 +111,27 @@ Format wajib:
 - [ ] DOC-2: [database-design.md update jika schema berubah]
 ```
 
+## Skip Agents Directive (Opsional)
+
+Kalau berdasarkan analisis ticket, kamu yakin salah satu agent berikut TIDAK relevan untuk dijalankan, tambahkan section berikut di `tasks.md`:
+
+```markdown
+## Skip Agents
+- {AgentName}: {alasan singkat kenapa tidak relevan}
+```
+
+Agent yang bisa ditandai: `frontend`, `backend`, `qa`, `reviewer`, `documentation` (nama harus persis salah satu dari ini, case-sensitive).
+
+**Aturan ketat sebelum menandai skip:**
+- HANYA tandai skip kalau kamu YAKIN TINGGI tidak ada perubahan relevan sama sekali di area tersebut — bukan "kemungkinan kecil ada", tapi benar-benar tidak ada scope yang menyentuh area itu berdasarkan acceptance criteria ticket
+- JANGAN PERNAH menandai skip untuk QA atau Reviewer hanya karena perubahan "terlihat kecil/sepele" — ukuran perubahan bukan alasan valid. Cuma tandai skip QA/Reviewer kalau ticket ini benar-benar tidak menghasilkan perubahan kode sama sekali (misal ticket ternyata cuma butuh update dokumentasi)
+- JANGAN tandai skip untuk SEMUA agent implementasi (frontend DAN backend) sekaligus — kalau ticket ini valid, minimal satu harus tetap jalan (orchestrator akan mengabaikan skip directive kalau ini terjadi, tapi lebih baik tidak menulis skip yang salah dari awal)
+- Kalau ragu antara skip atau tidak, JANGAN tandai skip — default aman adalah membiarkan agent tetap jalan
+
+**PENTING**: skip Frontend/Backend HARUS konsisten dengan section "## Frontend Tasks"/"## Backend Tasks" yang sudah ada — kalau kamu menandai skip backend, section "## Backend Tasks" seharusnya memang kosong/berisi "(none)", bukan berisi task tapi ditandai skip juga (itu kontradiksi, akan membingungkan hasil akhir).
+
+Kalau tidak yakin sama sekali, JANGAN tambahkan section "## Skip Agents" ini — ketiadaan section ini sepenuhnya normal dan merupakan default yang aman.
+
 ## Verify Checklist
 
 Sebelum selesai, cek:
@@ -118,6 +139,7 @@ Sebelum selesai, cek:
 - [ ] tasks.md ada dan setiap task cukup konkret untuk dieksekusi tanpa ambiguitas
 - [ ] Tidak ada kode yang diubah
 - [ ] Folder `.ai/tasks/<TICKET-ID>/` terbuat
+- [ ] Kalau ada section "## Skip Agents", pastikan konsisten dengan section Backend/Frontend Tasks yang bersangkutan (tidak ada kontradiksi task-terisi-tapi-ditandai-skip)
 
 ## Retry Logic
 
