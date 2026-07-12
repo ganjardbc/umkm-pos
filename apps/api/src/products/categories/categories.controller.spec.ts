@@ -4,6 +4,7 @@ import { CategoriesService } from './categories.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { PaginationDto } from '../../common/dto/pagination.dto';
+import { CategoriesQueryDto } from './dto/categories-query.dto';
 import { NotFoundException, ConflictException } from '@nestjs/common';
 import { PermissionGuard } from '../../common/guards/permission.guard';
 
@@ -98,9 +99,9 @@ describe('CategoriesController', () => {
   describe('GET /products/categories', () => {
     it('should return paginated categories', async () => {
       const merchantId = 'merchant-1';
-      const pagination = new PaginationDto();
-      pagination.page = 1;
-      pagination.limit = 10;
+      const query = new CategoriesQueryDto();
+      query.page = 1;
+      query.limit = 10;
 
       const mockResponse = {
         data: [
@@ -126,29 +127,47 @@ describe('CategoriesController', () => {
 
       mockCategoriesService.findAll.mockResolvedValue(mockResponse);
 
-      const result = await controller.findAll(merchantId, pagination);
+      const result = await controller.findAll(merchantId, query);
 
       expect(result).toEqual(mockResponse);
       expect(mockCategoriesService.findAll).toHaveBeenCalledWith(
         merchantId,
-        pagination,
+        query,
       );
     });
 
     it('should scope results to current merchant', async () => {
       const merchantId = 'merchant-1';
-      const pagination = new PaginationDto();
+      const query = new CategoriesQueryDto();
 
       mockCategoriesService.findAll.mockResolvedValue({
         data: [],
         meta: { page: 1, limit: 10, total: 0, totalPages: 0 },
       });
 
-      await controller.findAll(merchantId, pagination);
+      await controller.findAll(merchantId, query);
 
       expect(mockCategoriesService.findAll).toHaveBeenCalledWith(
         merchantId,
-        pagination,
+        query,
+      );
+    });
+
+    it('should pass search parameter to service', async () => {
+      const merchantId = 'merchant-1';
+      const query = new CategoriesQueryDto();
+      query.search = 'electronics';
+
+      mockCategoriesService.findAll.mockResolvedValue({
+        data: [],
+        meta: { page: 1, limit: 10, total: 0, totalPages: 0 },
+      });
+
+      await controller.findAll(merchantId, query);
+
+      expect(mockCategoriesService.findAll).toHaveBeenCalledWith(
+        merchantId,
+        query,
       );
     });
   });

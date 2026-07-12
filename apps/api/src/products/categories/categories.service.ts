@@ -7,30 +7,41 @@ import { PrismaService } from '../../database/prisma.service';
 import { PaginationDto } from '../../common/dto/pagination.dto';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
+import { CategoriesQueryDto } from './dto/categories-query.dto';
 
 @Injectable()
 export class CategoriesService {
   constructor(private prisma: PrismaService) {}
 
   /**
-   * Find all categories for a merchant with pagination
+   * Find all categories for a merchant with pagination and optional search
    * @param merchantId - The merchant ID to filter categories
-   * @param pagination - Pagination parameters (page, limit)
+   * @param query - Query parameters (page, limit, search)
    * @returns Paginated list of categories with metadata
    */
-  async findAll(merchantId: string, pagination: PaginationDto) {
-    const { page = 1, limit = 10 } = pagination;
-    const skip = pagination.skip;
+  async findAll(merchantId: string, query: CategoriesQueryDto) {
+    const { page = 1, limit = 10, search } = query;
+    const skip = query.skip;
+
+    const where = {
+      merchant_id: merchantId,
+      ...(search && {
+        OR: [
+          { name: { contains: search } },
+          { description: { contains: search } },
+        ],
+      }),
+    };
 
     const [data, total] = await Promise.all([
       this.prisma.product_categories.findMany({
-        where: { merchant_id: merchantId },
+        where,
         skip,
         take: limit,
         orderBy: { created_at: 'desc' },
       }),
       this.prisma.product_categories.count({
-        where: { merchant_id: merchantId },
+        where,
       }),
     ]);
 

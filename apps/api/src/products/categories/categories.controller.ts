@@ -25,7 +25,7 @@ import { CategoryResponseDto } from './dto/category-response.dto';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { RequirePermission } from '../../common/decorators/require-permission.decorator';
 import { PermissionGuard } from '../../common/guards/permission.guard';
-import { PaginationDto } from '../../common/dto/pagination.dto';
+import { CategoriesQueryDto } from './dto/categories-query.dto';
 
 @ApiTags('Categories')
 @ApiBearerAuth()
@@ -78,15 +78,21 @@ export class CategoriesController {
     type: Number,
     description: 'Items per page (default: 10)',
   })
+  @ApiQuery({
+    name: 'search',
+    required: false,
+    type: String,
+    description: 'Search categories by name or description',
+  })
   @ApiResponse({
     status: 200,
     description: 'Return all categories (paginated)',
   })
   findAll(
     @CurrentUser('merchant_id') merchantId: string,
-    @Query() pagination: PaginationDto,
+    @Query() query: CategoriesQueryDto,
   ) {
-    return this.categoriesService.findAll(merchantId, pagination);
+    return this.categoriesService.findAll(merchantId, query);
   }
 
   @Get('active/list')
