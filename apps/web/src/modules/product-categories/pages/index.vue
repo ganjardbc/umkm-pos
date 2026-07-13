@@ -93,7 +93,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, computed } from 'vue';
+import { onMounted, onUnmounted, ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { getNoTable, getErrorMessage, formatDateTime } from '@/helpers/utils.ts';
 import { getListCategories, deleteCategories } from '@/modules/product-categories/services/api';
@@ -232,6 +232,10 @@ const search = () => {
 
 onMounted(() => {
   fetchCategory();
+});
+
+onUnmounted(() => {
+  clearTimeout(searchDebounceTimer);
 });
 </script>
 
