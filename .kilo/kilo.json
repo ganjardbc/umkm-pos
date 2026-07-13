@@ -1,0 +1,6 @@
+{
+  "$schema": "https://app.kilo.ai/config.json",
+  "plugin": [
+    "file:///Users/ganjarhadiatna/Projects/umkm-pos/.kilo/plugins/graphify.js"
+  ]
+}
