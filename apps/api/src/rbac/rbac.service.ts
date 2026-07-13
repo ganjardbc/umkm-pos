@@ -2,7 +2,6 @@ import {
   Injectable,
   NotFoundException,
   ConflictException,
-  ForbiddenException,
 } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 import { CreateRoleDto } from './dto/create-role.dto';
@@ -212,29 +211,7 @@ export class RbacService {
   //  USER ↔ ROLES
   // ─────────────────────────────────────────────
 
-  private async assertOutletBelongsToMerchant(
-    outletId: string,
-    callerMerchantId: string,
-  ) {
-    const outlet = await this.prisma.outlets.findUnique({
-      where: { id: outletId },
-    });
-
-    if (!outlet) {
-      throw new NotFoundException(`Outlet with ID ${outletId} not found`);
-    }
-
-    if (outlet.merchant_id !== callerMerchantId) {
-      throw new ForbiddenException('Outlet does not belong to your merchant');
-    }
-  }
-
-  async assignRoleToUser(
-    dto: AssignRoleDto,
-    assignedBy: string,
-    callerMerchantId: string,
-  ) {
-    await this.assertOutletBelongsToMerchant(dto.outlet_id, callerMerchantId);
+  async assignRoleToUser(dto: AssignRoleDto, assignedBy: string) {
     await this.findOneRole(dto.role_id);
 
     const existing = await this.prisma.user_roles.findFirst({
@@ -261,9 +238,7 @@ export class RbacService {
     });
   }
 
-  async revokeRoleFromUser(dto: AssignRoleDto, callerMerchantId: string) {
-    await this.assertOutletBelongsToMerchant(dto.outlet_id, callerMerchantId);
-
+  async revokeRoleFromUser(dto: AssignRoleDto) {
     const existing = await this.prisma.user_roles.findFirst({
       where: {
         user_id: dto.user_id,

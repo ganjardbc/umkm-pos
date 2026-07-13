@@ -23,7 +23,9 @@ import { AssignPermissionDto } from './dto/assign-permission.dto';
 import { AssignRoleDto } from './dto/assign-role.dto';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { RequirePermission } from '../common/decorators/require-permission.decorator';
+import { ScopeByOutlet } from '../common/decorators/scope-by-outlet.decorator';
 import { PermissionGuard } from '../common/guards/permission.guard';
+import { ScopeByOutletGuard } from '../common/guards/scope-by-outlet.guard';
 import { PaginationDto } from '../common/dto/pagination.dto';
 
 @ApiTags('RBAC')
@@ -168,6 +170,8 @@ export class RbacController {
 
   @Post('user-roles')
   @RequirePermission('role.assign')
+  @ScopeByOutlet('body.outlet_id')
+  @UseGuards(ScopeByOutletGuard)
   @ApiOperation({ summary: 'Assign a role to a user at a specific outlet' })
   @ApiResponse({ status: 201, description: 'Role assigned to user' })
   @ApiResponse({ status: 404, description: 'Outlet not found' })
@@ -179,13 +183,14 @@ export class RbacController {
   assignRoleToUser(
     @Body() dto: AssignRoleDto,
     @CurrentUser('id') userId: string,
-    @CurrentUser('merchant_id') callerMerchantId: string,
   ) {
-    return this.rbacService.assignRoleToUser(dto, userId, callerMerchantId);
+    return this.rbacService.assignRoleToUser(dto, userId);
   }
 
   @Delete('user-roles')
   @RequirePermission('role.assign')
+  @ScopeByOutlet('body.outlet_id')
+  @UseGuards(ScopeByOutletGuard)
   @ApiOperation({ summary: 'Revoke a role from a user at a specific outlet' })
   @ApiResponse({ status: 200, description: 'Role revoked from user' })
   @ApiResponse({ status: 404, description: 'Assignment not found' })
@@ -193,11 +198,8 @@ export class RbacController {
     status: 403,
     description: 'Outlet does not belong to your merchant',
   })
-  revokeRoleFromUser(
-    @Body() dto: AssignRoleDto,
-    @CurrentUser('merchant_id') callerMerchantId: string,
-  ) {
-    return this.rbacService.revokeRoleFromUser(dto, callerMerchantId);
+  revokeRoleFromUser(@Body() dto: AssignRoleDto) {
+    return this.rbacService.revokeRoleFromUser(dto);
   }
 
   @Get('users/:userId/roles')
