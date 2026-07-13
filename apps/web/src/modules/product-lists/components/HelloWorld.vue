@@ -6,10 +6,8 @@
 </template>
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useProductStore } from '@/modules/product-lists/stores';
 
-const productStore = useProductStore();
-const message = ref(productStore.message);
+const message = ref('Hello product Feature!');
 </script>
 
 <style scoped>
