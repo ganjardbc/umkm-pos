@@ -93,7 +93,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, computed } from 'vue';
+import { onMounted, onUnmounted, ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { getNoTable, getErrorMessage, formatDateTime } from '@/helpers/utils.ts';
 import { getListCategories, deleteCategories } from '@/modules/product-categories/services/api';
@@ -130,6 +130,7 @@ const fetchCategory = async () => {
     const payload = {
       page: pagination.value.page,
       limit: pagination.value.rows,
+      ...(form.value.search && { search: form.value.search }),
     }
     const response = await getListCategories(payload);
     const { data, meta } = response?.data?.data || {};
@@ -220,12 +221,21 @@ const form = ref({
   search: '',
 });
 
+let searchDebounceTimer: ReturnType<typeof setTimeout>;
 const search = () => {
-  console.log(form.value);
+  clearTimeout(searchDebounceTimer);
+  searchDebounceTimer = setTimeout(() => {
+    pagination.value.page = 1;
+    fetchCategory();
+  }, 300);
 };
 
 onMounted(() => {
   fetchCategory();
+});
+
+onUnmounted(() => {
+  clearTimeout(searchDebounceTimer);
 });
 </script>
 

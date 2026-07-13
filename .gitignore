@@ -2,3 +2,7 @@ node_modules
 .pnpm-store
 .turbo
 .opencode/opencode.json
+.vercel
+.env
+.env.*
+!.env.example

@@ -1,8 +1,8 @@
 <template>
   <InputGroup class="h-[42px]">
     <InputText
-      v-model="props.modelValue"
-      :placeholder="props.placeholder"
+      v-model="modelValue"
+      :placeholder="placeholder"
       size="medium"
       class="w-full"
     />
@@ -15,18 +15,17 @@
     </InputGroupAddon>
   </InputGroup>
 </template>
-<script setup>
-import { defineProps } from 'vue';
 
-const props = defineProps({
-  modelValue: {
-    type: String,
-    required: true
-  },
+<script setup lang="ts">
+const modelValue = defineModel<string>({
+  required: true,
+});
+
+defineProps({
   placeholder: {
     type: String,
     required: false,
-    default: 'Search...'
-  }
+    default: 'Search...',
+  },
 });
 </script>

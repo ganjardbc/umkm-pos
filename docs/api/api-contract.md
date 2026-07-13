@@ -126,6 +126,13 @@ PATCH  /product-categories/:id — Update category
 DELETE /product-categories/:id — Delete category
 ```
 
+Query params untuk `GET /product-categories`:
+
+```txt
+search       — search categories by name or description (case-insensitive)
+page, limit
+```
+
 Query params untuk `GET /products`:
 
 ```txt

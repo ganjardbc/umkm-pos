@@ -139,6 +139,7 @@ Components:
 Route: /product/product-categories
 Layout: default
 Components:
+  - Search input (with 300ms debounce)
   - DataTable (nama, deskripsi)
   - Tombol tambah kategori
 Data: GET /product-categories

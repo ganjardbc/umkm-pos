@@ -4,6 +4,7 @@ import { PrismaService } from '../../database/prisma.service';
 import { PaginationDto } from '../../common/dto/pagination.dto';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
+import { CategoriesQueryDto } from './dto/categories-query.dto';
 
 describe('CategoriesService', () => {
   let service: CategoriesService;
@@ -137,6 +138,30 @@ describe('CategoriesService', () => {
       expect(result.meta.page).toBe(2);
       expect(result.meta.limit).toBe(5);
       expect(result.meta.totalPages).toBe(2);
+    });
+
+    it('should filter categories by search keyword when provided', async () => {
+      const merchantId = 'merchant-1';
+      const query = new CategoriesQueryDto();
+      query.search = 'makanan';
+
+      mockPrisma.product_categories.findMany.mockResolvedValue([]);
+      mockPrisma.product_categories.count.mockResolvedValue(0);
+
+      await service.findAll(merchantId, query);
+
+      expect(mockPrisma.product_categories.findMany).toHaveBeenCalledWith({
+        where: {
+          merchant_id: merchantId,
+          OR: [
+            { name: { contains: 'makanan' } },
+            { description: { contains: 'makanan' } },
+          ],
+        },
+        skip: 0,
+        take: 10,
+        orderBy: { created_at: 'desc' },
+      });
     });
 
     it('should return empty list when no categories exist for merchant', async () => {
