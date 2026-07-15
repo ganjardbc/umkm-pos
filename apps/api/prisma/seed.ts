@@ -884,6 +884,7 @@ async function main() {
     // Transactions
     { code: 'transaction.create', description: 'Create transactions (POS)' },
     { code: 'transaction.read', description: 'Read transactions' },
+    { code: 'transaction.print', description: 'Print transaction receipts' },
     { code: 'transaction.cancel', description: 'Cancel transactions' },
     { code: 'transaction.update_status', description: 'Update customer catalog order status' },
     // Notifications
@@ -952,6 +953,7 @@ async function main() {
     'category.delete',
     'transaction.create',
     'transaction.read',
+    'transaction.print',
     'transaction.cancel',
     'transaction.update_status',
     'notification.read',
@@ -986,6 +988,7 @@ async function main() {
     'category.update',
     'category.delete',
     'transaction.read',
+    'transaction.print',
     'transaction.cancel',
     'transaction.update_status',
     'notification.read',
@@ -1006,6 +1009,7 @@ async function main() {
     'category.read',
     'transaction.create',
     'transaction.read',
+    'transaction.print',
     'transaction.update_status',
     'notification.read',
     'notification.update',

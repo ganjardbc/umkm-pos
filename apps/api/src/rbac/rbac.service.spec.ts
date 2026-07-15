@@ -61,7 +61,10 @@ describe('RbacService', () => {
     });
 
     it('throws ConflictException when role already assigned', async () => {
-      mockPrisma.roles.findFirst.mockResolvedValue({ id: roleId, name: 'cashier' });
+      mockPrisma.roles.findFirst.mockResolvedValue({
+        id: roleId,
+        name: 'cashier',
+      });
       mockPrisma.user_roles.findFirst.mockResolvedValue({
         user_id: userId,
         role_id: roleId,
@@ -76,7 +79,10 @@ describe('RbacService', () => {
     });
 
     it('assigns role successfully', async () => {
-      mockPrisma.roles.findFirst.mockResolvedValue({ id: roleId, name: 'cashier' });
+      mockPrisma.roles.findFirst.mockResolvedValue({
+        id: roleId,
+        name: 'cashier',
+      });
       mockPrisma.user_roles.findFirst.mockResolvedValue(null);
       mockPrisma.user_roles.create.mockResolvedValue({
         user_id: userId,
