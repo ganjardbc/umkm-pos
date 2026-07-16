@@ -67,6 +67,11 @@ Components:
   - Filter bar (date range, status, outlet)
   - DataTable dengan pagination
   - Status badge per row
+  - Action buttons per row:
+    - View Detail: Di-enable jika user memiliki permission `transaction.read`
+    - Print Receipt: Di-enable jika user memiliki permission `transaction.print` dan transaksi belum dibatalkan (is_cancelled = false)
+    - Advance Status (khusus order dari Customer Catalog): Di-enable jika user memiliki permission `transaction.update_status`
+    - Cancel Transaction: Di-enable jika user memiliki permission `transaction.cancel` dan transaksi belum dibatalkan (is_cancelled = false)
 Data: GET /transactions
 ```
 
@@ -79,7 +84,8 @@ Components:
   - Transaction info (tanggal, kasir, outlet, metode bayar)
   - Items table (nama, qty, harga snapshot, subtotal)
   - Total summary
-  - Cancel button (jika masih bisa dibatalkan)
+  - Print button: Di-enable jika user memiliki permission `transaction.print` dan transaksi belum dibatalkan (is_cancelled = false)
+  - Cancel button: Di-enable jika user memiliki permission `transaction.cancel` dan transaksi belum dibatalkan (is_cancelled = false)
 Data: GET /transactions/:id
 ```
 
