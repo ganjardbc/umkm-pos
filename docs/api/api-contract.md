@@ -150,8 +150,17 @@ page, limit
 GET    /transactions         — List transactions (outlet-scoped, with filters)
 POST   /transactions         — Commit POS transaction (atomic)
 GET    /transactions/:id     — Get transaction detail
-PATCH  /transactions/:id/cancel — Cancel transaction
+POST   /transactions/:id/cancel — Cancel transaction (atomic)
+PATCH  /transactions/:id/status — Update transaction status (customer orders)
 ```
+
+### Aturan Otorisasi Outlet (Outlet Access Control)
+Untuk memastikan keamanan multi-tenant dan isolasi data, seluruh endpoint transaksi memberlakukan aturan otorisasi berbasis outlet:
+- **Role Owner**: Pengguna dengan role `owner` pada merchant memiliki akses penuh ke seluruh outlet di bawah merchant tersebut.
+- **Role Non-Owner**: Pengguna lain (seperti kasir) dibatasi hanya pada outlet yang terdaftar untuk mereka di `user_roles`.
+- **GET /transactions**: Jika query parameter `outlet_id` disertakan, sistem memvalidasi kepemilikan merchant dan otorisasi akses user ke outlet tersebut (mengembalikan 403 Forbidden jika tidak berhak). Jika tidak disertakan, sistem otomatis memfilter dan mengembalikan transaksi hanya dari outlet-outlet yang diperbolehkan bagi user.
+- **POST /transactions**: Menolak request dengan status 403 Forbidden jika user tidak memiliki akses/role pada `outlet_id` yang dikirim di body payload.
+- **GET /transactions/:id**, **POST /transactions/:id/cancel**, dan **PATCH /transactions/:id/status**: Memastikan transaksi yang dicari berada di outlet yang diperbolehkan bagi user. Jika transaksi berada di outlet lain yang tidak dapat diakses user, mengembalikan status 404 Not Found.
 
 Query params untuk list:
 

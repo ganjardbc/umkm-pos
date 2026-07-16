@@ -68,10 +68,12 @@ export class TransactionsController {
   })
   findAll(
     @CurrentUser('merchant_id') merchantId: string,
+    @CurrentUser('id') userId: string,
     @Query() query: FindAllTransactionsDto,
   ) {
     return this.transactionsService.findAll(
       merchantId,
+      userId,
       query.outlet_id,
       query.is_cancelled,
       query,
@@ -94,8 +96,9 @@ export class TransactionsController {
   findOne(
     @Param('id') id: string,
     @CurrentUser('merchant_id') merchantId: string,
+    @CurrentUser('id') userId: string,
   ) {
-    return this.transactionsService.findOne(id, merchantId);
+    return this.transactionsService.findOne(id, merchantId, userId);
   }
 
   @Post(':id/cancel')
