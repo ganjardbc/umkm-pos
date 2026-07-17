@@ -205,7 +205,7 @@ export class TransactionsService {
       return transaction;
     });
 
-    return this.prisma.transactions.findFirst({
+    return this.prisma.transactions.findFirst({ 
       where: { id: result.id },
       include: {
         transaction_items: true,
@@ -295,7 +295,7 @@ export class TransactionsService {
     const result = await this.prisma.$transaction(async (tx) => {
       const cancelledTx = await tx.transactions.update({
         where: { id },
-        data: {
+        data: { 
           is_cancelled: true,
           ...(transaction.order_source === ORDER_SOURCE_CUSTOMER && {
             order_status: ORDER_STATUS_COMPLETED,
@@ -809,12 +809,12 @@ export class TransactionsService {
       },
     });
 
-    const isOwner = userRoles.some((ur) => ur.roles.name === 'owner');
+    const isOwner = userRoles.some((ur) => ur.roles?.name === 'owner');
 
     if (isOwner) {
       return this.getMerchantOutletIds(merchantId);
     }
 
-    return userRoles.map((ur) => ur.outlet_id);
+    return userRoles.map((ur) => ur.outlet_id).filter(Boolean) as string[];
   }
 }
