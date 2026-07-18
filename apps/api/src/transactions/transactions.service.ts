@@ -37,6 +37,7 @@ export class TransactionsService {
 
   async findAll(
     merchantId: string,
+    userId: string,
     outletId?: string,
     is_cancelled?: boolean,
     pagination: PaginationDto = new PaginationDto(),
@@ -44,14 +45,18 @@ export class TransactionsService {
     orderSource?: string,
     tableId?: string,
   ) {
+    const allowedOutletIds = await this.getAllowedOutletIds(userId, merchantId);
+
     if (outletId) {
       await this.assertOutletBelongsToMerchant(outletId, merchantId);
+      if (!allowedOutletIds.includes(outletId)) {
+        throw new ForbiddenException('You do not have access to this outlet');
+      }
     }
 
-    const outletIds = await this.getMerchantOutletIds(merchantId);
     const { page = 1, limit = 10 } = pagination;
     const where = {
-      outlet_id: outletId ? outletId : { in: outletIds },
+      outlet_id: outletId ? outletId : { in: allowedOutletIds },
       ...(is_cancelled !== undefined && { is_cancelled }),
       ...(orderStatus && { order_status: orderStatus }),
       ...(orderSource && { order_source: orderSource }),
@@ -80,12 +85,12 @@ export class TransactionsService {
     return { data, meta: PaginationDto.calculateMeta(total, page, limit) };
   }
 
-  async findOne(id: string, merchantId: string) {
-    const outletIds = await this.getMerchantOutletIds(merchantId);
+  async findOne(id: string, merchantId: string, userId: string) {
+    const allowedOutletIds = await this.getAllowedOutletIds(userId, merchantId);
     const transaction = await this.prisma.transactions.findFirst({
       where: {
         id,
-        outlet_id: { in: outletIds },
+        outlet_id: { in: allowedOutletIds },
       },
       include: {
         transaction_items: true,
@@ -200,7 +205,7 @@ export class TransactionsService {
       return transaction;
     });
 
-    return this.prisma.transactions.findFirst({
+    return this.prisma.transactions.findFirst({ 
       where: { id: result.id },
       include: {
         transaction_items: true,
@@ -216,7 +221,7 @@ export class TransactionsService {
     merchantId: string,
     userId: string,
   ) {
-    const transaction = await this.findOne(id, merchantId);
+    const transaction = await this.findOne(id, merchantId, userId);
 
     if (transaction.order_source !== ORDER_SOURCE_CUSTOMER) {
       throw new BadRequestException(
@@ -268,11 +273,11 @@ export class TransactionsService {
   }
 
   async cancel(id: string, merchantId: string, userId: string) {
-    const outletIds = await this.getMerchantOutletIds(merchantId);
+    const allowedOutletIds = await this.getAllowedOutletIds(userId, merchantId);
     const transaction = await this.prisma.transactions.findFirst({
       where: {
         id,
-        outlet_id: { in: outletIds },
+        outlet_id: { in: allowedOutletIds },
       },
       include: {
         transaction_items: true,
@@ -290,7 +295,7 @@ export class TransactionsService {
     const result = await this.prisma.$transaction(async (tx) => {
       const cancelledTx = await tx.transactions.update({
         where: { id },
-        data: {
+        data: { 
           is_cancelled: true,
           ...(transaction.order_source === ORDER_SOURCE_CUSTOMER && {
             order_status: ORDER_STATUS_COMPLETED,
@@ -532,6 +537,16 @@ export class TransactionsService {
     validatePayment = true,
   ) {
     await this.assertOutletBelongsToMerchant(dto.outlet_id, merchantId);
+
+    if (userId) {
+      const allowedOutletIds = await this.getAllowedOutletIds(
+        userId,
+        merchantId,
+      );
+      if (!allowedOutletIds.includes(dto.outlet_id)) {
+        throw new ForbiddenException('You do not have access to this outlet');
+      }
+    }
 
     if (!dto.items || dto.items.length === 0) {
       throw new BadRequestException('Transaction must have at least one item');
@@ -776,5 +791,30 @@ export class TransactionsService {
     }
 
     return table;
+  }
+
+  async getAllowedOutletIds(
+    userId: string,
+    merchantId: string,
+  ): Promise<string[]> {
+    const userRoles = await this.prisma.user_roles.findMany({
+      where: {
+        user_id: userId,
+        outlets: {
+          merchant_id: merchantId,
+        },
+      },
+      include: {
+        roles: true,
+      },
+    });
+
+    const isOwner = userRoles.some((ur) => ur.roles?.name === 'owner');
+
+    if (isOwner) {
+      return this.getMerchantOutletIds(merchantId);
+    }
+
+    return userRoles.map((ur) => ur.outlet_id).filter(Boolean) as string[];
   }
 }
