@@ -62,8 +62,11 @@ export class ShiftsController {
     description: 'Return shift details with transactions',
   })
   @ApiResponse({ status: 404, description: 'Shift not found' })
-  findByOutlet(@Param('outlet_id') outletId: string) {
-    return this.shiftsService.findByOutlet(outletId);
+  findByOutlet(
+    @Param('outlet_id') outletId: string,
+    @CurrentUser('merchant_id') merchantId: string,
+  ) {
+    return this.shiftsService.findByOutlet(outletId, merchantId);
   }
 
   /**

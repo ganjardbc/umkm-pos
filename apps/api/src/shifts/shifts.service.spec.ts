@@ -555,4 +555,62 @@ describe('ShiftsService', () => {
       ).rejects.toThrow(BadRequestException);
     });
   });
+
+  describe('findByOutlet', () => {
+    it('should return shift if outlet belongs to merchant and shift exists', async () => {
+      const outletId = 'outlet-1';
+      const merchantId = 'merchant-1';
+      const mockShift = {
+        id: 'shift-1',
+        outlet_id: outletId,
+        start_time: new Date(),
+        outlets: { id: outletId, name: 'Outlet 1', slug: 'outlet-1' },
+        shift_owner: { id: 'user-1', name: 'User 1', username: 'user1' },
+        transactions: [],
+      };
+
+      mockPrisma.outlets.findFirst.mockResolvedValue({
+        id: outletId,
+        merchant_id: merchantId,
+      });
+      mockPrisma.shifts.findFirst.mockResolvedValue(mockShift);
+
+      const result = await service.findByOutlet(outletId, merchantId);
+
+      expect(result).toBeDefined();
+      expect(result.id).toBe('shift-1');
+      expect(mockPrisma.outlets.findFirst).toHaveBeenCalledWith({
+        where: { id: outletId, merchant_id: merchantId },
+      });
+    });
+
+    it('should throw NotFoundException if outlet does not belong to merchant', async () => {
+      const outletId = 'outlet-1';
+      const merchantId = 'merchant-1';
+
+      mockPrisma.outlets.findFirst.mockResolvedValue(null);
+
+      await expect(service.findByOutlet(outletId, merchantId)).rejects.toThrow(
+        NotFoundException,
+      );
+      expect(mockPrisma.outlets.findFirst).toHaveBeenCalledWith({
+        where: { id: outletId, merchant_id: merchantId },
+      });
+    });
+
+    it('should throw NotFoundException if shift does not exist', async () => {
+      const outletId = 'outlet-1';
+      const merchantId = 'merchant-1';
+
+      mockPrisma.outlets.findFirst.mockResolvedValue({
+        id: outletId,
+        merchant_id: merchantId,
+      });
+      mockPrisma.shifts.findFirst.mockResolvedValue(null);
+
+      await expect(service.findByOutlet(outletId, merchantId)).rejects.toThrow(
+        NotFoundException,
+      );
+    });
+  });
 });

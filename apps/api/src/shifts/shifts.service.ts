@@ -131,8 +131,16 @@ export class ShiftsService {
     return shift;
   }
 
-  async findByOutlet(outletId: string) {
-    // Find the last shift for this user in any of the merchant's outlets
+  async findByOutlet(outletId: string, merchantId: string) {
+    // Validate outlet belongs to this merchant
+    const outlet = await this.prisma.outlets.findFirst({
+      where: { id: outletId, merchant_id: merchantId },
+    });
+    if (!outlet) {
+      throw new NotFoundException(`Shift for outlet ${outletId} not found`);
+    }
+
+    // Find the last shift for this outlet
     const shift = await this.prisma.shifts.findFirst({
       where: {
         outlet_id: outletId,

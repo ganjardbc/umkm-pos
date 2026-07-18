@@ -186,7 +186,18 @@ GET    /shifts/:id           — Get shift detail
 POST   /shifts/:id/close     — Close shift
 POST   /shifts/:id/participants — Add participant to shift
 DELETE /shifts/:id/participants/:userId — Remove participant
+GET    /shifts/outlet/:outlet_id — Get shift by Outlet ID (legacy, merchant-scoped)
+GET    /shifts/user/:user_id     — Get shift by User ID (legacy, merchant-scoped)
 ```
+
+### Legacy Endpoints
+
+#### GET /shifts/outlet/:outlet_id
+Mendapatkan detail shift terakhir (paling baru) untuk outlet tertentu.
+- **Permission**: `shift.read`
+- **Path Parameter**: `outlet_id` — ID Outlet yang dicari.
+- **Tenant Validation**: Menjamin isolasi data antar tenant. Sistem memeriksa apakah outlet dengan `outlet_id` tersebut merupakan milik `merchant_id` yang sedang aktif (diekstrak dari JWT). Jika tidak cocok atau outlet tidak ditemukan, mengembalikan `404 Not Found` (bukan 403 Forbidden agar tidak membocorkan keberadaan data/resource milik tenant lain).
+- **Response**: Mengembalikan detail data shift terakhir beserta data outlet, shift owner, dan daftar transaksi (diurutkan descending berdasarkan `created_at`).
 
 ---
 

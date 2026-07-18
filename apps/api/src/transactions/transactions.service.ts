@@ -205,7 +205,7 @@ export class TransactionsService {
       return transaction;
     });
 
-    return this.prisma.transactions.findFirst({ 
+    return this.prisma.transactions.findFirst({
       where: { id: result.id },
       include: {
         transaction_items: true,
@@ -295,7 +295,7 @@ export class TransactionsService {
     const result = await this.prisma.$transaction(async (tx) => {
       const cancelledTx = await tx.transactions.update({
         where: { id },
-        data: { 
+        data: {
           is_cancelled: true,
           ...(transaction.order_source === ORDER_SOURCE_CUSTOMER && {
             order_status: ORDER_STATUS_COMPLETED,
