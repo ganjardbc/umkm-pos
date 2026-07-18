@@ -205,6 +205,14 @@ GET    /stock/inventory      — Current stock per outlet
 ```txt
 GET    /reports/daily        — Daily report (outlet + date range)
 GET    /reports/summary      — Summary stats (merchant-wide)
+GET    /reports/export/transactions — Export transaction history to CSV
+```
+
+Query params untuk `GET /reports/export/transactions`:
+
+```txt
+date_from    — filter date range start (YYYY-MM-DD)
+date_to      — filter date range end (YYYY-MM-DD)
 ```
 
 ---

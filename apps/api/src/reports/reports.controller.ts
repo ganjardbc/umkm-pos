@@ -197,4 +197,19 @@ export class ReportsController {
       res,
     );
   }
+
+  @Get('export/transactions')
+  @RequirePermission('report.read')
+  @ApiOperation({
+    summary: 'Export transactions as CSV file',
+  })
+  @ApiResponse({ status: 200, description: 'CSV file' })
+  @ApiResponse({ status: 403, description: 'Permission denied' })
+  async exportTransactions(
+    @CurrentUser('merchant_id') merchantId: string,
+    @Query() dto: QueryReportDto,
+    @Res() res: Response,
+  ) {
+    await this.reportsService.exportTransactionsToCsv(merchantId, dto, res);
+  }
 }

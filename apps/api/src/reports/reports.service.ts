@@ -1,10 +1,15 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import type { Response } from 'express';
 import { PrismaService } from '../database/prisma.service';
 import { QueryReportDto } from './dto/query-report.dto';
+import { CsvExportService } from '../common/services/csv-export.service';
 
 @Injectable()
 export class ReportsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private csvExportService: CsvExportService,
+  ) {}
 
   // ─────────────────────────────────────────────
   //  Helpers
@@ -215,5 +220,61 @@ export class ReportsService {
     ]);
 
     return { summary, topProducts, outletComparison };
+  }
+
+  // ─────────────────────────────────────────────
+  //  Export Transactions to CSV
+  // ─────────────────────────────────────────────
+
+  async exportTransactionsToCsv(
+    merchantId: string,
+    dto: QueryReportDto,
+    res: Response,
+  ) {
+    const outletIds = await this.resolveOutletIds(merchantId, dto.outlet_id);
+    const dateFrom = this.parseDate(dto.date_from);
+    const dateTo = this.parseDate(dto.date_to);
+
+    const txWhere: Record<string, unknown> = {
+      outlet_id: { in: outletIds },
+    };
+    if (dateFrom || dateTo) {
+      txWhere.created_at = {
+        ...(dateFrom && { gte: dateFrom }),
+        ...(dateTo && { lte: dateTo }),
+      };
+    }
+
+    const transactions = await this.prisma.transactions.findMany({
+      where: txWhere,
+      include: {
+        outlets: {
+          select: {
+            name: true,
+          },
+        },
+      },
+      orderBy: { created_at: 'desc' },
+    });
+
+    const formattedData = transactions.map((t) => ({
+      'Transaction ID': t.id,
+      'Outlet Name': t.outlets?.name ?? 'Unknown',
+      Date: t.created_at.toISOString(),
+      'Payment Method': t.payment_method,
+      'Total Amount': Number(t.total_amount),
+      'Cash Received': t.cash_received ? Number(t.cash_received) : 0,
+      'Change Amount': t.change_amount ? Number(t.change_amount) : 0,
+      'Order Source': t.order_source,
+      'Order Status': t.order_status,
+      'Customer Name': t.customer_name_snapshot ?? '-',
+      'Customer Phone': t.customer_phone_snapshot ?? '-',
+      Cancelled: t.is_cancelled ? 'Yes' : 'No',
+    }));
+
+    const timestamp = new Date().toISOString().split('T')[0];
+    const filename = `Transaction_Report_${timestamp}`;
+
+    this.csvExportService.exportToCsv(formattedData, filename, res);
   }
 }

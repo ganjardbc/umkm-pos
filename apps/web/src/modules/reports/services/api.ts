@@ -62,3 +62,11 @@ export const exportOutletComparison = async (params: any, options: any = {}): Pr
   );
   return response.data;
 };
+
+export const exportTransactionsCsv = async (params: any, options: any = {}): Promise<Blob> => {
+  const response = await api.get(
+    '/api/v1/reports/export/transactions',
+    { params, responseType: 'blob', ...(options || {}) },
+  );
+  return response.data;
+};
