@@ -211,7 +211,23 @@ export class RbacService {
   //  USER ↔ ROLES
   // ─────────────────────────────────────────────
 
-  async assignRoleToUser(dto: AssignRoleDto, assignedBy: string) {
+  async assignRoleToUser(
+    merchantId: string,
+    dto: AssignRoleDto,
+    assignedBy: string,
+  ) {
+    const user = await this.prisma.users.findFirst({
+      where: {
+        id: dto.user_id,
+        merchant_id: merchantId,
+      },
+    });
+    if (!user) {
+      throw new NotFoundException(
+        'User not found or does not belong to your merchant',
+      );
+    }
+
     await this.findOneRole(dto.role_id);
 
     const existing = await this.prisma.user_roles.findFirst({
@@ -238,7 +254,19 @@ export class RbacService {
     });
   }
 
-  async revokeRoleFromUser(dto: AssignRoleDto) {
+  async revokeRoleFromUser(merchantId: string, dto: AssignRoleDto) {
+    const user = await this.prisma.users.findFirst({
+      where: {
+        id: dto.user_id,
+        merchant_id: merchantId,
+      },
+    });
+    if (!user) {
+      throw new NotFoundException(
+        'User not found or does not belong to your merchant',
+      );
+    }
+
     const existing = await this.prisma.user_roles.findFirst({
       where: {
         user_id: dto.user_id,

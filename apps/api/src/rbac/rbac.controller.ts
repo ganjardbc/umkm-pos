@@ -182,9 +182,10 @@ export class RbacController {
   @ApiResponse({ status: 409, description: 'Role already assigned' })
   assignRoleToUser(
     @Body() dto: AssignRoleDto,
+    @CurrentUser('merchant_id') merchantId: string,
     @CurrentUser('id') userId: string,
   ) {
-    return this.rbacService.assignRoleToUser(dto, userId);
+    return this.rbacService.assignRoleToUser(merchantId, dto, userId);
   }
 
   @Delete('user-roles')
@@ -198,8 +199,11 @@ export class RbacController {
     status: 403,
     description: 'Outlet does not belong to your merchant',
   })
-  revokeRoleFromUser(@Body() dto: AssignRoleDto) {
-    return this.rbacService.revokeRoleFromUser(dto);
+  revokeRoleFromUser(
+    @Body() dto: AssignRoleDto,
+    @CurrentUser('merchant_id') merchantId: string,
+  ) {
+    return this.rbacService.revokeRoleFromUser(merchantId, dto);
   }
 
   @Get('users/:userId/roles')

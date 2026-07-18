@@ -8,6 +8,9 @@ describe('RbacService', () => {
   let service: RbacService;
 
   const mockPrisma = {
+    users: {
+      findFirst: jest.fn(),
+    },
     outlets: {
       findUnique: jest.fn(),
     },
@@ -38,6 +41,7 @@ describe('RbacService', () => {
     jest.clearAllMocks();
   });
 
+  const merchantId = 'merchant-1';
   const roleId = 'role-1';
   const userId = 'user-1';
   const outletId = 'outlet-a1';
@@ -50,17 +54,50 @@ describe('RbacService', () => {
   });
 
   describe('assignRoleToUser', () => {
+    it('throws NotFoundException when user does not exist or does not belong to merchant', async () => {
+      mockPrisma.users.findFirst.mockResolvedValue(null);
+
+      await expect(
+        service.assignRoleToUser(
+          merchantId,
+          dtoForOutlet(outletId),
+          assignedBy,
+        ),
+      ).rejects.toThrow(NotFoundException);
+
+      expect(mockPrisma.users.findFirst).toHaveBeenCalledWith({
+        where: {
+          id: userId,
+          merchant_id: merchantId,
+        },
+      });
+      expect(mockPrisma.roles.findFirst).not.toHaveBeenCalled();
+      expect(mockPrisma.user_roles.create).not.toHaveBeenCalled();
+    });
+
     it('throws NotFoundException when role does not exist', async () => {
+      mockPrisma.users.findFirst.mockResolvedValue({
+        id: userId,
+        merchant_id: merchantId,
+      });
       mockPrisma.roles.findFirst.mockResolvedValue(null);
 
       await expect(
-        service.assignRoleToUser(dtoForOutlet(outletId), assignedBy),
+        service.assignRoleToUser(
+          merchantId,
+          dtoForOutlet(outletId),
+          assignedBy,
+        ),
       ).rejects.toThrow(NotFoundException);
 
       expect(mockPrisma.user_roles.create).not.toHaveBeenCalled();
     });
 
     it('throws ConflictException when role already assigned', async () => {
+      mockPrisma.users.findFirst.mockResolvedValue({
+        id: userId,
+        merchant_id: merchantId,
+      });
       mockPrisma.roles.findFirst.mockResolvedValue({
         id: roleId,
         name: 'cashier',
@@ -72,13 +109,21 @@ describe('RbacService', () => {
       });
 
       await expect(
-        service.assignRoleToUser(dtoForOutlet(outletId), assignedBy),
+        service.assignRoleToUser(
+          merchantId,
+          dtoForOutlet(outletId),
+          assignedBy,
+        ),
       ).rejects.toThrow(ConflictException);
 
       expect(mockPrisma.user_roles.create).not.toHaveBeenCalled();
     });
 
     it('assigns role successfully', async () => {
+      mockPrisma.users.findFirst.mockResolvedValue({
+        id: userId,
+        merchant_id: merchantId,
+      });
       mockPrisma.roles.findFirst.mockResolvedValue({
         id: roleId,
         name: 'cashier',
@@ -91,6 +136,7 @@ describe('RbacService', () => {
       });
 
       const result = await service.assignRoleToUser(
+        merchantId,
         dtoForOutlet(outletId),
         assignedBy,
       );
@@ -115,17 +161,42 @@ describe('RbacService', () => {
   });
 
   describe('revokeRoleFromUser', () => {
+    it('throws NotFoundException when user does not exist or does not belong to merchant', async () => {
+      mockPrisma.users.findFirst.mockResolvedValue(null);
+
+      await expect(
+        service.revokeRoleFromUser(merchantId, dtoForOutlet(outletId)),
+      ).rejects.toThrow(NotFoundException);
+
+      expect(mockPrisma.users.findFirst).toHaveBeenCalledWith({
+        where: {
+          id: userId,
+          merchant_id: merchantId,
+        },
+      });
+      expect(mockPrisma.user_roles.findFirst).not.toHaveBeenCalled();
+      expect(mockPrisma.user_roles.delete).not.toHaveBeenCalled();
+    });
+
     it('throws NotFoundException when role assignment not found', async () => {
+      mockPrisma.users.findFirst.mockResolvedValue({
+        id: userId,
+        merchant_id: merchantId,
+      });
       mockPrisma.user_roles.findFirst.mockResolvedValue(null);
 
       await expect(
-        service.revokeRoleFromUser(dtoForOutlet(outletId)),
+        service.revokeRoleFromUser(merchantId, dtoForOutlet(outletId)),
       ).rejects.toThrow(NotFoundException);
 
       expect(mockPrisma.user_roles.delete).not.toHaveBeenCalled();
     });
 
     it('revokes role successfully', async () => {
+      mockPrisma.users.findFirst.mockResolvedValue({
+        id: userId,
+        merchant_id: merchantId,
+      });
       mockPrisma.user_roles.findFirst.mockResolvedValue({
         user_id: userId,
         role_id: roleId,
@@ -133,7 +204,10 @@ describe('RbacService', () => {
       });
       mockPrisma.user_roles.delete.mockResolvedValue({});
 
-      const result = await service.revokeRoleFromUser(dtoForOutlet(outletId));
+      const result = await service.revokeRoleFromUser(
+        merchantId,
+        dtoForOutlet(outletId),
+      );
 
       expect(result).toEqual({
         message: 'Role revoked from user successfully',
