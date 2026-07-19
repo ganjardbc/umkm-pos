@@ -876,6 +876,7 @@ async function main() {
     { code: 'product.read', description: 'Read products' },
     { code: 'product.update', description: 'Update products' },
     { code: 'product.delete', description: 'Delete products' },
+    { code: 'product.view', description: 'View product detail' },
     // Category management
     { code: 'category.create', description: 'Create product categories' },
     { code: 'category.read', description: 'Read product categories' },
@@ -898,6 +899,13 @@ async function main() {
     { code: 'upload.create', description: 'Upload files to S3' },
     { code: 'upload.read', description: 'View file metadata & signed URLs' },
     { code: 'upload.delete', description: 'Delete uploaded files' },
+    // Settings
+    { code: 'settings.profile.read', description: 'Read own profile settings' },
+    { code: 'settings.profile.update', description: 'Update own profile settings' },
+    { code: 'settings.password.update', description: 'Change own password' },
+    { code: 'settings.email.update', description: 'Change own email' },
+    { code: 'settings.account.deactivate', description: 'Deactivate own account' },
+    { code: 'settings.site.update', description: 'Update merchant site settings' },
   ];
 
   for (const perm of permissionsData) {
@@ -947,6 +955,7 @@ async function main() {
     'product.read',
     'product.update',
     'product.delete',
+    'product.view',
     'category.create',
     'category.read',
     'category.update',
@@ -964,6 +973,12 @@ async function main() {
     'upload.create',
     'upload.read',
     'upload.delete',
+    'settings.profile.read',
+    'settings.profile.update',
+    'settings.password.update',
+    'settings.email.update',
+    'settings.account.deactivate',
+    'settings.site.update',
   ].map(pid);
 
   const managerPermIds = [
@@ -983,6 +998,7 @@ async function main() {
     'product.create',
     'product.read',
     'product.update',
+    'product.view',
     'category.create',
     'category.read',
     'category.update',
@@ -998,6 +1014,10 @@ async function main() {
     'stock.read',
     'upload.create',
     'upload.read',
+    'settings.profile.read',
+    'settings.profile.update',
+    'settings.password.update',
+    'settings.email.update',
   ].map(pid);
 
   const cashierPermIds = [
@@ -1006,6 +1026,7 @@ async function main() {
     'shift.read',
     'shift.update',
     'product.read',
+    'product.view',
     'category.read',
     'transaction.create',
     'transaction.read',
@@ -1015,6 +1036,9 @@ async function main() {
     'notification.update',
     'upload.create',
     'upload.read',
+    'settings.profile.read',
+    'settings.profile.update',
+    'settings.password.update',
   ].map(pid);
 
   const viewerPermIds = [
@@ -1025,11 +1049,13 @@ async function main() {
     'permission.read',
     'user.read',
     'product.read',
+    'product.view',
     'transaction.read',
     'notification.read',
     'report.read',
     'stock.read',
     'upload.read',
+    'settings.profile.read',
   ].map(pid);
 
   const rolePermMap: { roleId: string; permIds: string[] }[] = [
