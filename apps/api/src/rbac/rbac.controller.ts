@@ -207,12 +207,15 @@ export class RbacController {
   }
 
   @Get('users/:userId/roles')
-  // @RequirePermission('role.read')
+  @RequirePermission('role.read')
   @ApiOperation({
     summary: 'List all roles assigned to a user (with permissions)',
   })
   @ApiResponse({ status: 200, description: 'Return user role assignments' })
-  getUserRoles(@Param('userId') userId: string) {
-    return this.rbacService.getUserRoles(userId);
+  getUserRoles(
+    @Param('userId') userId: string,
+    @CurrentUser('merchant_id') merchantId: string,
+  ) {
+    return this.rbacService.getUserRoles(userId, merchantId);
   }
 }

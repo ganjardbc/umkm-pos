@@ -20,6 +20,7 @@ describe('RbacService', () => {
     },
     user_roles: {
       findFirst: jest.fn(),
+      findMany: jest.fn(),
       create: jest.fn(),
       delete: jest.fn(),
     },
@@ -223,6 +224,74 @@ describe('RbacService', () => {
       });
       // Outlet cross-tenant check is now handled by ScopeByOutletGuard, not service
       expect(mockPrisma.outlets.findUnique).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('getUserRoles', () => {
+    it('throws NotFoundException when user does not exist or does not belong to merchant', async () => {
+      mockPrisma.users.findFirst.mockResolvedValue(null);
+
+      await expect(service.getUserRoles(userId, merchantId)).rejects.toThrow(
+        NotFoundException,
+      );
+
+      expect(mockPrisma.users.findFirst).toHaveBeenCalledWith({
+        where: {
+          id: userId,
+          merchant_id: merchantId,
+        },
+      });
+      expect(mockPrisma.user_roles.findMany).not.toHaveBeenCalled();
+    });
+
+    it('returns user roles successfully', async () => {
+      const mockUser = { id: userId, merchant_id: merchantId };
+      const mockRoles = [
+        {
+          user_id: userId,
+          role_id: roleId,
+          outlet_id: outletId,
+          users: {
+            id: userId,
+            name: 'User 1',
+            email: 'user1@example.com',
+            is_active: true,
+          },
+          roles: { id: roleId, name: 'cashier', description: 'Cashier role' },
+          outlets: { id: outletId, name: 'Outlet A', slug: 'outlet-a' },
+        },
+      ];
+
+      mockPrisma.users.findFirst.mockResolvedValue(mockUser);
+      mockPrisma.user_roles.findMany.mockResolvedValue(mockRoles);
+
+      const result = await service.getUserRoles(userId, merchantId);
+
+      expect(mockPrisma.users.findFirst).toHaveBeenCalledWith({
+        where: {
+          id: userId,
+          merchant_id: merchantId,
+        },
+      });
+      expect(mockPrisma.user_roles.findMany).toHaveBeenCalledWith({
+        where: { user_id: userId },
+        include: {
+          users: {
+            select: { id: true, name: true, email: true, is_active: true },
+          },
+          roles: {
+            include: {
+              role_permissions: {
+                include: { permissions: true },
+              },
+            },
+          },
+          outlets: {
+            select: { id: true, name: true, slug: true },
+          },
+        },
+      });
+      expect(result).toEqual(mockRoles);
     });
   });
 });
