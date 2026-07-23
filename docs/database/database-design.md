@@ -58,6 +58,16 @@ INDEX idx_<table>_merchant (merchant_id)
 FOREIGN KEY (merchant_id) REFERENCES merchants(id) ON DELETE CASCADE
 ```
 
+### Pengecualian: Tabel Uploads
+
+Khusus untuk tabel `uploads`, kolom `merchant_id` dibuat nullable (`CHAR(36) NULL`) untuk menjaga backwards-compatibility dengan file global/lama, namun relasi dan index tetap dipertahankan:
+
+```sql
+merchant_id CHAR(36) NULL
+INDEX idx_uploads_merchant (merchant_id)
+FOREIGN KEY (merchant_id) REFERENCES merchants(id) ON DELETE CASCADE
+```
+
 Outlet-scoped entity juga punya:
 
 ```sql

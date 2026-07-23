@@ -25,14 +25,21 @@ export class SettingsService {
   ) {}
 
   private async attachSignedAvatar<
-    T extends { avatar_upload_id?: string | null; avatar?: string | null },
+    T extends {
+      avatar_upload_id?: string | null;
+      avatar?: string | null;
+      merchant_id?: string;
+    },
   >(user: T): Promise<T> {
     if (!user?.avatar_upload_id) return user;
 
     return {
       ...user,
       avatar: (
-        await this.uploadsService.generateSignedUrl(user.avatar_upload_id)
+        await this.uploadsService.generateSignedUrl(
+          user.avatar_upload_id,
+          user.merchant_id,
+        )
       ).url,
     };
   }
@@ -46,6 +53,7 @@ export class SettingsService {
         email: true,
         avatar: true,
         avatar_upload_id: true,
+        merchant_id: true,
         created_at: true,
         updated_at: true,
       },
@@ -80,6 +88,7 @@ export class SettingsService {
         email: true,
         avatar: true,
         avatar_upload_id: true,
+        merchant_id: true,
         updated_at: true,
       },
     });

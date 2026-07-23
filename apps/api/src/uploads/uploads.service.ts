@@ -26,6 +26,7 @@ export class UploadsService {
   async upload(
     file: Express.Multer.File,
     userId: string,
+    merchantId: string,
   ): Promise<{
     id: string;
     original_name: string;
@@ -46,6 +47,7 @@ export class UploadsService {
         s3_key: key,
         bucket: this.s3Config.bucket,
         uploaded_by_id: userId,
+        merchant_id: merchantId,
       },
     });
 
@@ -59,8 +61,15 @@ export class UploadsService {
     };
   }
 
-  async findById(id: string) {
-    const upload = await this.prisma.uploads.findUnique({ where: { id } });
+  async findById(id: string, merchantId?: string) {
+    const upload = await this.prisma.uploads.findFirst({
+      where: {
+        id,
+        ...(merchantId && {
+          OR: [{ merchant_id: merchantId }, { merchant_id: null }],
+        }),
+      },
+    });
 
     if (!upload) {
       throw new NotFoundException(`Upload with ID ${id} not found`);
@@ -69,14 +78,17 @@ export class UploadsService {
     return upload;
   }
 
-  async generateSignedUrl(id: string): Promise<{ url: string }> {
-    const upload = await this.findById(id);
+  async generateSignedUrl(
+    id: string,
+    merchantId?: string,
+  ): Promise<{ url: string }> {
+    const upload = await this.findById(id, merchantId);
     const url = await this.storage.getUrl(upload.s3_key);
     return { url };
   }
 
-  async delete(id: string): Promise<void> {
-    const upload = await this.findById(id);
+  async delete(id: string, merchantId?: string): Promise<void> {
+    const upload = await this.findById(id, merchantId);
 
     await this.storage.delete(upload.s3_key);
 

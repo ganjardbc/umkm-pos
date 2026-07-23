@@ -146,7 +146,7 @@ customer_sessions
 
 ```
 uploads
-  id, original_name, mime_type, size, s3_key, bucket, uploaded_by_id
+  id, merchant_id, original_name, mime_type, size, s3_key, bucket, uploaded_by_id
 
 notifications
   id, user_id, outlet_id, title, message, type, is_read

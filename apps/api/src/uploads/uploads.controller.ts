@@ -61,8 +61,9 @@ export class UploadsController {
   async upload(
     @UploadedFile() file: Express.Multer.File,
     @CurrentUser('id') userId: string,
+    @CurrentUser('merchant_id') merchantId: string,
   ): Promise<UploadResponseDto> {
-    return this.uploadsService.upload(file, userId);
+    return this.uploadsService.upload(file, userId, merchantId);
   }
 
   @Get(':id')
@@ -74,8 +75,11 @@ export class UploadsController {
     type: UploadMetadataResponseDto,
   })
   @ApiResponse({ status: 404, description: 'File not found' })
-  async findOne(@Param('id') id: string): Promise<UploadMetadataResponseDto> {
-    return this.uploadsService.findById(id);
+  async findOne(
+    @Param('id') id: string,
+    @CurrentUser('merchant_id') merchantId: string,
+  ): Promise<UploadMetadataResponseDto> {
+    return this.uploadsService.findById(id, merchantId);
   }
 
   @Get(':id/signed-url')
@@ -87,8 +91,11 @@ export class UploadsController {
     type: SignedUrlResponseDto,
   })
   @ApiResponse({ status: 404, description: 'File not found' })
-  async getSignedUrl(@Param('id') id: string): Promise<SignedUrlResponseDto> {
-    return this.uploadsService.generateSignedUrl(id);
+  async getSignedUrl(
+    @Param('id') id: string,
+    @CurrentUser('merchant_id') merchantId: string,
+  ): Promise<SignedUrlResponseDto> {
+    return this.uploadsService.generateSignedUrl(id, merchantId);
   }
 
   @Delete(':id')
@@ -96,7 +103,10 @@ export class UploadsController {
   @ApiOperation({ summary: 'Delete a file from S3 and database' })
   @ApiResponse({ status: 200, description: 'File deleted successfully' })
   @ApiResponse({ status: 404, description: 'File not found' })
-  async remove(@Param('id') id: string): Promise<void> {
-    return this.uploadsService.delete(id);
+  async remove(
+    @Param('id') id: string,
+    @CurrentUser('merchant_id') merchantId: string,
+  ): Promise<void> {
+    return this.uploadsService.delete(id, merchantId);
   }
 }

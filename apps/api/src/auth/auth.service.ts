@@ -70,10 +70,12 @@ export class AuthService {
     const avatarUrl = await this.resolveSignedUrl(
       user.avatar_upload_id,
       user.avatar,
+      user.merchant_id,
     );
     const merchantLogoUrl = await this.resolveSignedUrl(
       user.merchants?.logo_upload_id,
       user.merchants?.logo,
+      user.merchant_id,
     );
 
     return {
@@ -263,10 +265,12 @@ export class AuthService {
     const avatarUrl = await this.resolveSignedUrl(
       user.avatar_upload_id,
       user.avatar,
+      user.merchant_id,
     );
     const merchantLogoUrl = await this.resolveSignedUrl(
       user.merchants?.logo_upload_id,
       user.merchants?.logo,
+      user.merchant_id,
     );
 
     return {
@@ -353,13 +357,15 @@ export class AuthService {
   private async resolveSignedUrl(
     uploadId?: string | null,
     fallbackUrl?: string | null,
+    merchantId?: string,
   ): Promise<string | null> {
     if (!uploadId) {
       return fallbackUrl || null;
     }
 
     try {
-      return (await this.uploadsService.generateSignedUrl(uploadId)).url;
+      return (await this.uploadsService.generateSignedUrl(uploadId, merchantId))
+        .url;
     } catch {
       return fallbackUrl || null;
     }

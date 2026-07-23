@@ -27,7 +27,10 @@ export class MerchantsService {
     return {
       ...merchant,
       logo: (
-        await this.uploadsService.generateSignedUrl(merchant.logo_upload_id)
+        await this.uploadsService.generateSignedUrl(
+          merchant.logo_upload_id,
+          merchant.id,
+        )
       ).url,
     };
   }
@@ -191,7 +194,7 @@ export class MerchantsService {
       where: { id: uploadId },
     });
 
-    if (!upload) {
+    if (!upload || (upload.merchant_id && upload.merchant_id !== merchantId)) {
       throw new BadRequestException('Upload not found');
     }
 
@@ -199,7 +202,9 @@ export class MerchantsService {
       where: { id },
       data: {
         logo_upload_id: uploadId,
-        logo: (await this.uploadsService.generateSignedUrl(uploadId)).url,
+        logo: (
+          await this.uploadsService.generateSignedUrl(uploadId, merchantId)
+        ).url,
         updated_by: userId,
         updated_at: new Date(),
       },

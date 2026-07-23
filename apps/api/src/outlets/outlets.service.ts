@@ -22,8 +22,12 @@ export class OutletsService {
 
     return {
       ...outlet,
-      logo: (await this.uploadsService.generateSignedUrl(outlet.logo_upload_id))
-        .url,
+      logo: (
+        await this.uploadsService.generateSignedUrl(
+          outlet.logo_upload_id,
+          outlet.merchant_id,
+        )
+      ).url,
     };
   }
 
@@ -159,7 +163,7 @@ export class OutletsService {
       where: { id: uploadId },
     });
 
-    if (!upload) {
+    if (!upload || (upload.merchant_id && upload.merchant_id !== merchantId)) {
       throw new BadRequestException('Upload not found');
     }
 
@@ -167,7 +171,9 @@ export class OutletsService {
       where: { id },
       data: {
         logo_upload_id: uploadId,
-        logo: (await this.uploadsService.generateSignedUrl(uploadId)).url,
+        logo: (
+          await this.uploadsService.generateSignedUrl(uploadId, merchantId)
+        ).url,
         updated_by: userId,
         updated_at: new Date(),
       },

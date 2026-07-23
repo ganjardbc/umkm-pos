@@ -24,7 +24,10 @@ export class UsersService {
     return {
       ...user,
       avatar: (
-        await this.uploadsService.generateSignedUrl(user.avatar_upload_id)
+        await this.uploadsService.generateSignedUrl(
+          user.avatar_upload_id,
+          user.merchant_id,
+        )
       ).url,
     };
   }
@@ -211,7 +214,7 @@ export class UsersService {
       where: { id: uploadId },
     });
 
-    if (!upload) {
+    if (!upload || (upload.merchant_id && upload.merchant_id !== merchantId)) {
       throw new BadRequestException('Upload not found');
     }
 
@@ -219,7 +222,9 @@ export class UsersService {
       where: { id },
       data: {
         avatar_upload_id: uploadId,
-        avatar: (await this.uploadsService.generateSignedUrl(uploadId)).url,
+        avatar: (
+          await this.uploadsService.generateSignedUrl(uploadId, merchantId)
+        ).url,
         updated_by: userId,
         updated_at: new Date(),
       },

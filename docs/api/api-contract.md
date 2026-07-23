@@ -230,8 +230,19 @@ PATCH  /notifications/read-all — Mark all as read
 ## Upload Endpoints
 
 ```txt
-POST   /uploads              — Upload file, return { upload_id, url }
+POST   /uploads              — Upload file, return { upload_id, url } (merchant-scoped)
+GET    /uploads/:id          — Get upload metadata (merchant-scoped)
+GET    /uploads/:id/signed-url — Generate pre-signed URL (merchant-scoped)
+DELETE /uploads/:id          — Delete upload (merchant-scoped)
 ```
+
+### Aturan Otorisasi dan Scoping Tenant (Merchant Scoping)
+Untuk menjamin keamanan multi-tenant, seluruh endpoint uploads memberlakukan aturan otorisasi berbasis merchant:
+- **Scoping Tenant**: `merchant_id` diambil secara eksklusif dari JWT token via `@CurrentUser('merchant_id')`.
+- **POST /uploads**: Mengunggah file dan secara otomatis menyimpan `merchant_id` ke record upload baru di database.
+- **GET /uploads/:id**: Membatasi retrieval file metadata hanya jika `merchant_id` file tersebut sama dengan `merchant_id` dari user terautentikasi. Mengembalikan status error `404 Not Found` jika tidak cocok atau file tidak ditemukan.
+- **GET /uploads/:id/signed-url**: Memvalidasi kepemilikan file berdasarkan `merchant_id` user sebelum meng-generate signed URL. Mengembalikan `404 Not Found` jika tidak cocok atau file tidak ditemukan.
+- **DELETE /uploads/:id**: Memvalidasi kepemilikan file berdasarkan `merchant_id` user sebelum menghapus file dari S3/local storage dan dari database. Mengembalikan `404 Not Found` jika tidak cocok atau file tidak ditemukan.
 
 ---
 

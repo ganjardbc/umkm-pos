@@ -26,7 +26,10 @@ export class ProductsService {
     return {
       ...product,
       thumbnail: (
-        await this.uploadsService.generateSignedUrl(product.image_upload_id)
+        await this.uploadsService.generateSignedUrl(
+          product.image_upload_id,
+          product.merchant_id,
+        )
       ).url,
     };
   }
@@ -335,7 +338,7 @@ export class ProductsService {
       where: { id: uploadId },
     });
 
-    if (!upload) {
+    if (!upload || (upload.merchant_id && upload.merchant_id !== merchantId)) {
       throw new BadRequestException('Upload not found');
     }
 
@@ -343,7 +346,9 @@ export class ProductsService {
       where: { id },
       data: {
         image_upload_id: uploadId,
-        thumbnail: (await this.uploadsService.generateSignedUrl(uploadId)).url,
+        thumbnail: (
+          await this.uploadsService.generateSignedUrl(uploadId, merchantId)
+        ).url,
         updated_by: userId,
         updated_at: new Date(),
       },

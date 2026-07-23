@@ -46,7 +46,8 @@ model merchants {
   inventory_movements inventory_movements[]
   store_tables       store_tables[]
   customer_sessions  customer_sessions[]
-  upload             uploads?             @relation(fields: [logo_upload_id], references: [id], onDelete: SetNull, map: "merchants_ibfk_logo_upload")
+  upload             uploads?             @relation("merchants_logo_upload", fields: [logo_upload_id], references: [id], onDelete: SetNull, map: "merchants_ibfk_logo_upload")
+  uploads            uploads[]            @relation("merchant_uploads")
 
   @@index([logo_upload_id], map: "idx_merchants_logo_upload")
 }
@@ -334,6 +335,7 @@ model transaction_items {
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model uploads {
   id             String     @id @default(dbgenerated("(uuid())")) @db.Char(36)
+  merchant_id    String?    @db.Char(36)
   original_name  String     @db.VarChar(255)
   mime_type      String     @db.VarChar(100)
   size           Int
@@ -343,11 +345,13 @@ model uploads {
   created_at     DateTime   @default(now()) @db.Timestamp(0)
   updated_at     DateTime   @default(now()) @db.Timestamp(0)
   products       products[]
-  merchants      merchants[]
+  merchants      merchants? @relation("merchant_uploads", fields: [merchant_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "uploads_ibfk_merchant")
+  logo_merchants merchants[] @relation("merchants_logo_upload")
   outlets        outlets[]
   users          users[]
 
   @@index([uploaded_by_id], map: "idx_uploads_uploaded_by")
+  @@index([merchant_id], map: "idx_uploads_merchant")
 }
 
 model transactions {
