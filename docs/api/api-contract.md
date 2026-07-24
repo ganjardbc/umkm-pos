@@ -233,6 +233,22 @@ PATCH  /notifications/read-all — Mark all as read
 POST   /uploads              — Upload file, return { upload_id, url }
 ```
 
+### Aturan Validasi Kepemilikan Upload (Upload Ownership Validation)
+
+Untuk mencegah eksploitasi lintas tenant (cross-tenant exploit), backend menerapkan validasi kepemilikan berkas sebelum ditautkan ke entitas lain. 
+
+Aturan validasi:
+1. Validasi dilakukan oleh backend menggunakan method `UploadsService.validateUploadOwnership(uploadId, merchantId)`.
+2. Sistem mencari berkas berdasarkan `uploadId`:
+   - Jika tidak ditemukan, melempar `404 Not Found`.
+3. Sistem membandingkan `merchant_id` dari user pengunggah (`uploaded_by_id`) dengan `merchant_id` dari request context:
+   - Jika tidak cocok, melempar `403 Forbidden`.
+4. Langkah ini dipanggil pada setiap flow penautan berkas:
+   - **Set Product Image** (`ProductsService.setImage`)
+   - **Set Merchant Logo** (`MerchantsService.setImage`)
+   - **Set Outlet Logo** (`OutletsService.setImage`)
+   - **Set User Avatar** (`UsersService.setAvatar`)
+
 ---
 
 ## Store Table Endpoints

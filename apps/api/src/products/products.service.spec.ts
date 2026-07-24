@@ -3,7 +3,11 @@ import { ProductsService } from './products.service';
 import { CategoriesService } from './categories/categories.service';
 import { PrismaService } from '../database/prisma.service';
 import { UploadsService } from '../uploads/uploads.service';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { PaginationDto } from '../common/dto/pagination.dto';
 
@@ -39,6 +43,7 @@ describe('ProductsService', () => {
     findById: jest.fn(),
     generateSignedUrl: jest.fn(),
     delete: jest.fn(),
+    validateUploadOwnership: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -722,6 +727,84 @@ describe('ProductsService', () => {
       await expect(
         service.update(productId, updateDto, 'different-merchant', userId),
       ).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('setImage', () => {
+    const merchantId = 'merchant-1';
+    const userId = 'user-1';
+    const productId = 'product-1';
+    const uploadId = 'upload-1';
+
+    it('should set product image successfully when validation passes', async () => {
+      const mockProduct = {
+        id: productId,
+        merchant_id: merchantId,
+        name: 'Test Product',
+        slug: 'test-product',
+      };
+
+      const updatedProduct = {
+        ...mockProduct,
+        image_upload_id: uploadId,
+        thumbnail: 'http://signed-url.com/image.png',
+      };
+
+      mockPrisma.products.findFirst.mockResolvedValue(mockProduct);
+      mockUploadsService.validateUploadOwnership.mockResolvedValue(undefined);
+      mockUploadsService.generateSignedUrl.mockResolvedValue({
+        url: 'http://signed-url.com/image.png',
+      });
+      mockPrisma.products.update.mockResolvedValue(updatedProduct);
+
+      const result = await service.setImage(
+        productId,
+        uploadId,
+        merchantId,
+        userId,
+      );
+
+      expect(mockUploadsService.validateUploadOwnership).toHaveBeenCalledWith(
+        uploadId,
+        merchantId,
+      );
+      expect(mockUploadsService.generateSignedUrl).toHaveBeenCalledWith(
+        uploadId,
+      );
+      expect(mockPrisma.products.update).toHaveBeenCalledWith({
+        where: { id: productId },
+        data: expect.objectContaining({
+          image_upload_id: uploadId,
+          thumbnail: 'http://signed-url.com/image.png',
+          updated_by: userId,
+        }),
+        include: { merchants: true, product_categories: true, upload: true },
+      });
+      expect(result.image_upload_id).toBe(uploadId);
+    });
+
+    it('should throw NotFoundException / ForbiddenException if validation fails', async () => {
+      const mockProduct = {
+        id: productId,
+        merchant_id: merchantId,
+        name: 'Test Product',
+        slug: 'test-product',
+      };
+
+      mockPrisma.products.findFirst.mockResolvedValue(mockProduct);
+      mockUploadsService.validateUploadOwnership.mockRejectedValue(
+        new ForbiddenException('Forbidden'),
+      );
+
+      await expect(
+        service.setImage(productId, uploadId, merchantId, userId),
+      ).rejects.toThrow(ForbiddenException);
+
+      expect(mockUploadsService.validateUploadOwnership).toHaveBeenCalledWith(
+        uploadId,
+        merchantId,
+      );
+      expect(mockPrisma.products.update).not.toHaveBeenCalled();
     });
   });
 });
