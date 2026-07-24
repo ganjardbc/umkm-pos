@@ -1,7 +1,6 @@
 import {
   Injectable,
   NotFoundException,
-  BadRequestException,
   ConflictException,
   ForbiddenException,
 } from '@nestjs/common';
@@ -187,13 +186,7 @@ export class MerchantsService {
   ) {
     await this.findOne(id, merchantId);
 
-    const upload = await this.prisma.uploads.findUnique({
-      where: { id: uploadId },
-    });
-
-    if (!upload) {
-      throw new BadRequestException('Upload not found');
-    }
+    await this.uploadsService.validateUploadOwnership(uploadId, merchantId);
 
     return this.prisma.merchants.update({
       where: { id },

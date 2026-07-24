@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 import { S3ConfigService } from './s3-config.service';
@@ -67,6 +68,29 @@ export class UploadsService {
     }
 
     return upload;
+  }
+
+  async validateUploadOwnership(
+    uploadId: string,
+    merchantId: string,
+  ): Promise<void> {
+    const upload = await this.prisma.uploads.findUnique({
+      where: { id: uploadId },
+    });
+
+    if (!upload) {
+      throw new BadRequestException('Upload not found');
+    }
+
+    const uploader = await this.prisma.users.findUnique({
+      where: { id: upload.uploaded_by_id },
+    });
+
+    if (!uploader || uploader.merchant_id !== merchantId) {
+      throw new ForbiddenException(
+        'You do not have permission to use this upload',
+      );
+    }
   }
 
   async generateSignedUrl(id: string): Promise<{ url: string }> {

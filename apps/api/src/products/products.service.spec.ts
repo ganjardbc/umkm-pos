@@ -39,6 +39,7 @@ describe('ProductsService', () => {
     findById: jest.fn(),
     generateSignedUrl: jest.fn(),
     delete: jest.fn(),
+    validateUploadOwnership: jest.fn(),
   };
 
   beforeEach(async () => {
