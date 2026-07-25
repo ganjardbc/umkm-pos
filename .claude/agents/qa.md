@@ -31,6 +31,12 @@ Read (semua), Bash (test, typecheck, lint, grep)
 Kode di apps/api/src/<module>/ atau apps/web/src/modules/<module>/
 ```
 
+Referensi tambahan (opsional) — kalau tersedia dan relevan dengan area yang diuji, boleh
+dibaca sebagai konteks tambahan; kalau tidak ada, lanjut verifikasi dari
+`requirements.md`/`verify-report.md` seperti biasa:
+- `docs/api-contract.md` — untuk cek response/endpoint sesuai kontrak
+- `docs/architecture/system-overview.md` — untuk pahami dampak lintas komponen
+
 ## Output
 
 `.ai/tasks/<TICKET-ID>/qa-report.md`

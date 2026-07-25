@@ -1,0 +1,20 @@
+# Golden Examples — RULES.md (umkm-pos-api)
+
+> **DRAFT — wajib direview.** File ini digenerate otomatis oleh `caf-initiator` sebagai
+> pendamping wajib golden example di folder ini (lihat CAF.md Layer 1). Isi Do/Don't di bawah
+> secara manual — tanpa ini golden example jadi ambigu, AI harus menebak sendiri mana yang pola
+> dan mana yang kebetulan ada di file itu.
+
+## Kenapa File di Folder Ini Jadi Contoh Baik
+
+TODO: jelaskan kenapa file-file di folder ini dipilih sebagai referensi — pola apa yang mau
+ditiru AI (mis. thin controller, DTO tervalidasi, composable pattern, dst).
+
+## Do
+
+TODO: bagian mana yang WAJIB ditiru dari contoh ini.
+
+## Don't
+
+TODO: bagian mana yang kebetulan ada di file ini tapi TIDAK boleh ditiru (mis. workaround
+sementara, kode lama yang belum sempat dirapikan).

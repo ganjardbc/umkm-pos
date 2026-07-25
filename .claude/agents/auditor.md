@@ -29,6 +29,12 @@ Read (semua), Bash (grep, git log, test coverage, typecheck/lint dry-run — rea
 
 Tidak ada input wajib — agent scan seluruh repo. Opsional: scope hint dari user (mis. "fokus ke apps/api" atau "cek RBAC saja").
 
+Referensi tambahan (opsional) — kalau tersedia dan relevan dengan scope audit, boleh dibaca
+sebagai konteks tambahan sebelum scan; kalau tidak ada, lanjut audit dari CLAUDE.md/kode
+seperti biasa:
+- `docs/architecture/system-overview.md` — konteks komponen & dependensi lintas app
+- `docs/api-contract.md` — cek konsistensi implementasi endpoint dengan kontrak yang didokumentasikan
+
 ## Pola Kerja
 
 ### 1. Orientasi

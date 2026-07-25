@@ -34,6 +34,12 @@ Read (semua), Bash (grep-based checks)
 Kode yang diimplementasi
 ```
 
+Referensi tambahan (opsional) — kalau tersedia dan relevan dengan diff yang direview, boleh
+dibaca sebagai konteks tambahan; kalau tidak ada, lanjut review dari artifact di atas
+seperti biasa:
+- `docs/api-contract.md` — cek konsistensi implementasi dengan kontrak
+- `docs/architecture/system-overview.md` — cek dampak perubahan ke komponen lain
+
 ## Output
 
 `.ai/tasks/<TICKET-ID>/review-notes.md`

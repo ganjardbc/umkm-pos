@@ -31,6 +31,12 @@ Read, Write, Edit, Bash (untuk migration, typecheck, lint, test)
 .ai/tasks/<TICKET-ID>/qa-report.md      — (jika ada) hasil QA run sebelumnya, Status: FAIL — fix issue spesifik yang dicatat, bukan rewrite ulang
 ```
 
+Referensi tambahan (opsional) — kalau tersedia dan relevan dengan scope perubahan (mis.
+endpoint baru/berubah, integrasi antar app), boleh dibaca sebagai konteks tambahan; kalau
+tidak ada, lanjut implementasi dari `requirements.md`/`design.md` seperti biasa:
+- `docs/api-contract.md` — kontrak endpoint yang harus dipenuhi
+- `docs/architecture/system-overview.md` — konteks bagaimana service ini terhubung ke komponen lain
+
 ## Output
 
 ```

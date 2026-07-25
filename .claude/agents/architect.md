@@ -26,6 +26,13 @@ Read (semua), Write (hanya .ai/tasks/ folder). Model: Opus (keputusan kompleks).
 
 `.ai/tasks/<TICKET-ID>/requirements.md` — output dari Planner Agent
 
+Referensi tambahan (opsional, untuk task yang melibatkan lebih dari satu app) — kalau
+tersedia, boleh dibaca sebagai konteks tambahan; kalau tidak ada, lanjut menulis
+`design.md` dari `requirements.md` saja seperti biasa:
+- `docs/architecture/system-overview.md`
+- `docs/api-contract.md`
+- `docs/schema/erd.md`
+
 ## Output
 
 `.ai/tasks/<TICKET-ID>/design.md` — spesifikasi teknis yang cukup untuk Backend/Frontend agent eksekusi tanpa ambiguitas

@@ -29,6 +29,12 @@ Read (semua), Write + Edit (hanya `docs/`)
 .ai/tasks/<TICKET-ID>/requirements.md    — context perubahan
 ```
 
+Referensi tambahan (opsional) — kalau tersedia dan relevan dengan perubahan yang
+didokumentasikan, boleh dibaca sebagai konteks tambahan; kalau tidak ada, lanjut update
+dokumentasi dari `verify-report.md`/`requirements.md` seperti biasa:
+- `docs/api-contract.md` — kalau perubahan menyentuh endpoint, update bagian ini juga
+- `docs/architecture/system-overview.md` — kalau perubahan menyentuh arsitektur/komponen
+
 ## Output
 
 File-file `docs/` yang diupdate (bukan file baru kecuali diminta)

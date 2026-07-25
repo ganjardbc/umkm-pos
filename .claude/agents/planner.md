@@ -28,6 +28,11 @@ Salah satu dari:
 - Deskripsi task dari `docs/development/backlog.md`
 - Instruksi langsung dari developer
 
+Referensi tambahan (opsional) — kalau tersedia, dibaca dengan urutan prioritas berikut,
+kalau tidak ada lanjut dari ticket/backlog di atas seperti biasa:
+1. `docs/product/features/{{feature-name}}.md` (Feature Spec, kalau ticket ditautkan ke salah satu)
+2. `docs/product/prd.md`
+
 ## Output
 
 Dua file di `.ai/tasks/<TICKET-ID>/`:
