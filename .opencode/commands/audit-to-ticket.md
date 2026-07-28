@@ -15,18 +15,33 @@ resmi dari audit-report.md ke Linear — jangan buat jalur lain.
 
 ## Argumen
 
-`$ARGUMENTS` — opsional, path ke audit-report.md spesifik (mis. `.ai/audits/2026-07-10/audit-report.md`).
-Kalau kosong, cari folder tanggal terbaru di `.ai/audits/`.
+`$ARGUMENTS` — opsional, path ke file audit spesifik (mis.
+`.ai/audits/2026-07-10/audit-report.md` dari agent `auditor`, atau
+`.ai/audits/2026-07-10/audit-report-transaction-module.md` dari
+`/audit-scan`). Kalau kosong, cari folder tanggal terbaru di `.ai/audits/`.
 
 ## Langkah
 
-### 1. Temukan dan baca audit-report.md
+### 1. Temukan dan baca file audit
 
-- Kalau `$ARGUMENTS` kosong: `ls -t .ai/audits/` untuk cari folder tanggal terbaru,
-  baca `audit-report.md` di dalamnya.
-- Kalau audit-report.md tidak ditemukan sama sekali, laporkan ke user dan STOP —
-  jangan lanjut dengan asumsi apapun.
-- Parse bagian "## Temuan Prioritas" — abaikan "## Temuan Non-Prioritas" (memang
+- Kalau `$ARGUMENTS` kosong: `ls -t .ai/audits/` untuk cari folder tanggal
+  terbaru, lalu `ls .ai/audits/<DATE>/` untuk lihat semua file
+  `audit-report*.md` di dalamnya (bisa lebih dari satu: `audit-report.md`
+  dari agent `auditor` full-scan, dan/atau `audit-report-{scope-slug}.md`
+  dari `/audit-scan` per scope).
+  - Kalau cuma ada 1 file → baca langsung.
+  - Kalau ada lebih dari 1 file → tampilkan daftarnya ke user (nama file +
+    scope dari header masing-masing) dan minta user pilih satu (atau
+    proses semua secara berurutan kalau user minta eksplisit). JANGAN
+    asumsi file mana yang dimaksud.
+- Kalau tidak ada file `audit-report*.md` sama sekali di folder tanggal
+  terbaru, laporkan ke user dan STOP — jangan lanjut dengan asumsi apapun.
+- Parse SEMUA section "## Temuan Prioritas" di file yang dipilih — file bisa
+  berisi lebih dari satu section ini kalau `/audit-scan` di-run beberapa kali
+  di hari yang sama pada scope sama (hasilnya di-append, bukan ditimpa; lihat
+  "## Scan Tambahan" sebagai pemisah antar run). Gabungkan semua temuan dari
+  tiap section "## Temuan Prioritas" yang ditemukan ke satu daftar untuk
+  diproses. Abaikan "## Temuan Non-Prioritas" di section manapun (memang
   sengaja tidak diusulkan jadi task oleh Auditor).
 
 ### 2. Tampilkan tiap temuan satu per satu, minta keputusan eksplisit
