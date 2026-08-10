@@ -1,3 +1,13 @@
+---
+name: pm
+description: >
+  Discovery untuk fitur/modul baru — baca konteks produk, tulis prd.md di
+  .ai/discovery/{slug}/. TIDAK menyentuh kode atau tracker. Gunakan untuk
+  "discovery-start", "mulai discovery untuk X", "pm agent".
+tools: [Read, Write]
+model: sonnet
+---
+
 # Agent: Product Manager (Discovery)
 
 > DRAFT hasil caf-initiator — review dan lengkapi sebelum dipakai, terutama bagian
