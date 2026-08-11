@@ -291,14 +291,18 @@ Routes auto-load via `import.meta.glob` — tidak perlu registrasi manual setela
 ### VERIFY — Wajib sebelum selesai
 
 ```bash
-pnpm typecheck
-```
-```bash
-pnpm lint
-```
-```bash
 pnpm --filter umkm-pos-app build
 ```
+
+> `apps/web/package.json` tidak punya script `typecheck` maupun `lint` sendiri.
+> Typecheck sudah masuk ke `build` (`vue-tsc -b && vite build` — `vue-tsc -b` jalan
+> duluan, build gagal kalau ada type error), jadi `pnpm --filter umkm-pos-app build`
+> saja sudah cukup untuk verify keduanya. **Jangan** jalankan `pnpm typecheck` atau
+> `pnpm lint` tanpa scope dari root — itu memicu `turbo` di SEMUA workspace termasuk
+> `apps/api`, dan `apps/api` punya `eslint --fix` yang auto-rewrite file backend di
+> luar scope ticket frontend (kejadian nyata: SIM-001, `rbac.service.spec.ts` kena
+> reformat tak sengaja). Lint untuk `apps/web` dilewati sampai workspace ini punya
+> script `lint` sendiri — bukan diabaikan tanpa alasan.
 
 ### Frontend Self-Check
 
@@ -315,9 +319,7 @@ pnpm --filter umkm-pos-app build
 ## Verify Checklist
 
 ```
-[ ] pnpm typecheck — PASS
-[ ] pnpm lint — PASS
-[ ] pnpm --filter umkm-pos-app build — PASS
+[ ] pnpm --filter umkm-pos-app build — PASS (mencakup typecheck via vue-tsc -b)
 [ ] meta.permission ada di semua routes (kecuali layout auth/public)
 [ ] API calls melewati services/api.ts (bukan axios langsung di component/store)
 [ ] Store menggunakan split-file pattern (state, getters, actions, index)
@@ -373,4 +375,5 @@ Jika masih FAIL setelah 3 attempt: tulis `Status: NEEDS_HUMAN` di verify-report.
 - RBAC gating UI gunakan `isHasPermission()` dari `@/helpers/auth`, bukan hardcode role/string
 - Nama file service: `services/api.ts` (bukan `<module>.service.ts`) — sesuai konvensi aktual codebase
 - Jangan sentuh `apps/api/`
-- Jangan skip `pnpm typecheck` walau "yakin tidak ada error"
+- Jangan skip `pnpm --filter umkm-pos-app build` walau "yakin tidak ada type error"
+- Jangan jalankan `pnpm typecheck`/`pnpm lint` tanpa `--filter` — lihat catatan di § VERIFY

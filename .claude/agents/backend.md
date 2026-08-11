@@ -181,17 +181,24 @@ Format: `<resource>.<action>`
 
 ### VERIFY — Wajib sebelum selesai
 
-Jalankan dari root:
-
 ```bash
-pnpm typecheck
+pnpm --filter umkm-pos-api build
 ```
 ```bash
-pnpm lint
+pnpm --filter umkm-pos-api lint
 ```
 ```bash
 pnpm --filter umkm-pos-api test
 ```
+
+> `apps/api` tidak punya script `typecheck` terpisah — `nest build` sudah mencakup
+> type-checking (gagal kalau ada type error). **Jangan** jalankan `pnpm typecheck` atau
+> `pnpm lint` tanpa scope dari root — tanpa `--filter`, Turbo menjalankan task itu di
+> SEMUA workspace. `apps/web` tidak punya script `lint` (jadi no-op di sana untuk arah
+> ini), tapi kalau workspace lain nanti nambah script `lint`/`format` yang auto-write,
+> pola unscoped ini bisa nulis ulang file di luar scope ticket backend — sudah kejadian
+> nyata untuk arah sebaliknya (frontend → `apps/api`, lihat `frontend.md`). Selalu scope
+> eksplisit ke `umkm-pos-api`.
 
 Jika ada perubahan `packages/shared-types`:
 ```bash
@@ -222,8 +229,8 @@ Kriteria FAIL (jangan lanjut jika ini ditemukan):
 ## Verify Checklist
 
 ```
-[ ] pnpm typecheck — PASS
-[ ] pnpm lint — PASS
+[ ] pnpm --filter umkm-pos-api build — PASS (mencakup typecheck)
+[ ] pnpm --filter umkm-pos-api lint — PASS
 [ ] pnpm --filter umkm-pos-api test — PASS (atau SKIP dengan alasan)
 [ ] merchant_id scope check — PASS
 [ ] RBAC coverage check — PASS
@@ -277,5 +284,6 @@ Jika masih FAIL setelah 3 attempt: tulis `Status: NEEDS_HUMAN` di verify-report.
 - Jangan buat `new PrismaClient()` — selalu inject via constructor
 - Jangan taruh business logic di controller
 - Jangan sentuh `apps/web/` kecuali update `packages/shared-types`
-- Jangan skip `pnpm typecheck` walau "yakin tidak ada error"
+- Jangan skip `pnpm --filter umkm-pos-api build` walau "yakin tidak ada type error"
+- Jangan jalankan `pnpm typecheck`/`pnpm lint` tanpa `--filter` — lihat catatan di § VERIFY
 - Jangan auto-merge branch — buat branch dan buka PR saja
