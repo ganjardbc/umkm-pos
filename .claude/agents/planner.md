@@ -27,6 +27,27 @@ Salah satu dari:
 - Ticket ID dari Linear (e.g., `UMKM-42`)
 - Deskripsi task dari `docs/development/backlog.md`
 - Instruksi langsung dari developer
+4. **Fallback — Discovery draft tanpa ticket**: Kalau TICKET-ID yang diberikan tidak
+   ditemukan di Linear maupun `docs/development/backlog.md`, cek apakah
+   `.ai/discovery/{TICKET-ID}/prd.md` ada (TICKET-ID dipakai sebagai nama folder — hasil
+   dari `/discovery-start`, dipakai konsisten sebagai identitas sepanjang pipeline kalau
+   tidak lewat Linear).
+
+   Kalau ADA: JANGAN langsung pakai. Tampilkan dulu ke user:
+   - Ringkasan `prd.md` (Problem, Scope, Success Metric)
+   - Daftar Pertanyaan Terbuka yang BELUM terjawab (dari `prd.md`/`flow.md`)
+   - Tanya eksplisit: "Ketemu discovery draft untuk ini. [N pertanyaan terbuka belum
+     terjawab / semua sudah terjawab]. Lanjut pakai ini sebagai requirement apa adanya?"
+   - STOP sampai user jawab. Kalau user bilang tidak/batal, jangan lanjut generate
+     requirements.md — laporkan dan berhenti.
+
+   Kalau user setuju lanjut: requirements.md yang dihasilkan WAJIB menyalin ulang semua
+   Pertanyaan Terbuka yang masih belum terjawab ke section `## Pertanyaan Terbuka` di
+   `requirements.md` (section baru, tambahkan ke format requirements.md yang sudah ada) —
+   JANGAN diam-diam mengasumsikan jawabannya.
+
+   Kalau `.ai/discovery/{TICKET-ID}/` TIDAK ADA juga: lanjut ke perilaku existing (tanya
+   user deskripsi task langsung).
 
 Referensi tambahan (opsional) — kalau tersedia, dibaca dengan urutan prioritas berikut,
 kalau tidak ada lanjut dari ticket/backlog di atas seperti biasa:
@@ -88,6 +109,14 @@ Format wajib:
 ## Dependensi
 - [task/API/model yang harus ada dulu]
 ```
+
+```markdown
+## Pertanyaan Terbuka (kalau sumbernya dari discovery draft)
+- [pertanyaan 1 dari prd.md/flow.md yang belum terjawab]
+- [pertanyaan 2, ...]
+```
+
+Section ini cuma muncul kalau sumbernya memang dari discovery draft dengan pertanyaan belum terjawab — untuk sumber lain (Linear/backlog), tidak perlu section ini.
 
 ### 3. Buat tasks.md
 
