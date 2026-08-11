@@ -277,3 +277,114 @@ Struktur workspace terverifikasi dari `pnpm-workspace.yaml` (`apps/*`, `packages
 **Cakupan scan.** Full-scan ini menelusuri seluruh service `apps/api` (24 file) beserta skema Prisma, dan pada `apps/web` menyasar lapisan lintas modul (`core/`, `helpers/`, `plugins/`) plus penelusuran kontrak API frontend↔backend — 40 path `/api/v1/*` yang dipanggil frontend semuanya cocok dengan route controller yang ada, tidak ditemukan drift kontrak. Isi 21 modul Vue tidak dibaca satu per satu; audit terfokus per modul frontend (khususnya `transaction`/`pos` dan `shift`) layak dijalankan terpisah lewat `/audit-scan apps/web/src/modules/<nama>`.
 
 **Verifikasi.** Semua temuan didasarkan pada pembacaan kode statis. Klaim performa (#5, #8, #9, #16, #19, #20) berasal dari pola query, bukan profiling runtime — besaran dampaknya perlu diukur dengan volume data produksi sebelum dijadikan prioritas relatif.
+
+---
+
+## Scan Tambahan: 15:53
+## Scope: (kosong) — full-scan seluruh modul aplikasi
+
+## Ringkasan
+
+Scan pertama hari ini mencatat sendiri bahwa isi 21 modul Vue tidak dibaca satu per satu. Scan tambahan ini menutup celah itu (modul `pos`, `transaction`, `shift`, `dashboard`, `product-lists`, `customer-catalog`, `user`, `role`, `outlet`, `merchants`, `stock`, `permission`, `notification`, `settings`, `reports`) plus `packages/*` dan `apps/landing`, dan menemukan satu regresi fungsional yang memblokir alur POS utama beserta beberapa fitur yang terlihat hidup di UI tapi tidak terhubung ke API.
+
+## Temuan Prioritas
+
+### Modul POS & Transaction (frontend)
+
+### 29. [BUG] Halaman POS tidak pernah memuat participant shift sehingga checkout selalu terkunci
+- **Lokasi:** `apps/web/src/modules/pos/pages/index.vue:53-78`, `apps/web/src/modules/transaction/pages/create.vue:67-96`, `apps/web/src/modules/shift/composables/useShift.ts:135-169`
+- **Kategori:** `BUG`
+- **Severity:** Critical
+- **Masalah:** Kedua halaman meneruskan `isShiftUserCanManage` ke `Cart.vue` dan `Product.vue` sebagai penentu boleh-tidaknya transaksi. `isShiftUserCanManage` bergantung pada `isUserInShift`, yang mencari user aktif di `shiftState.participants`. Kedua halaman hanya memanggil `fetchShift()` (`pos/pages/index.vue:69`, `create.vue:83`) dan tidak pernah memanggil `fetchShiftParticipants()`. Satu-satunya pemanggil `fetchShiftParticipants` adalah `modules/shift/pages/CurrentShift.vue` dan `modules/shift/components/ShiftStatus.vue` — bukan komponen yang dipakai halaman POS (POS memakai `modules/transaction/components/ShiftStatus.vue`, yang juga tidak fetch).
+- **Dampak:** Pada load bersih halaman POS, `participants` kosong → `isUserInShift` false → footer cart beserta tombol "Continue Payment" tidak dirender sama sekali (`Cart.vue:139`), `addProductToCart` menolak dengan toast "No active shift" (`Product.vue:222-229`), dan banner "You're not shift participant" muncul walau user adalah pemilik shift. Kasir hanya bisa bertransaksi kalau kebetulan membuka halaman Shift lebih dulu di sesi yang sama (state composable adalah singleton modul).
+- **Usulan:** Panggil `fetchShiftParticipants({ shiftId })` bersamaan dengan `fetchShift` di kedua halaman, atau pindahkan pemuatan participant ke dalam `fetchShift` sendiri supaya semua konsumen dapat state yang lengkap.
+
+### 30. [BUG] `isUserInShift` mengabaikan `participant_removed_at`
+- **Lokasi:** `apps/web/src/modules/shift/composables/useShift.ts:135-150`, konsumen di `apps/web/src/modules/transaction/components/ShiftStatus.vue:15`
+- **Kategori:** `BUG`
+- **Severity:** Moderate
+- **Masalah:** `GET /shifts/:id/participants` mengembalikan seluruh baris `shift_participants` tanpa filter (`apps/api/src/shifts/shifts.service.ts:600-606`), termasuk yang sudah punya `participant_removed_at`. `isUserInShift` hanya mencocokkan `user_id`, tanpa memeriksa `participant_removed_at` — berbeda dari `isUserRemovedFromShift` (baris 152-161) yang memeriksanya.
+- **Dampak:** Kasir yang sudah dikeluarkan dari shift tetap dianggap participant oleh banner status di `transaction/components/ShiftStatus.vue`, sehingga tidak mendapat peringatan apapun. Jalur checkout kebetulan terlindungi karena memakai `isShiftUserCanManage`, tapi kebenaran flag ini bergantung pada dua computed yang saling menutupi — rapuh terhadap perubahan berikutnya.
+- **Usulan:** Tambahkan syarat `!p.participant_removed_at` di `isUserInShift`, dan pertimbangkan menyediakan filter `include_removed` di endpoint participant supaya konsumen tidak perlu menyaring sendiri.
+
+### 31. [BUG] `participant_count` menghitung participant yang sudah dikeluarkan
+- **Lokasi:** `apps/api/src/shifts/shifts.service.ts:386`, `:544-546`, `:630-633`
+- **Kategori:** `BUG`
+- **Severity:** Moderate
+- **Masalah:** `participant_count` diambil dari `participantsWithCounts.length` (detail shift, baris 386) dan `total` participant dari panjang array yang sama (baris 632), sementara `shift_participants.count()` pada daftar shift (baris 544) juga tidak memfilter `participant_removed_at`. Setelah `closeShift` semua participant ditandai removed (baris 431-437), tapi count-nya tidak berubah.
+- **Dampak:** Angka "participant" di daftar shift, detail shift, dan halaman handoff selalu menghitung seluruh orang yang pernah masuk shift, bukan yang sedang aktif. Laporan operasional dan keputusan handoff dibuat dari angka yang salah.
+- **Usulan:** Tentukan satu definisi (`aktif` vs `pernah terlibat`) lalu terapkan konsisten: filter `participant_removed_at: null` untuk count aktif, dan bila keduanya dibutuhkan, kirim dua field terpisah.
+
+### 32. [BUG] Kotak pencarian di 9 modul tidak terhubung ke API
+- **Lokasi:** `apps/web/src/modules/user/pages/index.vue:243-245`, `role/pages/index.vue:221-223`, `merchants/pages/index.vue:214-216`, `outlet/pages/index.vue:239-241`, `stock/pages/index.vue`, `permission/pages/index.vue`, `shift/pages/HistoryShift.vue:143-145`, `transaction/pages/index.vue:420-422`, `transaction/components/Product.vue:189-191`
+- **Kategori:** `BUG`
+- **Severity:** Moderate
+- **Masalah:** Sembilan halaman merender `<UiSearch v-model="form.search" @input="search" />` tapi handler `search()`-nya hanya `console.log(form.value)`. Payload fetch (mis. `user/pages/index.vue:147-150`) tidak pernah menyertakan `form.search`. Hanya `product-categories/pages/index.vue:224-232` dan `product-lists/pages/index.vue:352-357` yang mengimplementasikan pencarian ber-debounce dengan benar.
+- **Dampak:** User mengetik di kotak pencarian dan daftar tidak berubah — termasuk pencarian produk di layar POS, tempat kasir paling butuh menemukan item cepat. Karena tidak ada pesan error, ini terbaca sebagai data hilang, bukan fitur yang belum jadi.
+- **Usulan:** Angkat pola debounce dari `product-categories` jadi composable bersama (mis. `useSearchFilter`) dan pakai di sembilan halaman itu; verifikasi tiap endpoint terkait memang menerima parameter `search`.
+
+### 33. [BUG] Cart POS tidak dibersihkan saat shift atau outlet berganti
+- **Lokasi:** `apps/web/src/modules/transaction/components/Cart.vue:483-490`, `apps/web/src/modules/transaction/stores-pos/actions.ts:58-81`
+- **Kategori:** `BUG`
+- **Severity:** Moderate
+- **Masalah:** Watcher `props.outletId` dan `props.shiftId` hanya memperbarui `transactionForm` dan memuat ulang daftar meja; isi cart (store Pinia yang persist selama SPA hidup) dibiarkan. `populateFromQueueEntry` (baris 63-81) juga menulis `stock_qty: product.stock_qty || 999` sehingga item dari antrean bisa dinaikkan sampai 999 tanpa acuan stok nyata.
+- **Dampak:** Item yang ditambahkan pada konteks outlet/shift sebelumnya ikut terkirim saat checkout di konteks baru, dengan `product_id` yang bisa saja tidak punya baris inventory di outlet tujuan. Kombinasi dengan default 999 membuat validasi stok sisi klien tidak berarti; penolakan baru terjadi di API (atau tidak sama sekali bila stok kebetulan cukup).
+- **Usulan:** Kosongkan cart saat `outletId`/`shiftId` berubah ke nilai berbeda yang non-kosong, dan hilangkan fallback 999 — ambil `stock_qty` dari produk yang sudah dimuat, atau tandai item sebagai belum tervalidasi.
+
+### 34. [BUG] `postCancelTransaction` mengirim opsi Axios sebagai request body
+- **Lokasi:** `apps/web/src/modules/transaction/services/api.ts:37-42`
+- **Kategori:** `BUG`
+- **Severity:** Moderate
+- **Masalah:** Signature `api.post(url, data, config)`. Fungsi ini memanggil `api.post(url, { ...(options || {}) })` — objek `options` masuk sebagai **body**, dan tidak ada argumen config sama sekali. Semua fungsi lain di file yang sama (`postTransaction:17-23`) memakai posisi argumen yang benar.
+- **Dampak:** Opsi request apapun yang dilewatkan pemanggil (mis. `signal`, `headers`, `timeout`) diam-diam dikirim sebagai payload pembatalan transaksi dan diabaikan sebagai konfigurasi. Saat ini pemanggil tidak melewatkan opsi sehingga hanya mengirim body kosong, jadi belum terlihat rusak — bug menunggu pemakaian pertama.
+- **Usulan:** Perbaiki jadi `api.post(url, {}, { ...(options || {}) })`, dan sisir file service lain untuk pola yang sama.
+
+### 35. [BUG] State shift singleton tidak pernah direset dan `loading`/`error`-nya tidak dibagikan
+- **Lokasi:** `apps/web/src/modules/shift/composables/useShift.ts:53-75`, `:77-84`, `:106-116`
+- **Kategori:** `BUG`
+- **Severity:** Moderate
+- **Masalah:** `shiftState` adalah singleton level modul. `setCurrentShift` memakai `Object.assign` sehingga field yang tidak ada di payload baru tetap memegang nilai shift sebelumnya (mis. `end_time` shift lama bertahan saat shift baru dibuka). Selain itu `shiftState.loading` dan `shiftState.error` didefinisikan tapi tidak pernah dipakai — `useShift()` membuat `loading`/`error` baru di tiap pemanggilan (baris 78-79), jadi indikator loading tiap komponen terisolasi meski state datanya bersama.
+- **Dampak:** Data shift basi bocor antar shift/outlet setelah handoff atau tutup-buka shift; komponen yang tidak memicu fetch sendiri (mis. `ParticipantManagement.vue:220`) menampilkan `loading` false padahal data sedang dimuat komponen lain.
+- **Usulan:** Sediakan `resetShiftState()` dan panggil sebelum memuat shift berbeda (atau ganti `Object.assign` dengan penggantian objek penuh); pindahkan `loading`/`error` ke `shiftState` agar konsisten dengan sisa state, atau hapus field mati itu.
+
+### 36. [TECH_DEBT] `device_id` dibuat ulang setiap mount komponen cart
+- **Lokasi:** `apps/web/src/modules/transaction/components/Cart.vue:290`
+- **Kategori:** `TECH_DEBT`
+- **Severity:** Moderate
+- **Masalah:** `device_id: \`device-${Date.now()}\`` dievaluasi saat komponen di-setup, jadi setiap kali halaman POS dibuka nilainya berbeda, dan tab berbeda menghasilkan nilai berbeda pula. Field ini dikirim bersama `is_offline: true` (baris 428) ke `POST /transactions`.
+- **Dampak:** `device_id` tidak bisa dipakai untuk tujuan aslinya — identifikasi perangkat pada alur offline/sync dan deduplikasi kiriman ulang. Data yang tersimpan di API jadi noise dengan kardinalitas setinggi jumlah page-load.
+- **Usulan:** Buat sekali dan simpan di localStorage (mis. `APP_DEVICE_ID`), pakai satu helper bersama untuk semua kiriman transaksi. Perlu keputusan juga soal `is_offline` yang di-hardcode `true` padahal kiriman jelas online.
+
+### 37. [BUG] Penambahan item melebihi stok gagal tanpa pesan apapun
+- **Lokasi:** `apps/web/src/modules/transaction/stores-pos/actions.ts:7-10`, `:31-38`, `:40-45`; pola sama di `apps/web/src/modules/customer-catalog/stores/actions.ts:79-82`, `:105-112`
+- **Kategori:** `BUG`
+- **Severity:** Moderate
+- **Masalah:** `addToCart`, `updateQuantity`, dan `incrementQuantity` membungkus perubahan dalam pengecekan batas stok; kalau batas terlampaui, blok `if` selesai tanpa aksi dan tanpa nilai balik. Pemanggil (`Cart.vue:337-343`, `Product.vue:231-239`) tidak punya cara membedakan sukses dari tolakan.
+- **Dampak:** Kasir menekan "+" atau mengetik jumlah dan angkanya tidak berubah tanpa penjelasan — terbaca sebagai UI macet. Pada layar pelanggan (`customer-catalog`) efeknya sama dan tidak ada staf yang bisa menjelaskan.
+- **Usulan:** Kembalikan status (atau lempar hasil) dari action ini dan tampilkan toast "stok tersisa N" di pemanggil; samakan perilakunya antara POS dan katalog pelanggan.
+
+## Temuan Non-Prioritas (dicatat, tidak diusulkan jadi task)
+
+- `TECH_DEBT`, `apps/web/src/modules/*/components/HelloWorld.vue` (12 file), Minor — sisa scaffold Hygen yang tidak dirender di manapun.
+- `TECH_DEBT`, `apps/web/src/modules/*/stores/actions.ts` (13 file) dan `getters.ts` (13 file), Minor — store hasil generator yang isinya hanya komentar `// Add your actions here`, termasuk modul yang punya state nyata (`dashboard`, `notification`, `transaction`).
+- `TECH_DEBT`, `packages/shared-utils/src/index.ts`, Minor — paket workspace berisi satu baris `export {}` dan tidak diimpor app manapun.
+- `TECH_DEBT`, `packages/shared-types/src/products/product.types.ts`, Minor — didokumentasikan di CLAUDE.md sebagai ekspor utama tapi tidak pernah diimpor; pemakaian nyata `shared-types` hanya `AuthUser`, `ServiceHealth`, dan tipe response.
+- `TECH_DEBT`, `src/utils/` (root repo), Minor — direktori kosong di luar `apps/` dan `packages/`, tidak tercakup `pnpm-workspace.yaml`.
+- `BUG`, `apps/web/src/modules/dashboard/pages/index.vue:295`, Minor — `getOutletComparison` dipanggil dengan `outlet_id` outlet aktif, padahal endpointnya untuk membandingkan antar-outlet.
+- `TECH_DEBT`, `apps/web/src/modules/dashboard/services/api.ts:45-53`, Minor — komentar menyebut "UUID v4" sedangkan regex-nya menerima UUID versi apapun.
+- `TECH_DEBT`, `apps/web/src/modules/transaction/components/Product.vue:167`, `:190`, `Cart.vue:325`, `:457`, Minor — `console.log`/`console.error` sebagai penanganan error di jalur POS, tanpa kanal log terpusat.
+- `TECH_DEBT`, `apps/web/src/helpers/auth.ts:20-21`, Minor — `setAuth` memutasi objek `data.user` milik pemanggil lewat `delete` sebelum menyimpannya.
+
+## Catatan
+
+**Hubungan dengan scan sebelumnya hari ini.** Temuan #29–#37 tidak tumpang tindih dengan #1–#28: scan pertama berfokus pada `apps/api` plus lapisan lintas modul `apps/web`, scan ini pada isi modul Vue. Dua temuan saling menguatkan dan sebaiknya dikerjakan berurutan: #33 (cart lintas outlet) bergantung pada model stok yang diluruskan di #25, dan #31 (count participant) menyentuh method yang sama dengan #16 (N+1 count shift) — kalau #16 dikerjakan lebih dulu, filter `participant_removed_at` di #31 ikut masuk sekalian.
+
+**Skala #29.** Ini satu-satunya temuan Critical di scan tambahan dan memblokir alur utama produk (kasir tidak bisa checkout dari halaman POS pada load bersih). Layak diverifikasi manual di browser lebih dulu sebelum dijadwalkan — ada kemungkinan alur produksi selalu melewati halaman Shift sehingga bug ini tertutupi di pemakaian sehari-hari, yang mengubah urgensinya tapi tidak mengubah bahwa state-nya salah.
+
+**Cakupan scan tambahan.** 263 file `.vue`/`.ts` di `apps/web/src/modules` (~25.000 baris) ditelusuri: seluruh store, composable, service, dan halaman utama tiap modul dibaca; komponen presentasional murni (chart, modal form) hanya disisir lewat pencarian pola. `apps/landing` diperiksa di tingkat struktur (halaman marketing statis, tanpa panggilan API selain form registrasi) dan tidak menghasilkan temuan. `packages/*` seluruhnya dibaca (54 baris tipe).
+
+**Verifikasi.** Semua temuan berbasis pembacaan kode statis, tanpa menjalankan aplikasi. #29, #30, #31, dan #32 masing-masing diverifikasi lintas file (frontend ke definisi endpoint backend-nya) untuk memastikan tidak ada pemuatan data alternatif yang terlewat.
+
+### Sensitive Data Exposure
+
+Tidak ada temuan baru pada scan tambahan ini. Temuan exposure dari scan sebelumnya (`password_hash` pada response transaksi, `guest_session_secret` pada response sesi pelanggan) tetap berlaku dan tidak dikonversi jadi ticket lewat jalur ini.
