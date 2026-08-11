@@ -1,5 +1,5 @@
 ---
-allowed-tools: Read, Write, Glob, Bash(ls:*), Task
+allowed-tools: Read, Write, Glob, Bash(ls:*), Bash(git status:*), Bash(git branch:*), Bash(git checkout:*), Task
 description: Mulai alur Discovery (Klaster 1) untuk satu fitur — PM Agent menulis prd.md + flow.md di .ai/discovery/{slug}/, tanpa membuat ticket
 argument-hint: [nama fitur, contoh: "checkout tanpa login"]
 ---
@@ -18,7 +18,23 @@ approval per-item.
 `$ARGUMENTS` — nama fitur dalam bahasa manusia. WAJIB diisi. Kalau kosong, tanya user nama
 fiturnya dan STOP sampai dijawab — jangan tebak fitur apa yang dimaksud.
 
-## 1. Bikin slug dan folder
+## 1. Siapkan branch
+
+1. Generate slug dari nama fitur (kebab-case).
+2. Cek branch `discovery/{slug}` sudah ada atau belum (`git branch --list`):
+   - **Belum ada** → `git checkout -b discovery/{slug}` dari branch aktif saat ini.
+   - **Sudah ada** → berarti discovery ini pernah dimulai sebelumnya. Checkout ke branch
+     itu (`git checkout discovery/{slug}`), JANGAN buat branch baru menimpa. Lanjut seperti
+     biasa — kalau folder `.ai/discovery/{slug}/` juga sudah ada, ini jadi kasus "lanjutkan
+     discovery yang belum selesai", bukan mulai dari nol.
+3. Kalau working directory tidak bersih (ada perubahan belum commit) SEBELUM checkout,
+   STOP dan laporkan ke user — jangan checkout branch baru dengan uncommitted changes yang
+   bisa ikut terbawa atau hilang.
+4. Command ini TIDAK melakukan push atau buat PR — itu keputusan manusia, dilakukan manual
+   setelah discovery dianggap selesai (biasanya setelah `handoff.md` ditulis oleh
+   `/discovery-to-ticket`).
+
+## 2. Bikin slug dan folder
 
 - Slug: dari `$ARGUMENTS`, lowercase-kebab-case, hanya `a-z0-9-` (contoh: "checkout tanpa
   login" jadi `checkout-tanpa-login`).
@@ -30,7 +46,7 @@ fiturnya dan STOP sampai dijawab — jangan tebak fitur apa yang dimaksud.
 - Konfirmasi slug ke user sebelum lanjut kalau hasil slugify-nya jauh berbeda dari nama yang
   diketik (mis. banyak karakter non-latin yang terbuang).
 
-## 2. Spawn PM Agent
+## 3. Spawn PM Agent
 
 Spawn PM Agent dengan slug sebagai konteks. Sumber kebenaran aturan agent ini adalah
 `.claude/agents/pm.md` — baca file itu dan patuhi isinya. Kalau file itu tidak ada, gunakan
@@ -49,7 +65,7 @@ PM Agent menulis `.ai/discovery/{slug}/prd.md` LEBIH DULU, dengan section wajib:
 Kalau `docs/product/feature-catalog.md` ada, baca dulu sebagai konteks — cek apakah fitur ini
 overlap dengan yang sudah ada (kalau ya, catat di `## Dependency`).
 
-## 3. PM Agent menilai kebutuhan UX Designer
+## 4. PM Agent menilai kebutuhan UX Designer
 
 Setelah `prd.md` selesai, PM Agent MENILAI SENDIRI dari deskripsi fitur: apakah fitur ini
 menyentuh permukaan user — yaitu ada UI/layar baru, atau alur interaksi user yang berubah.
@@ -76,7 +92,7 @@ punya dua pilihan:
 Tujuannya supaya keputusan ini bisa direview manusia, bukan black-box. Jangan skip section ini
 walau jawabannya terasa jelas.
 
-## 4. Struktur flow.md
+## 5. Struktur flow.md
 
 Siapapun yang menulisnya (PM Agent atau UX Designer Agent), `flow.md` punya section:
 
