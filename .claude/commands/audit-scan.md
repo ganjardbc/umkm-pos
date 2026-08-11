@@ -1,8 +1,11 @@
 ---
-allowed-tools: Read, Write, Grep, Glob, Bash
+allowed-tools: Read, Write, Bash
 description: Jalankan Auditor Agent scan read-only terhadap scope tertentu, hasilkan dokumen temuan (tidak membuat ticket)
-argument-hint: [scope, contoh: "apps/api/src/modules/rbac" atau "semua modul"]
+argument-hint: [scope, contoh: "apps/api/src/modules/auth" atau "semua modul"]
 ---
+
+> DRAFT hasil caf-initiator — review dan lengkapi sebelum dipakai, terutama bagian
+> yang ditandai TODO project-specific.
 
 # Audit Scan
 
@@ -12,8 +15,9 @@ buat ticket — itu tugas command terpisah `/audit-to-ticket`.**
 Ikuti scope dan aturan yang sama seperti agent definition di
 `.claude/agents/auditor.md` — kalau file itu ada, baca dan patuhi isinya
 sebagai sumber kebenaran utama. Kalau tidak ada, gunakan prinsip default:
-tools terbatas ke Read/Grep/Glob/Bash, tidak ada akses tulis ke sistem
-eksternal (Linear, GitHub, dst).
+tools terbatas ke Read + Bash read-only (`ls`, `grep`, `git blame`) plus Write
+HANYA untuk menyimpan laporan di `.ai/audits/`; tidak ada akses tulis ke kode
+maupun ke sistem eksternal (Linear, Jira, GitHub, dst).
 
 ## Scope
 
@@ -25,23 +29,36 @@ config sebelum mulai — jangan asumsi nama folder tanpa verifikasi).
 
 ## Yang Dicari
 
-Fokus pada pola-pola berikut (sesuaikan/tambah berdasarkan konteks project
-yang terdeteksi):
-- Query/endpoint yang tidak melakukan validasi scope tenant/outlet/merchant
-  (pola yang sudah terbukti jadi masalah nyata di project ini — lihat
-  riwayat HOTFIX-RBAC-CROSS-TENANT)
-- Guard/middleware permission yang di-comment atau dinonaktifkan sementara
-- Secret atau credential yang ter-hardcode di source
-- Raw SQL query tanpa parameterization
-- Endpoint publik yang seharusnya butuh autentikasi tapi tidak ada guard
-- Pola lain yang relevan dengan domain project — gunakan penilaian, tapi
-  JANGAN buat asumsi soal severity tanpa menyertakan bukti baris kode
+**Bug fungsional (dari perilaku kode, bukan asumsi):**
+- Logic yang tidak konsisten dengan dokumentasi/ADR/golden-example yang ada
+- Edge case yang terlihat tidak ditangani (null/undefined check hilang di path yang jelas
+  membutuhkannya, error handling yang silent-swallow tanpa log)
+- Kontrak API yang berubah tapi konsumennya (frontend/service lain) belum disesuaikan
+
+**Tech debt:**
+- Duplikasi logic yang seharusnya di-share (melanggar golden-example pattern yang sudah
+  didokumentasikan)
+- Kode yang menyimpang dari konvensi ADR tanpa catatan alasan
+- TODO/FIXME comment yang sudah lama tidak ditindaklanjuti (cek usia comment via `git blame`)
+
+**Performance (indikasi dari kode statis, bukan profiling runtime):**
+- Query di dalam loop (pola N+1)
+- Index yang jelas dibutuhkan dari pola query yang sering dipakai tapi belum ada
+- Payload response yang jelas berlebihan (mis. select semua kolom padahal cuma 2 yang dipakai)
+
+**Di luar scope Auditor CAF — JANGAN scan:**
+- Security scanning mendalam (secret, injection, auth bypass) DI LUAR scope Auditor CAF (lihat CAF.md § Klaster 4) — itu tanggung jawab security review terpisah. Kalau kepentok indikasi security serius secara insidental, tulis di `## Catatan` untuk perhatian manusia; jangan jadikan temuan prioritas dan jangan jadikan ticket lewat jalur ini.
+
+Gunakan penilaian untuk pola lain yang relevan dengan domain project (cek CLAUDE.md dan
+riwayat incident/hotfix kalau ada), tapi JANGAN menetapkan severity tanpa menyertakan bukti
+baris kode.
 
 ## Format Output
 
-Struktur output WAJIB sama dengan `.claude/agents/auditor.md` biar bisa
-diparse `/audit-to-ticket` (yang mencari heading `## Temuan Prioritas` dan
-mengabaikan `## Temuan Non-Prioritas`):
+Struktur output WAJIB sama dengan `.claude/agents/auditor.md` (lihat section
+`## Format Laporan` di file itu) biar bisa diparse `/audit-to-ticket` (yang
+mencari heading `## Temuan Prioritas` dan mengabaikan
+`## Temuan Non-Prioritas`):
 
 ```markdown
 ## Audit: <DATE>
@@ -56,7 +73,8 @@ mengabaikan `## Temuan Non-Prioritas`):
 
 ### 1. [KATEGORI] <judul singkat>
 - **Lokasi:** `path/to/file.ext:baris`
-- **Severity:** CRITICAL / HIGH
+- **Kategori:** `BUG` / `PERFORMANCE` / `TECH_DEBT` / `COVERAGE`
+- **Severity:** Critical / Moderate
 - **Masalah:** <deskripsi konkret, kenapa ini masalah>
 - **Dampak:** <konsekuensi kalau dibiarkan>
 - **Usulan:** <arah perbaikan singkat, bukan implementasi lengkap>
@@ -65,24 +83,26 @@ mengabaikan `## Temuan Non-Prioritas`):
 
 ## Temuan Non-Prioritas (dicatat, tidak diusulkan jadi task)
 
-- <kategori, lokasi file:line, severity MEDIUM/LOW — list singkat tanpa detail>
+- <kategori, lokasi file:line, severity Minor — list singkat tanpa detail>
 
 ## Catatan
 
-<hal yang perlu perhatian manusia — mis. butuh keputusan arsitektur, atau
-scope yang diminta ternyata lebih luas dari yang bisa di-cover>
+<hal yang perlu perhatian manusia — mis. butuh keputusan arsitektur, scope yang diminta
+ternyata lebih luas dari yang bisa di-cover, atau indikasi security yang keluar dari scope
+Auditor>
 ```
+
+Severity Critical / Moderate → Temuan Prioritas; Minor → Temuan
+Non-Prioritas. Kelompokkan temuan per modul/area di dalam tiap section.
 
 Berbeda dari `auditor.md`: **Temuan Prioritas TIDAK dibatasi jumlah (N)**.
 Auditor agent membatasi ke 5 karena scan seluruh repo (kontrol budget AI run
 mingguan); command ini scoped ke area yang eksplisit diminta user, jadi semua
-temuan CRITICAL/HIGH yang genuinely ditemukan di scope itu masuk ke Temuan
-Prioritas. Severity CRITICAL/HIGH → Temuan Prioritas, MEDIUM/LOW → Temuan
-Non-Prioritas.
+temuan Critical / Moderate yang genuinely ditemukan di scope itu masuk ke
+Temuan Prioritas.
 
-Kelompokkan temuan per modul/area di dalam tiap section. Jangan buat
-rekomendasi implementasi detail di command ini — itu keluar dari scope
-read-only audit.
+Jangan buat rekomendasi implementasi detail di command ini — itu keluar dari
+scope read-only audit.
 
 ## Simpan Hasil
 
@@ -92,8 +112,8 @@ Lokasi: `.ai/audits/<DATE>/audit-report-{scope-slug}.md`
 - `<DATE>`: tanggal hari ini, format YYYY-MM-DD (folder per tanggal, sama
   konvensi dengan agent `auditor.md`)
 - `{scope-slug}`: dari argument yang diberikan, disederhanakan jadi
-  lowercase-kebab-case (contoh: "apps/web/src/modules/transaction" jadi
-  "transaction-module"; "semua modul" jadi "full-scan")
+  lowercase-kebab-case (contoh: "apps/web/src/modules/auth" jadi
+  "auth-module"; "semua modul" jadi "full-scan")
 
 Nama file sengaja BUKAN `audit-report.md` polos — nama itu direservasi untuk
 output agent `auditor.md` (full-repo scan). Command ini scoped, jadi selalu
@@ -133,4 +153,4 @@ Verify: konfirmasi file benar-benar tertulis di path yang disebutkan
 ## Setelah Selesai
 
 Sarankan ke user untuk menjalankan `/audit-to-ticket` kalau mau convert
-temuan ini jadi ticket Linear (dengan approval per-item, bukan auto-create).
+temuan ini jadi ticket (dengan approval per-item, bukan auto-create).
