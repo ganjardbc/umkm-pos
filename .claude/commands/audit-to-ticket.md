@@ -45,6 +45,16 @@ Auditor Agent SENGAJA tidak boleh create ticket sendiri (lihat `.claude/agents/a
   tiap section "## Temuan Prioritas" yang ditemukan ke satu daftar untuk
   diproses. Abaikan "## Temuan Non-Prioritas" di section manapun (memang
   sengaja tidak diusulkan jadi task oleh Auditor).
+- Abaikan juga SELURUH isi "## Catatan" — termasuk subsection
+  "### Sensitive Data Exposure". Isinya sengaja dirutekan keluar dari jalur
+  ticket (lihat Batasan di bawah).
+- Kalau ada temuan di "## Temuan Prioritas"/"## Temuan Non-Prioritas" yang
+  ternyata soal exposure data sensitif/kredensial (password/password_hash,
+  token, secret, API key, session secret, PII yang seharusnya tidak publik) —
+  berarti lolos dari filter Auditor. JANGAN proses jadi ticket. Laporkan ke
+  user bahwa temuan itu di-skip karena salah tempat dan seharusnya ada di
+  "## Catatan" § "### Sensitive Data Exposure", tanpa mengutip
+  nilai/payload yang ter-expose.
 
 ### 2. Tampilkan tiap temuan satu per satu, minta keputusan eksplisit
 
@@ -116,6 +126,11 @@ Selesai. Dari N temuan prioritas:
 - JANGAN proses "Temuan Non-Prioritas" (severity Minor) — itu memang
   sengaja tidak diusulkan Auditor. Yang diproses hanya Critical / Moderate.
 - Kategori temuan yang valid hanya `BUG` / `PERFORMANCE` / `TECH_DEBT` / `COVERAGE`. Security scanning mendalam (secret, injection, auth bypass) DI LUAR scope Auditor CAF (lihat CAF.md § Klaster 4) — itu tanggung jawab security review terpisah. Kalau kepentok indikasi security serius secara insidental, tulis di `## Catatan` untuk perhatian manusia; jangan jadikan temuan prioritas dan jangan jadikan ticket lewat jalur ini.
+- JANGAN create ticket untuk temuan yang melibatkan exposure data sensitif/kredensial
+  (password/password_hash, token, secret, API key, session secret, PII yang seharusnya tidak
+  publik) — apapun kategori aslinya (`BUG` / `PERFORMANCE` / `TECH_DEBT` / `COVERAGE`), dan apapun section tempatnya ditulis.
+  Rutenya ke "## Catatan" § "### Sensitive Data Exposure" untuk keputusan manusia
+  di luar tracker. Penilaian pakai substansi temuan, bukan string match nama field.
 - JANGAN edit/hapus audit-report.md — file itu milik Auditor Agent, command ini
   read-only terhadapnya.
 - JANGAN buat folder `.ai/tasks/<TICKET-ID>/` — itu domain Planner Agent setelah

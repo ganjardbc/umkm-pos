@@ -49,6 +49,25 @@ config sebelum mulai — jangan asumsi nama folder tanpa verifikasi).
 **Di luar scope Auditor CAF — JANGAN scan:**
 - Security scanning mendalam (secret, injection, auth bypass) DI LUAR scope Auditor CAF (lihat CAF.md § Klaster 4) — itu tanggung jawab security review terpisah. Kalau kepentok indikasi security serius secara insidental, tulis di `## Catatan` untuk perhatian manusia; jangan jadikan temuan prioritas dan jangan jadikan ticket lewat jalur ini.
 
+**Aturan routing: sensitive-data-exposure (berlaku lintas kategori).**
+
+Sebelum menempatkan temuan ke "Temuan Prioritas" atau "Non-Prioritas", cek: apakah temuan ini
+melibatkan EXPOSURE data sensitif/kredensial (password/password_hash, token, secret, API key,
+session secret, atau PII yang seharusnya tidak publik) — baik ditemukan lewat scan bug
+fungsional, tech debt, maupun performance?
+
+Kalau YA — apapun kategori aslinya (`BUG` / `PERFORMANCE` / `TECH_DEBT` / `COVERAGE`) — pindahkan ke
+`## Catatan` § `### Sensitive Data Exposure`, BUKAN ke Temuan
+Prioritas/Non-Prioritas. Ini bukan kategori baru: klasifikasi kategori awalnya tetap ditulis,
+yang berubah cuma rute penanganannya.
+
+Tulis deskripsi secukupnya supaya actionable (lokasi file/baris, jenis data yang bocor, kategori
+asli) TANPA menyertakan nilai/payload nyata yang ter-expose.
+
+Temuan di subsection ini TIDAK dikonversi jadi ticket oleh `/audit-to-ticket` — perlakuannya
+sama dengan indikasi security lain yang sudah dikecualikan. Manusia yang memutuskan rute
+penanganannya di luar tracker biasa.
+
 Gunakan penilaian untuk pola lain yang relevan dengan domain project (cek CLAUDE.md dan
 riwayat incident/hotfix kalau ada), tapi JANGAN menetapkan severity tanpa menyertakan bukti
 baris kode.
@@ -58,7 +77,7 @@ baris kode.
 Struktur output WAJIB sama dengan `.claude/agents/auditor.md` (lihat section
 `## Format Laporan` di file itu) biar bisa diparse `/audit-to-ticket` (yang
 mencari heading `## Temuan Prioritas` dan mengabaikan
-`## Temuan Non-Prioritas`):
+`## Temuan Non-Prioritas` serta seluruh `## Catatan`):
 
 ```markdown
 ## Audit: <DATE>
@@ -90,10 +109,22 @@ mencari heading `## Temuan Prioritas` dan mengabaikan
 <hal yang perlu perhatian manusia — mis. butuh keputusan arsitektur, scope yang diminta
 ternyata lebih luas dari yang bisa di-cover, atau indikasi security yang keluar dari scope
 Auditor>
+
+### Sensitive Data Exposure
+
+<temuan exposure data sensitif/kredensial, apapun kategori aslinya — kosongkan kalau tidak ada>
+
+- **Lokasi:** `path/to/file.ext:baris`
+- **Kategori asli:** `BUG` / `PERFORMANCE` / `TECH_DEBT` / `COVERAGE`
+- **Data yang ter-expose:** <jenis data saja, mis. "hash password di response endpoint" —
+  JANGAN tulis nilai/payload nyatanya>
+- **Masalah:** <deskripsi singkat>
 ```
 
 Severity Critical / Moderate → Temuan Prioritas; Minor → Temuan
-Non-Prioritas. Kelompokkan temuan per modul/area di dalam tiap section.
+Non-Prioritas. Kelompokkan temuan per modul/area di dalam tiap section. Temuan
+sensitive-data-exposure masuk `## Catatan` § `### Sensitive Data Exposure`
+(aturan lengkap di section "Yang Dicari").
 
 Berbeda dari `auditor.md`: **Temuan Prioritas TIDAK dibatasi jumlah (N)**.
 Auditor agent membatasi ke 5 karena scan seluruh repo (kontrol budget AI run
