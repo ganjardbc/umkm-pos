@@ -17,9 +17,12 @@
       <template #header>  
         <div class="w-full flex flex-col md:flex-row gap-2 items-center justify-between">
           <div class="w-full flex items-center justify-between">
-            <h1 class="flex-1 text-lg font-semibold">
-              Transaction Information
-            </h1>
+            <div class="flex flex-1 items-center gap-2">
+              <h1 class="text-lg font-semibold">
+                Transaction Information
+              </h1>
+              <CopyInvoiceNumber :invoice-number="getInvoiceNumber(transactionDetail?.id)" />
+            </div>
             <Tag
               :value="transactionDetail?.is_cancelled ? 'Cancelled' : 'Active'"
               :severity="transactionDetail?.is_cancelled ? 'danger' : 'success'"
@@ -194,7 +197,7 @@
   />
 </template>
 <script lang="ts" setup>
-import { type ReceiptData } from '../utils/receiptGenerator';
+import { type ReceiptData, getInvoiceNumber } from '../utils/receiptGenerator';
 import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { getErrorMessage, getCurrency, formatDateTime, formatPrice } from '@/helpers/utils.ts';
@@ -205,6 +208,7 @@ import { getDetailTransaction, postCancelTransaction } from '@/modules/transacti
 import { PRINT, CANCEL } from '@/modules/transaction/services/rbac.ts';
 import { getOrderStatusLabel } from '@/modules/transaction/services/status-labels.ts';
 import ReceiptModal from '@/modules/transaction/components/ReceiptModal.vue';
+import CopyInvoiceNumber from '@/modules/transaction/components/CopyInvoiceNumber.vue';
 
 import UiCard from '@/components/UiCard.vue';
 import DataTable from 'primevue/datatable';

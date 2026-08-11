@@ -23,6 +23,11 @@ export interface ReceiptData {
   }>;
 }
 
+export const getInvoiceNumber = (id?: string | null): string => {
+  if (!id) return '';
+  return id.slice(0, 8).toUpperCase();
+};
+
 const formatDate = (dateString: string): string => {
   if (!dateString) return '';
   const date = new Date(dateString);
@@ -83,7 +88,7 @@ export const generateReceiptHTML = (transaction: ReceiptData): string => {
           font-size: 12px;
           color: #999;
           margin: 8px 0 0 0;
-        ">Receipt #${transaction?.id?.slice(0, 8).toUpperCase()}</p>
+        ">Receipt #${getInvoiceNumber(transaction?.id)}</p>
       </div>
 
       <!-- Transaction Info -->

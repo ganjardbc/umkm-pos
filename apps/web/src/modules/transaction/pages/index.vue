@@ -62,7 +62,7 @@
               #{{ getNoTable(index, pagination.page, pagination.rows) }}
             </p>
           </div>
-          <div class="flex shrink-0 gap-1">
+          <div class="flex shrink-0 items-center gap-1">
             <Tag
               :value="trx.is_cancelled ? 'Cancelled' : 'Active'"
               :severity="trx.is_cancelled ? 'danger' : 'info'"
@@ -76,6 +76,8 @@
             />
           </div>
         </div>
+
+        <CopyInvoiceNumber :invoice-number="getInvoiceNumber(trx.id)" />
 
         <Divider class="my-0!" />
 
@@ -179,7 +181,7 @@
 </template>
 
 <script setup lang="ts">
-import { type ReceiptData } from '../utils/receiptGenerator';
+import { type ReceiptData, getInvoiceNumber } from '../utils/receiptGenerator';
 import { onMounted, ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { getNoTable, getErrorMessage, getCurrency, formatDateTime } from '@/helpers/utils.ts';
@@ -194,6 +196,7 @@ import UiPagination from '@/components/UiPagination.vue';
 import UiLoading from '@/components/UiLoading.vue';
 import ReceiptModal from '@/modules/transaction/components/ReceiptModal.vue';
 import PaymentModal from '@/modules/transaction/components/PaymentModal.vue';
+import CopyInvoiceNumber from '@/modules/transaction/components/CopyInvoiceNumber.vue';
 import { READ, PRINT, CANCEL, UPDATE_STATUS } from '@/modules/transaction/services/rbac.ts';
 import { getOrderStatusLabel } from '@/modules/transaction/services/status-labels.ts';
 import { PREFIX_ROUTE_NAME } from '@/modules/transaction/services/constants.ts';
