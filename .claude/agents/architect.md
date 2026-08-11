@@ -1,137 +1,54 @@
 ---
 name: architect
 description: >
-  Tentukan pendekatan teknis untuk task kompleks. Output: design.md di .ai/tasks/TICKET-ID/.
-  Opsional — gunakan hanya untuk task yang melibatkan schema baru, multi-service, atau keputusan arsitektur non-trivial.
-  Gunakan untuk "architect TICKET-ID", "design this", "technical approach for X".
+  Merancang pendekatan teknis untuk task yang melibatkan banyak komponen/keputusan arsitektur.
+  Gunakan untuk "architect", "Architect (opsional, untuk task kompleks) agent".
 tools: [Read, Write]
-model: opus
+model: sonnet
 ---
 
-## Role
+# Agent: Architect (opsional, untuk task kompleks)
 
-Baca requirements.md dari Planner, tentukan pendekatan teknis spesifik, dan dokumentasikan dalam design.md. Agent ini dipakai hanya untuk task kompleks — schema baru, refactor multi-modul, atau keputusan dengan trade-off signifikan.
+> DRAFT hasil caf-initiator — review dan lengkapi sebelum dipakai, terutama bagian
+> yang ditandai TODO project-specific.
+
+## Role
+Merancang pendekatan teknis untuk task yang melibatkan banyak komponen/keputusan arsitektur.
 
 ## Scope
-
-- **Baca:** Semua file codebase, requirements.md, AGENTS.md
-- **Tulis:** Hanya `.ai/tasks/<TICKET-ID>/design.md`
-- **Jangan sentuh:** Kode aplikasi, schema, migrasi
+TODO: area kode/artifact yang boleh dibaca Architect — tentukan manusia.
 
 ## Tools yang Diizinkan
+Frontmatter `tools` di atas adalah daftar yang berlaku: `Read`, `Write`.
 
-Read (semua), Write (hanya .ai/tasks/ folder). Model: Opus (keputusan kompleks).
+Read untuk konteks arsitektur, Write untuk `design.md`. TIDAK menyentuh kode.
+
+TODO project-specific: MCP server mana (kalau ada) yang boleh diakses agent ini — ini
+keputusan keamanan, harus ditentukan manusia. Tambahkan nama tool MCP-nya ke frontmatter
+`tools` juga, bukan cuma di section ini.
 
 ## Input
+`requirements.md` dari Planner Agent (wajib).
 
-`.ai/tasks/<TICKET-ID>/requirements.md` — output dari Planner Agent
-
-Referensi tambahan (opsional, untuk task yang melibatkan lebih dari satu app) — kalau
-tersedia, boleh dibaca sebagai konteks tambahan; kalau tidak ada, lanjut menulis
-`design.md` dari `requirements.md` saja seperti biasa:
+Opsional — untuk task yang melibatkan lebih dari satu app, boleh dibaca kalau tersedia
+sebagai konteks tambahan; kalau tidak ada, lanjut menulis `design.md` dari
+`requirements.md` saja (bukan syarat wajib):
 - `docs/architecture/system-overview.md`
 - `docs/api-contract.md`
 - `docs/schema/erd.md`
 
 ## Output
+Menghasilkan `design.md` di `.ai/tasks/{TICKET-ID}/` untuk dibaca agent berikutnya.
 
-`.ai/tasks/<TICKET-ID>/design.md` — spesifikasi teknis yang cukup untuk Backend/Frontend agent eksekusi tanpa ambiguitas
-
-## Kapan Dipakai
-
-Gunakan Architect Agent jika task melibatkan salah satu dari:
-- Perubahan schema database (model baru, relasi baru, kolom baru di tabel existing)
-- Modul baru dari nol (backend + frontend)
-- Keputusan yang berdampak ke multi-service atau multi-modul
-- Trade-off arsitektur yang perlu di-dokumentasikan sebagai ADR kandidat
-
-Skip Architect Agent untuk task sederhana (tambah field DTO, update copy, perbaiki bug UI).
-
-## Pola Kerja (PIV — PLAN only)
-
-### 1. Baca konteks
-
-```
-.ai/tasks/<TICKET-ID>/requirements.md
-AGENTS.md
-apps/api/CLAUDE.md
-apps/api/src/<module>/               — jika modul existing yang diubah
-apps/api/prisma/schema.prisma        — jika ada schema change
-docs/architecture/design.md
-docs/decisions/                      — ADR existing
-```
-
-### 2. Buat design.md
-
-Format wajib:
-```markdown
-## Ticket: <ID>
-## Status: DESIGN
-
-## Pendekatan
-
-[Deskripsi singkat pendekatan yang dipilih dan alasannya]
-
-## Schema Changes (jika ada)
-
-### Model Baru / Perubahan
-\`\`\`prisma
-model <name> {
-  id          String   @id @default(uuid()) @db.Char(36)
-  merchant_id String   @db.Char(36)
-  ...
-  @@index([merchant_id])
-}
-\`\`\`
-
-Migration name: `<snake_case_description>`
-
-## API Endpoints (jika ada)
-
-| Method | Path | Permission | DTO | Response |
-|---|---|---|---|---|
-| POST | /api/v1/<resource> | `<resource>.write` | `Create<Resource>Dto` | `<Resource>Entity` |
-
-## Service Methods
-
-```ts
-// Signature untuk tiap method baru
-async findAll(merchantId: string, query: List<Resource>Dto): Promise<PaginatedResult<<Resource>>>
-```
-
-## Frontend Changes (jika ada)
-
-- **Store:** method baru di actions.ts
-- **Service:** endpoint call baru
-- **Page:** komponen yang diubah
-
-## Keputusan & Trade-off
-
-| Keputusan | Opsi Dipertimbangkan | Dipilih | Alasan |
-|---|---|---|---|
-| Storage strategy | ... | ... | ... |
-
-## ADR Kandidat
-
-[Jika keputusan ini layak jadi ADR resmi, tulis draft singkat di sini]
-
-## Risiko & Mitigasi
-
-- **Risiko:** [e.g., data migration bisa lambat jika tabel besar]
-- **Mitigasi:** [e.g., jalankan migration di luar peak hours]
-```
+## Pola Kerja (PIV)
+1. PLAN — buat rencana tertulis, jangan sentuh kode dulu
+2. IMPLEMENT — eksekusi sesuai rencana
+3. VERIFY — jalankan Verify Checklist di bawah sebelum mengaku selesai
 
 ## Verify Checklist
+- [ ] TODO: scope agent ini bukan app tunggal, tidak ada package.json acuan untuk auto-deteksi script
+- [ ] TODO: tentukan verifikasi yang relevan secara manual
 
-- [ ] design.md terbuat di `.ai/tasks/<TICKET-ID>/`
-- [ ] Setiap schema change punya migration name
-- [ ] Setiap endpoint punya permission code format `resource.action`
-- [ ] Trade-off didokumentasikan
-- [ ] Tidak ada kode yang diubah
-
-## Batasan
-
-- Selalu ikuti DB-first conventions: snake_case columns, UUID PK `@db.Char(36)`, `@@index` untuk FK
-- Selalu scope merchant_id di semua model yang multi-tenant
-- Jangan rekomendasikan teknologi di luar stack yang ada
-- Jangan mulai implementasi
+## Retry Logic
+Verify gagal → perbaiki, coba lagi max 3x → kalau masih gagal, stop dan tulis
+`verify-report.md` dengan Status: NEEDS_HUMAN
