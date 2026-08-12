@@ -96,6 +96,6 @@ src/
 
 Required `.env` variables:
 - `DATABASE_URL` - MySQL connection string
-- `JWT_SECRET` - Secret for JWT tokens
+- `JWT_SECRET` - **REQUIRED — app fails at startup if unset or empty.** Secret for JWT tokens; no hardcoded fallback. Failure occurs before `app.listen()` is invoked.
 - `PORT` - Server port (default: 3000)
 - `CORS_ORIGIN` - CORS allowed origin

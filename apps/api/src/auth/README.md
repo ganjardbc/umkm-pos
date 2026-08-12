@@ -357,11 +357,14 @@ DATABASE_URL=mysql://root:@localhost:3306/db_umkm_pos
 
 ```typescript
 // auth.module.ts
-JwtModule.register({
-  secret: process.env.JWT_SECRET || 'dev_secret_change_me_in_production_2026',
-  signOptions: {
-    expiresIn: '7d', // 7 days
-  },
+JwtModule.registerAsync({
+  inject: [ConfigService],
+  useFactory: (config: ConfigService) => ({
+    secret: config.getOrThrow<string>('JWT_SECRET'), // no fallback — app fails fast at startup if unset
+    signOptions: {
+      expiresIn: '7d', // 7 days
+    },
+  }),
 })
 ```
 

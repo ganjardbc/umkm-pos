@@ -18,9 +18,7 @@ import { UploadsModule } from '../uploads/uploads.module';
     JwtModule.registerAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
-        secret:
-          config.get<string>('JWT_SECRET') ||
-          'dev_secret_change_me_in_production_2026',
+        secret: config.getOrThrow<string>('JWT_SECRET'),
         signOptions: {
           expiresIn: '7d', // 7 days
         },

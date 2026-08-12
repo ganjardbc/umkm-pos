@@ -23,12 +23,14 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { StoreTablesModule } from './store-tables/store-tables.module';
 import { CustomerCatalogModule } from './customer-catalog/customer-catalog.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
+import { validateEnv } from './config/env-validation';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
+      validate: validateEnv,
     }),
     DatabaseModule,
     AuthModule,
