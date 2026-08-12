@@ -6,6 +6,8 @@ export interface CartItem {
 	stock_qty: number;
 	thumbnail: string | null;
 	category: string;
+	discount_type?: 'percentage' | 'fixed' | null;
+	discount_value?: number | null;
 }
 
 export function state() {
@@ -13,3 +15,4 @@ export function state() {
 		cartItems: [] as CartItem[],
 	};
 }
+

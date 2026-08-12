@@ -407,6 +407,9 @@ export class TransactionsService {
           product_name_snapshot: item.product_name_snapshot,
           price_snapshot: item.price_snapshot,
           qty: item.qty,
+          discount_type: item.discount_type ?? null,
+          discount_value: item.discount_value ?? null,
+          discount_amount: item.discount_amount ?? 0,
           subtotal: item.subtotal,
           customer_note: item.customer_note ?? null,
           created_by: userId,
@@ -585,6 +588,9 @@ export class TransactionsService {
       product_name_snapshot: string;
       price_snapshot: number;
       qty: number;
+      discount_type?: 'percentage' | 'fixed' | null;
+      discount_value?: number | null;
+      discount_amount: number;
       subtotal: number;
       stock_after: number;
       customer_note?: string;
@@ -605,7 +611,47 @@ export class TransactionsService {
       }
 
       const price = Number(product.price);
-      const subtotal = price * item.qty;
+      const grossSubtotal = price * item.qty;
+      let discountAmount = 0;
+      let discountType: 'percentage' | 'fixed' | null = null;
+      let discountValue: number | null = null;
+
+      if (item.discount_type) {
+        if (item.discount_type === 'percentage') {
+          const pct = Number(item.discount_value ?? 0);
+          if (pct < 0 || pct > 100 || Number.isNaN(pct)) {
+            throw new BadRequestException(
+              `Invalid discount percentage for "${product.name}". Must be between 0 and 100`,
+            );
+          }
+          discountType = 'percentage';
+          discountValue = pct;
+          discountAmount = Number(((grossSubtotal * pct) / 100).toFixed(2));
+        } else if (item.discount_type === 'fixed') {
+          const nominal = Number(item.discount_value ?? 0);
+          if (nominal < 0 || Number.isNaN(nominal)) {
+            throw new BadRequestException(
+              `Invalid fixed discount for "${product.name}". Must be non-negative`,
+            );
+          }
+          if (nominal > grossSubtotal) {
+            throw new BadRequestException(
+              `Fixed discount for "${product.name}" cannot exceed gross subtotal of ${grossSubtotal}`,
+            );
+          }
+          discountType = 'fixed';
+          discountValue = nominal;
+          discountAmount = Number(nominal.toFixed(2));
+        }
+      }
+
+      const subtotal = Number((grossSubtotal - discountAmount).toFixed(2));
+      if (subtotal < 0) {
+        throw new BadRequestException(
+          `Subtotal for "${product.name}" cannot be negative`,
+        );
+      }
+
       totalAmount += subtotal;
 
       itemsData.push({
@@ -613,11 +659,16 @@ export class TransactionsService {
         product_name_snapshot: product.name,
         price_snapshot: price,
         qty: item.qty,
+        discount_type: discountType,
+        discount_value: discountValue,
+        discount_amount: discountAmount,
         subtotal,
         stock_after: outletInventory.stock_qty - item.qty,
         customer_note: item.customer_note,
       });
     }
+
+    totalAmount = Number(totalAmount.toFixed(2));
 
     let cashReceived: number | null = null;
     let changeAmount: number | null = null;

@@ -142,6 +142,17 @@
               {{ slotProps.data.qty }}
             </template>
           </Column>
+          <Column field="discount_amount" header="Diskon">
+            <template #body="slotProps">
+              <div v-if="Number(slotProps.data.discount_amount || 0) > 0" class="text-red-500">
+                <span>-{{ getCurrency(slotProps.data.discount_amount) }}</span>
+                <span class="text-xs text-gray-400 block">
+                  ({{ slotProps.data.discount_type === 'percentage' ? `${slotProps.data.discount_value}%` : 'Nominal' }})
+                </span>
+              </div>
+              <span v-else class="text-gray-400">-</span>
+            </template>
+          </Column>
           <Column field="subtotal" header="Subtotal" class="min-w-28">
             <template #body="slotProps">
               {{ getCurrency(slotProps.data.subtotal) }}

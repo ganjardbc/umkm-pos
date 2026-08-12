@@ -2,6 +2,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsArray,
   IsBoolean,
+  IsIn,
   IsInt,
   IsNumber,
   IsNotEmpty,
@@ -28,6 +29,24 @@ export class TransactionItemInputDto {
   @IsInt()
   @Min(1)
   qty: number;
+
+  @ApiPropertyOptional({
+    example: 'percentage',
+    enum: ['percentage', 'fixed'],
+    description: 'Discount type for this item',
+  })
+  @IsOptional()
+  @IsIn(['percentage', 'fixed'])
+  discount_type?: 'percentage' | 'fixed' | null;
+
+  @ApiPropertyOptional({
+    example: 10,
+    description: 'Discount value (e.g. 10 for 10% or 5000 for Rp 5.000)',
+  })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  discount_value?: number | null;
 
   @ApiPropertyOptional({
     example: 'Tanpa bawang',

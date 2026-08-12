@@ -368,6 +368,12 @@ export const printReceipt = async (transaction: ReceiptData, paperSize: '58mm' |
     const leftText = `  ${item.qty}x ${formatCurrency(item.price_snapshot)}`;
     const rightText = formatCurrency(item.subtotal);
     encoder.line(formatRow(leftText, rightText, columns));
+
+    if (Number(item.discount_amount || 0) > 0) {
+      const discLabel = `  -Disc (${item.discount_type === 'percentage' ? `${item.discount_value}%` : 'Rp'})`;
+      const discVal = `-${formatCurrency(item.discount_amount || 0)}`;
+      encoder.line(formatRow(discLabel, discVal, columns));
+    }
   }
   encoder.line('-'.repeat(columns));
   

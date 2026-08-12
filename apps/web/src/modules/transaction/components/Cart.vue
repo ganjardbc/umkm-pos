@@ -82,8 +82,22 @@
                 <div class="text-sm text-gray-400">
                   {{ item.category }}
                 </div>
-                <div class="text-sm font-semibold text-primary dark:text-primary-400 mt-1">
-                  {{ getCurrency(item.price) }}
+                <div class="flex items-center gap-2 mt-1">
+                  <span
+                    class="text-sm font-semibold"
+                    :class="{
+                      'line-through text-gray-400': item.discount_type && item.discount_value,
+                      'text-primary dark:text-primary-400': !item.discount_type || !item.discount_value
+                    }"
+                  >
+                    {{ getCurrency(item.price) }}
+                  </span>
+                  <span
+                    v-if="item.discount_type && item.discount_value"
+                    class="text-xs px-2 py-0.5 rounded bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 font-medium"
+                  >
+                    {{ item.discount_type === 'percentage' ? `${item.discount_value}% OFF` : `Potongan ${getCurrency(item.discount_value)}` }}
+                  </span>
                 </div>
               </div>
               
@@ -120,13 +134,48 @@
               </div>
             </div>
             
-            <Divider />
-            
-            <div class="flex items-center justify-between text-sm">
-              <span class="text-gray-800 dark:text-gray-400">Subtotal</span>
-              <span class="font-semibold">
-                {{ getCurrency(Number(item.price) * item.quantity) }}
-              </span>
+            <Divider class="my-2!" />
+
+            <div class="flex items-center justify-between">
+              <Button
+                v-if="!item.discount_type || !item.discount_value"
+                size="small"
+                variant="text"
+                severity="secondary"
+                icon="pi pi-tag"
+                label="Tambah Diskon"
+                class="p-0! text-xs font-medium"
+                @click="openDiscountDialog(item)"
+              />
+              <div v-else class="flex items-center gap-2">
+                <Button
+                  size="small"
+                  variant="text"
+                  severity="info"
+                  icon="pi pi-pencil"
+                  label="Ubah Diskon"
+                  class="p-0! text-xs font-medium"
+                  @click="openDiscountDialog(item)"
+                />
+                <Button
+                  size="small"
+                  variant="text"
+                  severity="danger"
+                  icon="pi pi-times"
+                  label="Hapus"
+                  class="p-0! text-xs font-medium"
+                  @click="removeDiscount(item.id)"
+                />
+              </div>
+
+              <div class="text-right">
+                <div v-if="item.discount_type && item.discount_value" class="text-xs text-red-500">
+                  -{{ getCurrency(posStore.getItemDiscountAmount(item)) }}
+                </div>
+                <div class="text-sm font-semibold">
+                  {{ getCurrency(posStore.getItemSubtotal(item)) }}
+                </div>
+              </div>
             </div>
           </div>
         </UiCard>
@@ -238,7 +287,113 @@
     </UiCard>
   </div>
 
-  <PaymentModal
+    <!-- Discount Modal -->
+    <Dialog
+      v-model:visible="showDiscountModal"
+      modal
+      header="Atur Diskon Item"
+      :style="{ width: '90vw', maxWidth: '420px' }"
+    >
+      <div v-if="selectedItemForDiscount" class="space-y-4">
+        <div class="p-3 bg-gray-50 dark:bg-dark-secondary rounded-lg">
+          <div class="font-semibold text-sm">{{ selectedItemForDiscount.name }}</div>
+          <div class="text-xs text-gray-400 mt-0.5">
+            {{ selectedItemForDiscount.quantity }} x {{ getCurrency(selectedItemForDiscount.price) }} = {{ getCurrency(Number(selectedItemForDiscount.price) * selectedItemForDiscount.quantity) }}
+          </div>
+        </div>
+
+        <div class="flex border-b border-gray-200 dark:border-gray-700">
+          <button
+            type="button"
+            class="flex-1 py-2 text-sm font-semibold text-center border-b-2 transition-colors"
+            :class="discountForm.type === 'percentage' ? 'border-primary text-primary dark:text-primary-400' : 'border-transparent text-gray-500'"
+            @click="discountForm.type = 'percentage'"
+          >
+            Persen (%)
+          </button>
+          <button
+            type="button"
+            class="flex-1 py-2 text-sm font-semibold text-center border-b-2 transition-colors"
+            :class="discountForm.type === 'fixed' ? 'border-primary text-primary dark:text-primary-400' : 'border-transparent text-gray-500'"
+            @click="discountForm.type = 'fixed'"
+          >
+            Nominal (Rp)
+          </button>
+        </div>
+
+        <div class="space-y-2">
+          <label class="text-xs font-semibold text-gray-600 dark:text-gray-300">
+            {{ discountForm.type === 'percentage' ? 'Persentase Diskon (0 - 100%)' : 'Nominal Potongan (Rp)' }}
+          </label>
+          <InputNumber
+            v-if="discountForm.type === 'percentage'"
+            v-model="discountForm.value"
+            :min="0"
+            :max="100"
+            suffix="%"
+            fluid
+            placeholder="Contoh: 10"
+          />
+          <InputNumber
+            v-else
+            v-model="discountForm.value"
+            :min="0"
+            :max="Number(selectedItemForDiscount.price) * selectedItemForDiscount.quantity"
+            mode="currency"
+            currency="IDR"
+            locale="id-ID"
+            fluid
+            placeholder="Contoh: 5.000"
+          />
+        </div>
+
+        <!-- Preview Calculation -->
+        <div class="p-3 border rounded-lg border-gray-200 dark:border-gray-700 space-y-1.5 text-xs">
+          <div class="flex justify-between">
+            <span class="text-gray-500">Subtotal Kotor:</span>
+            <span>{{ getCurrency(Number(selectedItemForDiscount.price) * selectedItemForDiscount.quantity) }}</span>
+          </div>
+          <div class="flex justify-between text-red-500 font-medium">
+            <span>Potongan Diskon:</span>
+            <span>-{{ getCurrency(previewDiscountAmount) }}</span>
+          </div>
+          <Divider class="my-1!" />
+          <div class="flex justify-between font-bold text-sm">
+            <span>Subtotal Akhir:</span>
+            <span class="text-primary dark:text-primary-400">{{ getCurrency(previewSubtotal) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <template #footer>
+        <div class="flex justify-between w-full">
+          <Button
+            label="Hapus Diskon"
+            severity="danger"
+            variant="text"
+            size="small"
+            @click="onClearItemDiscount"
+          />
+          <div class="flex gap-2">
+            <Button
+              label="Batal"
+              severity="secondary"
+              variant="outlined"
+              size="small"
+              @click="showDiscountModal = false"
+            />
+            <Button
+              label="Terapkan"
+              size="small"
+              :disabled="isPreviewInvalid"
+              @click="onApplyDiscount"
+            />
+          </div>
+        </div>
+      </template>
+    </Dialog>
+
+    <PaymentModal
     v-model:visibility="showPaymentModal"
     v-model:payment-method="transactionForm.payment_method"
     v-model:is-offline="transactionForm.is_offline"
@@ -259,6 +414,8 @@ import { showConfirm, showToast } from '@/helpers/toast.ts';
 import { getOutletTables, postTransaction } from '@/modules/transaction/services/api.ts';
 import UiCard from '@/components/UiCard.vue';
 import PaymentModal from '@/modules/transaction/components/PaymentModal.vue';
+import Dialog from 'primevue/dialog';
+import InputNumber from 'primevue/inputnumber';
 
 const props = defineProps({
   isUserInShift: {
@@ -280,6 +437,78 @@ const emit = defineEmits(['checkout-success']);
 const { show, hide } = useGlobalLoading();
 const posStore = usePosStore();
 const isCheckingOut = ref(false);
+
+const showDiscountModal = ref(false);
+const selectedItemForDiscount = ref<any>(null);
+const discountForm = ref<{
+  type: 'percentage' | 'fixed';
+  value: number | null;
+}>({
+  type: 'percentage',
+  value: null,
+});
+
+const openDiscountDialog = (item: any) => {
+  selectedItemForDiscount.value = item;
+  discountForm.value = {
+    type: item.discount_type || 'percentage',
+    value: item.discount_value !== undefined && item.discount_value !== null ? Number(item.discount_value) : null,
+  };
+  showDiscountModal.value = true;
+};
+
+const previewDiscountAmount = computed(() => {
+  if (!selectedItemForDiscount.value || !discountForm.value.value) return 0;
+  const gross = Number(selectedItemForDiscount.value.price) * selectedItemForDiscount.value.quantity;
+  if (discountForm.value.type === 'percentage') {
+    return Number(((gross * discountForm.value.value) / 100).toFixed(2));
+  }
+  return Math.min(gross, discountForm.value.value);
+});
+
+const previewSubtotal = computed(() => {
+  if (!selectedItemForDiscount.value) return 0;
+  const gross = Number(selectedItemForDiscount.value.price) * selectedItemForDiscount.value.quantity;
+  return Math.max(0, gross - previewDiscountAmount.value);
+});
+
+const isPreviewInvalid = computed(() => {
+  if (!discountForm.value.value || discountForm.value.value <= 0) return false;
+  if (discountForm.value.type === 'percentage' && (discountForm.value.value < 0 || discountForm.value.value > 100)) {
+    return true;
+  }
+  if (!selectedItemForDiscount.value) return true;
+  const gross = Number(selectedItemForDiscount.value.price) * selectedItemForDiscount.value.quantity;
+  if (discountForm.value.type === 'fixed' && (discountForm.value.value < 0 || discountForm.value.value > gross)) {
+    return true;
+  }
+  return false;
+});
+
+const onApplyDiscount = () => {
+  if (!selectedItemForDiscount.value) return;
+  if (!discountForm.value.value || discountForm.value.value <= 0) {
+    posStore.removeItemDiscount(selectedItemForDiscount.value.id);
+  } else {
+    posStore.setItemDiscount(
+      selectedItemForDiscount.value.id,
+      discountForm.value.type,
+      discountForm.value.value,
+    );
+  }
+  showDiscountModal.value = false;
+};
+
+const onClearItemDiscount = () => {
+  if (selectedItemForDiscount.value) {
+    posStore.removeItemDiscount(selectedItemForDiscount.value.id);
+  }
+  showDiscountModal.value = false;
+};
+
+const removeDiscount = (productId: string) => {
+  posStore.removeItemDiscount(productId);
+};
 
 const transactionForm = ref({
   outlet_id: '',
@@ -432,7 +661,9 @@ const onCheckout = async () => {
       change_amount: isCashPayment.value ? cashChangeAmount.value : undefined,
       items: posStore.cartItems.map(item => ({
         product_id: item.id,
-        qty: item.quantity
+        qty: item.quantity,
+        discount_type: item.discount_type || undefined,
+        discount_value: item.discount_value ? Number(item.discount_value) : undefined,
       }))
     };
     

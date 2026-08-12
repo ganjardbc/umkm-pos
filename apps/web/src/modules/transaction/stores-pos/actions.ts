@@ -59,6 +59,22 @@ export const actions = {
 		(this as any).cartItems = [];
 	},
 
+	setItemDiscount(productId: string, discount_type: 'percentage' | 'fixed' | null, discount_value: number | null) {
+		const item = (this as any).cartItems.find((item: CartItem) => item.id === productId);
+		if (item) {
+			item.discount_type = discount_type;
+			item.discount_value = discount_value;
+		}
+	},
+
+	removeItemDiscount(productId: string) {
+		const item = (this as any).cartItems.find((item: CartItem) => item.id === productId);
+		if (item) {
+			item.discount_type = null;
+			item.discount_value = null;
+		}
+	},
+
 	// Task 19: Auto-populate products from queue entry
 	populateFromQueueEntry(queueEntry: any) {
 		// Clear existing cart

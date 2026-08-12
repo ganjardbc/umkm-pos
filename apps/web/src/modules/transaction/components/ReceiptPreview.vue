@@ -41,12 +41,20 @@
       <div
         v-for="item in transaction?.transaction_items"
         :key="item.id"
-        class="text-xs text-gray-700 mb-2 grid grid-cols-12 gap-1"
+        class="text-xs text-gray-700 mb-2"
       >
-        <div class="col-span-6 truncate">{{ item.product_name_snapshot }}</div>
-        <div class="col-span-2 text-right">{{ item.qty }}x</div>
-        <div class="col-span-2 text-right">{{ formatCurrency(item.price_snapshot) }}</div>
-        <div class="col-span-2 text-right font-semibold">{{ formatCurrency(item.subtotal) }}</div>
+        <div class="grid grid-cols-12 gap-1">
+          <div class="col-span-6 truncate">{{ item.product_name_snapshot }}</div>
+          <div class="col-span-2 text-right">{{ item.qty }}x</div>
+          <div class="col-span-2 text-right">{{ formatCurrency(item.price_snapshot) }}</div>
+          <div class="col-span-2 text-right font-semibold">{{ formatCurrency(item.subtotal) }}</div>
+        </div>
+        <div
+          v-if="Number(item.discount_amount || 0) > 0"
+          class="text-[11px] text-red-500 pl-2 mt-0.5"
+        >
+          - Disc ({{ item.discount_type === 'percentage' ? `${item.discount_value}%` : 'Rp' }}): -{{ formatCurrency(item.discount_amount || 0) }}
+        </div>
       </div>
     </div>
 

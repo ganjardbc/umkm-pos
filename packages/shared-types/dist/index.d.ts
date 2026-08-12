@@ -6,4 +6,4 @@ export interface ServiceHealth {
 export type { ApiResponse, PaginationMeta } from './common/pagination';
 export type { AuthMerchant, AuthUser } from './auth/auth.types';
 export type { UserSummary } from './users/user.types';
-export type { ProductSummary } from './products/product.types';
+export type { ProductSummary, DiscountType, TransactionItemDiscount } from './products/product.types';

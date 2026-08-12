@@ -92,11 +92,15 @@ CREATE INDEX idx_shifts_outlet_owner_status ON shifts(outlet_id, shift_owner_id,
 
 ## Price Snapshot Invariant
 
-`transaction_items` menyimpan snapshot harga saat transaksi:
+`transaction_items` menyimpan snapshot harga dan diskon saat transaksi:
 
 ```sql
 product_name_snapshot VARCHAR(150) NOT NULL
-price_snapshot DECIMAL(14, 2) NOT NULL
+price_snapshot        DECIMAL(14, 2) NOT NULL
+discount_type         VARCHAR(20) NULL          -- 'percentage' | 'fixed' | null
+discount_value        DECIMAL(14, 2) NULL       -- 10.00 (%) atau nominal Rp
+discount_amount       DECIMAL(14, 2) DEFAULT 0  -- potongan rupiah aktual
+subtotal              DECIMAL(14, 2) NOT NULL   -- (price_snapshot * qty) - discount_amount
 ```
 
 Nilai ini tidak boleh berubah setelah transaksi dibuat. Jangan pakai live price untuk laporan historis.

@@ -19,6 +19,9 @@ export interface ReceiptData {
     product_name_snapshot: string;
     price_snapshot: string | number;
     qty: number;
+    discount_type?: string | null;
+    discount_value?: string | number | null;
+    discount_amount?: string | number | null;
     subtotal: string | number;
   }>;
 }
@@ -142,13 +145,27 @@ export const generateReceiptHTML = (transaction: ReceiptData): string => {
             display: grid;
             grid-template-columns: 1fr 0.5fr 0.5fr 0.5fr;
             gap: 4px;
-            margin-bottom: 8px;
+            margin-bottom: 4px;
           ">
             <div style="height: 24px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${item.product_name_snapshot}</div>
             <div style="text-align: right;">${item.qty}x</div>
             <div style="text-align: right;">${formatCurrency(item.price_snapshot)}</div>
             <div style="text-align: right; font-weight: bold;">${formatCurrency(item.subtotal)}</div>
           </div>
+          ${
+            Number(item.discount_amount || 0) > 0
+              ? `
+          <div style="
+            font-size: 11px;
+            color: #dc2626;
+            margin-bottom: 6px;
+            padding-left: 8px;
+          ">
+            - Disc (${item.discount_type === 'percentage' ? `${item.discount_value}%` : 'Rp'}): -${formatCurrency(item.discount_amount || 0)}
+          </div>
+          `
+              : ''
+          }
         `
           )
           .join('')}

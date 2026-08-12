@@ -154,6 +154,29 @@ POST   /transactions/:id/cancel — Cancel transaction (atomic)
 PATCH  /transactions/:id/status — Update transaction status (customer orders)
 ```
 
+### POST /transactions Payload Format
+```json
+{
+  "outlet_id": "uuid",
+  "shift_id": "uuid",
+  "payment_method": "cash",
+  "is_offline": false,
+  "device_id": "optional-device-id",
+  "table_id": "optional-table-uuid",
+  "cash_received": 50000,
+  "change_amount": 10000,
+  "items": [
+    {
+      "product_id": "uuid",
+      "qty": 2,
+      "discount_type": "percentage", // "percentage" | "fixed" | null
+      "discount_value": 10,          // 10 for 10% or nominal Rp for fixed
+      "customer_note": "Tanpa gula"
+    }
+  ]
+}
+```
+
 ### Aturan Otorisasi Outlet (Outlet Access Control)
 Untuk memastikan keamanan multi-tenant dan isolasi data, seluruh endpoint transaksi memberlakukan aturan otorisasi berbasis outlet:
 - **Role Owner**: Pengguna dengan role `owner` pada merchant memiliki akses penuh ke seluruh outlet di bawah merchant tersebut.

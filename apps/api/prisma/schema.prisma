@@ -318,6 +318,9 @@ model transaction_items {
   product_name_snapshot String       @db.VarChar(150)
   price_snapshot        Decimal      @db.Decimal(14, 2)
   qty                   Int
+  discount_type         String?      @db.VarChar(20)
+  discount_value        Decimal?     @db.Decimal(14, 2)
+  discount_amount       Decimal      @default(0.00) @db.Decimal(14, 2)
   subtotal              Decimal      @db.Decimal(14, 2)
   customer_note         String?      @db.VarChar(255)
   created_at            DateTime     @default(now()) @db.Timestamp(0)
