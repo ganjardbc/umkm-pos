@@ -22,35 +22,44 @@ Baca ticket atau backlog task, buat rencana yang cukup detail untuk Frontend/Bac
 Read (semua file), Write (hanya .ai/tasks/ folder)
 
 ## Input
+Deskripsi ticket dari tracker (wajib).
 
-Salah satu dari:
-- Ticket ID dari Linear (e.g., `UMKM-42`)
-- Deskripsi task dari `docs/development/backlog.md`
-- Instruksi langsung dari developer
-4. **Fallback — Discovery draft tanpa ticket**: Kalau TICKET-ID yang diberikan tidak
-   ditemukan di Linear maupun `docs/development/backlog.md`, cek apakah
-   `.ai/discovery/{TICKET-ID}/prd.md` ada (TICKET-ID dipakai sebagai nama folder — hasil
-   dari `/discovery-start`, dipakai konsisten sebagai identitas sepanjang pipeline kalau
-   tidak lewat Linear).
+### Fallback — Discovery draft tanpa ticket
 
-   Kalau ADA: JANGAN langsung pakai. Tampilkan dulu ke user:
-   - Ringkasan `prd.md` (Problem, Scope, Success Metric)
-   - Daftar Pertanyaan Terbuka yang BELUM terjawab (dari `prd.md`/`flow.md`)
-   - Tanya eksplisit: "Ketemu discovery draft untuk ini. [N pertanyaan terbuka belum
-     terjawab / semua sudah terjawab]. Lanjut pakai ini sebagai requirement apa adanya?"
-   - STOP sampai user jawab. Kalau user bilang tidak/batal, jangan lanjut generate
-     requirements.md — laporkan dan berhenti.
+1. Kalau TICKET-ID yang diberikan tidak ditemukan di tracker maupun backlog repo, cek
+   apakah `.ai/discovery/{TICKET-ID}/prd.md` ada (TICKET-ID dipakai sebagai nama folder —
+   slug hasil `/discovery-start`, dipakai konsisten sebagai identitas sepanjang pipeline
+   kalau tidak lewat tracker).
+2. Kalau `.ai/discovery/{TICKET-ID}/` TIDAK ADA: lanjut ke perilaku existing (tanya user
+   deskripsi task langsung) — sisa langkah di bawah tidak relevan.
+3. Kalau `prd.md` ADA: cek dulu Daftar Pertanyaan Terbuka yang BELUM terjawab (dari
+   `prd.md`/`flow.md`), lalu cek apakah prompt/context yang diterima diawali marker
+   `[SYSTEM CONTEXT: Environment = headless...]`.
+   - **Tidak ada Pertanyaan Terbuka terbuka sama sekali** (semua sudah terjawab): lanjut
+     generate `requirements.md` dengan `## Status: PLAN` seperti biasa — tidak
+     terpengaruh headless atau tidak, tidak perlu tampilkan apapun ke chat dulu.
+   - **Ada Pertanyaan Terbuka belum terjawab, TIDAK headless**: tampilkan dulu ke user
+     ringkasan `prd.md` (Problem, Scope, Success Metric) dan daftar pertanyaannya, lalu
+     tanya eksplisit "Ketemu discovery draft untuk ini. [N pertanyaan terbuka belum
+     terjawab]. Lanjut pakai ini sebagai requirement apa adanya?" — STOP sampai user
+     jawab. Kalau user bilang tidak/batal, jangan lanjut generate `requirements.md` —
+     laporkan dan berhenti. (Behavior lama, tidak berubah.)
+   - **Ada Pertanyaan Terbuka belum terjawab, headless**: JANGAN STOP menunggu chat —
+     tidak ada manusia yang akan menjawab. Langsung generate `requirements.md` dengan
+     `## Status: NEEDS_HUMAN`, dan tetap buat `tasks.md` (boleh minimal, isinya catatan
+     singkat "blocked — menunggu jawaban Pertanyaan Terbuka, lihat requirements.md") supaya
+     caf-orchestrator tidak exception di pengecekan file existence. Lihat section `Batasan`
+     di bawah.
+4. Di kedua jalur "ada Pertanyaan Terbuka" di atas (headless maupun tidak) yang lanjut
+   generate: `requirements.md` WAJIB menyalin ulang semua Pertanyaan Terbuka yang masih
+   belum terjawab ke section `## Pertanyaan Terbuka` (section baru, tambahkan ke format
+   `requirements.md` yang sudah ada) — JANGAN diam-diam mengasumsikan jawabannya, di kedua
+   jalur.
 
-   Kalau user setuju lanjut: requirements.md yang dihasilkan WAJIB menyalin ulang semua
-   Pertanyaan Terbuka yang masih belum terjawab ke section `## Pertanyaan Terbuka` di
-   `requirements.md` (section baru, tambahkan ke format requirements.md yang sudah ada) —
-   JANGAN diam-diam mengasumsikan jawabannya.
+### Opsional — Layer 1 reference docs
 
-   Kalau `.ai/discovery/{TICKET-ID}/` TIDAK ADA juga: lanjut ke perilaku existing (tanya
-   user deskripsi task langsung).
-
-Referensi tambahan (opsional) — kalau tersedia, dibaca dengan urutan prioritas berikut,
-kalau tidak ada lanjut dari ticket/backlog di atas seperti biasa:
+Kalau tersedia, dibaca dengan urutan prioritas berikut; kalau tidak ada, lanjut dari
+deskripsi ticket saja seperti biasa (bukan syarat wajib):
 1. `docs/product/features/{{feature-name}}.md` (Feature Spec, kalau ticket ditautkan ke salah satu)
 2. `docs/product/prd.md`
 
@@ -181,6 +190,11 @@ Planner tidak punya kode untuk di-retry. Jika konteks kurang → baca lebih bany
 
 ## Batasan
 
+- Planner TIDAK PERNAH boleh mengakhiri run dengan menunggu konfirmasi chat kalau prompt/context
+  yang diterima diawali marker `[SYSTEM CONTEXT: Environment = headless...]`. Default eskalasi
+  dalam kondisi ini adalah menulis file (`requirements.md` dengan `Status: NEEDS_HUMAN` +
+  `tasks.md` blocked), bukan bertanya di chat — lihat Fallback — Discovery draft di section
+  Input.
 - Jangan buat estimasi waktu
 - Jangan rekomendasikan teknologi baru di luar stack (NestJS+Prisma+MySQL, Vue3+Vite+Pinia+PrimeVue)
 - Jangan implement — hanya plan
