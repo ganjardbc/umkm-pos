@@ -1,5 +1,5 @@
 ---
-name: frontend
+name: caf-frontend
 description: >
   Implementasi Vue 3 module mengikuti konvensi proyek. Output: kode + verify-report.md.
   Gunakan untuk "implement frontend TICKET-ID", "scaffold web module", "frontend agent".
@@ -330,7 +330,7 @@ pnpm --filter umkm-pos-app build
 
 ```markdown
 ## Ticket: <ID>
-## Agent: frontend
+## Agent: caf-frontend
 ## Status: SUCCESS / NEEDS_HUMAN
 
 ## Attempt Log

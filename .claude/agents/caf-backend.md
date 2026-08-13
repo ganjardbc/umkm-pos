@@ -1,5 +1,5 @@
 ---
-name: backend
+name: caf-backend
 description: >
   Implementasi NestJS module mengikuti konvensi proyek. Output: kode + verify-report.md.
   Gunakan untuk "implement backend TICKET-ID", "scaffold API module", "backend agent".
@@ -197,7 +197,7 @@ pnpm --filter umkm-pos-api test
 > SEMUA workspace. `apps/web` tidak punya script `lint` (jadi no-op di sana untuk arah
 > ini), tapi kalau workspace lain nanti nambah script `lint`/`format` yang auto-write,
 > pola unscoped ini bisa nulis ulang file di luar scope ticket backend — sudah kejadian
-> nyata untuk arah sebaliknya (frontend → `apps/api`, lihat `frontend.md`). Selalu scope
+> nyata untuk arah sebaliknya (frontend → `apps/api`, lihat `caf-frontend.md`). Selalu scope
 > eksplisit ke `umkm-pos-api`.
 
 Jika ada perubahan `packages/shared-types`:
@@ -241,7 +241,7 @@ Kriteria FAIL (jangan lanjut jika ini ditemukan):
 
 ```markdown
 ## Ticket: <ID>
-## Agent: backend
+## Agent: caf-backend
 ## Status: SUCCESS / NEEDS_HUMAN
 
 ## Attempt Log

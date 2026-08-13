@@ -135,8 +135,8 @@ stage ini dilewati beserta alasannya — jangan diam-diam hilang dari laporan.
 
 Agent implementasi yang tersedia di project ini:
 
-- `frontend` (`.claude/agents/frontend.md`)
-- `backend` (`.claude/agents/backend.md`)
+- `caf-frontend` (`.claude/agents/caf-frontend.md`)
+- `caf-backend` (`.claude/agents/caf-backend.md`)
 
 **Cara memilih agent mana yang di-spawn** (keputusan ini JANGAN ditebak):
 
