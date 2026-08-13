@@ -643,7 +643,7 @@ Permission check applied
 Before marking any task as DONE, read:
 
 ```txt
-.ai/workflows/task-completion.md
+.caf/workflows/task-completion.md
 ```
 
 ---
@@ -653,22 +653,22 @@ Before marking any task as DONE, read:
 Four slash commands in `.claude/commands/`, split read-only vs write:
 
 ```txt
-/audit-scan [scope]        — READ-ONLY. Auditor Agent scan, writes findings to
-                              .ai/audits/{scope-slug}-{date}.md. Never creates tickets.
-/audit-to-ticket [path]    — Reads an audit-report.md, walks findings one-by-one,
+/caf-audit-scan [scope]        — READ-ONLY. Auditor Agent scan, writes findings to
+                              .caf/audits/{scope-slug}-{date}.md. Never creates tickets.
+/caf-audit-to-ticket [path]    — Reads an audit-report.md, walks findings one-by-one,
                               creates a Linear issue ONLY per explicit per-item approval.
-/plan-ticket TICKET-ID     — READ-MOSTLY. Preview Planner Agent output for one ticket,
-                              writes to .ai/tasks/{TICKET-ID}/ only. Doesn't touch app code,
+/caf-plan-ticket TICKET-ID     — READ-MOSTLY. Preview Planner Agent output for one ticket,
+                              writes to .caf/tasks/{TICKET-ID}/ only. Doesn't touch app code,
                               doesn't trigger the full caf-orchestrator pipeline.
-/qa-check [area]           — READ-ONLY on app code (may run lint/typecheck/test via Bash).
+/caf-qa-check [area]           — READ-ONLY on app code (may run lint/typecheck/test via Bash).
                               Reports, never auto-fixes.
 ```
 
 ## Read-Only Scanner + Approval-Gate Principle
 
-`/audit-scan` (the Auditor Agent) is deliberately read-only and cannot create
+`/caf-audit-scan` (the Auditor Agent) is deliberately read-only and cannot create
 tickets or touch external systems — creating a ticket is a human decision,
-kept in the separate `/audit-to-ticket` command which requires explicit
+kept in the separate `/caf-audit-to-ticket` command which requires explicit
 per-item approval (never batch-approves). When adding a new proactive agent
 that inspects code, follow this same split: give the scanning agent
 read-only tools, and put any external write (Linear/GitHub/etc.) behind a

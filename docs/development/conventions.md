@@ -20,7 +20,7 @@ umkm-pos/
 │   ├── shared-utils/
 │   └── eslint-config/
 ├── docs/
-├── .ai/
+├── .caf/
 ├── package.json
 ├── pnpm-workspace.yaml
 └── turbo.json

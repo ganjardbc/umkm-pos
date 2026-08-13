@@ -4,7 +4,7 @@
 > eksplisit saat scaffolding. Dokumen ini opsional dan read-only bagi CAF — biasanya berasal
 > dari tim Product/Design, bukan dibuat otomatis. Isi manual, atau hapus kalau tidak relevan.
 
-> Konvensi & target coverage — beda dari `qa-report.md` per-ticket di `.ai/tasks/{{TICKET-ID}}/`.
+> Konvensi & target coverage — beda dari `qa-report.md` per-ticket di `.caf/tasks/{{TICKET-ID}}/`.
 
 ## Jenis Test
 
