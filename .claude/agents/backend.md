@@ -3,7 +3,7 @@ name: backend
 description: >
   Implementasi NestJS module mengikuti konvensi proyek. Output: kode + verify-report.md.
   Gunakan untuk "implement backend TICKET-ID", "scaffold API module", "backend agent".
-  Baca requirements.md + design.md dari .ai/tasks/TICKET-ID/ sebelum mulai.
+  Baca requirements.md + design.md dari .caf/tasks/TICKET-ID/ sebelum mulai.
 tools: [Read, Write, Edit, Bash]
 model: sonnet
 ---
@@ -25,10 +25,10 @@ Read, Write, Edit, Bash (untuk migration, typecheck, lint, test)
 ## Input
 
 ```
-.ai/tasks/<TICKET-ID>/requirements.md   — apa yang harus diimplementasi
-.ai/tasks/<TICKET-ID>/design.md         — pendekatan teknis (jika ada)
-.ai/tasks/<TICKET-ID>/tasks.md          — task list
-.ai/tasks/<TICKET-ID>/qa-report.md      — (jika ada) hasil QA run sebelumnya, Status: FAIL — fix issue spesifik yang dicatat, bukan rewrite ulang
+.caf/tasks/<TICKET-ID>/requirements.md   — apa yang harus diimplementasi
+.caf/tasks/<TICKET-ID>/design.md         — pendekatan teknis (jika ada)
+.caf/tasks/<TICKET-ID>/tasks.md          — task list
+.caf/tasks/<TICKET-ID>/qa-report.md      — (jika ada) hasil QA run sebelumnya, Status: FAIL — fix issue spesifik yang dicatat, bukan rewrite ulang
 ```
 
 Referensi tambahan (opsional) — kalau tersedia dan relevan dengan scope perubahan (mis.
@@ -41,7 +41,7 @@ tidak ada, lanjut implementasi dari `requirements.md`/`design.md` seperti biasa:
 
 ```
 Kode di apps/api/src/<module>/
-.ai/tasks/<TICKET-ID>/verify-report.md
+.caf/tasks/<TICKET-ID>/verify-report.md
 ```
 
 ## Pola Kerja (PIV)
@@ -49,8 +49,8 @@ Kode di apps/api/src/<module>/
 ### PLAN — Baca sebelum sentuh kode
 
 ```
-.ai/tasks/<TICKET-ID>/requirements.md
-.ai/tasks/<TICKET-ID>/design.md
+.caf/tasks/<TICKET-ID>/requirements.md
+.caf/tasks/<TICKET-ID>/design.md
 AGENTS.md
 apps/api/CLAUDE.md
 apps/api/src/app.module.ts

@@ -1,0 +1,30 @@
+# Golden Examples — RULES.md (umkm-pos-api)
+
+> **DRAFT — wajib direview.** File ini digenerate otomatis oleh `caf-initiator` sebagai
+> pendamping wajib golden example di folder ini (lihat CAF.md Layer 1). Isi Do/Don't di bawah
+> secara manual — tanpa ini golden example jadi ambigu, AI harus menebak sendiri mana yang pola
+> dan mana yang kebetulan ada di file itu.
+
+## File Referensi
+
+Path di bawah menunjuk ke file asli di codebase (bukan salinan) — baca RULES.md ini dulu untuk
+konteks, lalu buka file aslinya di path yang tercantum.
+
+| Path | Pattern | Alasan (Do/Don't) |
+|---|---|---|
+| `apps/api/src/common/services/csv-export.service.ts` | Service/Business Logic | TODO |
+| `apps/api/src/customer-catalog/dto/start-customer-session.dto.ts` | DTO/Validation | TODO |
+
+## Kenapa File di Folder Ini Jadi Contoh Baik
+
+TODO: jelaskan kenapa file-file di atas dipilih sebagai referensi — pola apa yang mau ditiru AI
+(mis. thin controller, DTO tervalidasi, composable pattern, dst).
+
+## Do
+
+TODO: bagian mana yang WAJIB ditiru dari contoh ini.
+
+## Don't
+
+TODO: bagian mana yang kebetulan ada di file ini tapi TIDAK boleh ditiru (mis. workaround
+sementara, kode lama yang belum sempat dirapikan).
