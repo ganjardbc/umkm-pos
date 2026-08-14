@@ -81,6 +81,9 @@ import type {
 } from '@/modules/dashboard/types/reports.ts';
 import { ref, computed, onMounted, watch } from 'vue';
 import { getOutlet } from '@/helpers/auth.ts';
+import { showLoading, hideLoading } from '@/helpers/loading.ts';
+import { showToast } from '@/helpers/toast.ts';
+import { getErrorMessage } from '@/helpers/utils.ts';
 import {
   getSalesSummary,
   getDailyReports,
@@ -207,6 +210,7 @@ const params = computed(() => {
  */
 const fetchSummaryStats = async () => {
   statsLoading.value = true;
+  showLoading();
   try {
     const todayStr = formatDate(new Date());
     
@@ -242,6 +246,11 @@ const fetchSummaryStats = async () => {
       transactionsToday.value = summaryRes.value.total_transactions;
     } else {
       console.error('Failed to fetch today\'s sales summary:', summaryRes.reason);
+      showToast({
+        type: 'error',
+        title: 'Error.',
+        message: getErrorMessage(summaryRes.reason) || 'Failed to fetch today\'s sales summary',
+      });
       salesToday.value = 0;
       transactionsToday.value = 0;
     }
@@ -250,6 +259,11 @@ const fetchSummaryStats = async () => {
       lowStockCount.value = inventoryRes.value.data?.data?.meta?.total ?? 0;
     } else {
       console.error('Failed to fetch low stock count:', inventoryRes.reason);
+      showToast({
+        type: 'error',
+        title: 'Error.',
+        message: getErrorMessage(inventoryRes.reason) || 'Failed to fetch low stock count',
+      });
       lowStockCount.value = 0;
     }
 
@@ -257,12 +271,23 @@ const fetchSummaryStats = async () => {
       activeShiftsCount.value = shiftsRes.value.data?.data?.meta?.total ?? 0;
     } else {
       console.error('Failed to fetch active shifts count:', shiftsRes.reason);
+      showToast({
+        type: 'error',
+        title: 'Error.',
+        message: getErrorMessage(shiftsRes.reason) || 'Failed to fetch active shifts count',
+      });
       activeShiftsCount.value = 0;
     }
   } catch (error) {
     console.error('Error fetching summary stats:', error);
+    showToast({
+      type: 'error',
+      title: 'Error.',
+      message: getErrorMessage(error) || 'Error fetching summary stats',
+    });
   } finally {
     statsLoading.value = false;
+    hideLoading();
   }
 };
 
@@ -288,6 +313,8 @@ const fetchAllReports = async () => {
   topProductsError.value = null;
   outletComparisonError.value = null;
 
+  showLoading();
+
   const results = await Promise.allSettled([
     getSalesSummary(params.value),
     getDailyReports(params.value),
@@ -299,10 +326,13 @@ const fetchAllReports = async () => {
   if (results[0].status === 'fulfilled') {
     salesSummaryData.value = results[0].value;
   } else {
-    salesSummaryError.value = results[0].reason instanceof Error 
-      ? results[0].reason.message 
-      : 'Failed to fetch sales summary';
+    salesSummaryError.value = getErrorMessage(results[0].reason) || 'Failed to fetch sales summary';
     salesSummaryData.value = null;
+    showToast({
+      type: 'error',
+      title: 'Gagal memuat Sales Summary',
+      message: getErrorMessage(results[0].reason) || 'Failed to fetch sales summary',
+    });
   }
   salesSummaryLoading.value = false;
 
@@ -310,10 +340,13 @@ const fetchAllReports = async () => {
   if (results[1].status === 'fulfilled') {
     dailyReportsData.value = results[1].value;
   } else {
-    dailyReportsError.value = results[1].reason instanceof Error 
-      ? results[1].reason.message 
-      : 'Failed to fetch daily reports';
+    dailyReportsError.value = getErrorMessage(results[1].reason) || 'Failed to fetch daily reports';
     dailyReportsData.value = null;
+    showToast({
+      type: 'error',
+      title: 'Gagal memuat Daily Sales Trends',
+      message: getErrorMessage(results[1].reason) || 'Failed to fetch daily reports',
+    });
   }
   dailyReportsLoading.value = false;
 
@@ -321,10 +354,13 @@ const fetchAllReports = async () => {
   if (results[2].status === 'fulfilled') {
     topProductsData.value = results[2].value;
   } else {
-    topProductsError.value = results[2].reason instanceof Error 
-      ? results[2].reason.message 
-      : 'Failed to fetch top products';
+    topProductsError.value = getErrorMessage(results[2].reason) || 'Failed to fetch top products';
     topProductsData.value = null;
+    showToast({
+      type: 'error',
+      title: 'Gagal memuat Top Products',
+      message: getErrorMessage(results[2].reason) || 'Failed to fetch top products',
+    });
   }
   topProductsLoading.value = false;
 
@@ -332,12 +368,17 @@ const fetchAllReports = async () => {
   if (results[3].status === 'fulfilled') {
     outletComparisonData.value = results[3].value;
   } else {
-    outletComparisonError.value = results[3].reason instanceof Error 
-      ? results[3].reason.message 
-      : 'Failed to fetch outlet comparison';
+    outletComparisonError.value = getErrorMessage(results[3].reason) || 'Failed to fetch outlet comparison';
     outletComparisonData.value = null;
+    showToast({
+      type: 'error',
+      title: 'Gagal memuat Outlet Comparison',
+      message: getErrorMessage(results[3].reason) || 'Failed to fetch outlet comparison',
+    });
   }
   outletComparisonLoading.value = false;
+
+  hideLoading();
 };
 
 /**
@@ -348,16 +389,21 @@ const retrySalesSummary = async () => {
   
   salesSummaryLoading.value = true;
   salesSummaryError.value = null;
-  
+
+  showLoading();
   try {
     salesSummaryData.value = await getSalesSummary(params.value);
   } catch (error) {
-    salesSummaryError.value = error instanceof Error 
-      ? error.message 
-      : 'Failed to fetch sales summary';
+    salesSummaryError.value = getErrorMessage(error) || 'Failed to fetch sales summary';
     salesSummaryData.value = null;
+    showToast({
+      type: 'error',
+      title: 'Gagal memuat Sales Summary',
+      message: getErrorMessage(error) || 'Failed to fetch sales summary',
+    });
   } finally {
     salesSummaryLoading.value = false;
+    hideLoading();
   }
 };
 
@@ -366,16 +412,21 @@ const retryDailyReports = async () => {
   
   dailyReportsLoading.value = true;
   dailyReportsError.value = null;
-  
+
+  showLoading();
   try {
     dailyReportsData.value = await getDailyReports(params.value);
   } catch (error) {
-    dailyReportsError.value = error instanceof Error 
-      ? error.message 
-      : 'Failed to fetch daily reports';
+    dailyReportsError.value = getErrorMessage(error) || 'Failed to fetch daily reports';
     dailyReportsData.value = null;
+    showToast({
+      type: 'error',
+      title: 'Gagal memuat Daily Sales Trends',
+      message: getErrorMessage(error) || 'Failed to fetch daily reports',
+    });
   } finally {
     dailyReportsLoading.value = false;
+    hideLoading();
   }
 };
 
@@ -384,19 +435,24 @@ const retryTopProducts = async () => {
   
   topProductsLoading.value = true;
   topProductsError.value = null;
-  
+
+  showLoading();
   try {
-    topProductsData.value = await getTopProducts({ 
-      ...params.value, 
-      limit: 10 
+    topProductsData.value = await getTopProducts({
+      ...params.value,
+      limit: 10
     });
   } catch (error) {
-    topProductsError.value = error instanceof Error 
-      ? error.message 
-      : 'Failed to fetch top products';
+    topProductsError.value = getErrorMessage(error) || 'Failed to fetch top products';
     topProductsData.value = null;
+    showToast({
+      type: 'error',
+      title: 'Gagal memuat Top Products',
+      message: getErrorMessage(error) || 'Failed to fetch top products',
+    });
   } finally {
     topProductsLoading.value = false;
+    hideLoading();
   }
 };
 
@@ -405,16 +461,21 @@ const retryOutletComparison = async () => {
   
   outletComparisonLoading.value = true;
   outletComparisonError.value = null;
-  
+
+  showLoading();
   try {
     outletComparisonData.value = await getOutletComparison(params.value);
   } catch (error) {
-    outletComparisonError.value = error instanceof Error 
-      ? error.message 
-      : 'Failed to fetch outlet comparison';
+    outletComparisonError.value = getErrorMessage(error) || 'Failed to fetch outlet comparison';
     outletComparisonData.value = null;
+    showToast({
+      type: 'error',
+      title: 'Gagal memuat Outlet Comparison',
+      message: getErrorMessage(error) || 'Failed to fetch outlet comparison',
+    });
   } finally {
     outletComparisonLoading.value = false;
+    hideLoading();
   }
 };
 
