@@ -73,7 +73,7 @@
 </template>
 
 <script setup lang="ts">
-import type {
+import type { 
   SalesSummaryResponse,
   DailyReportsResponse,
   TopProductsResponse,
@@ -84,7 +84,7 @@ import { getOutlet } from '@/helpers/auth.ts';
 import { showLoading, hideLoading } from '@/helpers/loading.ts';
 import { showToast } from '@/helpers/toast.ts';
 import { getErrorMessage } from '@/helpers/utils.ts';
-import {
+import { 
   getSalesSummary,
   getDailyReports,
   getTopProducts,
@@ -129,6 +129,8 @@ const topProductsError = ref<string | null>(null);
 const outletComparisonError = ref<string | null>(null);
 
 const outlet = getOutlet();
+
+let fetchReportsRequestId = 0;
 
 /**
  * Format a Date object to YYYY-MM-DD format for API calls
@@ -301,6 +303,9 @@ const fetchAllReports = async () => {
     return;
   }
 
+  fetchReportsRequestId++;
+  const requestId = fetchReportsRequestId;
+
   // Set all loading states to true
   salesSummaryLoading.value = true;
   dailyReportsLoading.value = true;
@@ -321,6 +326,10 @@ const fetchAllReports = async () => {
     getTopProducts({ ...params.value, limit: 10 }),
     getOutletComparison(params.value),
   ]);
+
+  if (requestId !== fetchReportsRequestId) {
+    return;
+  }
 
   // Handle sales summary result
   if (results[0].status === 'fulfilled') {
