@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full space-y-4">
+  <div class=" + ""w-full space-y-4"" + ">
     <!-- Page Header -->
     <DatePicker
       v-model="dateRange"
@@ -290,7 +290,7 @@ const fetchSummaryStats = async () => {
   } finally {
     statsLoading.value = false;
     hideLoading();
-  }
+  } 
 };
 
 /**
@@ -328,6 +328,7 @@ const fetchAllReports = async () => {
   ]);
 
   if (requestId !== fetchReportsRequestId) {
+    hideLoading();
     return;
   }
 
