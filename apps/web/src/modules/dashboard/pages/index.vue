@@ -1,5 +1,5 @@
 <template>
-  <div class=" + ""w-full space-y-4"" + ">
+  <div class="w-full space-y-4">
     <!-- Page Header -->
     <DatePicker
       v-model="dateRange"
@@ -131,6 +131,7 @@ const outletComparisonError = ref<string | null>(null);
 const outlet = getOutlet();
 
 let fetchReportsRequestId = 0;
+let activeReportsRequests = 0;
 
 /**
  * Format a Date object to YYYY-MM-DD format for API calls
@@ -318,77 +319,84 @@ const fetchAllReports = async () => {
   topProductsError.value = null;
   outletComparisonError.value = null;
 
-  showLoading();
-
-  const results = await Promise.allSettled([
-    getSalesSummary(params.value),
-    getDailyReports(params.value),
-    getTopProducts({ ...params.value, limit: 10 }),
-    getOutletComparison(params.value),
-  ]);
-
-  if (requestId !== fetchReportsRequestId) {
-    hideLoading();
-    return;
+  if (activeReportsRequests === 0) {
+    showLoading();
   }
+  activeReportsRequests++;
 
-  // Handle sales summary result
-  if (results[0].status === 'fulfilled') {
-    salesSummaryData.value = results[0].value;
-  } else {
-    salesSummaryError.value = getErrorMessage(results[0].reason) || 'Failed to fetch sales summary';
-    salesSummaryData.value = null;
-    showToast({
-      type: 'error',
-      title: 'Gagal memuat Sales Summary',
-      message: getErrorMessage(results[0].reason) || 'Failed to fetch sales summary',
-    });
+  try {
+    const results = await Promise.allSettled([
+      getSalesSummary(params.value),
+      getDailyReports(params.value),
+      getTopProducts({ ...params.value, limit: 10 }),
+      getOutletComparison(params.value),
+    ]);
+
+    if (requestId !== fetchReportsRequestId) {
+      return;
+    }
+
+    // Handle sales summary result
+    if (results[0].status === 'fulfilled') {
+      salesSummaryData.value = results[0].value;
+    } else {
+      salesSummaryError.value = getErrorMessage(results[0].reason) || 'Failed to fetch sales summary';
+      salesSummaryData.value = null;
+      showToast({
+        type: 'error',
+        title: 'Gagal memuat Sales Summary',
+        message: getErrorMessage(results[0].reason) || 'Failed to fetch sales summary',
+      });
+    }
+    salesSummaryLoading.value = false;
+
+    // Handle daily reports result
+    if (results[1].status === 'fulfilled') {
+      dailyReportsData.value = results[1].value;
+    } else {
+      dailyReportsError.value = getErrorMessage(results[1].reason) || 'Failed to fetch daily reports';
+      dailyReportsData.value = null;
+      showToast({
+        type: 'error',
+        title: 'Gagal memuat Daily Sales Trends',
+        message: getErrorMessage(results[1].reason) || 'Failed to fetch daily reports',
+      });
+    }
+    dailyReportsLoading.value = false;
+
+    // Handle top products result
+    if (results[2].status === 'fulfilled') {
+      topProductsData.value = results[2].value;
+    } else {
+      topProductsError.value = getErrorMessage(results[2].reason) || 'Failed to fetch top products';
+      topProductsData.value = null;
+      showToast({
+        type: 'error',
+        title: 'Gagal memuat Top Products',
+        message: getErrorMessage(results[2].reason) || 'Failed to fetch top products',
+      });
+    }
+    topProductsLoading.value = false;
+
+    // Handle outlet comparison result
+    if (results[3].status === 'fulfilled') {
+      outletComparisonData.value = results[3].value;
+    } else {
+      outletComparisonError.value = getErrorMessage(results[3].reason) || 'Failed to fetch outlet comparison';
+      outletComparisonData.value = null;
+      showToast({
+        type: 'error',
+        title: 'Gagal memuat Outlet Comparison',
+        message: getErrorMessage(results[3].reason) || 'Failed to fetch outlet comparison',
+      });
+    }
+    outletComparisonLoading.value = false;
+  } finally {
+    activeReportsRequests--;
+    if (activeReportsRequests === 0) {
+      hideLoading();
+    }
   }
-  salesSummaryLoading.value = false;
-
-  // Handle daily reports result
-  if (results[1].status === 'fulfilled') {
-    dailyReportsData.value = results[1].value;
-  } else {
-    dailyReportsError.value = getErrorMessage(results[1].reason) || 'Failed to fetch daily reports';
-    dailyReportsData.value = null;
-    showToast({
-      type: 'error',
-      title: 'Gagal memuat Daily Sales Trends',
-      message: getErrorMessage(results[1].reason) || 'Failed to fetch daily reports',
-    });
-  }
-  dailyReportsLoading.value = false;
-
-  // Handle top products result
-  if (results[2].status === 'fulfilled') {
-    topProductsData.value = results[2].value;
-  } else {
-    topProductsError.value = getErrorMessage(results[2].reason) || 'Failed to fetch top products';
-    topProductsData.value = null;
-    showToast({
-      type: 'error',
-      title: 'Gagal memuat Top Products',
-      message: getErrorMessage(results[2].reason) || 'Failed to fetch top products',
-    });
-  }
-  topProductsLoading.value = false;
-
-  // Handle outlet comparison result
-  if (results[3].status === 'fulfilled') {
-    outletComparisonData.value = results[3].value;
-  } else {
-    outletComparisonError.value = getErrorMessage(results[3].reason) || 'Failed to fetch outlet comparison';
-    outletComparisonData.value = null;
-    showToast({
-      type: 'error',
-      title: 'Gagal memuat Outlet Comparison',
-      message: getErrorMessage(results[3].reason) || 'Failed to fetch outlet comparison',
-    });
-  }
-  outletComparisonLoading.value = false;
-
-  hideLoading();
 };
 
 /**
