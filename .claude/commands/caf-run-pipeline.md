@@ -1,6 +1,6 @@
 ---
-allowed-tools: Read, Write, Grep, Glob, Task, Bash(git status:*), Bash(git branch:*), Bash(git checkout:*), Bash(git ls-remote:*), Bash(git log:*), Bash(git diff:*), Bash(ls:*)
-description: Jalankan seluruh pipeline Klaster 2 (Planner → Architect → implementasi → Documentation → QA → Reviewer) untuk satu ticket dalam satu sesi, tanpa caf-orchestrator dan tanpa buka PR
+allowed-tools: Read, Write, Grep, Glob, Task, Bash(git status:*), Bash(git branch:*), Bash(git checkout:*), Bash(git ls-remote:*), Bash(git log:*), Bash(git diff:*), Bash(git add:*), Bash(git commit:*), Bash(git fetch:*), Bash(git merge-base:*), Bash(git push:*), Bash(git show:*), Bash(gh pr create:*), Bash(gh pr list:*), Bash(gh repo view:*), Bash(ls:*)
+description: Jalankan seluruh pipeline Klaster 2 (Planner → Architect → implementasi → Documentation → QA → Reviewer) untuk satu ticket dalam satu sesi, tanpa caf-orchestrator — auto-commit/push/PR saat SUCCESS, tanpa commit saat NEEDS_HUMAN
 argument-hint: [TICKET-ID, contoh: "GAN-44"]
 ---
 
@@ -13,18 +13,19 @@ argument-hint: [TICKET-ID, contoh: "GAN-44"]
 caf-initiator yang melakukan keduanya — perlakukan lebih hati-hati dari command lain.
 
 Tujuan: alternatif manual untuk project yang belum/tidak setup `caf-orchestrator`
-(webhook + VPS). Alurnya sama dengan pipeline otomatis, bedanya jalan di satu sesi Claude Code
-interaktif dan **berhenti setelah kode + verify selesai**.
+(webhook + VPS). Alurnya sama dengan pipeline otomatis, termasuk **auto-commit, auto-push, dan
+auto `gh pr create`** setelah Reviewer APPROVE — lihat section 7. Tidak ada status ticket yang
+diubah di tracker (itu tetap manual); yang otomatis cuma git + PR.
 
-**TIDAK membuka PR.** Tidak ada `gh pr create`, tidak ada `git push`, tidak ada status
-ticket yang diubah di tracker. Semua itu tetap keputusan manusia, dilakukan manual setelah
-command ini selesai. `allowed-tools` di atas sengaja tidak memuat `gh` maupun
-`git push` supaya ini jadi batas yang di-enforce harness, bukan sekadar janji di teks.
+**Kalau berhenti NEEDS_HUMAN** (implementasi, gate QA, atau gate Reviewer): TIDAK ADA commit,
+push, atau PR sama sekali — working tree ditinggal apa adanya di branch `ai-agent/{TICKET-ID}`
+untuk manusia. Lihat "Berhenti Terkendali" di bawah.
 
-Batas yang perlu diketahui: allowlist itu mengikat command ini, **bukan subagent yang
-di-spawn** — subagent jalan dengan tool dari definisi agent-nya sendiri. Karena itu setiap
-prompt spawn di bawah WAJIB memuat larangan push/PR secara eksplisit, dan di akhir run kamu
-memverifikasi tidak ada PR/push yang terjadi.
+Batas yang perlu diketahui: allowlist `allowed-tools` di atas mengikat command ini (MAIN
+THREAD), **bukan subagent yang di-spawn** — subagent jalan dengan tool dari definisi agent-nya
+sendiri. Karena itu setiap prompt spawn di bawah WAJIB memuat larangan push/PR secara eksplisit
+("itu tugas main thread di section 7, bukan tugas kamu") — commit/push/PR HANYA boleh terjadi
+sekali, di section 7, dilakukan main thread setelah semua gate lulus.
 
 ## Ticket
 
@@ -158,7 +159,7 @@ Input tiap agent: `requirements.md`, `tasks.md`, dan `design.md` kalau stage 2 j
 
 Setiap prompt spawn WAJIB memuat, apa adanya:
 
-> Jangan `git push`, jangan buat PR, jangan ubah status ticket di tracker. Tulis kode dan
+> Jangan `git push`, jangan buat PR, jangan ubah status ticket di tracker — itu tugas main thread di section 7, bukan tugas kamu. Tulis kode dan
 > `verify-report.md` saja, di branch yang sudah aktif.
 
 **PIV internal adalah urusan agent itu sendiri.** Agent implementasi sudah punya Retry Logic
@@ -176,6 +177,10 @@ sudah diketahui bermasalah, dan itu buang biaya.
 Spawn Documentation (`.claude/agents/caf-documentation.md`) untuk memperbarui dokumentasi sesuai
 perubahan yang sudah ditulis.
 
+Prompt spawn WAJIB memuat, apa adanya:
+
+> Jangan `git push`, jangan buat PR, jangan ubah status ticket di tracker — itu tugas main thread di section 7, bukan tugas kamu.
+
 **Stage ini NON-BLOCKING.** Sesuai desain CAF, Documentation bukan gate: kalau agent ini gagal,
 menolak, atau menyimpulkan tidak ada dokumentasi yang perlu diubah — **jangan hentikan
 pipeline**. Catat hasilnya sebagai satu baris di ringkasan akhir dan lanjut ke stage QA.
@@ -183,6 +188,10 @@ pipeline**. Catat hasilnya sebagai satu baris di ringkasan akhir dan lanjut ke s
 Jangan retry stage ini. Tidak ada budget retry untuk stage non-blocking.
 
 ## 5. QA (gate)
+
+Prompt spawn QA (`.claude/agents/caf-qa.md`) WAJIB memuat, apa adanya:
+
+> Jangan `git push`, jangan buat PR, jangan ubah status ticket di tracker — itu tugas main thread di section 7, bukan tugas kamu.
 
 **Gate — `qaRetryCount`, `MAX_QA_RETRIES = 1`.**
 
@@ -218,6 +227,10 @@ Artifact: `.caf/tasks/{TICKET-ID}/qa-report.md`.
 
 ## 6. Reviewer (gate)
 
+Prompt spawn Reviewer (`.claude/agents/caf-reviewer.md`) WAJIB memuat, apa adanya:
+
+> Jangan `git push`, jangan buat PR, jangan ubah status ticket di tracker — itu tugas main thread di section 7, bukan tugas kamu.
+
 **Gate — `reviewerRetryCount`, `MAX_REVIEWER_RETRIES = 1`.**
 
 Set `reviewerRetryCount = 0` di awal run ini. Counter ini **fresh tiap kali `/caf-run-pipeline`
@@ -246,6 +259,139 @@ Artifact: `.caf/tasks/{TICKET-ID}/review-notes.md`.
 Tegasnya: `reviewerRetryCount` **tidak terpengaruh** oleh apa yang terjadi di stage QA.
 Ticket yang QA-nya lulus setelah retry tetap masuk stage ini dengan budget penuh 1x.
 
+## 7. Commit, Push, PR (SUCCESS)
+
+**Stage ini HANYA dijalankan kalau Reviewer APPROVE.** Kalau pipeline berhenti di stage
+manapun sebelum ini (implementasi NEEDS_HUMAN, gate QA/Reviewer exhausted), **lewati seluruh
+section ini** dan langsung ke "Berhenti Terkendali" di bawah — jangan commit apapun.
+
+Jalankan ketujuh langkah ini **berurutan**. Tiap langkah dengan kondisi STOP wajib berhenti di
+situ, tidak lanjut ke langkah berikutnya — commit yang scope-nya salah atau push yang menabrak
+branch remote tidak bisa gampang dibatalkan setelah terjadi.
+
+### 7.1 Whitelist scope
+
+Path yang boleh masuk commit (HANYA ini, bukan seluruh working tree):
+
+- `.caf/tasks/{TICKET-ID}/` (artifact)
+- `caf-frontend`: `apps/web/`
+- `caf-backend`: `apps/api/`
+- `caf-documentation`: `README.md`
+- `caf-documentation`: `CHANGELOG.md`
+- `caf-documentation`: `docs/`
+
+`docs/` di-whitelist sebagai satu folder utuh (bukan subpath spesifik) karena Documentation
+agent tidak punya scope path granular — ini berarti scope-check di 7.1 tidak bisa membedakan
+tulisan Documentation agent dari file lain yang kebetulan ditulis ke `docs/` oleh proses lain
+di run yang sama.
+
+`git status --porcelain` → cocokkan **setiap** path yang berubah ke whitelist di atas.
+
+Ada path yang berubah TAPI tidak masuk whitelist manapun → **STOP, JANGAN commit apapun**.
+Tampilkan daftar path mencurigakan ke user, jelaskan ini kemungkinan file di luar scope agent
+yang ditugaskan (bug atau scope creep di subagent). Minta user putuskan manual — lanjut commit
+sendiri setelah verifikasi, atau investigasi dulu. Di Ringkasan Akhir, catat status sebagai
+"SUCCESS tapi commit dibatalkan — scope drift terdeteksi", bukan status SUCCESS polos.
+
+### 7.2 Commit
+
+`git add --` diikuti daftar path eksplisit dari 7.1 yang benar-benar berubah (**bukan**
+`git add -A`), lalu:
+
+```
+git commit -m "AI agent pipeline: {TICKET-ID}"
+```
+
+Tanpa `--allow-empty`. Kalau commit gagal karena tidak ada apapun untuk di-commit ("nothing
+to commit") — itu sinyal aneh (implementasi dilaporkan selesai tapi tidak ada diff sama
+sekali) → **STOP**, laporkan ke user, jangan lanjut ke push/PR.
+
+### 7.3 Guard — fetch sebelum push
+
+```
+git fetch origin ai-agent/{TICKET-ID}
+```
+
+Kalau fetch gagal karena branch belum ada di remote sama sekali, itu bukan kegagalan guard —
+lanjut anggap "remote belum ada" (langkah berikutnya).
+
+- **Remote belum ada** → aman, lanjut ke 7.4.
+- **Remote ada**, dan `git merge-base --is-ancestor origin/ai-agent/{TICKET-ID} HEAD`
+  sukses (exit 0) → SHA remote adalah ancestor HEAD lokal, aman, lanjut ke 7.4.
+- **Remote ada**, dan `git merge-base --is-ancestor` gagal (exit != 0) → SHA remote BUKAN
+  ancestor HEAD lokal. **STOP sebelum push.** Ini sinyal branch remote sudah diubah pihak lain
+  (orchestrator, atau run `/caf-run-pipeline` lain) sejak guard 0.2 dijalankan di awal command
+  ini. Tampilkan ke user: SHA remote, `git log --oneline` branch remote itu, dan commit lokal
+  yang baru dibuat di 7.2 (masih ada di working tree, belum ter-push). **JANGAN force-push,
+  JANGAN merge/rebase otomatis** — itu keputusan manusia.
+
+**Keterbatasan yang harus disampaikan ke user di titik ini**: ini best-effort, bukan jaminan
+absolut — race condition antara fetch-check ini dan push di 7.4 tetap mungkin (window kecil,
+tapi ada) kalau pihak lain push persis di antara dua langkah itu. Tidak ada lock terdistribusi
+yang tersedia dari sisi command ini untuk menutup celah itu sepenuhnya — sama pola limitasi
+dengan guard 0.2.
+
+### 7.4 Push
+
+```
+git push --set-upstream origin ai-agent/{TICKET-ID}
+```
+
+### 7.5 Deteksi base branch
+
+```
+gh repo view --json defaultBranchRef --jq .defaultBranchRef.name
+```
+
+Simpan hasilnya sebagai `{BASE-BRANCH}`. **Jangan hardcode `main`** — repo target bisa
+pakai `master`, `develop`, atau nama lain.
+
+### 7.6 Cek PR existing (idempotensi)
+
+```
+gh pr list --head ai-agent/{TICKET-ID} --state open --json url,number
+```
+
+- **Ada hasil** → PR untuk branch ini sudah ada (mis. dibuka manual user setelah run
+  NEEDS_HUMAN sebelumnya, sekarang run lanjutan berhasil SUCCESS). **Jangan** panggil
+  `gh pr create` — push di 7.4 sudah cukup untuk update branch yang mendasari PR itu. Ambil
+  URL dari hasil `gh pr list`, catat untuk Ringkasan Akhir sebagai "PR sudah ada, branch sudah
+  diupdate" — bukan error.
+- **Kosong** → lanjut ke 7.7.
+
+### 7.7 `gh pr create`
+
+Title:
+```
+{TICKET-ID}: {judul ticket dari section Ticket}
+```
+
+Body — struktur identik `buildPrBody` di caf-orchestrator (`run-agent-pipeline.use-case.ts`),
+supaya dua jalur eksekusi menghasilkan bentuk PR yang sama:
+
+```
+Ticket: {TICKET-ID}
+{deskripsi ticket dari section Ticket}
+
+## Reports
+- Requirements: `.caf/tasks/{TICKET-ID}/requirements.md`
+- Verify: `.caf/tasks/{TICKET-ID}/verify-report.md`
+- QA: `.caf/tasks/{TICKET-ID}/qa-report.md`
+- Review: `.caf/tasks/{TICKET-ID}/review-notes.md`
+
+{docsNote — status Documentation dari stage 4: SUCCESS / GAGAL (non-blocking) / TIDAK TERSEDIA,
+kalimat setara yang sudah dipakai di Ringkasan Akhir}
+
+{isi mentah qa-report.md}
+
+{isi mentah review-notes.md}
+```
+
+Tidak ada blok peringatan skip-gate (`qualityGateWarning` di orchestrator) — command ini tidak
+punya fitur skip QA/Reviewer, jadi tidak applicable.
+
+Base: `{BASE-BRANCH}` dari 7.5. Simpan URL hasil `gh pr create` untuk Ringkasan Akhir.
+
 ## Berhenti Terkendali (NEEDS_HUMAN)
 
 Kalau ada gate yang budget-nya habis, atau implementasi berakhir NEEDS_HUMAN: itu
@@ -257,9 +403,16 @@ NEEDS_HUMAN dan sebutkan stage mana yang menghentikannya + temuan apa yang belum
 Kode yang sudah ditulis tetap ditinggal di branch — jangan di-revert, jangan dihapus. Manusia
 yang memutuskan lanjut atau buang.
 
+**Tegas: jalur NEEDS_HUMAN tidak pernah mencapai section 7.** Tidak ada commit, push, atau PR
+sama sekali di jalur ini — working tree ditinggal persis seperti kondisi terakhir stage yang
+menghentikan pipeline. Ini bukan perilaku baru (sudah tersirat dari struktur stop/`return` di
+tiap gate), ditulis eksplisit di sini supaya tidak ambigu.
+
 ## Verify
 
-Sebelum menulis ringkasan akhir, konfirmasi dengan Bash/Read — bukan dari ingatan alur:
+Sebelum menulis ringkasan akhir, konfirmasi dengan Bash/Read — bukan dari ingatan alur.
+
+**Kalau run berakhir NEEDS_HUMAN:**
 
 - [ ] Branch aktif sekarang memang `ai-agent/{TICKET-ID}` (`git branch --show-current`)
 - [ ] Artifact tiap stage yang jalan benar-benar ada di `.caf/tasks/{TICKET-ID}/`
@@ -269,6 +422,17 @@ Sebelum menulis ringkasan akhir, konfirmasi dengan Bash/Read — bukan dari inga
       di-push, ref itu tidak ada dan command-nya error, bukan memberi jawaban.
 - [ ] Kalau ternyata ada yang ter-push oleh subagent, **laporkan ke user secara menonjol** di
       ringkasan akhir — itu pelanggaran kontrak command ini, bukan detail kecil.
+
+**Kalau run berakhir SUCCESS (section 7 jalan):**
+
+- [ ] Branch aktif sekarang memang `ai-agent/{TICKET-ID}`
+- [ ] Push memang terjadi — `git status -sb` menyebut upstream `origin/ai-agent/{TICKET-ID}`
+- [ ] PR ada — baru dibuat di 7.7 ATAU existing terdeteksi di 7.6, URL-nya benar dan bisa
+      diakses
+- [ ] `git show --stat HEAD` — tiap path di commit terakhir memang masuk whitelist 7.1, tidak
+      ada file di luar scope yang ikut ter-commit
+- [ ] Kalau ternyata ada file di luar whitelist yang lolos ke commit, **laporkan ke user secara
+      menonjol** di ringkasan akhir — itu pelanggaran kontrak scope command ini.
 
 ## Ringkasan Akhir
 
@@ -282,6 +446,7 @@ Tampilkan tabel status tiap stage:
 | Documentation  | SUCCESS / GAGAL (non-blocking) / TIDAK TERSEDIA | - |
 | QA             | PASS (retry: n/1) / NEEDS_HUMAN / TIDAK DIJALANKAN (stage sebelumnya berhenti) | qa-report.md |
 | Reviewer       | APPROVE (retry: n/1) / NEEDS_HUMAN / TIDAK DIJALANKAN (stage sebelumnya berhenti) | review-notes.md |
+| Commit/Push/PR | SUCCESS (PR baru/existing) / DIBATALKAN (scope drift) / TIDAK DIJALANKAN (stage sebelumnya berhenti) | commit + URL PR |
 ```
 
 Stage yang **tidak pernah dipanggil** karena pipeline sudah berhenti sebelum sampai ke sana
@@ -293,7 +458,14 @@ Artifact-nya juga tidak ada, jadi tulis `-` di kolom Artifact.
 Sebutkan `qaRetryCount` dan `reviewerRetryCount` akhir apa adanya — itu yang memberi tahu
 user seberapa mulus run ini berjalan.
 
-Tutup dengan, apa adanya:
+Tutup dengan, sesuai status akhir:
 
-> Kode ada di branch `ai-agent/{TICKET-ID}`, belum di-push. Buka PR manual kalau sudah siap —
-> command ini sengaja tidak auto-create PR.
+**SUCCESS** (section 7 selesai):
+
+> Kode di-commit, push ke `ai-agent/{TICKET-ID}`, PR: {URL PR dari 7.6/7.7}.
+
+**NEEDS_HUMAN**:
+
+> Kode ada di branch `ai-agent/{TICKET-ID}`, belum di-commit/push. Lanjutkan atau perbaiki
+> manual, lalu jalankan ulang `/caf-run-pipeline {TICKET-ID}` kalau sudah siap — guard 0.2/0.3
+> di atas akan mendeteksi branch/artifact yang sudah ada dan menawarkan lanjut dari situ.
