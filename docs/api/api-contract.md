@@ -88,7 +88,18 @@ POST   /users                — Create user
 GET    /users/:id            — Get user detail
 PATCH  /users/:id            — Update user
 DELETE /users/:id            — Deactivate user
+PATCH  /users/:id/avatar     — Set user avatar
+DELETE /users/:id/avatar     — Remove user avatar
 ```
+
+### Required Permissions
+- **GET /users**: `user.read`
+- **POST /users**: `user.create`
+- **GET /users/:id**: `user.read`
+- **PATCH /users/:id**: `user.update`
+- **DELETE /users/:id**: `user.delete`
+- **PATCH /users/:id/avatar**: `user.update`
+- **DELETE /users/:id/avatar**: `user.update`
 
 ---
 

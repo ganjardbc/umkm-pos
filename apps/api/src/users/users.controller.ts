@@ -48,6 +48,7 @@ export class UsersController {
   }
 
   @Get()
+  @RequirePermission('user.read')
   @ApiOperation({ summary: 'List all users for the current merchant' })
   @ApiResponse({
     status: 200,
