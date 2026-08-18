@@ -8,3 +8,7 @@ node_modules
 !.env.example
 .caf/tasks/*/
 !.caf/tasks/README.md
+.caf/discovery/*/
+!.caf/discovery/README.md
+.caf/audits/*/
+!.caf/audits/README.md
