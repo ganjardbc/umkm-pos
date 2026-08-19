@@ -157,7 +157,8 @@ describe('TransactionsService', () => {
             createMany: jest.fn().mockResolvedValue({ count: 1 }),
           },
           outlet_product_inventory: {
-            update: jest.fn().mockResolvedValue({}),
+            updateMany: jest.fn().mockResolvedValue({ count: 1 }),
+            findUnique: jest.fn().mockResolvedValue({ stock_qty: 9 }),
           },
           inventory_movements: {
             create: jest.fn().mockResolvedValue({}),
@@ -166,7 +167,16 @@ describe('TransactionsService', () => {
 
         const result = await callback(tx);
 
-        expect(tx.outlet_product_inventory.update).toHaveBeenCalledWith(
+        expect(tx.outlet_product_inventory.updateMany).toHaveBeenCalledWith(
+          expect.objectContaining({
+            where: expect.objectContaining({
+              outlet_id: 'outlet-1',
+              product_id: 'product-1',
+              stock_qty: { gte: 1 },
+            }),
+          }),
+        );
+        expect(tx.outlet_product_inventory.findUnique).toHaveBeenCalledWith(
           expect.objectContaining({
             where: {
               outlet_id_product_id: {
@@ -176,7 +186,11 @@ describe('TransactionsService', () => {
             },
           }),
         );
-        expect(tx.inventory_movements.create).toHaveBeenCalled();
+        expect(tx.inventory_movements.create).toHaveBeenCalledWith(
+          expect.objectContaining({
+            data: expect.objectContaining({ stock_after: 9 }),
+          }),
+        );
 
         return result;
       });
@@ -200,6 +214,125 @@ describe('TransactionsService', () => {
 
       expect(result).toBeDefined();
       expect(mockPrisma.$transaction).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('concurrency / applyInventorySale', () => {
+    const merchantId = 'merchant-1';
+    const userId = 'user-1';
+
+    it('should not oversell when two concurrent sales race for the last unit of stock', async () => {
+      mockPrisma.outlets.findFirst.mockResolvedValue({
+        id: 'outlet-1',
+        merchant_id: merchantId,
+      });
+
+      mockPrisma.products.findMany.mockResolvedValue([
+        {
+          id: 'product-1',
+          merchant_id: merchantId,
+          name: 'Product 1',
+          price: 10000,
+          is_active: true,
+        },
+      ]);
+
+      // Shared in-memory inventory row simulating the actual DB row under
+      // test — both concurrent requests read this same starting value (1)
+      // during the fail-fast pre-check, mirroring the stale-read race that
+      // caused overselling before the fix.
+      const inventoryStore = { stock_qty: 1 };
+
+      mockPrisma.outlet_product_inventory.findMany.mockResolvedValue([
+        {
+          id: 'inv-1',
+          merchant_id: merchantId,
+          outlet_id: 'outlet-1',
+          product_id: 'product-1',
+          stock_qty: inventoryStore.stock_qty,
+          is_active: true,
+        },
+      ]);
+
+      // Simulate the atomic conditional updateMany + re-read against the
+      // shared inventoryStore, exactly like MySQL InnoDB would serialize
+      // concurrent UPDATE ... WHERE stock_qty >= qty statements on the same
+      // row.
+      const tx = {
+        transactions: {
+          create: jest
+            .fn()
+            .mockImplementation(async () => ({ id: `tx-${Math.random()}` })),
+        },
+        transaction_items: {
+          createMany: jest.fn().mockResolvedValue({ count: 1 }),
+        },
+        outlet_product_inventory: {
+          updateMany: jest.fn(async ({ where, data }: any) => {
+            if (inventoryStore.stock_qty >= where.stock_qty.gte) {
+              inventoryStore.stock_qty -= data.stock_qty.decrement;
+              return { count: 1 };
+            }
+            return { count: 0 };
+          }),
+          findUnique: jest.fn(async () => ({
+            stock_qty: inventoryStore.stock_qty,
+          })),
+        },
+        inventory_movements: {
+          create: jest.fn().mockResolvedValue({}),
+        },
+      };
+
+      mockPrisma.$transaction.mockImplementation(async (callback: any) =>
+        callback(tx),
+      );
+
+      mockPrisma.transactions.findFirst.mockImplementation(
+        async ({ where }: any) => ({
+          id: where.id,
+          transaction_items: [],
+        }),
+      );
+
+      const dto = {
+        outlet_id: 'outlet-1',
+        payment_method: 'cash',
+        cash_received: 50000,
+        change_amount: 40000,
+        items: [{ product_id: 'product-1', qty: 1 }],
+      };
+
+      const results = await Promise.allSettled([
+        service.create(dto as any, merchantId, userId),
+        service.create(dto as any, merchantId, userId),
+      ]);
+
+      const fulfilled = results.filter((r) => r.status === 'fulfilled');
+      const rejected = results.filter((r) => r.status === 'rejected');
+
+      expect(fulfilled).toHaveLength(1);
+      expect(rejected).toHaveLength(1);
+      expect((rejected[0] as PromiseRejectedResult).reason).toBeInstanceOf(
+        BadRequestException,
+      );
+
+      // Final stock must reflect exactly one successful decrement and must
+      // never go negative.
+      expect(inventoryStore.stock_qty).toBe(0);
+      expect(inventoryStore.stock_qty).not.toBeLessThan(0);
+
+      // inventory_movements.stock_after recorded for the successful sale
+      // must match the actual post-decrement stock_qty (0), not a stale
+      // value computed before the race.
+      expect(tx.inventory_movements.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            stock_after: 0,
+          }),
+        }),
+      );
+      expect(tx.outlet_product_inventory.updateMany).toHaveBeenCalledTimes(2);
     });
   });
 
