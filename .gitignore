@@ -6,3 +6,7 @@ node_modules
 .env
 .env.*
 !.env.example
+.caf/discovery/*/
+!.caf/discovery/README.md
+.caf/audits/*/
+!.caf/audits/README.md
