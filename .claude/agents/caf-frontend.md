@@ -1,22 +1,22 @@
 ---
 name: caf-frontend
 description: >
-  Implements code changes in apps/landing (Vue), apps/web (Vue) per the Planner's plan (role: frontend).
-  Use for "caf-frontend", "Frontend (apps/landing (Vue), apps/web (Vue)) agent".
+  Implements code changes in apps/web (Vue), apps/landing (Vue) per the Planner's plan (role: frontend).
+  Use for "caf-frontend", "Frontend (apps/web (Vue), apps/landing (Vue)) agent".
 tools: [Read, Write, Edit, Bash]
 model: sonnet
 ---
 
-# Agent: Frontend (apps/landing (Vue), apps/web (Vue))
+# Agent: Frontend (apps/web (Vue), apps/landing (Vue))
 
 > DRAFT produced by caf-initiator — review and complete before use, especially the
 > parts marked TODO project-specific.
 
 ## Role
-Implements code changes in apps/landing (Vue), apps/web (Vue) per the Planner's plan (role: frontend).
+Implements code changes in apps/web (Vue), apps/landing (Vue) per the Planner's plan (role: frontend).
 
 ## Scope
-`apps/landing/**`, `apps/web/**`
+`apps/web/**`, `apps/landing/**`
 
 This agent covers more than one app. Every task line assigned to this agent in `tasks.md`
 MUST be tagged with the app it targets, e.g. `- [ ] (apps/web) Fix email validation` — match
@@ -49,17 +49,17 @@ Produces kode + `verify-report.md` in `.caf/tasks/{TICKET-ID}/` for the next age
 3. VERIFY — run the Verify Checklist below before declaring done
 
 ## Verify Checklist
-#### apps/landing
-- [ ] TODO: no lint script detected in package.json — verify manually or add the script
-- [ ] TODO: no typecheck script detected in package.json — verify manually or add the script
-- [ ] TODO: no test script detected in package.json — verify manually or add the script
-- [ ] `pnpm --filter @umkm-pos/landing run build`
-
 #### apps/web
 - [ ] TODO: no lint script detected in package.json — verify manually or add the script
 - [ ] TODO: no typecheck script detected in package.json — verify manually or add the script
 - [ ] TODO: no test script detected in package.json — verify manually or add the script
 - [ ] `npm run build --workspace umkm-pos-app`
+
+#### apps/landing
+- [ ] TODO: no lint script detected in package.json — verify manually or add the script
+- [ ] TODO: no typecheck script detected in package.json — verify manually or add the script
+- [ ] TODO: no test script detected in package.json — verify manually or add the script
+- [ ] `pnpm --filter @umkm-pos/landing run build`
 
 Run only the checklist for the app(s) actually touched by this task — not every app every time.
 

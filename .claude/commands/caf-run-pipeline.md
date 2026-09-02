@@ -274,8 +274,8 @@ can't easily be undone once it happens.
 Paths allowed into the commit (ONLY these, not the entire working tree):
 
 - `.caf/tasks/{TICKET-ID}/` (artifact)
-- `caf-frontend`: `apps/landing/`
 - `caf-frontend`: `apps/web/`
+- `caf-frontend`: `apps/landing/`
 - `caf-backend`: `apps/api/`
 - `caf-backend`: `packages/eslint-config/`
 - `caf-backend`: `packages/shared-types/`

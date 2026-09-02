@@ -28,7 +28,7 @@ decision that must be made by a human. Add the MCP tool name to the frontmatter 
 not just this section.
 
 ## Input
-`verify-report.md` from the implementation agent (apps/landing, apps/web, apps/api, packages/eslint-config, packages/shared-types, packages/shared-utils) and `qa-report.md` from the QA Agent, both in
+`verify-report.md` from the implementation agent (apps/web, apps/landing, apps/api, packages/eslint-config, packages/shared-types, packages/shared-utils) and `qa-report.md` from the QA Agent, both in
 `.caf/tasks/{TICKET-ID}/` (required).
 
 Optional — when invoked from post-PR mode (`/caf-fix-review`, not the normal pre-PR pipeline
