@@ -1,8 +1,11 @@
 ---
-allowed-tools: Read, Write, Edit, Grep, Glob, Bash
 description: Sinkronkan docs/feature-catalog.md dengan kode — tambah fitur baru, refresh entri TODO, tandai entri yang hilang. Tidak pernah menghapus entri tulisan manusia.
-argument-hint: [opsional: scope, mis. "apps/api" atau nama module tertentu]
 ---
+
+> Auto-published from caf-initiator (Claude Code → OpenCode). Paths have
+> already been rewritten automatically, but Claude-Code-specific terms/structure
+> (e.g. "spawn agent", Claude-only tool references) have not been manually
+> reviewed yet. Adjust before serious use.
 
 > DRAFT hasil caf-initiator — review dan lengkapi sebelum dipakai, terutama bagian
 > yang ditandai TODO project-specific.
@@ -14,7 +17,7 @@ Sinkronkan `docs/feature-catalog.md` dengan keadaan kode saat ini.
 Project ini terdeteksi **controller-based** (backend punya `*.controller.ts`, frontend punya
 router). Fitur = irisan antara endpoint backend dan route frontend yang memakainya.
 
-Kalau agent Documentation ada di `.claude/agents/caf-documentation.md`, baca dan patuhi
+Kalau agent Documentation ada di `.opencode/agent/caf-documentation.md`, baca dan patuhi
 aturan penulisan dokumentasi di sana sebagai sumber kebenaran utama untuk gaya dan
 struktur — command ini hanya mengatur *cara mendeteksi* isinya.
 
