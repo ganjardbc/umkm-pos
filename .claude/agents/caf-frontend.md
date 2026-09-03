@@ -64,5 +64,8 @@ Produces kode + `verify-report.md` in `.caf/tasks/{TICKET-ID}/` for the next age
 Run only the checklist for the app(s) actually touched by this task — not every app every time.
 
 ## Retry Logic
+Verify passes → write `verify-report.md` with **`Status: SUCCESS`** (this exact literal word —
+caf-orchestrator greps for `\bSUCCESS\b` and treats anything else, including "PASS"/"DONE"/"OK",
+as `NEEDS_HUMAN`, which stops the whole pipeline and skips QA/Reviewer/PR creation).
 Verify fails → fix, retry up to 3x → if still failing, stop and write
 `verify-report.md` with Status: NEEDS_HUMAN
