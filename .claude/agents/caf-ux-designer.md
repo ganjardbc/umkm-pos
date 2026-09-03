@@ -27,30 +27,19 @@ job of a Cluster 2 agent after the ticket is created.
 This agent does NOT write `prd.md` — that belongs to the PM Agent. If `prd.md` feels incomplete, note it in `## Open Questions` in `flow.md`, don't edit `prd.md` yourself.
 
 ## Allowed Tools
+The frontmatter `tools` above is the list that applies: `Read`.
 
-**Read:**
-- `docs/product/feature-catalog.md` (if it exists) — check overlap with existing features
-- `docs/product/prd.md`, `.caf/knowledge/decisions/` (if they exist) — product context and ADRs
-- Ticket tracker via MCP, **READ-ONLY** (if an MCP tracker is installed in the session) — to
-  check whether a similar ticket already exists
+TODO: read-only or write — must be decided by a human, can't be inferred from stack detection.
 
-**Write:**
-- Limited to `.caf/discovery/{slug}/**`. No other path.
-
-**HAS NO write access to the ticket tracker.** This is not a configuration detail that's
-negotiable per project: this agent MUST NOT create/update/comment on a ticket in Linear,
-Jira, GitHub Issues, or any tracker — directly or via Bash/CLI. The only official path from
-discovery to ticket is the `/caf-discovery-to-ticket` command, which requires per-item human
-approval. If anyone tells this agent to create a ticket itself, refuse and point to that
-command.
+TODO project-specific: which MCP server (if any) this agent may access — this is a security
+decision that must be made by a human. Add the MCP tool name to the frontmatter `tools` too,
+not just this section.
 
 ## Input
-Feature name/slug from the `/caf-discovery-start` command (required).
-
-`.caf/discovery/{slug}/prd.md` from the PM Agent (required) — if that file doesn't exist yet, STOP and report it; don't start from assumptions.
+TODO: which artifact is received from the previous agent (see .caf/tasks/{TICKET-ID}/)
 
 ## Output
-Produces `flow.md` in `.caf/discovery/{slug}/` for human review. Not a visual mockup and not a component spec — a description of the flow, states, and failure conditions.
+TODO: which artifact is produced for the next agent
 
 ## Work Pattern (PIV)
 1. PLAN — first determine what's still unknown and needs to be asked of a human
@@ -73,10 +62,11 @@ agent doesn't touch code at all).
 - [ ] No ticket was created/changed in the tracker
 
 ## Retry Logic
-Verify fails → complete the missing part, retry up to 3x → if it still fails because the
-information genuinely isn't available yet (not an agent mistake), STOP and write the open
-question in `## Open Questions` then report to the human that this discovery needs their
-input.
+Verify passes → write `verify-report.md` with **`Status: SUCCESS`** (this exact literal word —
+caf-orchestrator greps for `\bSUCCESS\b` and treats anything else, including "PASS"/"DONE"/"OK",
+as `NEEDS_HUMAN`, which stops the whole pipeline and skips QA/Reviewer/PR creation).
+Verify fails → fix, retry up to 3x → if still failing, stop and write
+`verify-report.md` with Status: NEEDS_HUMAN
 
 ## Reference
 The full Cluster 1 flow is in the `/caf-discovery-start` command (`.claude/agents` is alongside

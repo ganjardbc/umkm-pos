@@ -1,1 +1,14 @@
-{}
+{
+  "caf-pm.md": {
+    "Working Pattern (PIV)": {
+      "decision": "skipped",
+      "hash": "7abd11e5f221a15f"
+    }
+  },
+  "caf-ux-designer.md": {
+    "Working Pattern (PIV)": {
+      "decision": "skipped",
+      "hash": "7abd11e5f221a15f"
+    }
+  }
+}

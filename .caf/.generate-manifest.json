@@ -188,24 +188,24 @@
     ".claude/agents/caf-pm.md": {
       "sections": {
         "Allowed Tools": {
-          "hash": "sha256:f9a0b73388bc79e880e0f8d0a7ff34e88b5c75a7b90d238ca7c09a4ee459043a",
+          "hash": "sha256:71b4cad35439b5438eb6dc501f963a935694e8b98eeaa06dbe44c2b2592bb060",
           "templateVersion": "caf-initiator@0.1.4",
-          "lastSyncedAt": "2026-09-03T16:58:24.302Z"
+          "lastSyncedAt": "2026-09-03T17:30:36.786Z"
         },
         "Input": {
-          "hash": "sha256:141214e5ea7545451a888cc0157aeb9bfdcfb0479c01f33800187ce3b7799f8d",
+          "hash": "sha256:b6a3cce0dd9d0ab692b6f5a3fb27ad2e33bb78e82a5ad2c7b8fdfaf9f454bf64",
           "templateVersion": "caf-initiator@0.1.4",
-          "lastSyncedAt": "2026-09-03T16:58:24.302Z"
+          "lastSyncedAt": "2026-09-03T17:30:36.787Z"
         },
         "Output": {
-          "hash": "sha256:e465f227e567029e5a0831af13cb696f141c8edda7e8a19b36fd4c0ebc45a675",
+          "hash": "sha256:3abc0d6d27ff4faecdf3136f3ec56063dc1476fe0825bf5e8cec936ded9d600c",
           "templateVersion": "caf-initiator@0.1.4",
-          "lastSyncedAt": "2026-09-03T16:58:24.302Z"
+          "lastSyncedAt": "2026-09-03T17:30:36.787Z"
         },
         "Retry Logic": {
-          "hash": "sha256:72b128ef8a91c2478e91e545c0d7dff4256a4659228efacb8be9762bdc2a5363",
+          "hash": "sha256:39e9272557b90ad7c9b84c5f1c1b668c703609861631bcee1feb25b774e608b7",
           "templateVersion": "caf-initiator@0.1.4",
-          "lastSyncedAt": "2026-09-03T16:58:24.302Z"
+          "lastSyncedAt": "2026-09-03T17:30:36.798Z"
         }
       }
     },
@@ -217,9 +217,9 @@
           "lastSyncedAt": "2026-09-03T16:58:24.302Z"
         },
         "Input": {
-          "hash": "sha256:bc97c056090a5e921a076a53f43db6281915ef730c7ba63d30a7a9f4f178b2fd",
+          "hash": "sha256:cb03630ac498298f3162b950d207aecc3389771e7772a86280d90047c3f54827",
           "templateVersion": "caf-initiator@0.1.4",
-          "lastSyncedAt": "2026-09-03T16:58:24.302Z"
+          "lastSyncedAt": "2026-09-03T17:30:36.799Z"
         },
         "Output": {
           "hash": "sha256:c3ed7dea15a26aadc503de9255f6f19cc2d0d7548d3bcd5393ce8e77963ca89c",
@@ -246,9 +246,9 @@
           "lastSyncedAt": "2026-09-03T16:58:24.302Z"
         },
         "Input": {
-          "hash": "sha256:5956e698170beb51bae6bb59fdc53aaf701e9a2f4bee0f8fca5ea23418696625",
+          "hash": "sha256:fbc2a6e1d1c1c280ff121c031d8839be9e675f30bfba07a010316a70e11b42ce",
           "templateVersion": "caf-initiator@0.1.4",
-          "lastSyncedAt": "2026-09-03T16:58:24.302Z"
+          "lastSyncedAt": "2026-09-03T17:30:36.799Z"
         },
         "Output": {
           "hash": "sha256:2cfc4b327dddf8ad573bf1e8f3a1aa8f1bacf0cc694f949f1915028af51594a3",
@@ -270,24 +270,24 @@
     ".claude/agents/caf-ux-designer.md": {
       "sections": {
         "Allowed Tools": {
-          "hash": "sha256:f9a0b73388bc79e880e0f8d0a7ff34e88b5c75a7b90d238ca7c09a4ee459043a",
+          "hash": "sha256:71b4cad35439b5438eb6dc501f963a935694e8b98eeaa06dbe44c2b2592bb060",
           "templateVersion": "caf-initiator@0.1.4",
-          "lastSyncedAt": "2026-09-03T16:58:24.302Z"
+          "lastSyncedAt": "2026-09-03T17:30:36.800Z"
         },
         "Input": {
-          "hash": "sha256:836e65911fe789ccb1dff034714e009f30aba6adc6f3a48352e13e3cec7c0027",
+          "hash": "sha256:b6a3cce0dd9d0ab692b6f5a3fb27ad2e33bb78e82a5ad2c7b8fdfaf9f454bf64",
           "templateVersion": "caf-initiator@0.1.4",
-          "lastSyncedAt": "2026-09-03T16:58:24.302Z"
+          "lastSyncedAt": "2026-09-03T17:30:36.800Z"
         },
         "Output": {
-          "hash": "sha256:b49885e18b8669c4e874787c714102156007962c512c0b7cd72b8232f2445b32",
+          "hash": "sha256:3abc0d6d27ff4faecdf3136f3ec56063dc1476fe0825bf5e8cec936ded9d600c",
           "templateVersion": "caf-initiator@0.1.4",
-          "lastSyncedAt": "2026-09-03T16:58:24.302Z"
+          "lastSyncedAt": "2026-09-03T17:30:36.800Z"
         },
         "Retry Logic": {
-          "hash": "sha256:72b128ef8a91c2478e91e545c0d7dff4256a4659228efacb8be9762bdc2a5363",
+          "hash": "sha256:39e9272557b90ad7c9b84c5f1c1b668c703609861631bcee1feb25b774e608b7",
           "templateVersion": "caf-initiator@0.1.4",
-          "lastSyncedAt": "2026-09-03T16:58:24.302Z"
+          "lastSyncedAt": "2026-09-03T17:30:36.807Z"
         }
       }
     }
