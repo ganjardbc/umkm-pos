@@ -291,7 +291,17 @@ export class RbacService {
     return { message: 'Role revoked from user successfully' };
   }
 
-  async getUserRoles(userId: string) {
+  async getUserRoles(userId: string, merchantId: string) {
+    // Scope check: target user must belong to caller's merchant
+    const user = await this.prisma.users.findFirst({
+      where: { id: userId, merchant_id: merchantId },
+    });
+    if (!user) {
+      throw new NotFoundException(
+        'User not found or does not belong to your merchant',
+      );
+    }
+
     return this.prisma.user_roles.findMany({
       where: { user_id: userId },
       include: {
