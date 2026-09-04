@@ -264,6 +264,11 @@
           "hash": "sha256:39e9272557b90ad7c9b84c5f1c1b668c703609861631bcee1feb25b774e608b7",
           "templateVersion": "caf-initiator@0.1.4",
           "lastSyncedAt": "2026-09-03T16:58:24.302Z"
+        },
+        "Report Format": {
+          "hash": "sha256:c7c46c1cdf577e2795df940f9c9f8c7ffd80b35cf6e3f0c3dc469efe1feed4d2",
+          "templateVersion": "caf-initiator@0.1.5",
+          "lastSyncedAt": "2026-09-04T16:21:26.295Z"
         }
       }
     },

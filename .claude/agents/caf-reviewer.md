@@ -56,3 +56,30 @@ caf-orchestrator greps for `\bSUCCESS\b` and treats anything else, including "PA
 as `NEEDS_HUMAN`, which stops the whole pipeline and skips QA/Reviewer/PR creation).
 Verify fails → fix, retry up to 3x → if still failing, stop and write
 `verify-report.md` with Status: NEEDS_HUMAN
+
+
+## Report Format
+Save the report to `.caf/tasks/<TICKET-ID>/review-notes.md`.
+
+```
+## Review Notes — {TICKET-ID}
+Ticket: {TICKET-ID}
+Agent: caf-reviewer
+Verdict: APPROVE | CHANGES REQUESTED | DEFER
+
+### Security Audit
+{security findings, or "None" if none}
+
+### Qualitative Review
+{code quality notes}
+
+### Verdict Rationale
+{reasoning for the verdict above}
+
+### For Developer
+{notes for the developer, if relevant}
+```
+
+Verdict MUST be exactly one of the three values above (APPROVE / CHANGES REQUESTED / DEFER) —
+don't use other values (e.g. NEEDS_HUMAN is for the automated pipeline's retry cycle, not this
+Verdict line).
