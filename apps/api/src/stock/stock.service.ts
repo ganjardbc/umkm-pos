@@ -189,68 +189,102 @@ export class StockService {
       );
     }
 
-    const currentStock = inventory?.stock_qty ?? 0;
-    const newStock = currentStock + dto.change_qty;
-    if (newStock < 0) {
-      throw new BadRequestException(
-        `Insufficient stock. Current: ${currentStock}, Change: ${dto.change_qty}. Stock cannot go below 0.`,
-      );
-    }
+    // Atomic update: validate stock + adjust outlet stock + write movement, all inside
+    // a single interactive transaction to avoid check-then-act race conditions on
+    // stock_qty. For existing rows, the stock >= 0 validation and the write happen in
+    // the same conditional `updateMany` call (WHERE stock_qty + change_qty >= 0),
+    // so concurrent adjust() calls on the same row cannot both pass validation and
+    // then overwrite each other's result (lost update).
+    const { updatedInventory, movement } = await this.prisma.$transaction(
+      async (tx) => {
+        let inventoryRow: {
+          outlet_id: string;
+          product_id: string;
+          stock_qty: number;
+        };
 
-    const upsertedInventory = inventory
-      ? this.prisma.outlet_product_inventory.update({
-          where: {
-            outlet_id_product_id: {
+        if (inventory) {
+          const updateResult = await tx.outlet_product_inventory.updateMany({
+            where: {
               outlet_id: dto.outlet_id,
               product_id: dto.product_id,
+              merchant_id: merchantId,
+              // Equivalent to "stock_qty + change_qty >= 0", evaluated atomically by
+              // the database as part of the update's WHERE clause.
+              stock_qty: { gte: -dto.change_qty },
             },
-          },
-          data: {
-            stock_qty: newStock,
-            updated_by: userId,
-            updated_at: new Date(),
-          },
-        })
-      : this.prisma.outlet_product_inventory.create({
+            data: {
+              stock_qty: { increment: dto.change_qty },
+              updated_by: userId,
+              updated_at: new Date(),
+            },
+          });
+
+          if (updateResult.count === 0) {
+            const current = await tx.outlet_product_inventory.findFirst({
+              where: {
+                outlet_id: dto.outlet_id,
+                product_id: dto.product_id,
+                merchant_id: merchantId,
+              },
+            });
+            throw new BadRequestException(
+              current
+                ? `Insufficient stock for change_qty ${dto.change_qty}. Stock cannot go below 0.`
+                : `Inventory row for outlet ${dto.outlet_id} and product ${dto.product_id} not found`,
+            );
+          }
+
+          inventoryRow = await tx.outlet_product_inventory.findUniqueOrThrow({
+            where: {
+              outlet_id_product_id: {
+                outlet_id: dto.outlet_id,
+                product_id: dto.product_id,
+              },
+            },
+          });
+        } else {
+          inventoryRow = await tx.outlet_product_inventory.create({
+            data: {
+              merchant_id: merchantId,
+              outlet_id: dto.outlet_id,
+              product_id: dto.product_id,
+              stock_qty: dto.change_qty,
+              min_stock: product.min_stock ?? 0,
+              is_active: true,
+              created_by: userId,
+              updated_by: userId,
+            },
+          });
+        }
+
+        const movementRow = await tx.inventory_movements.create({
           data: {
             merchant_id: merchantId,
             outlet_id: dto.outlet_id,
             product_id: dto.product_id,
-            stock_qty: newStock,
-            min_stock: product.min_stock ?? 0,
-            is_active: true,
+            change_qty: dto.change_qty,
+            stock_after: inventoryRow.stock_qty,
+            reason: dto.reason,
+            ref_type: 'manual_adjustment',
+            ref_id: null,
+            note: dto.note ?? null,
             created_by: userId,
             updated_by: userId,
           },
+          include: {
+            products: {
+              select: { id: true, name: true, slug: true },
+            },
+            outlets: {
+              select: { id: true, name: true, slug: true },
+            },
+          },
         });
 
-    // Atomic update: adjust outlet stock + write movement
-    const [updatedInventory, movement] = await this.prisma.$transaction([
-      upsertedInventory,
-      this.prisma.inventory_movements.create({
-        data: {
-          merchant_id: merchantId,
-          outlet_id: dto.outlet_id,
-          product_id: dto.product_id,
-          change_qty: dto.change_qty,
-          stock_after: newStock,
-          reason: dto.reason,
-          ref_type: 'manual_adjustment',
-          ref_id: null,
-          note: dto.note ?? null,
-          created_by: userId,
-          updated_by: userId,
-        },
-        include: {
-          products: {
-            select: { id: true, name: true, slug: true },
-          },
-          outlets: {
-            select: { id: true, name: true, slug: true },
-          },
-        },
-      }),
-    ]);
+        return { updatedInventory: inventoryRow, movement: movementRow };
+      },
+    );
 
     return {
       outlet_inventory: {
