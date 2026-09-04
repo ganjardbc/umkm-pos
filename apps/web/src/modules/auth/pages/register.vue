@@ -195,7 +195,7 @@
                   label="Back"
                   class="w-full"
                   :disabled="loading"
-                  @click="activateCallback('1')"
+                  @click="activateCallback(1)"
                 />
                 <Button
                   type="submit"
@@ -280,7 +280,7 @@
                   label="Back"
                   class="w-full"
                   :disabled="loading"
-                  @click="activateCallback('2')"
+                  @click="activateCallback(2)"
                 />
                 <Button
                   type="submit"
@@ -359,10 +359,10 @@ const userResolver = ref(zodResolver(
   })
 ));
 
-const onUserFormSubmit = ({ valid, values }: { valid: boolean; values: any }, activateCallback: (step: string) => void) => {
+const onUserFormSubmit = ({ valid, values }: { valid: boolean; values: any }, activateCallback: (step: number) => void) => {
   if (valid) {
     userFormValues.value = values;
-    activateCallback('2');
+    activateCallback(2);
   }
 };
 
@@ -390,10 +390,10 @@ const onMerchantNameChange = (name: string, form: any) => {
   form.slug.value = slug;
 };
 
-const onMerchantFormSubmit = ({ valid, values }: { valid: boolean; values: any }, activateCallback: (step: string) => void) => {
+const onMerchantFormSubmit = ({ valid, values }: { valid: boolean; values: any }, activateCallback: (step: number) => void) => {
   if (valid) {
     merchantFormValues.value = values;
-    activateCallback('3');
+    activateCallback(3);
   }
 };
 
