@@ -598,6 +598,13 @@ export class TransactionsService {
           `Inventory for product ${item.product_id} was not found`,
         );
       }
+      // Best-effort fail-fast check: gives early UX feedback before opening the
+      // $transaction, but this read is NOT atomic with the decrement below and
+      // can be stale under concurrent requests for the same product/outlet.
+      // The authoritative check is the atomic conditional updateMany in
+      // applyInventorySale (WHERE stock_qty >= qty), which runs inside the
+      // $transaction and is the sole source of truth for whether stock is
+      // actually sufficient.
       if (outletInventory.stock_qty < item.qty) {
         throw new BadRequestException(
           `Insufficient stock for product "${product.name}" in this outlet. Available: ${outletInventory.stock_qty}, Requested: ${item.qty}`,
@@ -707,8 +714,8 @@ export class TransactionsService {
     tx: any,
     itemsData: Array<{
       product_id: string;
+      product_name_snapshot: string;
       qty: number;
-      stock_after: number;
     }>,
     merchantId: string,
     outletId: string,
@@ -716,17 +723,42 @@ export class TransactionsService {
     userId: string,
   ) {
     for (const item of itemsData) {
-      await tx.outlet_product_inventory.update({
+      // Atomic check-and-decrement: the WHERE clause enforces stock_qty >= qty
+      // at the DB level, so concurrent sales of the same product/outlet cannot
+      // both pass the check and both decrement (which would drive stock_qty
+      // negative). Only one concurrent transaction can match this row per qty
+      // available; the rest get count === 0 and roll back.
+      const result = await tx.outlet_product_inventory.updateMany({
         where: {
-          outlet_id_product_id: {
-            outlet_id: outletId,
-            product_id: item.product_id,
-          },
+          outlet_id: outletId,
+          product_id: item.product_id,
+          merchant_id: merchantId,
+          is_active: true,
+          stock_qty: { gte: item.qty },
         },
         data: {
           stock_qty: { decrement: item.qty },
           updated_by: userId,
           updated_at: new Date(),
+        },
+      });
+
+      if (result.count === 0) {
+        throw new BadRequestException(
+          `Insufficient stock for product "${item.product_name_snapshot}" in this outlet.`,
+        );
+      }
+
+      // Re-read the row inside the same transaction to get the actual
+      // post-decrement stock_qty for an accurate audit trail — the value
+      // computed earlier in prepareTransactionPayload is stale under
+      // concurrency.
+      const updatedInventory = await tx.outlet_product_inventory.findUnique({
+        where: {
+          outlet_id_product_id: {
+            outlet_id: outletId,
+            product_id: item.product_id,
+          },
         },
       });
 
@@ -736,7 +768,7 @@ export class TransactionsService {
           outlet_id: outletId,
           product_id: item.product_id,
           change_qty: -item.qty,
-          stock_after: item.stock_after,
+          stock_after: updatedInventory?.stock_qty ?? null,
           reason: 'sale',
           ref_type: 'transaction',
           ref_id: transactionId,
