@@ -1,7 +1,7 @@
 <template>
   <div class="w-full space-y-4">
     <div class="flex flex-col md:flex-row gap-4">
-      <div class="flex-1">
+      <div class="flex-1 min-w-0">
         <UiSearch
           v-model="form.search"
           type="search"
@@ -18,80 +18,101 @@
       />
     </div>
 
-    <UiCard class="p-0! gap-0! overflow-hidden!">
-      <DataTable :value="roles" :loading="loading" tableStyle="min-width: 50rem">
-        <template #empty>
-          <span class="w-full text-center flex justify-center">
-            Roles are empty.
-          </span>
-        </template>
-        <Column field="no" header="NO" class="w-18">
-          <template #body="slotProps">
-            {{ getNoTable(slotProps.index, pagination.page, pagination.rows) }}
-          </template>
-        </Column>
-        <Column field="name" header="Name">
-          <template #body="slotProps">
-            {{ slotProps.data.name }}
-          </template>
-        </Column>
-        <Column field="description" header="Description">
-          <template #body="slotProps">
-            {{ slotProps.data.description }}
-          </template>
-        </Column>
-        <Column field="role_permissions" header="Total Permissions">
-          <template #body="slotProps">
-            {{ slotProps.data.role_permissions?.length }}
-          </template>
-        </Column>
-        <Column field="created_at" header="Created At">
-          <template #body="slotProps">
-            {{ formatDateTime(slotProps.data.created_at) }}
-          </template>
-        </Column>
-        <Column field="action" header="#" class="w-[148px]">
-          <template #body="slotProps">
-            <div class="flex gap-2">
-              <Button
-                severity="secondary" 
-                variant="outlined"
-                icon="pi pi-eye"
-                size="small"
-                @click="onDetailRole(slotProps.data)"
-              />
-              <Button
-                severity="secondary" 
-                variant="outlined"
-                icon="pi pi-pencil"
-                size="small"
-                :disabled="!isCanUpdate"
-                @click="onEditRole(slotProps.data)"
-              />
-              <Button
-                severity="secondary" 
-                variant="outlined"
-                icon="pi pi-trash"
-                size="small"
-                :disabled="!isCanDelete"
-                @click="onDeleteRole(slotProps.data)"
-              />
-            </div>
-          </template>
-        </Column>
-      </DataTable>
-      <UiPagination
-        v-model="pagination"
-        @page="onPageChange"
-      />
-    </UiCard>
+    <UiLoading
+      v-if="loading"
+      message="Loading roles..."
+    />
+
+    <div v-else-if="roles.length === 0" class="flex flex-col items-center justify-center py-16 text-gray-400">
+      <i class="pi pi-inbox mb-3 text-4xl" />
+      <p class="text-sm">Roles are empty.</p>
+    </div>
+
+    <div v-else class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <UiCard
+        v-for="(role, index) in roles"
+        :key="role.id"
+        class="relative overflow-hidden"
+      >
+        <div class="flex items-start justify-between gap-2">
+          <div class="min-w-0 flex-1">
+            <p class="truncate text-base font-semibold text-slate-900 dark:text-slate-50">
+              {{ role.name || '-' }}
+            </p>
+            <p class="mt-0.5 text-xs text-slate-400">
+              #{{ getNoTable(index, pagination.page, pagination.rows) }}
+            </p>
+          </div>
+        </div>
+
+        <Divider class="my-0!" />
+
+        <div class="space-y-2 text-xs">
+          <div>
+            <span class="text-slate-400 block mb-0.5">Description</span>
+            <p class="text-slate-700 dark:text-slate-300 line-clamp-2">
+              {{ role.description || '-' }}
+            </p>
+          </div>
+
+          <div class="flex items-center justify-between">
+            <span class="text-slate-400">Total Permissions</span>
+            <span class="text-right font-medium text-slate-700 dark:text-slate-300">
+              {{ role.role_permissions?.length || 0 }}
+            </span>
+          </div>
+
+          <div class="flex items-center justify-between">
+            <span class="text-slate-400">Created At</span>
+            <span class="text-right text-slate-700 dark:text-slate-300">
+              {{ formatDateTime(role.created_at) }}
+            </span>
+          </div>
+        </div>
+
+        <Divider class="my-0!" />
+
+        <div class="flex items-center justify-end gap-2">
+          <Button
+            severity="secondary"
+            variant="outlined"
+            icon="pi pi-eye"
+            size="small"
+            @click="onDetailRole(role)"
+          />
+          <Button
+            severity="secondary"
+            variant="outlined"
+            icon="pi pi-pencil"
+            size="small"
+            :disabled="!isCanUpdate"
+            @click="onEditRole(role)"
+          />
+          <Button
+            severity="secondary"
+            variant="outlined"
+            icon="pi pi-trash"
+            size="small"
+            :disabled="!isCanDelete"
+            @click="onDeleteRole(role)"
+          />
+        </div>
+      </UiCard>
+    </div>
+
+    <UiPagination
+      v-model="pagination"
+      class="px-0!"
+      @page="onPageChange"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
+import type { RoleDetail } from '@/modules/role/services/types.ts';
 import { onMounted, ref, computed } from 'vue';
-import { useRouter  } from 'vue-router';
-import { getNoTable, getErrorMessage, formatDateTime } from '@/helpers/utils.ts';
+import { useRouter } from 'vue-router';
+import { getNoTable, getErrorMessage, formatDateTime, useDebounce } from '@/helpers/utils.ts';
 import { getListRole, deleteRole } from '@/modules/role/services/api.ts';
 import { showToast, showConfirm } from '@/helpers/toast.ts';
 import { isHasPermission } from '@/helpers/auth.ts';
@@ -101,6 +122,7 @@ import { CREATE, UPDATE, DELETE } from '@/modules/role/services/rbac.ts';
 import UiCard from '@/components/UiCard.vue';
 import UiSearch from '@/components/UiSearch.vue';
 import UiPagination from '@/components/UiPagination.vue';
+import UiLoading from '@/components/UiLoading.vue';
 
 const router = useRouter();
 
@@ -111,7 +133,7 @@ const isCanDelete = computed(() => isHasPermission(DELETE));
 
 // Fetch Data
 const loading = ref(false);
-const roles = ref([]);
+const roles = ref<RoleDetail[]>([]);
 const pagination = ref({
   page: 1,
   pageCount: 0,
@@ -125,19 +147,20 @@ const fetchRole = async () => {
     const payload = {
       page: pagination.value.page,
       limit: pagination.value.rows,
-    }
+      search: form.value.search || undefined,
+    };
     const response = await getListRole(payload);
     const { data, meta } = response?.data?.data || {};
 
-    roles.value = data;
-    pagination.value.totalRecords = meta?.total;
-    pagination.value.pageCount = meta?.totalPages;
+    roles.value = data || [];
+    pagination.value.totalRecords = meta?.total || 0;
+    pagination.value.pageCount = meta?.totalPages || 0;
   } catch (error) {
     console.log(error);
     showToast({
-        type: 'error',
-        title: 'Error.',
-        message: getErrorMessage(error) || 'There was an error.',
+      type: 'error',
+      title: 'Error.',
+      message: getErrorMessage(error) || 'There was an error.',
     });
   } finally {
     loading.value = false;
@@ -161,7 +184,7 @@ const onDetailRole = (role: any) => {
     name: `${PREFIX_ROUTE_NAME}-detail`,
     params: {
       id: role?.id,
-    }
+    },
   });
 };
 
@@ -170,7 +193,7 @@ const onEditRole = (role: any) => {
     name: `${PREFIX_ROUTE_NAME}-edit`,
     params: {
       id: role?.id,
-    }
+    },
   });
 };
 
@@ -185,7 +208,7 @@ const removeRole = async (id: string) => {
       showToast({
         type: 'success',
         title: 'Success',
-        message: 'Role has been deleted.'
+        message: 'Role has been deleted.',
       });
       fetchRole();
     }
@@ -218,9 +241,10 @@ const form = ref({
   search: '',
 });
 
-const search = () => {
-  console.log(form.value);
-};
+const search = useDebounce(() => {
+  pagination.value.page = 1;
+  fetchRole();
+}, 400);
 
 onMounted(() => {
   fetchRole();
