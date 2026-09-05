@@ -9,93 +9,104 @@
       />
     </div>
 
-    <UiCard class="p-0! gap-0! overflow-hidden!">
-      <DataTable :value="shifts" :loading="loading" tableStyle="min-width: 50rem">
-        <template #empty>
-          <span class="w-full text-center flex justify-center">
-            Shifts are empty.
-          </span>
-        </template>
-        <Column field="no" header="NO" class="w-18">
-          <template #body="slotProps">
-            {{ getNoTable(slotProps.index, pagination.page, pagination.rows) }}
-          </template>
-        </Column>
-        <Column field="outlet" header="Outlet" class="min-w-48">
-          <template #body="slotProps">
-            {{ slotProps.data.outlet?.name }}
-          </template>
-        </Column>
-        <Column field="users" header="Users" class="min-w-48">
-          <template #body="slotProps">
-            {{ slotProps.data.shift_owner?.name }}
-          </template>
-        </Column>
-        <Column field="date" header="Date" class="min-w-48">
-          <template #body="slotProps">
-            {{ formatDate(slotProps.data.start_time) }}
-          </template>
-        </Column>
-        <Column field="time" header="Time" class="min-w-48">
-          <template #body="slotProps">
-            {{ formatRangeTime(slotProps.data.start_time, slotProps.data.end_time) }}
-          </template>
-        </Column>
-        <Column field="duration" header="Duration" class="min-w-48">
-          <template #body="slotProps">
-            {{ getDuration(slotProps.data.start_time, slotProps.data.end_time) }}
-          </template>
-        </Column>
-        <Column field="status" header="Status">
-          <template #body="slotProps">
+    <UiLoading
+      v-if="loading"
+      message="Loading shifts..."
+    />
+
+    <div v-else-if="shifts.length === 0" class="flex flex-col items-center justify-center py-16 text-gray-400">
+      <i class="pi pi-inbox mb-3 text-4xl" />
+      <p class="text-sm">Shifts are empty.</p>
+    </div>
+
+    <div v-else class="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
+      <UiCard
+        v-for="(shift, index) in shifts"
+        :key="shift.id"
+        class="relative overflow-hidden"
+      >
+        <div class="flex items-start justify-between gap-2">
+          <div class="min-w-0 flex-1">
+            <p class="truncate text-sm font-semibold text-slate-900 dark:text-slate-50">
+              {{ shift.shift_owner?.name || '-' }}
+            </p>
+            <p class="mt-0.5 text-xs text-slate-400">
+              #{{ getNoTable(index, pagination.page, pagination.rows) }}
+            </p>
+          </div>
+          <div class="flex shrink-0 gap-1">
             <Tag
-              :value="slotProps.data.status"
-              :severity="getStatusSeverity(slotProps.data.status)"
-              class="capitalize"
+              :value="shift.status"
+              :severity="getStatusSeverity(shift.status)"
+              class="capitalize text-xs!"
             />
-          </template>
-        </Column>
-        <Column field="action" header="#" class="w-12">
-          <template #body="slotProps">
-            <div class="flex gap-2">
-              <Button
-                severity="secondary" 
-                variant="outlined"
-                icon="pi pi-eye"
-                size="small"
-                :disabled="slotProps.data.status === 'open'"
-                @click="onDetailShift(slotProps.data)"
-              />
-            </div>
-          </template>
-        </Column>
-      </DataTable>
-      <UiPagination
-        v-model="pagination"
-        @page="onPageChange"
-      />
-    </UiCard>
+          </div>
+        </div>
+
+        <Divider class="my-0!" />
+
+        <div class="grid grid-cols-2 gap-y-2 text-xs">
+          <span class="text-slate-400">Outlet</span>
+          <span class="text-right text-slate-700 dark:text-slate-300">{{ shift.outlet?.name || '-' }}</span>
+
+          <span class="text-slate-400">Date</span>
+          <span class="text-right text-slate-700 dark:text-slate-300">{{ formatDate(shift.start_time) }}</span>
+
+          <span class="text-slate-400">Time</span>
+          <span class="text-right text-slate-700 dark:text-slate-300">{{ formatRangeTime(shift.start_time, shift.end_time) }}</span>
+
+          <span class="text-slate-400">Duration</span>
+          <span class="text-right text-slate-700 dark:text-slate-300">{{ getDuration(shift.start_time, shift.end_time) }}</span>
+        </div>
+
+        <Divider class="my-0!" />
+
+        <div class="flex items-center justify-end">
+          <div class="flex gap-1">
+            <Button
+              severity="secondary"
+              variant="outlined"
+              icon="pi pi-eye"
+              size="small"
+              :disabled="!isCanDetail || shift.status === 'open'"
+              @click="onDetailShift(shift)"
+            />
+          </div>
+        </div>
+      </UiCard>
+    </div>
+
+    <UiPagination
+      v-model="pagination"
+      class="px-0!"
+      @page="onPageChange"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { getNoTable, getErrorMessage, formatDate, formatRangeTime, getDuration } from '@/helpers/utils.ts';
 import { PREFIX_ROUTE_NAME } from '@/modules/shift/services/constants.ts';
 import { getListShift } from '@/modules/shift/services/api.ts';
 import { showToast } from '@/helpers/toast.ts';
-import { getOutlet } from '@/helpers/auth.ts';
+import { getOutlet, isHasPermission } from '@/helpers/auth.ts';
+import { READ } from '@/modules/shift/services/rbac.ts';
 import UiCard from '@/components/UiCard.vue';
 import UiSearch from '@/components/UiSearch.vue';
 import UiPagination from '@/components/UiPagination.vue';
+import UiLoading from '@/components/UiLoading.vue';
 
 const outlet = getOutlet();
 const router = useRouter();
 
+// RBAC
+const isCanDetail = computed(() => isHasPermission(READ));
+
 // Fetch Data
 const loading = ref(false);
-const shifts = ref([]);
+const shifts = ref<any[]>([]);
 const pagination = ref({
   page: 1,
   pageCount: 0,
@@ -115,7 +126,7 @@ const fetchShift = async () => {
     const response = await getListShift(payload);
     const { data, meta } = response?.data?.data || {};
 
-    shifts.value = data;
+    shifts.value = data || [];
     pagination.value.totalRecords = meta?.total;
     pagination.value.pageCount = meta?.totalPages;
   } catch (error) {
