@@ -18,77 +18,103 @@
       />
     </div>
 
-    <UiCard class="p-0! gap-0! overflow-hidden!">
-      <DataTable :value="categories" :loading="loading" tableStyle="min-width: 50rem">
-        <template #empty>
-          <span class="w-full text-center flex justify-center">
-            Categories are empty.
-          </span>
-        </template>
-        <Column field="no" header="NO" class="w-18">
-          <template #body="slotProps">
-            {{ getNoTable(slotProps.index, pagination.page, pagination.rows) }}
-          </template>
-        </Column>
-        <Column field="name" header="Name" class="min-w-68">
-          <template #body="slotProps">
-            {{ slotProps.data.name }}
-          </template>
-        </Column>
-        <Column field="description" header="Description" class="min-w-68">
-          <template #body="slotProps">
-            {{ slotProps.data.description }}
-          </template>
-        </Column>
-        <Column field="created_at" header="Created At" class="min-w-48">
-          <template #body="slotProps">
-            {{ formatDateTime(slotProps.data.created_at) }}
-          </template>
-        </Column>
-        <Column field="is_active" header="Status">
-          <template #body="slotProps">
-            <Tag
-              :value="slotProps.data.is_active ? 'Active' : 'Inactive'"
-              :severity="slotProps.data.is_active ? 'success' : 'danger'"
-              class="capitalize"
-            />
-          </template>
-        </Column>
-        <Column field="action" header="#" class="w-[144px]">
-          <template #body="slotProps">
-            <div class="flex gap-2">
-              <Button
-                severity="secondary" 
-                variant="outlined"
-                icon="pi pi-eye"
-                size="small"
-                @click="onDetailCategory(slotProps.data)"
-              />
-              <Button
-                severity="secondary" 
-                variant="outlined"
-                icon="pi pi-pencil"
-                size="small"
-                :disabled="!isCanUpdate"
-                @click="onEditCategory(slotProps.data)"
-              />
-              <Button
-                severity="secondary" 
-                variant="outlined"
-                icon="pi pi-trash"
-                size="small"
-                :disabled="!isCanDelete"
-                @click="onDeleteCategory(slotProps.data)"
+    <UiLoading
+      v-if="loading"
+      message="Loading categories..."
+    />
+
+    <div
+      v-else-if="categories.length === 0"
+      class="flex flex-col items-center justify-center py-16 text-gray-400"
+    >
+      <i class="pi pi-inbox mb-3 text-4xl" />
+      <p class="text-sm">Categories are empty.</p>
+    </div>
+
+    <div
+      v-else
+      class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+    >
+      <UiCard
+        v-for="(category, index) in categories"
+        :key="category.id"
+        class="relative overflow-hidden flex flex-col justify-between"
+      >
+        <div class="space-y-3">
+          <div class="flex items-start justify-between gap-2">
+            <div class="min-w-0 flex-1">
+              <p class="truncate text-base font-semibold text-slate-900 dark:text-slate-50">
+                {{ category.name }}
+              </p>
+              <p class="mt-0.5 text-xs text-slate-400">
+                #{{ getNoTable(index, pagination.page, pagination.rows) }}
+              </p>
+            </div>
+            <div class="shrink-0">
+              <Tag
+                :value="category.is_active ? 'Active' : 'Inactive'"
+                :severity="category.is_active ? 'success' : 'danger'"
+                class="capitalize text-xs!"
               />
             </div>
-          </template>
-        </Column>
-      </DataTable>
-      <UiPagination
-        v-model="pagination"
-        @page="onPageChange"
-      />
-    </UiCard>
+          </div>
+
+          <Divider class="my-0!" />
+
+          <div class="space-y-2 text-xs">
+            <div>
+              <span class="text-slate-400 block mb-0.5">Description</span>
+              <p class="text-slate-700 dark:text-slate-300 line-clamp-2">
+                {{ category.description || '-' }}
+              </p>
+            </div>
+
+            <div class="flex items-center justify-between">
+              <span class="text-slate-400">Created At</span>
+              <span class="text-slate-700 dark:text-slate-300">
+                {{ formatDateTime(category.created_at) }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <Divider class="my-3!" />
+
+          <div class="flex items-center justify-end gap-2">
+            <Button
+              severity="secondary"
+              variant="outlined"
+              icon="pi pi-eye"
+              size="small"
+              @click="onDetailCategory(category)"
+            />
+            <Button
+              severity="secondary"
+              variant="outlined"
+              icon="pi pi-pencil"
+              size="small"
+              :disabled="!isCanUpdate"
+              @click="onEditCategory(category)"
+            />
+            <Button
+              severity="secondary"
+              variant="outlined"
+              icon="pi pi-trash"
+              size="small"
+              :disabled="!isCanDelete"
+              @click="onDeleteCategory(category)"
+            />
+          </div>
+        </div>
+      </UiCard>
+    </div>
+
+    <UiPagination
+      v-model="pagination"
+      class="px-0!"
+      @page="onPageChange"
+    />
   </div>
 </template>
 
@@ -103,6 +129,7 @@ import { isHasPermission } from '@/helpers/auth.ts';
 import UiCard from '@/components/UiCard.vue';
 import UiSearch from '@/components/UiSearch.vue';
 import UiPagination from '@/components/UiPagination.vue';
+import UiLoading from '@/components/UiLoading.vue';
 import { PREFIX_ROUTE_NAME } from '@/modules/product-categories/services/constants';
 import { CREATE, UPDATE, DELETE } from '@/modules/product-categories/services/rbac';
 
@@ -115,7 +142,7 @@ const isCanDelete = computed(() => isHasPermission(DELETE));
 
 // Fetch Data
 const loading = ref(false);
-const categories = ref([]);
+const categories = ref<any[]>([]);
 const pagination = ref({
   page: 1,
   pageCount: 0,
@@ -135,7 +162,7 @@ const fetchCategory = async () => {
     const response = await getListCategories(payload);
     const { data, meta } = response?.data?.data || {};
 
-    categories.value = data;
+    categories.value = data || [];
     pagination.value.totalRecords = meta?.total;
     pagination.value.pageCount = meta?.totalPages;
   } catch (error) {
@@ -154,7 +181,7 @@ const onPageChange = (event: any) => {
   fetchCategory();
 };
 
-// Actions 
+// Actions
 const addCategory = () => {
   router.push({ name: `${PREFIX_ROUTE_NAME}-create` });
 }
