@@ -22,4 +22,4 @@
 - [x] Delete button gated with `isCanDelete`
 - [x] Add Permission button gated with `isCanCreate`
 - [x] Search and pagination working
-- [x] Build and typecheck pass (`npm run build` in `apps/web`)
+- [x] Build and typecheck pass (`NODE_ENV=development corepack pnpm --filter umkm-pos-app build`)
