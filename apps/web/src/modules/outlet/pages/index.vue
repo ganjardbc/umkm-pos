@@ -18,97 +18,113 @@
       />
     </div>
 
-    <UiCard class="p-0! gap-0! overflow-hidden!">
-      <DataTable :value="outlets" :loading="loading" tableStyle="min-width: 50rem">
-        <template #empty>
-          <span class="w-full text-center flex justify-center">
-            Outlets are empty.
-          </span>
-        </template>
-        <Column field="no" header="NO" class="w-18">
-          <template #body="slotProps">
-            {{ getNoTable(slotProps.index, pagination.page, pagination.rows) }}
-          </template>
-        </Column>
-        <Column field="logo" header="Logo" class="w-20">
-          <template #body="slotProps">
+    <UiLoading
+      v-if="loading"
+      message="Loading outlets..."
+    />
+
+    <div
+      v-else-if="filteredOutlets.length === 0"
+      class="flex flex-col items-center justify-center py-16 text-gray-400"
+    >
+      <i class="pi pi-inbox mb-3 text-4xl" />
+      <p class="text-sm">Outlets are empty.</p>
+    </div>
+
+    <div v-else class="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
+      <UiCard
+        v-for="(outlet, index) in filteredOutlets"
+        :key="outlet.id"
+        class="relative overflow-hidden"
+      >
+        <div class="flex items-start justify-between gap-3">
+          <div class="flex items-center gap-3 min-w-0 flex-1">
             <img
-              v-if="slotProps.data.logo"
-              :src="slotProps.data.logo"
+              v-if="outlet.logo"
+              :src="outlet.logo"
               alt=""
-              class="w-10 h-10 rounded-lg object-cover"
+              class="w-12 h-12 rounded-lg object-cover shrink-0"
             />
-            <div v-else class="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
-              <i class="pi pi-image text-sm text-gray-400" />
+            <div
+              v-else
+              class="w-12 h-12 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center shrink-0"
+            >
+              <i class="pi pi-image text-lg text-gray-400" />
             </div>
-          </template>
-        </Column>
-        <Column field="name" header="Name" class="min-w-48" />
-        <Column field="location" header="Location" class="min-w-68" />
-        <Column field="merchants" header="Merchant" class="min-w-48">
-          <template #body="slotProps">
-            {{ slotProps.data.merchants.name }}
-          </template>
-        </Column>
-        <!-- <Column field="product_count" header="Produk" class="min-w-58">
-          <template #body="slotProps">
-            <Tag
-              v-if="!slotProps.data.product_count"
-              value="Belum ada produk"
-              severity="warn"
-            />
-            <span v-else>{{ slotProps.data.product_count }}</span>
-          </template>
-        </Column> -->
-        <Column field="created_at" header="Created At" class="min-w-48">
-          <template #body="slotProps">
-            {{ formatDateTime(slotProps.data.created_at) }}
-          </template>
-        </Column>
-        <Column field="status" header="Status">
-          <template #body="slotProps">
-            <Tag
-              :value="slotProps.data.is_active ? 'Active' : 'Inactive'"
-              :severity="slotProps.data.is_active ? 'success' : 'danger'"
-              class="capitalize"
-            />
-          </template>
-        </Column>
-        <Column field="action" header="#" class="w-[148px]">
-          <template #body="slotProps">
-            <div class="flex gap-2">
-              <Button
-                severity="secondary" 
-                variant="outlined"
-                icon="pi pi-eye"
-                size="small"
-                @click="onDetailOutlet(slotProps.data)"
-              />
-              <Button
-                severity="secondary" 
-                variant="outlined"
-                icon="pi pi-pencil"
-                size="small"
-                :disabled="!isCanUpdate"
-                @click="onEditOutlet(slotProps.data)"
-              />
-              <Button
-                severity="secondary" 
-                variant="outlined"
-                icon="pi pi-trash"
-                size="small"
-                :disabled="!isCanDelete"
-                @click="onDeleteOutlet(slotProps.data)"
-              />
+            <div class="min-w-0 flex-1">
+              <p class="truncate text-sm font-semibold text-slate-900 dark:text-slate-50">
+                {{ outlet.name }}
+              </p>
+              <p class="mt-0.5 text-xs text-slate-400">
+                #{{ getNoTable(index, pagination.page, pagination.rows) }}
+              </p>
             </div>
-          </template>
-        </Column>
-      </DataTable>
-      <UiPagination
-        v-model="pagination"
-        @page="onPageChange"
-      />
-    </UiCard>
+          </div>
+          <div class="shrink-0">
+            <Tag
+              :value="outlet.is_active ? 'Active' : 'Inactive'"
+              :severity="outlet.is_active ? 'success' : 'danger'"
+              class="capitalize text-xs!"
+            />
+          </div>
+        </div>
+
+        <Divider class="my-0!" />
+
+        <div class="grid grid-cols-2 gap-y-2 text-xs">
+          <span class="text-slate-400">Merchant</span>
+          <span class="text-right truncate text-slate-700 dark:text-slate-300">
+            {{ outlet.merchants?.name || '-' }}
+          </span>
+
+          <span class="text-slate-400">Location</span>
+          <span class="text-right truncate text-slate-700 dark:text-slate-300">
+            {{ outlet.location || '-' }}
+          </span>
+
+          <span class="text-slate-400">Created At</span>
+          <span class="text-right text-slate-700 dark:text-slate-300">
+            {{ formatDateTime(outlet.created_at) }}
+          </span>
+        </div>
+
+        <Divider class="my-0!" />
+
+        <div class="flex items-center justify-end">
+          <div class="flex gap-1">
+            <Button
+              severity="secondary"
+              variant="outlined"
+              icon="pi pi-eye"
+              size="small"
+              @click="onDetailOutlet(outlet)"
+            />
+            <Button
+              severity="secondary"
+              variant="outlined"
+              icon="pi pi-pencil"
+              size="small"
+              :disabled="!isCanUpdate"
+              @click="onEditOutlet(outlet)"
+            />
+            <Button
+              severity="danger"
+              variant="outlined"
+              icon="pi pi-trash"
+              size="small"
+              :disabled="!isCanDelete"
+              @click="onDeleteOutlet(outlet)"
+            />
+          </div>
+        </div>
+      </UiCard>
+    </div>
+
+    <UiPagination
+      v-model="pagination"
+      class="px-0!"
+      @page="onPageChange"
+    />
   </div>
 </template>
 
@@ -125,6 +141,7 @@ import { CREATE, UPDATE, DELETE } from '@/modules/outlet/services/rbac.ts';
 import UiCard from '@/components/UiCard.vue';
 import UiSearch from '@/components/UiSearch.vue';
 import UiPagination from '@/components/UiPagination.vue';
+import UiLoading from '@/components/UiLoading.vue';
 
 const router = useRouter();
 
@@ -135,7 +152,7 @@ const isCanDelete = computed(() => isHasPermission(DELETE));
 
 // Fetch Data
 const loading = ref(false);
-const outlets = ref([]);
+const outlets = ref<any[]>([]);
 const pagination = ref({
   page: 1,
   pageCount: 0,
@@ -149,13 +166,13 @@ const fetchOutlet = async () => {
     const payload = {
       page: pagination.value.page,
       limit: pagination.value.rows,
-    }
+    };
     const response = await getListOutlet(payload);
     const { data, meta } = response?.data?.data || {};
 
-    outlets.value = data;
-    pagination.value.totalRecords = meta?.total;
-    pagination.value.pageCount = meta?.totalPages;
+    outlets.value = data || [];
+    pagination.value.totalRecords = meta?.total || 0;
+    pagination.value.pageCount = meta?.totalPages || 0;
   } catch (error) {
     console.log(error);
     showToast({
@@ -203,7 +220,7 @@ const removeOutlet = async (id: string) => {
       showToast({
         type: 'success',
         title: 'Success',
-        message: 'Outlet has been deleted.'
+        message: 'Outlet has been deleted.',
       });
       fetchOutlet();
     }
@@ -231,13 +248,25 @@ const onDeleteOutlet = (outlet: any) => {
   });
 };
 
-// Search
+// Search & Filter
 const form = ref({
   search: '',
 });
 
+const filteredOutlets = computed(() => {
+  if (!form.value.search) return outlets.value;
+  const keyword = form.value.search.toLowerCase().trim();
+  return outlets.value.filter((outlet: any) => {
+    return (
+      outlet.name?.toLowerCase().includes(keyword) ||
+      outlet.location?.toLowerCase().includes(keyword) ||
+      outlet.merchants?.name?.toLowerCase().includes(keyword)
+    );
+  });
+});
+
 const search = () => {
-  console.log(form.value);
+  // Client-side search filters the current page or search query
 };
 
 onMounted(() => {
