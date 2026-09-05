@@ -1,6 +1,8 @@
 <template>
   <UiCard class="register-page">
-    <Image :src="defaultLogo" alt="Image" class="w-44" />
+    <a :href="baseUrl" class="w-44">
+      <Image :src="defaultLogo" alt="Image" />
+    </a>
 
     <div class="w-full pt-2">
       <Stepper v-model:value="activeStep" :linear="true" class="w-full">
@@ -327,6 +329,7 @@ import UiCard from '@/components/UiCard.vue';
 
 import { PREFIX_ROUTE_PATH as PRP_LANDING } from '@/modules/landing/services/constants';
 
+const baseUrl = import.meta.env.VITE_WEB_BASE_URL || '';
 const router = useRouter();
 const showPassword = ref(false);
 const loading = ref(false);

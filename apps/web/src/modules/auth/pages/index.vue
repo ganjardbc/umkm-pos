@@ -1,6 +1,8 @@
 <template>
   <UiCard class="login-page">
-    <Image :src="defaultLogo" alt="Image" class="w-44" />
+    <a :href="baseUrl" class="w-44">
+      <Image :src="defaultLogo" alt="Image" />
+    </a>
 
     <Form
       v-slot="$form"
@@ -98,6 +100,7 @@ import UiCard from '@/components/UiCard.vue';
 
 import { PREFIX_ROUTE_PATH as PRP_LANDING } from '@/modules/landing/services/constants';
 
+const baseUrl = import.meta.env.VITE_WEB_BASE_URL || '';
 const router = useRouter();
 const initialValues = ref({
   email: '',
