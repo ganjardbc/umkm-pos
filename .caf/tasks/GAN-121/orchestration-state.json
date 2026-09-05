@@ -1,0 +1,8 @@
+{
+  "orchestrationRetryCount": 0,
+  "lastFailedGate": "qa",
+  "lastFailedAt": "2026-09-05T17:54:45.562Z",
+  "lastKnownCommitSha": "991cf74a209cfe0bfee6e2d4eff6499f632d28fe",
+  "ticketTitle": "Convert Permissions list to card view",
+  "ticketDescription": "## Source\n\nDiscovery `table-list-to-card-all-modules`, file: `.caf/discovery/table-list-to-card-all-modules/prd.md` + `flow.md`\n\n## Problem\n\n`apps/web/src/modules/permission/pages/index.vue` uses `<DataTable>`, forcing horizontal scroll on tablet/mobile, inconsistent with already-card modules.\n\n## Target User\n\nOutlet owners/managers/admins managing Permissions on desktop and tablet/mobile.\n\n## Scope of This Ticket\n\nConvert `apps/web/src/modules/permission/pages/index.vue` only to a responsive card grid, following `apps/web/src/modules/transaction/pages/index.vue`'s pattern. Card shows code, description, created date. Preserve search/filter, pagination (`UiPagination`), RBAC-gated row actions, and empty-state messaging.\n\n## Out-of-Scope\n\n* Any other module's list page\n* create.vue/edit.vue/detail.vue forms\n* Backend API, pagination contract, or RBAC permission code changes\n* New shared `UiListCard` component decision (implementer's call)\n\n## Flow\n\nSearch/filter unchanged → records render as card grid → row actions as icon buttons in card footer (`isHasPermission()` gated) → `UiPagination` unchanged → empty state follows `transaction`/`notification` pattern.\n\n## Success Metric\n\nNo `<DataTable>` remaining in this file; search/filter/pagination/actions functional; no horizontal scroll at 375px viewport.\n\n## Dependency\n\n`UiCard`, `UiPagination` shared components; `transaction` module as design reference."
+}

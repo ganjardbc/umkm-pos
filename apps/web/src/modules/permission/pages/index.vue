@@ -18,51 +18,63 @@
       />
     </div>
 
-    <UiCard class="p-0! gap-0! overflow-hidden!">
-      <DataTable :value="permissions" :loading="loading" tableStyle="min-width: 50rem">
-        <template #empty>
-          <span class="w-full text-center flex justify-center">
-            Permissions are empty.
-          </span>
-        </template>
-        <Column field="no" header="NO" class="w-18">
-          <template #body="slotProps">
-            {{ getNoTable(slotProps.index, pagination.page, pagination.rows) }}
-          </template>
-        </Column>
-        <Column field="code" header="Code">
-          <template #body="slotProps">
-            {{ slotProps.data.code }}
-          </template>
-        </Column>
-        <Column field="description" header="Description">
-          <template #body="slotProps">
-            {{ slotProps.data.description }}
-          </template>
-        </Column>
-        <Column field="created_at" header="Created At">
-          <template #body="slotProps">
-            {{ formatDateTime(slotProps.data.created_at) }}
-          </template>
-        </Column>
-        <Column field="action" header="#" class="w-[32px]">
-          <template #body="slotProps">
-            <Button
-              severity="secondary" 
-              variant="outlined"
-              icon="pi pi-trash"
-              size="small"
-              :disabled="!isCanDelete"
-              @click="onDeletePermission(slotProps.data)"
-            />
-          </template>
-        </Column>
-      </DataTable>
-      <UiPagination
-        v-model="pagination"
-        @page="onPageChange"
-      />
-    </UiCard>
+    <UiLoading
+      v-if="loading"
+      message="Loading permissions..."
+    />
+
+    <div v-else-if="permissions.length === 0" class="flex flex-col items-center justify-center py-16 text-gray-400">
+      <i class="pi pi-inbox mb-3 text-4xl" />
+      <p class="text-sm">Permissions are empty.</p>
+    </div>
+
+    <div v-else class="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
+      <UiCard
+        v-for="(permission, index) in permissions"
+        :key="permission.id"
+        class="relative overflow-hidden"
+      >
+        <div class="flex items-start justify-between gap-2">
+          <div class="min-w-0 flex-1">
+            <p class="truncate text-sm font-semibold text-slate-900 dark:text-slate-50">
+              {{ permission.code }}
+            </p>
+            <p class="mt-0.5 text-xs text-slate-400">
+              #{{ getNoTable(index, pagination.page, pagination.rows) }}
+            </p>
+          </div>
+        </div>
+
+        <Divider class="my-0!" />
+
+        <div class="grid grid-cols-2 gap-y-2 text-xs">
+          <span class="text-slate-400">Description</span>
+          <span class="text-right text-slate-700 dark:text-slate-300 break-words">{{ permission.description || '-' }}</span>
+
+          <span class="text-slate-400">Created At</span>
+          <span class="text-right text-slate-700 dark:text-slate-300">{{ formatDateTime(permission.created_at) }}</span>
+        </div>
+
+        <Divider class="my-0!" />
+
+        <div class="flex items-center justify-end">
+          <Button
+            severity="secondary"
+            variant="outlined"
+            icon="pi pi-trash"
+            size="small"
+            :disabled="!isCanDelete"
+            @click="onDeletePermission(permission)"
+          />
+        </div>
+      </UiCard>
+    </div>
+
+    <UiPagination
+      v-model="pagination"
+      class="px-0!"
+      @page="onPageChange"
+    />
   </div>
 </template>
 
@@ -79,6 +91,7 @@ import { CREATE, DELETE } from '@/modules/permission/services/rbac.ts';
 import UiCard from '@/components/UiCard.vue';
 import UiSearch from '@/components/UiSearch.vue';
 import UiPagination from '@/components/UiPagination.vue';
+import UiLoading from '@/components/UiLoading.vue';
 
 const router = useRouter();
 
@@ -88,7 +101,7 @@ const isCanDelete = computed(() => isHasPermission(DELETE));
 
 // Fetch Data
 const loading = ref(false);
-const permissions = ref([]);
+const permissions = ref<any[]>([]);
 const pagination = ref({
   page: 1,
   pageCount: 0,
@@ -106,7 +119,7 @@ const fetchPermission = async () => {
     const response = await getListPermission(payload);
     const { data, meta } = response?.data?.data || {};
 
-    permissions.value = data;
+    permissions.value = data || [];
     pagination.value.totalRecords = meta?.total;
     pagination.value.pageCount = meta?.totalPages;
   } catch (error) {
