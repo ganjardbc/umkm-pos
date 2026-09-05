@@ -29,125 +29,137 @@
       />
     </div>
 
-    <UiCard class="p-0! gap-0! overflow-hidden!">
-      <DataTable :value="products" :loading="loading" tableStyle="min-width: 50rem">
-        <template #empty>
-          <span class="w-full text-center flex justify-center">
-            Products are empty.
-          </span>
-        </template>
-        <Column field="no" header="NO" class="w-18">
-          <template #body="slotProps">
-            {{ getNoTable(slotProps.index, pagination.page, pagination.rows) }}
-          </template>
-        </Column>
-        <Column field="thumbnail" header="Image" class="w-20">
-          <template #body="slotProps">
+    <UiLoading
+      v-if="loading"
+      message="Loading products..."
+    />
+
+    <div
+      v-else-if="products.length === 0"
+      class="flex flex-col items-center justify-center py-16 text-gray-400"
+    >
+      <i class="pi pi-inbox mb-3 text-4xl" />
+      <p class="text-sm">Products are empty.</p>
+    </div>
+
+    <div v-else class="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
+      <UiCard
+        v-for="(product, index) in products"
+        :key="product.id"
+        class="relative overflow-hidden"
+      >
+        <div class="flex items-start justify-between gap-3">
+          <div class="flex items-center gap-3 min-w-0 flex-1">
             <img
-              v-if="slotProps.data.thumbnail"
-              :src="slotProps.data.thumbnail"
-              alt=""
-              class="w-10 h-10 rounded-lg object-cover"
+              v-if="product.thumbnail"
+              :src="product.thumbnail"
+              :alt="product.name"
+              class="w-12 h-12 rounded-lg object-cover shrink-0"
             />
             <div
               v-else
-              class="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center"
+              class="w-12 h-12 rounded-lg bg-gray-100 dark:bg-dark flex items-center justify-center shrink-0"
             >
-              <i class="pi pi-image text-sm text-gray-400" />
+              <i class="pi pi-image text-lg text-gray-400" />
             </div>
-          </template>
-        </Column>
-        <Column field="name" header="Name" class="min-w-68">
-          <template #body="slotProps">
-            <h2>
-              {{ slotProps.data.name }}
-            </h2>
-            <div class="text-xs text-gray-400">
-              {{ slotProps.data.product_categories?.name || '-' }}
+
+            <div class="min-w-0 flex-1">
+              <h2 class="truncate text-sm font-semibold text-slate-900 dark:text-slate-50">
+                {{ product.name }}
+              </h2>
+              <p class="truncate text-xs text-gray-400">
+                {{ product.product_categories?.name || '-' }}
+              </p>
+              <p class="mt-0.5 text-xs text-slate-400">
+                #{{ getNoTable(index, pagination.page, pagination.rows) }}
+              </p>
             </div>
-          </template>
-        </Column>
-        <Column field="price" header="Price" class="min-w-48">
-          <template #body="slotProps">
-            {{ getCurrency(slotProps.data.price) }}
-          </template>
-        </Column>
-        <Column field="cost" header="Cost" class="min-w-48">
-          <template #body="slotProps">
-            {{ getCurrency(slotProps.data.cost) }}
-          </template>
-        </Column>
-        <Column field="min_stock" header="Min Stock" class="min-w-38">
-          <template #body="slotProps">
-            <span>
-              {{ slotProps.data.min_stock }}
-            </span>
-          </template>
-        </Column>
-        <Column field="stock_qty" header="Qty" class="min-w-28">
-          <template #body="slotProps">
-            <span :class="isLowStock(slotProps.data) && 'text-orange-600'">
-              {{ slotProps.data.stock_qty }}
-            </span>
-          </template>
-        </Column>
-        <Column field="created_at" header="Created At" class="min-w-48">
-          <template #body="slotProps">
-            {{ formatDateTime(slotProps.data.created_at) }}
-          </template>
-        </Column>
-        <Column field="is_active" header="Status">
-          <template #body="slotProps">
+          </div>
+
+          <div class="flex shrink-0">
             <Tag
-              :value="slotProps.data.is_active ? 'Active' : 'Inactive'"
-              :severity="slotProps.data.is_active ? 'success' : 'danger'"
-              class="capitalize"
+              :value="product.is_active ? 'Active' : 'Inactive'"
+              :severity="product.is_active ? 'success' : 'danger'"
+              class="capitalize text-xs!"
             />
-          </template>
-        </Column>
-        <Column field="action" header="#" class="w-46">
-          <template #body="slotProps">
-            <div class="flex gap-2">
-              <Button
-                severity="secondary" 
-                variant="outlined"
-                icon="pi pi-cog"
-                size="small"
-                :disabled="!isCanAdjust"
-                @click="onAddjustProduct(slotProps.data)"
-              />
-              <Button
-                severity="secondary" 
-                variant="outlined"
-                icon="pi pi-eye"
-                size="small"
-                @click="onDetailProduct(slotProps.data)"
-              />
-              <Button
-                severity="secondary" 
-                variant="outlined"
-                icon="pi pi-pencil"
-                size="small"
-                :disabled="!isCanUpdate"
-                @click="onEditProduct(slotProps.data)"
-              />
-              <Button
-                severity="secondary" 
-                variant="outlined"
-                icon="pi pi-trash"
-                size="small"
-                :disabled="!isCanDelete"
-                @click="onDeleteProduct(slotProps.data)"
-              />
-            </div>
-          </template>
-        </Column>
-      </DataTable>
-      <UiPagination
-        v-model="pagination"
-        @page="onPageChange"
-      />
-    </UiCard>
+          </div>
+        </div>
+
+        <Divider class="my-0!" />
+
+        <div class="grid grid-cols-2 gap-y-2 text-xs">
+          <span class="text-slate-400">Price</span>
+          <span class="text-right font-semibold text-primary dark:text-primary-400">
+            {{ getCurrency(product.price) }}
+          </span>
+
+          <span class="text-slate-400">Cost</span>
+          <span class="text-right text-slate-700 dark:text-slate-300">
+            {{ getCurrency(product.cost) }}
+          </span>
+
+          <span class="text-slate-400">Min Stock</span>
+          <span class="text-right text-slate-700 dark:text-slate-300">
+            {{ product.min_stock }}
+          </span>
+
+          <span class="text-slate-400">Stock Qty</span>
+          <span
+            class="text-right font-medium"
+            :class="isLowStock(product) ? 'text-orange-600 font-semibold' : 'text-slate-700 dark:text-slate-300'"
+          >
+            {{ product.stock_qty }}
+          </span>
+
+          <span class="text-slate-400">Created At</span>
+          <span class="text-right text-slate-700 dark:text-slate-300">
+            {{ formatDateTime(product.created_at) }}
+          </span>
+        </div>
+
+        <Divider class="my-0!" />
+
+        <div class="flex items-center justify-end gap-2">
+          <Button
+            severity="secondary"
+            variant="outlined"
+            icon="pi pi-cog"
+            size="small"
+            :disabled="!isCanAdjust"
+            @click="onAddjustProduct(product)"
+          />
+          <Button
+            severity="secondary"
+            variant="outlined"
+            icon="pi pi-eye"
+            size="small"
+            @click="onDetailProduct(product)"
+          />
+          <Button
+            severity="secondary"
+            variant="outlined"
+            icon="pi pi-pencil"
+            size="small"
+            :disabled="!isCanUpdate"
+            @click="onEditProduct(product)"
+          />
+          <Button
+            severity="secondary"
+            variant="outlined"
+            icon="pi pi-trash"
+            size="small"
+            :disabled="!isCanDelete"
+            @click="onDeleteProduct(product)"
+          />
+        </div>
+      </UiCard>
+    </div>
+
+    <UiPagination
+      v-model="pagination"
+      class="px-0!"
+      @page="onPageChange"
+    />
   </div>
 
   <AdjustStockModal
@@ -172,6 +184,7 @@ import { isHasPermission } from '@/helpers/auth.ts';
 import UiCard from '@/components/UiCard.vue';
 import UiSearch from '@/components/UiSearch.vue';
 import UiPagination from '@/components/UiPagination.vue';
+import UiLoading from '@/components/UiLoading.vue';
 import { PREFIX_ROUTE_NAME } from '@/modules/product-lists/services/constants';
 import { CREATE, UPDATE, DELETE, ADJUST } from '@/modules/product-lists/services/rbac';
 import AdjustStockModal from '@/modules/product-lists/components/AdjustStockModal.vue';
@@ -187,7 +200,7 @@ const isCanAdjust = computed(() => isHasPermission(ADJUST));
 
 // Fetch Data
 const loading = ref(false);
-const products = ref([]);
+const products = ref<any[]>([]);
 const pagination = ref({
   page: 1,
   pageCount: 0,
@@ -210,7 +223,7 @@ const fetchProduct = async () => {
     const response = await getListProduct(payload);
     const { data, meta } = response?.data?.data || {};
 
-    products.value = data;
+    products.value = data || [];
     pagination.value.totalRecords = meta?.total;
     pagination.value.pageCount = meta?.totalPages;
   } catch (error) {
@@ -321,7 +334,7 @@ const submitAdjustStockModal = async (payload: any) => {
       outlet_id: outlet?.id,
     });
     const { success } = response?.data || {};
-    
+
     if (success) {
       showToast({
         type: 'success',
