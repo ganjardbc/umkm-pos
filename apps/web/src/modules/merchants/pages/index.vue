@@ -18,72 +18,96 @@
       />
     </div>
 
-    <UiCard class="p-0! gap-0! overflow-hidden!">
-      <DataTable :value="merchants" :loading="loading" tableStyle="min-width: 50rem">
-        <template #empty>
-          <span class="w-full text-center flex justify-center">
-            Merchants are empty.
-          </span>
-        </template>
-        <Column field="no" header="NO" class="w-18">
-          <template #body="slotProps">
-            {{ getNoTable(slotProps.index, pagination.page, pagination.rows) }}
-          </template>
-        </Column>
-        <Column field="logo" header="Logo" class="w-20">
-          <template #body="slotProps">
-            <img
-              v-if="slotProps.data.logo"
-              :src="slotProps.data.logo"
-              alt=""
-              class="w-10 h-10 rounded-lg object-cover"
+    <UiLoading
+      v-if="loading"
+      message="Loading merchants..."
+    />
+
+    <div
+      v-else-if="merchants.length === 0"
+      class="flex flex-col items-center justify-center py-16 text-gray-400"
+    >
+      <i class="pi pi-inbox mb-3 text-4xl" />
+      <p class="text-sm">Merchants are empty.</p>
+    </div>
+
+    <div v-else class="space-y-4">
+      <div class="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
+        <UiCard
+          v-for="(merchant, index) in merchants"
+          :key="merchant.id"
+          class="relative overflow-hidden"
+        >
+          <div class="flex items-start justify-between gap-3">
+            <div class="flex items-center gap-3 min-w-0 flex-1">
+              <img
+                v-if="merchant.logo"
+                :src="merchant.logo"
+                alt=""
+                class="w-12 h-12 rounded-lg object-cover shrink-0"
+              />
+              <div
+                v-else
+                class="w-12 h-12 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center shrink-0"
+              >
+                <i class="pi pi-image text-lg text-gray-400" />
+              </div>
+              <div class="min-w-0 flex-1">
+                <p class="truncate text-base font-semibold text-slate-900 dark:text-slate-50">
+                  {{ merchant.name }}
+                </p>
+                <p class="mt-0.5 text-xs text-slate-400">
+                  #{{ getNoTable(index, pagination.page, pagination.rows) }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <Divider class="my-0!" />
+
+          <div class="grid grid-cols-2 gap-y-2 text-xs">
+            <span class="text-slate-400">Created At</span>
+            <span class="text-right text-slate-700 dark:text-slate-300">
+              {{ formatDateTime(merchant.created_at) }}
+            </span>
+          </div>
+
+          <Divider class="my-0!" />
+
+          <div class="flex items-center justify-end gap-2">
+            <Button
+              severity="secondary"
+              variant="outlined"
+              icon="pi pi-eye"
+              size="small"
+              @click="onDetailMerchant(merchant)"
             />
-            <div v-else class="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
-              <i class="pi pi-image text-sm text-gray-400" />
-            </div>
-          </template>
-        </Column>
-        <Column field="name" header="Name"></Column>
-        <Column field="created_at" header="Created At">
-          <template #body="slotProps">
-            {{ formatDateTime(slotProps.data.created_at) }}
-          </template>
-        </Column>
-        <Column field="action" header="#" class="w-full md:w-[128px]">
-          <template #body="slotProps">
-            <div class="flex gap-2">
-              <Button
-                severity="secondary" 
-                variant="outlined"
-                icon="pi pi-eye"
-                size="small"
-                @click="onDetailMerchant(slotProps.data)"
-              />
-              <Button
-                severity="secondary" 
-                variant="outlined"
-                icon="pi pi-pencil"
-                size="small"
-                :disabled="!isCanUpdate"
-                @click="onEditMerchant(slotProps.data)"
-              />
-              <Button
-                severity="secondary" 
-                variant="outlined"
-                icon="pi pi-trash"
-                size="small"
-                :disabled="!isCanDelete"
-                @click="onDeleteMerchant(slotProps.data)"
-              />
-            </div>
-          </template>
-        </Column>
-      </DataTable>
+            <Button
+              severity="secondary"
+              variant="outlined"
+              icon="pi pi-pencil"
+              size="small"
+              :disabled="!isCanUpdate"
+              @click="onEditMerchant(merchant)"
+            />
+            <Button
+              severity="secondary"
+              variant="outlined"
+              icon="pi pi-trash"
+              size="small"
+              :disabled="!isCanDelete"
+              @click="onDeleteMerchant(merchant)"
+            />
+          </div>
+        </UiCard>
+      </div>
+
       <UiPagination
         v-model="pagination"
+        class="px-0!"
         @page="onPageChange"
       />
-    </UiCard>
+    </div>
   </div>
 </template>
 
@@ -100,6 +124,7 @@ import { CREATE, UPDATE, DELETE } from '@/modules/merchants/services/rbac.ts';
 import UiCard from '@/components/UiCard.vue';
 import UiSearch from '@/components/UiSearch.vue';
 import UiPagination from '@/components/UiPagination.vue';
+import UiLoading from '@/components/UiLoading.vue';
 
 const router = useRouter();
 
@@ -110,7 +135,7 @@ const isCanDelete = computed(() => isHasPermission(DELETE));
 
 // Fetch Data
 const loading = ref(false);
-const merchants = ref([]);
+const merchants = ref<any[]>([]);
 const pagination = ref({
   page: 1,
   pageCount: 0,
@@ -124,19 +149,20 @@ const fetchMerchants = async () => {
     const payload = {
       page: pagination.value.page,
       limit: pagination.value.rows,
-    }
+      ...(form.value.search ? { search: form.value.search } : {}),
+    };
     const response = await getListMerchants(payload);
     const { data, meta } = response?.data?.data || {};
 
-    merchants.value = data;
-    pagination.value.totalRecords = meta?.total;
-    pagination.value.pageCount = meta?.totalPages;
+    merchants.value = data || [];
+    pagination.value.totalRecords = meta?.total || 0;
+    pagination.value.pageCount = meta?.totalPages || 0;
   } catch (error) {
     console.log(error);
     showToast({
-        type: 'error',
-        title: 'Error.',
-        message: getErrorMessage(error) || 'There was an error.',
+      type: 'error',
+      title: 'Error.',
+      message: getErrorMessage(error) || 'There was an error.',
     });
   } finally {
     loading.value = false;
@@ -211,8 +237,13 @@ const form = ref({
   search: '',
 });
 
+let searchDebounceTimer: ReturnType<typeof setTimeout>;
 const search = () => {
-  console.log(form.value);
+  clearTimeout(searchDebounceTimer);
+  searchDebounceTimer = setTimeout(() => {
+    pagination.value.page = 1;
+    fetchMerchants();
+  }, 300);
 };
 
 onMounted(() => {
