@@ -1,20 +1,15 @@
-FROM node:22-alpine AS build
-ENV PNPM_HOME="/pnpm"
-ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable
-RUN corepack prepare pnpm@10.22.0 --activate
+FROM node:22-alpine AS builder
+RUN corepack enable && corepack prepare pnpm@9.15.9 --activate
 WORKDIR /app
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/ ./apps/
+COPY packages/ ./packages/
+RUN pnpm install --frozen-lockfile
+RUN pnpm --filter @umkm-pos/landing build
 
-ARG VITE_WEB_BASE_URL=https://umkm-pos-fe-production.up.railway.app
-ENV VITE_WEB_BASE_URL=$VITE_WEB_BASE_URL
-
-COPY apps/landing/ .
-RUN pnpm install --no-frozen-lockfile
-RUN pnpm build
-
-FROM nginx:stable-alpine AS production
-COPY --from=build /app/dist /usr/share/nginx/html
-COPY --from=build /app/default.conf /etc/nginx/templates/default.conf.template
-ENV PORT=80
+FROM nginx:1.27-alpine
+COPY --from=builder /app/apps/landing/dist /usr/share/nginx/html
+COPY infra/nginx/spa.conf /etc/nginx/conf.d/default.conf
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
+
