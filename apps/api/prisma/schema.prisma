@@ -128,6 +128,7 @@ model product_categories {
   products    products[]
 
   @@unique([merchant_id, name], map: "unique_merchant_category_name")
+  @@unique([id, merchant_id], map: "unique_category_id_merchant")
   @@index([merchant_id], map: "idx_product_categories_merchant")
   @@index([is_active], map: "idx_product_categories_active")
 }
@@ -152,7 +153,7 @@ model products {
   created_by         String?             @db.Char(36)
   updated_by         String?             @db.Char(36)
   merchants          merchants           @relation(fields: [merchant_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "products_ibfk_1")
-  product_categories product_categories? @relation(fields: [category_id], references: [id], onDelete: SetNull, onUpdate: NoAction, map: "products_ibfk_category")
+  product_categories product_categories? @relation(fields: [category_id, merchant_id], references: [id, merchant_id], onDelete: NoAction, onUpdate: NoAction, map: "products_ibfk_category")
   upload             uploads?            @relation(fields: [image_upload_id], references: [id], onDelete: SetNull, onUpdate: NoAction, map: "products_ibfk_image_upload")
   stock_logs         stock_logs[]
   outlet_product_inventory outlet_product_inventory[]

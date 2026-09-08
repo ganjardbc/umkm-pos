@@ -797,7 +797,7 @@ describe('CategoriesService', () => {
 
       expect(result).toEqual(existingCategory);
       expect(mockPrisma.products.updateMany).toHaveBeenCalledWith({
-        where: { category_id: categoryId },
+        where: { category_id: categoryId, merchant_id: merchantId },
         data: { category_id: null },
       });
       expect(mockPrisma.product_categories.delete).toHaveBeenCalledWith({
@@ -830,7 +830,7 @@ describe('CategoriesService', () => {
       await service.remove(categoryId, merchantId);
 
       expect(mockPrisma.products.updateMany).toHaveBeenCalledWith({
-        where: { category_id: categoryId },
+        where: { category_id: categoryId, merchant_id: merchantId },
         data: { category_id: null },
       });
     });

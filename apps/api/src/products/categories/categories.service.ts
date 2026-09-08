@@ -174,7 +174,7 @@ export class CategoriesService {
 
     // Set category_id to NULL for all products referencing this category
     await this.prisma.products.updateMany({
-      where: { category_id: id },
+      where: { category_id: id, merchant_id: merchantId },
       data: { category_id: null },
     });
 
