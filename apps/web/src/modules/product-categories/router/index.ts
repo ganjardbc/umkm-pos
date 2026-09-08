@@ -19,17 +19,17 @@ export default [
     name: PREFIX_ROUTE_NAME,
     component: () => import('@/modules/product-categories/pages/index.vue'),
     meta: {
-      title: 'Categories',
+      title: 'Kategori',
       layout: 'default',
       permission: [READ],
       breadcrumbs: [
         {
-          label: 'Home',
+          label: 'Beranda',
           route: '/landing',
           isActive: false,
         },
         {
-          label: 'Categories',
+          label: 'Kategori',
           route: `${PRP_PRODUCT}?tab=categories`,
           isActive: false,
         },
@@ -41,22 +41,22 @@ export default [
     name: `${PREFIX_ROUTE_NAME}-create`,
     component: () => import('@/modules/product-categories/pages/create.vue'),
     meta: {
-      title: 'Categories',
+      title: 'Tambah Kategori',
       layout: 'default',
       permission: [CREATE],
       breadcrumbs: [
         {
-          label: 'Home',
+          label: 'Beranda',
           route: '/landing',
           isActive: false,
         },
         {
-          label: 'Categories',
+          label: 'Kategori',
           route: `${PRP_PRODUCT}?tab=categories`,
           isActive: false,
         },
         {
-          label: 'Add',
+          label: 'Tambah',
           route: `${PREFIX_ROUTE_PATH}/create`,
           isActive: true,
         },
@@ -68,22 +68,22 @@ export default [
     name: `${PREFIX_ROUTE_NAME}-edit`,
     component: () => import('@/modules/product-categories/pages/edit.vue'),
     meta: {
-      title: 'Categories',
+      title: 'Ubah Kategori',
       layout: 'default',
       permission: [UPDATE],
       breadcrumbs: [
         {
-          label: 'Home',
+          label: 'Beranda',
           route: '/landing',
           isActive: false,
         },
         {
-          label: 'Categories',
+          label: 'Kategori',
           route: `${PRP_PRODUCT}?tab=categories`,
           isActive: false,
         },
         {
-          label: 'Edit',
+          label: 'Ubah',
           isActive: true,
         },
       ]
@@ -94,17 +94,17 @@ export default [
     name: `${PREFIX_ROUTE_NAME}-detail`,
     component: () => import('@/modules/product-categories/pages/detail.vue'),
     meta: {
-      title: 'Categories',
+      title: 'Detail Kategori',
       layout: 'default',
       permission: [CREATE],
       breadcrumbs: [
         {
-          label: 'Home',
+          label: 'Beranda',
           route: '/landing',
           isActive: false,
         },
         {
-          label: 'Categories',
+          label: 'Kategori',
           route: `${PRP_PRODUCT}?tab=categories`,
           isActive: false,
         },

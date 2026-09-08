@@ -11,17 +11,17 @@ export default [
     name: PREFIX_ROUTE_NAME,
     component: () => import('@/modules/product/pages/index.vue'),
     meta: {
-      title: 'Products',
+      title: 'Produk & Kategori',
       layout: 'default',
       permission: [READ],
       breadcrumbs: [
         {
-          label: 'Home',
+          label: 'Beranda',
           route: '/landing',
           isActive: false,
         },
         {
-          label: 'Products & Categories',
+          label: 'Produk & Kategori',
           route: PREFIX_ROUTE_PATH,
           isActive: true,
         },

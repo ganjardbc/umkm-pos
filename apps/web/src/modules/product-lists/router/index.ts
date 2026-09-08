@@ -19,17 +19,17 @@ export default [
     name: PREFIX_ROUTE_NAME,
     component: () => import('@/modules/product-lists/pages/index.vue'),
     meta: {
-      title: 'Products',
+      title: 'Produk',
       layout: 'default',
       permission: [READ],
       breadcrumbs: [
         {
-          label: 'Home',
+          label: 'Beranda',
           route: '/landing',
           isActive: false,
         },
         {
-          label: 'Products',
+          label: 'Produk',
           route: `${PRP_PRODUCT}?tab=products`,
           isActive: true,
         },
@@ -41,22 +41,22 @@ export default [
     name: `${PREFIX_ROUTE_NAME}-create`,
     component: () => import('@/modules/product-lists/pages/create.vue'),
     meta: {
-      title: 'Products',
+      title: 'Tambah Produk',
       layout: 'default',
       permission: [CREATE],
       breadcrumbs: [
         {
-          label: 'Home',
+          label: 'Beranda',
           route: '/landing',
           isActive: false,
         },
         {
-          label: 'Products',
+          label: 'Produk',
           route: `${PRP_PRODUCT}?tab=products`,
           isActive: false,
         },
         {
-          label: 'Add',
+          label: 'Tambah',
           route: `${PREFIX_ROUTE_PATH}/create`,
           isActive: true,
         },
@@ -68,22 +68,22 @@ export default [
     name: `${PREFIX_ROUTE_NAME}-edit`,
     component: () => import('@/modules/product-lists/pages/edit.vue'),
     meta: {
-      title: 'Products',
+      title: 'Ubah Produk',
       layout: 'default',
       permission: [UPDATE],
       breadcrumbs: [
         {
-          label: 'Home',
+          label: 'Beranda',
           route: '/landing',
           isActive: false,
         },
         {
-          label: 'Products',
+          label: 'Produk',
           route: `${PRP_PRODUCT}?tab=products`,
           isActive: false,
         },
         {
-          label: 'Edit',
+          label: 'Ubah',
           isActive: true,
         },
       ]
@@ -94,17 +94,17 @@ export default [
     name: `${PREFIX_ROUTE_NAME}-detail`,
     component: () => import('@/modules/product-lists/pages/detail.vue'),
     meta: {
-      title: 'Products',
+      title: 'Detail Produk',
       layout: 'default',
       permission: [READ],
       breadcrumbs: [
         {
-          label: 'Home',
+          label: 'Beranda',
           route: '/landing',
           isActive: false,
         },
         {
-          label: 'Products',
+          label: 'Produk',
           route: `${PRP_PRODUCT}?tab=products`,
           isActive: false,
         },

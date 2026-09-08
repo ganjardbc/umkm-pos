@@ -11,7 +11,7 @@
       </div>
       <Button
         icon="pi pi-plus"
-        label="Add Category"
+        label="Tambah Kategori"
         class="w-full md:w-[192px]"
         :disabled="!isCanCreate"
         @click="addCategory"
@@ -20,7 +20,7 @@
 
     <UiLoading
       v-if="loading"
-      message="Loading categories..."
+      message="Memuat kategori..."
     />
 
     <div
@@ -28,7 +28,7 @@
       class="flex flex-col items-center justify-center py-16 text-gray-400"
     >
       <i class="pi pi-inbox mb-3 text-4xl" />
-      <p class="text-sm">Categories are empty.</p>
+      <p class="text-sm">Belum ada kategori.</p>
     </div>
 
     <div
@@ -52,7 +52,7 @@
             </div>
             <div class="shrink-0">
               <Tag
-                :value="category.is_active ? 'Active' : 'Inactive'"
+                :value="category.is_active ? 'Aktif' : 'Tidak Aktif'"
                 :severity="category.is_active ? 'success' : 'danger'"
                 class="capitalize text-xs!"
               />
@@ -63,14 +63,14 @@
 
           <div class="space-y-2 text-xs">
             <div>
-              <span class="text-slate-400 block mb-0.5">Description</span>
+              <span class="text-slate-400 block mb-0.5">Deskripsi</span>
               <p class="text-slate-700 dark:text-slate-300 line-clamp-2">
                 {{ category.description || '-' }}
               </p>
             </div>
 
             <div class="flex items-center justify-between">
-              <span class="text-slate-400">Created At</span>
+              <span class="text-slate-400">Dibuat Pada</span>
               <span class="text-slate-700 dark:text-slate-300">
                 {{ formatDateTime(category.created_at) }}
               </span>
@@ -168,8 +168,8 @@ const fetchCategory = async () => {
   } catch (error) {
     showToast({
       type: 'error',
-      title: 'Error.',
-      message: getErrorMessage(error) || 'There was an error.',
+      title: 'Gagal.',
+      message: getErrorMessage(error) || 'Terjadi kesalahan.',
     });
   } finally {
     loading.value = false;
@@ -214,16 +214,16 @@ const removeProduct = async (id: string) => {
     if (success) {
       showToast({
         type: 'success',
-        title: 'Success',
-        message: 'Category has been deleted.'
+        title: 'Berhasil',
+        message: 'Kategori berhasil dihapus.'
       });
       fetchCategory();
     }
   } catch (error) {
     showToast({
       type: 'error',
-      title: 'Error.',
-      message: getErrorMessage(error) || 'There was an error.',
+      title: 'Gagal.',
+      message: getErrorMessage(error) || 'Terjadi kesalahan.',
     });
   } finally {
     hideLoading();
@@ -232,10 +232,10 @@ const removeProduct = async (id: string) => {
 
 const onDeleteCategory = (product: any) => {
   showConfirm({
-    header: 'Delete Category',
-    message: 'Are you sure you want to delete this category?',
-    rejectLabel: 'Cancel',
-    acceptLabel: 'Delete',
+    header: 'Hapus Kategori',
+    message: 'Apakah Anda yakin ingin menghapus kategori ini?',
+    rejectLabel: 'Batal',
+    acceptLabel: 'Hapus',
     type: 'warn',
     accept: () => {
       removeProduct(product?.id);

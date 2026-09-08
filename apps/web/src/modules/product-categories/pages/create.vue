@@ -2,7 +2,7 @@
   <UiCard class="max-w-2xl mx-auto">
     <template #header>
       <h1 class="text-xl font-semibold">
-        Add Category
+        Tambah Kategori
       </h1>
     </template>
 
@@ -14,7 +14,7 @@
       @submit="onFormSubmit"
     >
       <div class="w-full space-y-4">
-        <UiFormGroup label="Name" variant="vertical">
+        <UiFormGroup label="Nama" variant="vertical">
           <InputText
             name="name"
             type="text"
@@ -30,7 +30,7 @@
             {{ $form.name.error?.message }}
           </Message>
         </UiFormGroup>
-        <UiFormGroup label="Description" variant="vertical">
+        <UiFormGroup label="Deskripsi" variant="vertical">
           <Textarea
             name="description"
             placeholder=""
@@ -45,7 +45,7 @@
             {{ $form.description.error?.message }}
           </Message>
         </UiFormGroup>
-        <UiFormGroup label="Active Status" variant="vertical">
+        <UiFormGroup label="Status Aktif" variant="vertical">
           <Checkbox
             name="is_active"
             binary
@@ -64,14 +64,14 @@
       <div class="w-full flex justify-end gap-4">
         <Button
           severity="secondary"
-          label="Cancel"
+          label="Batal"
           size="medium"
           class="w-full md:w-[128px]"
           @click="onCancel"
         />
         <Button
           type="submit"
-          label="Save"
+          label="Simpan"
           size="medium"
           class="w-full md:w-[128px]"
         />
@@ -102,7 +102,7 @@ const initialValues = ref<FormCreate>({
 
 const resolver = ref(zodResolver(
   z.object({
-    name: z.string().min(1, 'Name is required'),
+    name: z.string().min(1, 'Nama wajib diisi.'),
     description: z.string(),
     is_active: z.boolean()
   })
@@ -128,8 +128,8 @@ const onFormSubmit = async ({ valid, values }: any) => {
     } catch (error) {
       showToast({
         type: 'error',
-        title: 'Create Category Failed.',
-        message: getErrorMessage(error) || 'There was an error.',
+        title: 'Gagal Menambahkan Kategori.',
+        message: getErrorMessage(error) || 'Terjadi kesalahan.',
       });
     } finally {
       hideLoading();

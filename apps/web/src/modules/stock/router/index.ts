@@ -13,17 +13,17 @@ export default [
     name: PREFIX_ROUTE_NAME,
     component: () => import('@/modules/stock/pages/index.vue'),
     meta: {
-      title: 'Stock',
+      title: 'Stok',
       layout: 'default',
       permission: PERMISSIONS,
       breadcrumbs: [
         {
-          label: 'Home',
+          label: 'Beranda',
           route: '/landing',
           isActive: false,
         },
         {
-          label: 'Stock',
+          label: 'Stok',
           route: PREFIX_ROUTE_PATH,
           isActive: true,
         },

@@ -14,7 +14,7 @@
         :options="listOfCategories"
         option-label="name"
         option-value="id"
-        placeholder="All Categories"
+        placeholder="Semua Kategori"
         showClear
         class="w-full md:w-64"
         :loading="loadingCategory"
@@ -22,7 +22,7 @@
       />
       <Button
         icon="pi pi-plus"
-        label="Add Product"
+        label="Tambah Produk"
         class="w-full md:w-[192px]"
         :disabled="!isCanCreate"
         @click="addProduct"
@@ -31,7 +31,7 @@
 
     <UiLoading
       v-if="loading"
-      message="Loading products..."
+      message="Memuat produk..."
     />
 
     <div
@@ -39,7 +39,7 @@
       class="flex flex-col items-center justify-center py-16 text-gray-400"
     >
       <i class="pi pi-inbox mb-3 text-4xl" />
-      <p class="text-sm">Products are empty.</p>
+      <p class="text-sm">Belum ada produk.</p>
     </div>
 
     <div v-else class="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
@@ -78,7 +78,7 @@
 
           <div class="flex shrink-0">
             <Tag
-              :value="product.is_active ? 'Active' : 'Inactive'"
+              :value="product.is_active ? 'Aktif' : 'Tidak Aktif'"
               :severity="product.is_active ? 'success' : 'danger'"
               class="capitalize text-xs!"
             />
@@ -88,22 +88,22 @@
         <Divider class="my-0!" />
 
         <div class="grid grid-cols-2 gap-y-2 text-xs">
-          <span class="text-slate-400">Price</span>
+          <span class="text-slate-400">Harga</span>
           <span class="text-right font-semibold text-primary dark:text-primary-400">
             {{ getCurrency(product.price) }}
           </span>
 
-          <span class="text-slate-400">Cost</span>
+          <span class="text-slate-400">Modal</span>
           <span class="text-right text-slate-700 dark:text-slate-300">
             {{ getCurrency(product.cost) }}
           </span>
 
-          <span class="text-slate-400">Min Stock</span>
+          <span class="text-slate-400">Stok Minimum</span>
           <span class="text-right text-slate-700 dark:text-slate-300">
             {{ product.min_stock }}
           </span>
 
-          <span class="text-slate-400">Stock Qty</span>
+          <span class="text-slate-400">Jumlah Stok</span>
           <span
             class="text-right font-medium"
             :class="isLowStock(product) ? 'text-orange-600 font-semibold' : 'text-slate-700 dark:text-slate-300'"
@@ -111,7 +111,7 @@
             {{ product.stock_qty }}
           </span>
 
-          <span class="text-slate-400">Created At</span>
+          <span class="text-slate-400">Dibuat Pada</span>
           <span class="text-right text-slate-700 dark:text-slate-300">
             {{ formatDateTime(product.created_at) }}
           </span>
@@ -229,8 +229,8 @@ const fetchProduct = async () => {
   } catch (error) {
     showToast({
       type: 'error',
-      title: 'Error.',
-      message: getErrorMessage(error) || 'There was an error.',
+      title: 'Gagal.',
+      message: getErrorMessage(error) || 'Terjadi kesalahan.',
     });
   } finally {
     loading.value = false;
@@ -271,10 +271,10 @@ const onEditProduct = (product: any) => {
 
 const onDeleteProduct = (product: any) => {
   showConfirm({
-    header: 'Delete Product',
-    message: 'Are you sure you want to delete this product?',
-    rejectLabel: 'Cancel',
-    acceptLabel: 'Delete',
+    header: 'Hapus Produk',
+    message: 'Apakah Anda yakin ingin menghapus produk ini?',
+    rejectLabel: 'Batal',
+    acceptLabel: 'Hapus',
     type: 'warn',
     accept: () => {
       removeProduct(product?.id);
@@ -292,16 +292,16 @@ const removeProduct = async (id: string) => {
     if (success) {
       showToast({
         type: 'success',
-        title: 'Success',
-        message: 'Product has been deleted.'
+        title: 'Berhasil',
+        message: 'Produk berhasil dihapus.'
       });
       fetchProduct();
     }
   } catch (error) {
     showToast({
       type: 'error',
-      title: 'Error.',
-      message: getErrorMessage(error) || 'There was an error.',
+      title: 'Gagal.',
+      message: getErrorMessage(error) || 'Terjadi kesalahan.',
     });
   } finally {
     hideLoading();
@@ -338,8 +338,8 @@ const submitAdjustStockModal = async (payload: any) => {
     if (success) {
       showToast({
         type: 'success',
-        title: 'Success',
-        message: 'Stock has been adjusted successfully.'
+        title: 'Berhasil',
+        message: 'Stok berhasil disesuaikan.'
       });
       showAdjustStockModal.value = false;
       selectedAdjustStock.value = null;
@@ -348,8 +348,8 @@ const submitAdjustStockModal = async (payload: any) => {
   } catch (error) {
     showToast({
       type: 'error',
-      title: 'Adjust Stock Failed.',
-      message: getErrorMessage(error) || 'There was an error.',
+      title: 'Penyesuaian Stok Gagal.',
+      message: getErrorMessage(error) || 'Terjadi kesalahan.',
     });
   } finally {
     hideLoading();

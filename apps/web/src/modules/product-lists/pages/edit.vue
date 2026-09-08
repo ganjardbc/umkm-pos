@@ -2,7 +2,7 @@
   <UiCard class="max-w-2xl mx-auto">
     <template #header>
       <h1 class="text-xl font-semibold">
-        Edit Product
+        Ubah Produk
       </h1>
     </template>
 
@@ -15,7 +15,7 @@
       class="flex flex-col gap-4 w-full"
     >
       <div class="w-full space-y-4">
-        <UiFormGroup label="Name" variant="vertical">
+        <UiFormGroup label="Nama" variant="vertical">
           <InputText
             name="name"
             type="text"
@@ -31,13 +31,13 @@
             {{ $form.name.error?.message }}
           </Message>
         </UiFormGroup>
-        <UiFormGroup label="Category" variant="vertical">
+        <UiFormGroup label="Kategori" variant="vertical">
           <Dropdown
             :options="listOfCategories"
             name="category_id"
             option-label="name"
             option-value="id"
-            placeholder="Choose a category"
+            placeholder="Pilih kategori"
             class="w-full"
             :loading="loadingCategory"
           />
@@ -50,7 +50,7 @@
             {{ $form.category_id.error?.message }}
           </Message>
         </UiFormGroup>
-        <UiFormGroup label="Price" variant="vertical">
+        <UiFormGroup label="Harga" variant="vertical">
           <InputNumber
             name="price"
             placeholder=""
@@ -69,7 +69,7 @@
             {{ $form.price.error?.message }}
           </Message>
         </UiFormGroup>
-        <UiFormGroup label="Cost" variant="vertical">
+        <UiFormGroup label="Modal" variant="vertical">
           <InputNumber
             name="cost"
             placeholder=""
@@ -88,7 +88,7 @@
             {{ $form.cost.error?.message }}
           </Message>
         </UiFormGroup>
-        <UiFormGroup label="Minimum Stock" variant="vertical">
+        <UiFormGroup label="Stok Minimum" variant="vertical">
           <InputNumber
             name="min_stock"
             placeholder=""
@@ -104,7 +104,7 @@
             {{ $form.min_stock.error?.message }}
           </Message>
         </UiFormGroup>
-        <UiFormGroup label="Active Status" variant="vertical">
+        <UiFormGroup label="Status Aktif" variant="vertical">
           <Checkbox
             name="is_active"
             binary
@@ -118,7 +118,7 @@
             {{ $form.is_active.error?.message }}
           </Message>
         </UiFormGroup>
-        <UiFormGroup label="Product Image" variant="vertical">
+        <UiFormGroup label="Gambar Produk" variant="vertical">
           <div class="flex items-start gap-4">
             <div
               v-if="imagePreview"
@@ -140,7 +140,7 @@
               <FileUpload
                 mode="basic"
                 accept="image/*"
-                :chooseLabel="imagePreview ? 'Change Image' : 'Choose Image'"
+                :chooseLabel="imagePreview ? 'Ubah Gambar' : 'Pilih Gambar'"
                 customUpload
                 @select="onUploadImage"
               />
@@ -149,12 +149,12 @@
                 severity="danger"
                 variant="outlined"
                 size="small"
-                label="Remove"
+                label="Hapus"
                 icon="pi pi-trash"
                 @click="onRemoveImage"
               />
               <p class="text-xs text-gray-400">
-                Allowed: JPG, PNG, WebP. Max 5MB.
+                Format yang didukung: JPG, PNG, WebP. Maks 5MB.
               </p>
             </div>
           </div>
@@ -164,14 +164,14 @@
       <div class="w-full flex justify-end gap-4">
         <Button
           severity="secondary"
-          label="Cancel"
+          label="Batal"
           size="medium"
           class="w-full md:w-[128px]"
           @click="onCancel"
         />
         <Button
           type="submit"
-          label="Save"
+          label="Simpan"
           size="medium"
           class="w-full md:w-[128px]"
         />
@@ -217,11 +217,11 @@ const existingUploadId = ref<string | null>(null);
 
 const resolver = ref(zodResolver(
   z.object({
-    name: z.string().min(1, { message: 'Name is required.' }),
+    name: z.string().min(1, { message: 'Nama wajib diisi.' }),
     category_id: z.string().nullable().optional(),
-    price: z.number().min(0, { message: 'Price must be at least 0.' }),
-    cost: z.number().min(0, { message: 'Cost must be at least 0.' }),
-    min_stock: z.number().min(0, { message: 'Minimum stock must be at least 0.' }),
+    price: z.number().min(0, { message: 'Harga minimal 0.' }),
+    cost: z.number().min(0, { message: 'Modal minimal 0.' }),
+    min_stock: z.number().min(0, { message: 'Stok minimum minimal 0.' }),
     is_active: z.boolean()
   })
 ));
@@ -255,8 +255,8 @@ const onFormSubmit = async ({ valid, values }: any) => {
     } catch (error) {
       showToast({
         type: 'error',
-        title: 'Update Product Failed.',
-        message: getErrorMessage(error) || 'There was an error.',
+        title: 'Gagal Memperbarui Produk.',
+        message: getErrorMessage(error) || 'Terjadi kesalahan.',
       });
     } finally {
       hideLoading();
@@ -293,13 +293,13 @@ const fetchDetail = async () => {
     if (upload?.id) {
       existingUploadId.value = upload.id;
     }
-    
+
     isLoaded.value = true;
   } catch (error) {
     showToast({
       type: 'error',
-      title: 'Failed to fetch data.',
-      message: getErrorMessage(error) || 'There was an error.',
+      title: 'Gagal memuat data.',
+      message: getErrorMessage(error) || 'Terjadi kesalahan.',
     });
   }
 };
