@@ -1,0 +1,8 @@
+{
+  "orchestrationRetryCount": 0,
+  "lastFailedGate": "qa",
+  "lastFailedAt": "2026-09-08T10:57:40.007Z",
+  "lastKnownCommitSha": "113f1e219469bd2151aee213e05d51259601b27b",
+  "ticketTitle": "[SECURITY] Tenant isolation leak on product image association (setImage)",
+  "ticketDescription": "## Sumber\n\nAuditor Agent scan 2026-07-12, file: `.ai/audits/products-api-2026-07-12.md`\n\n## Lokasi\n\n`apps/api/src/products/products.service.ts:334-340`\n\n## Masalah\n\nPada saat mengaitkan gambar produk melalui metode `setImage(id, uploadId, merchantId, userId)`, data upload dicari menggunakan query berikut:\n\n```ts\nconst upload = await this.prisma.uploads.findUnique({\n  where: { id: uploadId },\n});\n```\n\nQuery ini tidak memvalidasi apakah file yang diunggah (`uploads`) tersebut milik user atau merchant yang sedang masuk (no ownership/tenant validation check).\n\n## Dampak\n\nSeorang pengguna dari Merchant A dapat mengaitkan berkas gambar/file yang diunggah oleh Merchant B ke produk miliknya secara sepihak hanya dengan mengetahui UUID `upload_id` target (Insecure Direct Object Reference / IDOR).\n\n## Usulan\n\n1. Tambahkan pengecekan kepemilikan berkas di `products.service.ts` sebelum memproses update data produk.\n   * Verifikasi bahwa user yang mengunggah berkas tersebut (`uploads.uploaded_by_id`) memiliki `merchant_id` yang sama dengan `merchantId` dari CurrentUser.\n2. Atau tambahkan method validasi khusus di `UploadsService` (seperti `validateUploadOwnership(uploadId, merchantId)`) yang melempar `ForbiddenException` jika tidak sesuai."
+}

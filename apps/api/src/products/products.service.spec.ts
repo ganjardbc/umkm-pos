@@ -3,7 +3,11 @@ import { ProductsService } from './products.service';
 import { CategoriesService } from './categories/categories.service';
 import { PrismaService } from '../database/prisma.service';
 import { UploadsService } from '../uploads/uploads.service';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { PaginationDto } from '../common/dto/pagination.dto';
 
@@ -26,6 +30,12 @@ describe('ProductsService', () => {
       create: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
+    },
+    uploads: {
+      findUnique: jest.fn(),
+    },
+    users: {
+      findUnique: jest.fn(),
     },
     $transaction: jest.fn(),
   };
@@ -721,6 +731,211 @@ describe('ProductsService', () => {
 
       await expect(
         service.update(productId, updateDto, 'different-merchant', userId),
+      ).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('setImage', () => {
+    const merchantId = 'merchant-1';
+    const userId = 'user-1';
+    const productId = 'product-1';
+    const uploadId = 'upload-1';
+
+    const mockProduct = {
+      id: productId,
+      slug: 'test-product',
+      name: 'Test Product',
+      merchant_id: merchantId,
+      category_id: null,
+      price: 10000,
+      cost: 0,
+      stock_qty: 0,
+      min_stock: 0,
+      is_active: true,
+      image_upload_id: null,
+      thumbnail: null,
+      created_by: userId,
+      updated_by: userId,
+    };
+
+    const mockUpload = {
+      id: uploadId,
+      original_name: 'test.jpg',
+      mime_type: 'image/jpeg',
+      size: 1024,
+      s3_key: 'uploads/test.jpg',
+      bucket: 'test-bucket',
+      uploaded_by_id: userId,
+    };
+
+    const mockUploader = {
+      id: userId,
+      merchant_id: merchantId,
+      name: 'Test User',
+      email: 'user@example.com',
+    };
+
+    it('should successfully set product image when upload belongs to same merchant', async () => {
+      const signedUrl = 'https://s3.example.com/uploads/test.jpg?signed=true';
+      const updatedProduct = {
+        ...mockProduct,
+        image_upload_id: uploadId,
+        thumbnail: signedUrl,
+        updated_by: userId,
+      };
+
+      mockPrisma.products.findFirst.mockResolvedValue(mockProduct);
+      mockPrisma.uploads.findUnique.mockResolvedValue(mockUpload);
+      mockPrisma.users.findUnique.mockResolvedValue(mockUploader);
+      mockUploadsService.generateSignedUrl.mockResolvedValue({
+        url: signedUrl,
+      });
+      mockPrisma.products.update.mockResolvedValue(updatedProduct);
+
+      const result = await service.setImage(
+        productId,
+        uploadId,
+        merchantId,
+        userId,
+      );
+
+      expect(mockPrisma.products.findFirst).toHaveBeenCalledWith({
+        include: { merchants: true, product_categories: true, upload: true },
+        where: { id: productId, merchant_id: merchantId },
+      });
+      expect(mockPrisma.uploads.findUnique).toHaveBeenCalledWith({
+        where: { id: uploadId },
+      });
+      expect(mockPrisma.users.findUnique).toHaveBeenCalledWith({
+        where: { id: mockUpload.uploaded_by_id },
+      });
+      expect(mockUploadsService.generateSignedUrl).toHaveBeenCalledWith(
+        uploadId,
+      );
+      expect(mockPrisma.products.update).toHaveBeenCalledWith({
+        where: { id: productId },
+        data: {
+          image_upload_id: uploadId,
+          thumbnail: signedUrl,
+          updated_by: userId,
+          updated_at: expect.any(Date),
+        },
+        include: { merchants: true, product_categories: true, upload: true },
+      });
+      expect(result.image_upload_id).toBe(uploadId);
+      expect(result.thumbnail).toBe(signedUrl);
+    });
+
+    it('should throw BadRequestException when upload does not exist', async () => {
+      mockPrisma.products.findFirst.mockResolvedValue(mockProduct);
+      mockPrisma.uploads.findUnique.mockResolvedValue(null);
+
+      await expect(
+        service.setImage(productId, 'non-existent-upload', merchantId, userId),
+      ).rejects.toThrow(BadRequestException);
+      await expect(
+        service.setImage(productId, 'non-existent-upload', merchantId, userId),
+      ).rejects.toThrow('Upload not found');
+    });
+
+    it('should throw ForbiddenException when upload belongs to another merchant', async () => {
+      const crossTenantUploader = {
+        id: 'other-user',
+        merchant_id: 'merchant-2', // Different merchant!
+        name: 'Other User',
+        email: 'other@example.com',
+      };
+
+      mockPrisma.products.findFirst.mockResolvedValue(mockProduct);
+      mockPrisma.uploads.findUnique.mockResolvedValue({
+        ...mockUpload,
+        uploaded_by_id: 'other-user',
+      });
+      mockPrisma.users.findUnique.mockResolvedValue(crossTenantUploader);
+
+      await expect(
+        service.setImage(productId, uploadId, merchantId, userId),
+      ).rejects.toThrow(ForbiddenException);
+      await expect(
+        service.setImage(productId, uploadId, merchantId, userId),
+      ).rejects.toThrow('You do not have access to this upload');
+    });
+
+    it('should throw ForbiddenException when uploader user does not exist', async () => {
+      mockPrisma.products.findFirst.mockResolvedValue(mockProduct);
+      mockPrisma.uploads.findUnique.mockResolvedValue(mockUpload);
+      mockPrisma.users.findUnique.mockResolvedValue(null);
+
+      await expect(
+        service.setImage(productId, uploadId, merchantId, userId),
+      ).rejects.toThrow(ForbiddenException);
+      await expect(
+        service.setImage(productId, uploadId, merchantId, userId),
+      ).rejects.toThrow('You do not have access to this upload');
+    });
+
+    it('should throw NotFoundException if product does not belong to merchant', async () => {
+      mockPrisma.products.findFirst.mockResolvedValue(null);
+
+      await expect(
+        service.setImage(productId, uploadId, 'other-merchant', userId),
+      ).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('removeImage', () => {
+    const merchantId = 'merchant-1';
+    const userId = 'user-1';
+    const productId = 'product-1';
+
+    it('should successfully remove product image', async () => {
+      const mockProductWithImage = {
+        id: productId,
+        slug: 'test-product',
+        name: 'Test Product',
+        merchant_id: merchantId,
+        category_id: null,
+        price: 10000,
+        cost: 0,
+        stock_qty: 0,
+        min_stock: 0,
+        is_active: true,
+        image_upload_id: 'upload-1',
+        thumbnail: 'https://s3.example.com/test.jpg',
+        created_by: userId,
+        updated_by: userId,
+      };
+
+      const updatedProduct = {
+        ...mockProductWithImage,
+        image_upload_id: null,
+        thumbnail: null,
+      };
+
+      mockPrisma.products.findFirst.mockResolvedValue(mockProductWithImage);
+      mockPrisma.products.update.mockResolvedValue(updatedProduct);
+
+      const result = await service.removeImage(productId, merchantId, userId);
+
+      expect(mockPrisma.products.update).toHaveBeenCalledWith({
+        where: { id: productId },
+        data: {
+          image_upload_id: null,
+          thumbnail: null,
+          updated_by: userId,
+          updated_at: expect.any(Date),
+        },
+        include: { merchants: true, product_categories: true, upload: true },
+      });
+      expect(result.image_upload_id).toBeNull();
+      expect(result.thumbnail).toBeNull();
+    });
+
+    it('should throw NotFoundException if product does not exist on removeImage', async () => {
+      mockPrisma.products.findFirst.mockResolvedValue(null);
+
+      await expect(
+        service.removeImage(productId, merchantId, userId),
       ).rejects.toThrow(NotFoundException);
     });
   });

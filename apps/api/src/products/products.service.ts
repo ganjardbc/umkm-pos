@@ -3,6 +3,7 @@ import {
   NotFoundException,
   ConflictException,
   BadRequestException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -337,6 +338,14 @@ export class ProductsService {
 
     if (!upload) {
       throw new BadRequestException('Upload not found');
+    }
+
+    const uploader = await this.prisma.users.findUnique({
+      where: { id: upload.uploaded_by_id },
+    });
+
+    if (!uploader || uploader.merchant_id !== merchantId) {
+      throw new ForbiddenException('You do not have access to this upload');
     }
 
     return this.prisma.products.update({
