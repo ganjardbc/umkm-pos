@@ -2,7 +2,7 @@
   <UiCard>
     <div class="w-full flex gap-4 items-center justify-between">
       <h1 class="text-lg font-semibold">
-        User Shifts
+        Peserta Shift
       </h1>
     </div>
 
@@ -20,27 +20,27 @@
             <div class="flex justify-end gap-2">
               <Tag
                 v-if="participant?.is_owner"
-                value="Shift Owner"
+                value="Pemilik Shift"
                 severity="info"
               />
               <Tag
                 v-if="participant?.participant_removed_at"
-                value="Removed"
+                value="Dihapus"
                 severity="warning"
               />
             </div>
           </div>
           <div class="participant-item__meta">
             <span class="text-xs text-gray-500">
-              Added: {{ formatDateTime(participant?.participant_added_at) }}
+              Ditambahkan: {{ formatDateTime(participant?.participant_added_at) }}
             </span>
             <Divider v-if="participant?.participant_removed_at" layout="vertical" />
             <span v-if="participant?.participant_removed_at" class="text-xs text-gray-500">
-              Removed: {{ formatDateTime(participant?.participant_removed_at) }}
+              Dihapus: {{ formatDateTime(participant?.participant_removed_at) }}
             </span>
             <Divider v-if="participant?.transaction_count" layout="vertical" />
             <span v-if="participant?.transaction_count" class="text-xs text-gray-500">
-              Transactions: {{ participant?.transaction_count }}
+              Transaksi: {{ participant?.transaction_count }}
             </span>
           </div>
         </div>
@@ -48,7 +48,7 @@
     </div>
 
     <div v-if="participants.length === 0" class="text-center py-4 text-gray-500 dark:text-gray-400">
-      No participants
+      Belum ada peserta
     </div>
   </UiCard>
 </template>

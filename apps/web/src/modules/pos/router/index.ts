@@ -13,17 +13,17 @@ export default [
     name: PREFIX_ROUTE_NAME,
     component: () => import('@/modules/pos/pages/index.vue'),
     meta: {
-      title: 'Cashier',
+      title: 'Kasir',
       layout: 'default',
       permission: [CREATE],
       breadcrumbs: [
         {
-          label: 'Home',
+          label: 'Beranda',
           route: '/landing',
           isActive: false,
         },
         {
-          label: 'Cashier',
+          label: 'Kasir',
           route: PREFIX_ROUTE_PATH,
           isActive: true,
         },

@@ -28,19 +28,19 @@
           >
             {{
               currentShift.status === ShiftStatus.OPEN
-                ? `${currentShift?.shift_owner?.name} is in Shift`
-                : 'No Active Shift'
+                ? `${currentShift?.shift_owner?.name} sedang aktif di Shift`
+                : 'Tidak Ada Shift Aktif'
               }}
           </span>
           <span class="text-xs">
-            Created at {{ currentShift.created_at ? formatDateTime(currentShift.created_at) : 'N/A' }}
+            Dibuat pada {{ currentShift.created_at ? formatDateTime(currentShift.created_at) : '-' }}
           </span>
         </div>
       </div>
       <div class="pos-shift-status__actions">
         <Button
           v-if="currentShift.status === ShiftStatus.OPEN"
-          label="Close Shift"
+          label="Tutup Shift"
           size="small"
           severity="success"
           :loading="loading"
@@ -49,7 +49,7 @@
         />
         <Button
           v-else
-          label="Open Shift"
+          label="Buka Shift"
           size="small"
           severity="danger"
           :loading="loading"
@@ -64,7 +64,7 @@
     <div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
       <!-- Participant Count -->
       <div class="p-4 flex flex-row xl:flex-col gap-2 justify-between items-center rounded-lg bg-blue-50 dark:bg-dark">
-        <label class="text-sm font-medium text-gray-600 dark:text-gray-400">Participants</label>
+        <label class="text-sm font-medium text-gray-600 dark:text-gray-400">Peserta</label>
         <div class="text-base font-semibold text-gray-900 dark:text-white">
           {{ currentShift.participant_count || 0 }}
         </div>
@@ -72,7 +72,7 @@
 
       <!-- Total Transactions -->
       <div class="p-4 flex flex-row xl:flex-col gap-2 justify-between items-center rounded-lg bg-red-50 dark:bg-dark">
-        <label class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Transactions</label>
+        <label class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Transaksi</label>
         <div class="text-base font-semibold text-gray-900 dark:text-white">
           {{ currentShift.total_transactions || 0 }}
         </div>
@@ -80,7 +80,7 @@
 
       <!-- Shift Time -->
       <div class="p-4 flex flex-row xl:flex-col gap-2 justify-between items-center rounded-lg bg-orange-50 dark:bg-dark">
-        <label class="text-sm font-medium text-gray-600 dark:text-gray-400">Shift Time</label>
+        <label class="text-sm font-medium text-gray-600 dark:text-gray-400">Waktu Shift</label>
         <div class="text-base font-semibold text-gray-900 dark:text-white">
           {{ formatRangeTime(currentShift.start_time, currentShift.end_time) }}
         </div>
@@ -92,30 +92,30 @@
       severity="success"
       icon="pi pi-info-circle"
     >
-      Only {{ currentShift?.shift_owner?.name }} can close this shift.
+      Hanya {{ currentShift?.shift_owner?.name }} yang dapat menutup shift ini.
     </Message>
-  
+
     <Message
       v-if="!isUserInShift && currentShift.status === ShiftStatus.OPEN"
       severity="info"
       icon="pi pi-info-circle"
     >
-      <b>You're not shift participant.</b><br>
+      <b>Anda bukan peserta shift ini.</b><br>
       <span class="text-sm">
-        To join in this shift you can request to your shift owner's.
+        Untuk bergabung dalam shift ini, Anda dapat meminta kepada pemilik shift.
       </span>
     </Message>
-  
+
     <Message
       v-if="isUserRemovedFromShift && currentShift.status === ShiftStatus.OPEN"
       severity="warn"
       icon="pi pi-info-circle"
     >
       <b>
-        You have been removed from this shift.
+        Anda telah dihapus dari shift ini.
       </b><br>
       <span class="text-sm">
-        Please contact the shift owner to restore your shift.
+        Silakan hubungi pemilik shift untuk mengaktifkan kembali shift Anda.
       </span>
     </Message>
   </div>
@@ -186,15 +186,15 @@ const handleOpenShift = async () => {
       await fetchOutletShift();
       showToast({
         type: 'success',
-        title: 'Success',
-        message: 'Shift opened successfully',
+        title: 'Sukses',
+        message: 'Shift berhasil dibuka',
       });
     }
   } catch (error) {
     showToast({
       type: 'error',
-      title: 'Error',
-      message: getErrorMessage(error) || 'Failed to open shift',
+      title: 'Gagal',
+      message: getErrorMessage(error) || 'Gagal membuka shift',
     });
   } finally {
     hide();
@@ -209,14 +209,14 @@ const handleCloseShift = async () => {
     await fetchOutletShift();
     showToast({
       type: 'success',
-      title: 'Success',
-      message: 'Shift closed successfully',
+      title: 'Sukses',
+      message: 'Shift berhasil ditutup',
     });
   } catch (error) {
     showToast({
       type: 'error',
-      title: 'Error',
-      message: getErrorMessage(error) || 'Failed to close shift',
+      title: 'Gagal',
+      message: getErrorMessage(error) || 'Gagal menutup shift',
     });
   } finally {
     hide();
@@ -225,10 +225,10 @@ const handleCloseShift = async () => {
 
 const handleCloseConfirm = () => {
   showConfirm({
-    header: 'Close Shift?',
-    message: 'Are you sure you want to close this shift?',
-    rejectLabel: 'Cancel',
-    acceptLabel: 'Close',
+    header: 'Tutup Shift?',
+    message: 'Apakah Anda yakin ingin menutup shift ini?',
+    rejectLabel: 'Batal',
+    acceptLabel: 'Tutup Shift',
     type: 'warn',
     accept: () => {
       handleCloseShift();

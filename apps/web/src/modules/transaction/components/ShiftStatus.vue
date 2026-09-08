@@ -5,9 +5,9 @@
     severity="warn"
     icon="pi pi-info-circle"
   >
-    <b>Shift is closed.</b><br>
+    <b>Shift telah ditutup.</b><br>
     <span class="text-sm">
-      Please open new shit to create transactions.
+      Silakan buka shift baru untuk membuat transaksi.
     </span>
   </Message>
 
@@ -16,9 +16,9 @@
     severity="info"
     icon="pi pi-info-circle"
   >
-    <b>You're not shift participant.</b><br>
+    <b>Anda bukan peserta shift ini.</b><br>
     <span class="text-sm">
-      To create the transactions, you have to be a part of the shift.
+      Untuk membuat transaksi, Anda harus menjadi bagian dari shift ini.
     </span>
   </Message>
 </template>

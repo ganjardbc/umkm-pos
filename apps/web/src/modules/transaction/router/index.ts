@@ -14,17 +14,17 @@ export default [
     name: PREFIX_ROUTE_NAME,
     component: () => import('@/modules/transaction/pages/index.vue'),
     meta: {
-      title: 'Transactions',
+      title: 'Transaksi',
       layout: 'default',
       permission: [READ],
       breadcrumbs: [
         {
-          label: 'Home',
+          label: 'Beranda',
           route: '/landing',
           isActive: false,
         },
         {
-          label: 'Transactions',
+          label: 'Transaksi',
           route: PREFIX_ROUTE_PATH,
           isActive: true,
         },
@@ -36,22 +36,22 @@ export default [
     name: `${PREFIX_ROUTE_NAME}-create`,
     component: () => import('@/modules/transaction/pages/create.vue'),
     meta: {
-      title: 'Transactions',
+      title: 'Transaksi',
       layout: 'default',
       permission: [CREATE],
       breadcrumbs: [
         {
-          label: 'Home',
+          label: 'Beranda',
           route: '/landing',
           isActive: false,
         },
         {
-          label: 'Transactions',
+          label: 'Transaksi',
           route: PREFIX_ROUTE_PATH,
           isActive: false,
         },
         {
-          label: 'Create',
+          label: 'Buat Transaksi',
           route: PREFIX_ROUTE_PATH,
           isActive: true,
         },
@@ -63,17 +63,17 @@ export default [
     name: `${PREFIX_ROUTE_NAME}-detail`,
     component: () => import('@/modules/transaction/pages/detail.vue'),
     meta: {
-      title: 'Transactions',
+      title: 'Transaksi',
       layout: 'default',
       permission: [READ],
       breadcrumbs: [
         {
-          label: 'Home',
+          label: 'Beranda',
           route: '/landing',
           isActive: false,
         },
         {
-          label: 'Transactions',
+          label: 'Transaksi',
           route: PREFIX_ROUTE_PATH,
           isActive: false,
         },

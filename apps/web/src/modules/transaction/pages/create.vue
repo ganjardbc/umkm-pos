@@ -16,7 +16,7 @@
           @click="onBack"
         />
         <h1 class="text-lg font-semibold">
-          Create Transaction
+          Buat Transaksi
         </h1>
       </div>
 

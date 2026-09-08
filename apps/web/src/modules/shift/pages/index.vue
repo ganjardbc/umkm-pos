@@ -3,8 +3,8 @@
     <!-- Tabs Shift Management -->
     <Tabs v-model:value="activeTab">
       <TabList class="bg-transparent!">
-          <Tab value="current-shift">Current Shift</Tab>
-        <Tab value="shift-histories">Shift Histories</Tab>
+        <Tab value="current-shift">Shift Saat Ini</Tab>
+        <Tab value="shift-histories">Riwayat Shift</Tab>
       </TabList>
     </Tabs>
 

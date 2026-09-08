@@ -7,7 +7,7 @@
   >
     <template #header>
       <h1 class="text-xl font-semibold">
-        Print Receipt
+        Cetak Struk
       </h1>
     </template>
 
@@ -19,7 +19,7 @@
         <div class="flex items-center justify-between cursor-pointer select-none" @click="showSettings = !showSettings">
           <div class="flex items-center gap-2">
             <i class="pi pi-print text-gray-500 dark:text-gray-400" />
-            <span class="text-sm font-semibold text-gray-700 dark:text-gray-200">Bluetooth Thermal Printer</span>
+            <span class="text-sm font-semibold text-gray-700 dark:text-gray-200">Printer Termal Bluetooth</span>
           </div>
           <div class="flex items-center gap-2">
             <span v-if="isConnected" class="text-xs text-green-600 dark:text-green-400 font-medium flex items-center gap-1.5">
@@ -29,24 +29,24 @@
             <i :class="['pi', showSettings ? 'pi-chevron-up' : 'pi-chevron-down', 'text-xs text-gray-400']" />
           </div>
         </div>
-        
+
         <div v-if="showSettings" class="mt-3 space-y-4 pt-3 border-t border-gray-200 dark:border-gray-700">
           <!-- Printer Status & Actions -->
           <div class="flex items-center justify-between text-xs">
-            <span class="text-gray-500 dark:text-gray-400">Connection Status:</span>
+            <span class="text-gray-500 dark:text-gray-400">Status Koneksi:</span>
             <span v-if="isConnected" class="text-green-600 dark:text-green-400 font-semibold flex items-center gap-1">
-              Connected
+              Terhubung
             </span>
             <span v-else-if="isConnecting" class="text-yellow-600 dark:text-yellow-400 font-semibold flex items-center gap-1">
-              Connecting...
+              Menghubungkan...
             </span>
-            <span v-else class="text-gray-400 dark:text-gray-500">Disconnected</span>
+            <span v-else class="text-gray-400 dark:text-gray-500">Terputus</span>
           </div>
-          
+
           <div class="flex gap-2">
             <Button
               v-if="!isConnected"
-              label="Pair & Connect"
+              label="Pasangkan & Hubungkan"
               icon="pi pi-plus"
               size="small"
               class="flex-1 text-xs"
@@ -55,7 +55,7 @@
             />
             <Button
               v-else
-              label="Disconnect"
+              label="Putuskan Koneksi"
               icon="pi pi-power-off"
               severity="danger"
               size="small"
@@ -63,7 +63,7 @@
               @click="handleDisconnect"
             />
             <Button
-              label="Test Print"
+              label="Uji Cetak"
               icon="pi pi-file"
               severity="secondary"
               size="small"
@@ -73,10 +73,10 @@
               :loading="isPrintingTest"
             />
           </div>
-          
+
           <!-- Paper Size Selection -->
           <div class="flex flex-col gap-1.5">
-            <span class="text-xs text-gray-500 dark:text-gray-400 font-medium">Paper Width Configuration:</span>
+            <span class="text-xs text-gray-500 dark:text-gray-400 font-medium">Pengaturan Lebar Kertas:</span>
             <div class="grid grid-cols-2 gap-2">
               <button
                 type="button"
@@ -88,7 +88,7 @@
                 ]"
                 @click="setPaperSize('58mm')"
               >
-                58mm (Narrow)
+                58mm (Kecil)
               </button>
               <button
                 type="button"
@@ -100,7 +100,7 @@
                 ]"
                 @click="setPaperSize('80mm')"
               >
-                80mm (Wide)
+                80mm (Lebar)
               </button>
             </div>
           </div>
@@ -109,7 +109,7 @@
       <div v-else class="mt-2 border border-yellow-200 dark:border-yellow-900/30 rounded-lg p-3 bg-yellow-50 dark:bg-yellow-950/20 text-xs text-yellow-800 dark:text-yellow-300 flex items-start gap-2">
         <i class="pi pi-exclamation-triangle mt-0.5 shrink-0" />
         <div>
-          Bluetooth printing is not supported in this browser. Please use a Chromium-based browser (Chrome, Edge, Opera) over secure HTTPS connection.
+          Pencetakan Bluetooth tidak didukung pada peramban ini. Silakan gunakan peramban berbasis Chromium (Chrome, Edge, Opera) melalui koneksi HTTPS yang aman.
         </div>
       </div>
     </div>
@@ -120,7 +120,7 @@
         <Button
           v-if="isSupported"
           severity="success"
-          label="Print Receipt (Bluetooth)"
+          label="Cetak Struk (Bluetooth)"
           icon="pi pi-print"
           size="medium"
           fluid
@@ -128,7 +128,7 @@
           :loading="isPrinting"
         />
         <Button
-          label="Download Receipt Image"
+          label="Download Gambar Struk"
           icon="pi pi-download"
           severity="secondary"
           size="medium"
@@ -139,7 +139,7 @@
         <Button
           severity="secondary"
           variant="outlined"
-          label="Close"
+          label="Tutup"
           size="medium"
           fluid
           @click="onCancel"
@@ -215,8 +215,8 @@ const handleConnect = async () => {
     isConnected.value = true;
     showToast({
       type: 'success',
-      title: 'Printer Connected',
-      message: `Successfully connected to ${name}`,
+      title: 'Printer Terhubung',
+      message: `Berhasil terhubung ke ${name}`,
     });
   } catch (error: any) {
     console.error('Failed to connect printer:', error);
@@ -224,14 +224,14 @@ const handleConnect = async () => {
     if (error.name === 'NotFoundError') {
       showToast({
         type: 'warn',
-        title: 'Connection Cancelled',
-        message: 'Bluetooth device scanning was cancelled.',
+        title: 'Koneksi Dibatalkan',
+        message: 'Pemindaian perangkat Bluetooth dibatalkan.',
       });
     } else {
       showToast({
         type: 'error',
-        title: 'Connection Failed',
-        message: error.message || 'Failed to connect to printer',
+        title: 'Gagal Menghubungkan',
+        message: error.message || 'Gagal terhubung ke printer',
       });
     }
     isConnected.value = false;
@@ -247,44 +247,44 @@ const handleDisconnect = async () => {
   deviceName.value = null;
   showToast({
     type: 'info',
-    title: 'Printer Disconnected',
-    message: 'Printer connection has been closed.',
+    title: 'Printer Terputus',
+    message: 'Koneksi printer telah diputuskan.',
   });
 };
 
 const handlePrint = async () => {
   if (isPrinting.value) return;
-  
+
   try {
     isPrinting.value = true;
-    
+
     // Auto-connect flow if disconnected
     if (!isConnected.value) {
       showToast({
         type: 'info',
-        title: 'Pairing Printer',
-        message: 'Please pair your thermal printer from the browser prompt.',
+        title: 'Menghubungkan Printer',
+        message: 'Silakan pasangkan printer termal dari peramban Anda.',
       });
       await handleConnect();
     }
-    
+
     if (!isConnected.value) {
       // If still not connected (user cancelled or connect failed)
       return;
     }
-    
+
     await printReceipt(props.selected, paperSize.value);
     showToast({
       type: 'success',
-      title: 'Receipt Printed',
-      message: 'Receipt sent to thermal printer successfully.',
+      title: 'Struk Tercetak',
+      message: 'Struk berhasil dikirim ke printer termal.',
     });
   } catch (error: any) {
     console.error('Print error:', error);
     showToast({
       type: 'error',
-      title: 'Printing Failed',
-      message: error.message || 'Failed to print receipt. Please check printer connection.',
+      title: 'Gagal Mencetak',
+      message: error.message || 'Gagal mencetak struk. Silakan periksa koneksi printer.',
     });
   } finally {
     isPrinting.value = false;
@@ -298,15 +298,15 @@ const handlePrintTest = async () => {
     await printTestPage();
     showToast({
       type: 'success',
-      title: 'Test Page Printed',
-      message: 'Test page sent to printer successfully.',
+      title: 'Halaman Uji Tercetak',
+      message: 'Halaman uji berhasil dikirim ke printer.',
     });
   } catch (error: any) {
     console.error('Test print error:', error);
     showToast({
       type: 'error',
-      title: 'Test Print Failed',
-      message: error.message || 'Failed to print test page.',
+      title: 'Gagal Mencetak Halaman Uji',
+      message: error.message || 'Gagal mencetak halaman uji.',
     });
   } finally {
     isPrintingTest.value = false;

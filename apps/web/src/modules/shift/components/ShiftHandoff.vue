@@ -1,46 +1,46 @@
 <template>
   <UiCard class="shift-handoff">
     <div class="shift-handoff__header">
-      <h3 class="shift-handoff__title">Handoff Shift</h3>
+      <h3 class="shift-handoff__title">Oper Shift</h3>
     </div>
 
     <div class="shift-handoff__content">
       <p class="shift-handoff__description">
-        Transfer shift responsibility to another participant by Shift Owner.
+        Oper tanggung jawab shift kepada peserta lain oleh pemilik shift.
       </p>
 
       <div class="space-y-4">
         <div>
-          <label class="block text-sm font-medium mb-2">Select Target Participant</label>
+          <label class="block text-sm font-medium mb-2">Pilih Peserta Tujuan</label>
           <Dropdown
             v-model="selectedTargetUserId"
             :options="otherParticipants"
             option-label="user_name"
             option-value="user_id"
-            placeholder="Choose a participant"
+            placeholder="Pilih peserta"
             class="w-full"
             :disabled="!isShiftOwner"
           />
         </div>
 
         <div class="flex items-center gap-2">
-          <InputSwitch 
+          <InputSwitch
             v-model="removePreviousOwner"
             :disabled="!isShiftOwner"
           />
-          <label class="text-sm">Remove me from participants after handoff</label>
+          <label class="text-sm">Keluarkan saya dari peserta shift setelah oper shift</label>
         </div>
 
         <div class="flex gap-2 justify-end">
           <Button
-            label="Cancel"
+            label="Batal"
             severity="secondary"
             :disabled="!isShiftOwner || loading"
             fluid
             @click="resetForm"
           />
           <Button
-            label="Handoff"
+            label="Oper Shift"
             :loading="loading"
             :disabled="!isShiftOwner || !selectedTargetUserId"
             fluid
@@ -49,7 +49,7 @@
         </div>
 
         <div v-if="isHandoffComplete" class="text-center text-sm text-green-600 dark:text-green-400">
-          ✓ Shift handoff completed successfully
+          ✓ Oper shift berhasil diselesaikan
         </div>
       </div>
     </div>
@@ -115,10 +115,10 @@ const handleHandoff = async () => {
     });
     showToast({
       type: 'success',
-      title: 'Success',
-      message: 'Shift handed off successfully',
+      title: 'Sukses',
+      message: 'Shift berhasil dioper',
     });
-    
+
     // Mark as complete to disable form
     isHandoffComplete.value = true;
 
@@ -128,18 +128,18 @@ const handleHandoff = async () => {
     console.error('Handoff error:', error);
     showToast({
       type: 'error',
-      title: 'Error',
-      message: getErrorMessage(error) || 'Failed to handoff shift',
+      title: 'Gagal',
+      message: getErrorMessage(error) || 'Gagal mengoper shift',
     });
   }
 };
 
 const handleConfirmHandoff = () => {
   showConfirm({
-    header: 'Handoff Shift?',
-    message: 'Are you sure you want to handoff this shift?',
-    rejectLabel: 'Cancel',
-    acceptLabel: 'Handoff',
+    header: 'Oper Shift?',
+    message: 'Apakah Anda yakin ingin mengoper shift ini?',
+    rejectLabel: 'Batal',
+    acceptLabel: 'Oper Shift',
     type: 'warn',
     accept: () => {
       handleHandoff();
