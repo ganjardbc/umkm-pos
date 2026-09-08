@@ -8,15 +8,15 @@
         @click="onBack"
       />
       <h1 class="text-lg font-semibold">
-        Merchant Detail
+        Detail Merchant
       </h1>
     </div>
 
     <UiCard v-if="merchantDetail">
-      <template #header>  
+      <template #header>
         <div class="w-full flex gap-4 items-center justify-between">
           <h1 class="text-lg font-semibold">
-            Merchant Information
+            Informasi Merchant
           </h1>
           <Button
             icon="pi pi-pencil"
@@ -36,7 +36,7 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label class="text-sm font-medium text-gray-500">Name</label>
+            <label class="text-sm font-medium text-gray-500">Nama</label>
             <p class="text-base mt-1">{{ merchantDetail.name }}</p>
           </div>
           <div>
@@ -47,23 +47,23 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label class="text-sm font-medium text-gray-500">Phone</label>
+            <label class="text-sm font-medium text-gray-500">Nomor Telepon</label>
             <p class="text-base mt-1">{{ merchantDetail.phone }}</p>
           </div>
         </div>
 
         <div>
-          <label class="text-sm font-medium text-gray-500">Address</label>
+          <label class="text-sm font-medium text-gray-500">Alamat</label>
           <p class="text-base mt-1">{{ merchantDetail.address }}</p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label class="text-sm font-medium text-gray-500">Created At</label>
+            <label class="text-sm font-medium text-gray-500">Dibuat Pada</label>
             <p class="text-base mt-1">{{ formatDateTime(merchantDetail.created_at) }}</p>
           </div>
           <div>
-            <label class="text-sm font-medium text-gray-500">Updated At</label>
+            <label class="text-sm font-medium text-gray-500">Diperbarui Pada</label>
             <p class="text-base mt-1">{{ formatDateTime(merchantDetail.updated_at) }}</p>
           </div>
         </div>
@@ -101,8 +101,8 @@ const fetchDetail = async () => {
   } catch (error) {
     showToast({
       type: 'error',
-      title: 'Failed to fetch data.',
-      message: getErrorMessage(error) || 'There was an error.',
+      title: 'Gagal memuat data.',
+      message: getErrorMessage(error) || 'Terjadi kesalahan.',
     });
   }
 };

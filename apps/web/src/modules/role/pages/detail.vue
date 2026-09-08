@@ -8,15 +8,15 @@
         @click="onBack"
       />
       <h1 class="text-lg font-semibold">
-        Role Detail
+        Detail Role
       </h1>
     </div>
 
     <UiCard v-if="roleDetail">
-      <template #header>  
+      <template #header>
         <div class="w-full flex gap-4 items-center justify-between">
           <h1 class="text-lg font-semibold">
-            Role Information
+            Informasi Role
           </h1>
           <Button
             icon="pi pi-pencil"
@@ -31,27 +31,27 @@
       <div class="space-y-4">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label class="text-sm font-medium text-gray-500">Name</label>
+            <label class="text-sm font-medium text-gray-500">Nama</label>
             <p class="text-base mt-1">{{ roleDetail.name }}</p>
           </div>
           <div>
-            <label class="text-sm font-medium text-gray-500">Total Permissions</label>
+            <label class="text-sm font-medium text-gray-500">Total Hak Akses</label>
             <p class="text-base mt-1">{{ roleDetail.role_permissions?.length || 0 }}</p>
           </div>
         </div>
 
         <div>
-          <label class="text-sm font-medium text-gray-500">Description</label>
+          <label class="text-sm font-medium text-gray-500">Deskripsi</label>
           <p class="text-base mt-1">{{ roleDetail.description }}</p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label class="text-sm font-medium text-gray-500">Created At</label>
+            <label class="text-sm font-medium text-gray-500">Dibuat Pada</label>
             <p class="text-base mt-1">{{ formatDateTime(roleDetail.created_at) }}</p>
           </div>
           <div>
-            <label class="text-sm font-medium text-gray-500">Updated At</label>
+            <label class="text-sm font-medium text-gray-500">Diperbarui Pada</label>
             <p class="text-base mt-1">{{ formatDateTime(roleDetail.updated_at) }}</p>
           </div>
         </div>
@@ -61,14 +61,14 @@
     <UiCard v-if="roleDetail" class="gap-0! p-0! overflow-hidden!">
       <template #header>
         <h2 class="text-lg font-semibold pt-4 px-4">
-          Permissions
+          Hak Akses
         </h2>
       </template>
 
       <DataTable :value="permissions" :loading="loadingPermissions" tableStyle="min-width: 50rem">
         <template #empty>
           <span class="w-full text-center flex justify-center">
-            Permissions are empty.
+            Belum ada hak akses.
           </span>
         </template>
         <Column field="no" header="NO" class="w-18">
@@ -76,12 +76,12 @@
             {{ getNoTable(slotProps.index, pagination.page, pagination.rows) }}
           </template>
         </Column>
-        <Column field="code" header="Code">
+        <Column field="code" header="Kode">
           <template #body="slotProps">
             {{ slotProps.data.code }}
           </template>
         </Column>
-        <Column field="description" header="Description">
+        <Column field="description" header="Deskripsi">
           <template #body="slotProps">
             {{ slotProps.data.description }}
           </template>
@@ -149,8 +149,8 @@ const fetchDetail = async () => {
   } catch (error) {
     showToast({
       type: 'error',
-      title: 'Failed to fetch data.',
-      message: getErrorMessage(error) || 'There was an error.',
+      title: 'Gagal memuat data.',
+      message: getErrorMessage(error) || 'Terjadi kesalahan.',
     });
   }
 };
@@ -182,8 +182,8 @@ const fetchPermission = async () => {
     console.log(error);
     showToast({
       type: 'error',
-      title: 'Error.',
-      message: getErrorMessage(error) || 'There was an error.',
+      title: 'Gagal.',
+      message: getErrorMessage(error) || 'Terjadi kesalahan.',
     });
   } finally {
     loadingPermissions.value = false;
@@ -208,15 +208,15 @@ const handleAssignPermission = async (permissionID: string) => {
     const response = await assignPermission(roleID.value, payload);
     showToast({
       type: 'success',
-      title: 'Success.',
-      message: response?.data?.message || 'Permission assigned successfully.',
+      title: 'Berhasil.',
+      message: response?.data?.message || 'Hak akses berhasil ditambahkan.',
     });
     fetchDetail();
   } catch (error) {
     showToast({
       type: 'error',
-      title: 'Failed to assign permission.',
-      message: getErrorMessage(error) || 'There was an error.',
+      title: 'Gagal menambahkan hak akses.',
+      message: getErrorMessage(error) || 'Terjadi kesalahan.',
     });
   }
 };
@@ -226,15 +226,15 @@ const handleDeletePermission = async (permissionID: string) => {
     const response = await deletePermission(roleID.value, permissionID);
     showToast({
       type: 'success',
-      title: 'Success.',
-      message: response?.data?.message || 'Permission deleted successfully.',
+      title: 'Berhasil.',
+      message: response?.data?.message || 'Hak akses berhasil dihapus.',
     });
     fetchDetail();
   } catch (error) {
     showToast({
       type: 'error',
-      title: 'Failed to delete permission.',
-      message: getErrorMessage(error) || 'There was an error.',
+      title: 'Gagal menghapus hak akses.',
+      message: getErrorMessage(error) || 'Terjadi kesalahan.',
     });
   }
 };

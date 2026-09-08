@@ -2,7 +2,7 @@
   <UiCard class="max-w-2xl mx-auto">
     <template #header>
       <h1 class="text-xl font-semibold">
-        Add User
+        Tambah Pengguna
       </h1>
     </template>
 
@@ -31,7 +31,7 @@
           </Message>
         </UiFormGroup>
 
-        <UiFormGroup label="Name" variant="vertical">
+        <UiFormGroup label="Nama" variant="vertical">
           <InputText
             name="name"
             type="text"
@@ -88,13 +88,13 @@
           @remove="onRemoveImage"
         />
 
-        <UiFormGroup label="Active Status" variant="vertical">
+        <UiFormGroup label="Status Aktif" variant="vertical">
           <div class="flex items-center gap-2">
             <Checkbox
               name="is_active"
               :binary="true"
             />
-            <label class="text-sm text-gray-700">User is active</label>
+            <label class="text-sm text-gray-700">Pengguna aktif</label>
           </div>
         </UiFormGroup>
       </div>
@@ -102,14 +102,14 @@
       <div class="w-full flex justify-end gap-4">
         <Button
           severity="secondary"
-          label="Cancel"
+          label="Batal"
           size="medium"
           class="w-full md:w-[128px]"
           @click="onCancel"
         />
         <Button
           type="submit"
-          label="Save"
+          label="Simpan"
           size="medium"
           class="w-full md:w-[128px]"
         />
@@ -153,10 +153,10 @@ const initialValues = ref<FormCreate>({
 
 const resolver = ref(zodResolver(
   z.object({
-    username: z.string().min(1, { message: 'Username is required.' }),
-    name: z.string().min(1, { message: 'Name is required.' }),
-    email: z.string().email({ message: 'Invalid email address.' }),
-    password: z.string().min(6, { message: 'Password must be at least 6 characters.' }),
+    username: z.string().min(1, { message: 'Username wajib diisi.' }),
+    name: z.string().min(1, { message: 'Nama wajib diisi.' }),
+    email: z.string().email({ message: 'Format email tidak valid.' }),
+    password: z.string().min(6, { message: 'Password minimal 6 karakter.' }),
     avatar: z.string().optional(),
     is_active: z.boolean()
   })
@@ -189,8 +189,8 @@ const onFormSubmit = async (event: any) => {
     } catch (error) {
       showToast({
         type: 'error',
-        title: 'Create User Failed.',
-        message: getErrorMessage(error) || 'There was an error.',
+        title: 'Gagal Menambah Pengguna.',
+        message: getErrorMessage(error) || 'Terjadi kesalahan.',
       });
     } finally {
       hideLoading();

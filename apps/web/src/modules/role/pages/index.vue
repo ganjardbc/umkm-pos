@@ -5,13 +5,14 @@
         <UiSearch
           v-model="form.search"
           type="search"
+          placeholder="Cari role..."
           class="w-full"
           @input="search"
         />
       </div>
       <Button
         icon="pi pi-plus"
-        label="Add Role"
+        label="Tambah Role"
         class="w-full md:w-[192px]"
         :disabled="!isCanCreate"
         @click="addRole"
@@ -20,12 +21,12 @@
 
     <UiLoading
       v-if="loading"
-      message="Loading roles..."
+      message="Memuat role..."
     />
 
     <div v-else-if="roles.length === 0" class="flex flex-col items-center justify-center py-16 text-gray-400">
       <i class="pi pi-inbox mb-3 text-4xl" />
-      <p class="text-sm">Roles are empty.</p>
+      <p class="text-sm">Belum ada role.</p>
     </div>
 
     <div v-else class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -49,21 +50,21 @@
 
         <div class="space-y-2 text-xs">
           <div>
-            <span class="text-slate-400 block mb-0.5">Description</span>
+            <span class="text-slate-400 block mb-0.5">Deskripsi</span>
             <p class="text-slate-700 dark:text-slate-300 line-clamp-2">
               {{ role.description || '-' }}
             </p>
           </div>
 
           <div class="flex items-center justify-between">
-            <span class="text-slate-400">Total Permissions</span>
+            <span class="text-slate-400">Total Hak Akses</span>
             <span class="text-right font-medium text-slate-700 dark:text-slate-300">
               {{ role.role_permissions?.length || 0 }}
             </span>
           </div>
 
           <div class="flex items-center justify-between">
-            <span class="text-slate-400">Created At</span>
+            <span class="text-slate-400">Dibuat Pada</span>
             <span class="text-right text-slate-700 dark:text-slate-300">
               {{ formatDateTime(role.created_at) }}
             </span>
@@ -159,8 +160,8 @@ const fetchRole = async () => {
     console.log(error);
     showToast({
       type: 'error',
-      title: 'Error.',
-      message: getErrorMessage(error) || 'There was an error.',
+      title: 'Gagal.',
+      message: getErrorMessage(error) || 'Terjadi kesalahan.',
     });
   } finally {
     loading.value = false;
@@ -207,16 +208,16 @@ const removeRole = async (id: string) => {
     if (success) {
       showToast({
         type: 'success',
-        title: 'Success',
-        message: 'Role has been deleted.',
+        title: 'Berhasil',
+        message: 'Role berhasil dihapus.',
       });
       fetchRole();
     }
   } catch (error) {
     showToast({
       type: 'error',
-      title: 'Error.',
-      message: getErrorMessage(error) || 'There was an error.',
+      title: 'Gagal.',
+      message: getErrorMessage(error) || 'Terjadi kesalahan.',
     });
   } finally {
     hideLoading();
@@ -225,10 +226,10 @@ const removeRole = async (id: string) => {
 
 const onDeleteRole = (role: any) => {
   showConfirm({
-    header: 'Delete Role',
-    message: 'Are you sure you want to delete this role?',
-    rejectLabel: 'Cancel',
-    acceptLabel: 'Delete',
+    header: 'Hapus Role',
+    message: 'Apakah Anda yakin ingin menghapus role ini?',
+    rejectLabel: 'Batal',
+    acceptLabel: 'Hapus',
     type: 'warn',
     accept: () => {
       removeRole(role?.id);

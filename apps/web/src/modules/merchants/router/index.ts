@@ -14,17 +14,17 @@ export default [
     name: PREFIX_ROUTE_NAME,
     component: () => import('@/modules/merchants/pages/index.vue'),
     meta: {
-      title: 'Merchants',
+      title: 'Merchant',
       layout: 'default',
       permission: [READ],
       breadcrumbs: [
         {
-          label: 'Home',
+          label: 'Beranda',
           route: '/landing',
           isActive: false,
         },
         {
-          label: 'Merchants',
+          label: 'Merchant',
           route: PREFIX_ROUTE_PATH,
           isActive: true,
         },
@@ -36,22 +36,22 @@ export default [
     name: `${PREFIX_ROUTE_NAME}-create`,
     component: () => import('@/modules/merchants/pages/create.vue'),
     meta: {
-      title: 'Create Merchant',
+      title: 'Tambah Merchant',
       layout: 'default',
       permission: [CREATE],
       breadcrumbs: [
         {
-          label: 'Home',
+          label: 'Beranda',
           route: '/landing',
           isActive: false,
         },
         {
-          label: 'Merchants',
+          label: 'Merchant',
           route: PREFIX_ROUTE_PATH,
           isActive: false,
         },
         {
-          label: 'Create Merchant',
+          label: 'Tambah Merchant',
           route: `${PREFIX_ROUTE_PATH}/create`,
           isActive: true,
         },
@@ -68,12 +68,12 @@ export default [
       permission: [UPDATE],
       breadcrumbs: [
         {
-          label: 'Home',
+          label: 'Beranda',
           route: '/landing',
           isActive: false,
         },
         {
-          label: 'Merchants',
+          label: 'Merchant',
           route: PREFIX_ROUTE_PATH,
           isActive: false,
         },
@@ -91,22 +91,22 @@ export default [
     name: `${PREFIX_ROUTE_NAME}-detail`,
     component: () => import('@/modules/merchants/pages/detail.vue'),
     meta: {
-      title: 'View Merchant',
+      title: 'Detail Merchant',
       layout: 'default',
       permission: [READ],
       breadcrumbs: [
         {
-          label: 'Home',
+          label: 'Beranda',
           route: '/landing',
           isActive: false,
         },
         {
-          label: 'Merchants',
+          label: 'Merchant',
           route: PREFIX_ROUTE_PATH,
           isActive: false,
         },
         {
-          label: 'View Merchant',
+          label: 'Detail Merchant',
           route: `${PREFIX_ROUTE_PATH}/:id/view`,
           isActive: true,
         },

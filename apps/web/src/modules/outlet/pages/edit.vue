@@ -15,7 +15,7 @@
       class="flex flex-col gap-4 w-full"
     >
       <div class="w-full space-y-4">
-        <UiFormGroup label="Name" variant="vertical">
+        <UiFormGroup label="Nama" variant="vertical">
           <InputText
             name="name"
             type="text"
@@ -31,7 +31,7 @@
             {{ $form.name.error?.message }}
           </Message>
         </UiFormGroup>
-        <UiFormGroup label="Location" variant="vertical">
+        <UiFormGroup label="Lokasi" variant="vertical">
           <Textarea
             name="location"
             placeholder=""
@@ -46,7 +46,7 @@
             {{ $form.location.error?.message }}
           </Message>
         </UiFormGroup>
-        <UiFormGroup label="Guest Secret Code" variant="vertical">
+        <UiFormGroup label="Kode Rahasia Pelanggan" variant="vertical">
           <InputText
             name="guest_session_secret"
             type="text"
@@ -59,13 +59,13 @@
           @select="onUploadImage"
           @remove="onRemoveImage"
         />
-        <UiFormGroup label="Active Status" variant="vertical">
+        <UiFormGroup label="Status Aktif" variant="vertical">
           <div class="flex items-center gap-2">
             <Checkbox
               name="is_active"
               binary
             />
-            <label class="text-sm text-gray-700">Outlet is active</label>
+            <label class="text-sm text-gray-700">Outlet aktif</label>
           </div>
           <Message
             v-if="$form.is_active?.invalid"
@@ -81,14 +81,14 @@
       <div class="w-full flex justify-end gap-4">
         <Button
           severity="secondary"
-          label="Cancel"
+          label="Batal"
           size="medium"
           class="w-full md:w-[128px]"
           @click="onCancel"
         />
         <Button
           type="submit"
-          label="Save"
+          label="Simpan"
           size="medium"
           class="w-full md:w-[128px]"
           :loading="isSubmitting"
@@ -136,8 +136,8 @@ const initialValues = ref<FormEdit>({
 
 const resolver = ref(zodResolver(
   z.object({
-    name: z.string().min(1, { message: 'Name is required.' }),
-    location: z.string().min(1, { message: 'Location is required.' }),
+    name: z.string().min(1, { message: 'Nama wajib diisi.' }),
+    location: z.string().min(1, { message: 'Lokasi wajib diisi.' }),
     guest_session_secret: z.string().optional(),
     is_active: z.boolean()
   })
@@ -170,8 +170,8 @@ const onFormSubmit = async (event: any) => {
     } catch (error) {
       showToast({
         type: 'error',
-        title: 'Update Outlet Failed.',
-        message: getErrorMessage(error) || 'There was an error.',
+        title: 'Gagal Memperbarui Outlet.',
+        message: getErrorMessage(error) || 'Terjadi kesalahan.',
       });
     } finally {
       hideLoading();
@@ -202,13 +202,13 @@ const fetchDetail = async () => {
       hasExistingLogo.value = true
       imagePreview.value = logo
     }
-    
+
     isLoaded.value = true;
   } catch (error) {
     showToast({
       type: 'error',
-      title: 'Failed to fetch data.',
-      message: getErrorMessage(error) || 'There was an error.',
+      title: 'Gagal memuat data.',
+      message: getErrorMessage(error) || 'Terjadi kesalahan.',
     });
   }
 };

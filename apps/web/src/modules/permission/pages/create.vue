@@ -2,7 +2,7 @@
   <UiCard class="max-w-2xl mx-auto">
     <template #header>
       <h1 class="text-xl font-semibold">
-        Add Permission
+        Tambah Permission
       </h1>
     </template>
 
@@ -14,7 +14,7 @@
       class="flex flex-col gap-4 w-full"
     >
       <div class="w-full space-y-4">
-        <UiFormGroup label="Code" variant="vertical">
+        <UiFormGroup label="Kode" variant="vertical">
           <InputText
             name="code"
             type="text"
@@ -30,7 +30,7 @@
             {{ $form.code.error?.message }}
           </Message>
         </UiFormGroup>
-        <UiFormGroup label="Description" variant="vertical">
+        <UiFormGroup label="Deskripsi" variant="vertical">
           <Textarea
             name="description"
             placeholder=""
@@ -50,14 +50,14 @@
       <div class="w-full flex justify-end gap-4">
         <Button
           severity="secondary"
-          label="Cancel"
+          label="Batal"
           size="medium"
           class="w-full md:w-[128px]"
           @click="onCancel"
         />
         <Button
           type="submit"
-          label="Save"
+          label="Simpan"
           size="medium"
           class="w-full md:w-[128px]"
         />
@@ -87,8 +87,8 @@ const initialValues = ref<Form>({
 
 const resolver = ref(zodResolver(
   z.object({
-    code: z.string().min(1, { message: 'Code is required.' }),
-    description: z.string().min(1, { message: 'Description is required.' })
+    code: z.string().min(1, { message: 'Kode wajib diisi.' }),
+    description: z.string().min(1, { message: 'Deskripsi wajib diisi.' })
   })
 ));
 
@@ -111,8 +111,8 @@ const onFormSubmit = async (event: any) => {
     } catch (error) {
       showToast({
         type: 'error',
-        title: 'Login Failed.',
-        message: getErrorMessage(error) || 'There was an error.',
+        title: 'Gagal Menambah Permission.',
+        message: getErrorMessage(error) || 'Terjadi kesalahan.',
       });
     } finally {
       hideLoading();

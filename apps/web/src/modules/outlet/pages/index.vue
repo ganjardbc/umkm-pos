@@ -5,13 +5,14 @@
         <UiSearch
           v-model="form.search"
           type="search"
+          placeholder="Cari outlet..."
           class="w-full"
           @input="search"
         />
       </div>
       <Button
         icon="pi pi-plus"
-        label="Add Outlet"
+        label="Tambah Outlet"
         class="w-full md:w-48"
         :disabled="!isCanCreate"
         @click="addOutlet"
@@ -20,7 +21,7 @@
 
     <UiLoading
       v-if="loading"
-      message="Loading outlets..."
+      message="Memuat outlet..."
     />
 
     <div
@@ -28,7 +29,7 @@
       class="flex flex-col items-center justify-center py-16 text-gray-400"
     >
       <i class="pi pi-inbox mb-3 text-4xl" />
-      <p class="text-sm">Outlets are empty.</p>
+      <p class="text-sm">Belum ada outlet.</p>
     </div>
 
     <div v-else class="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
@@ -62,7 +63,7 @@
           </div>
           <div class="shrink-0">
             <Tag
-              :value="outlet.is_active ? 'Active' : 'Inactive'"
+              :value="outlet.is_active ? 'Aktif' : 'Tidak Aktif'"
               :severity="outlet.is_active ? 'success' : 'danger'"
               class="capitalize text-xs!"
             />
@@ -77,12 +78,12 @@
             {{ outlet.merchants?.name || '-' }}
           </span>
 
-          <span class="text-slate-400">Location</span>
+          <span class="text-slate-400">Lokasi</span>
           <span class="text-right truncate text-slate-700 dark:text-slate-300">
             {{ outlet.location || '-' }}
           </span>
 
-          <span class="text-slate-400">Created At</span>
+          <span class="text-slate-400">Dibuat Pada</span>
           <span class="text-right text-slate-700 dark:text-slate-300">
             {{ formatDateTime(outlet.created_at) }}
           </span>
@@ -177,8 +178,8 @@ const fetchOutlet = async () => {
     console.log(error);
     showToast({
       type: 'error',
-      title: 'Error.',
-      message: getErrorMessage(error) || 'There was an error.',
+      title: 'Gagal.',
+      message: getErrorMessage(error) || 'Terjadi kesalahan.',
     });
   } finally {
     loading.value = false;
@@ -219,16 +220,16 @@ const removeOutlet = async (id: string) => {
     if (success) {
       showToast({
         type: 'success',
-        title: 'Success',
-        message: 'Outlet has been deleted.',
+        title: 'Berhasil',
+        message: 'Outlet berhasil dihapus.',
       });
       fetchOutlet();
     }
   } catch (error) {
     showToast({
       type: 'error',
-      title: 'Error.',
-      message: getErrorMessage(error) || 'There was an error.',
+      title: 'Gagal.',
+      message: getErrorMessage(error) || 'Terjadi kesalahan.',
     });
   } finally {
     hideLoading();
@@ -237,10 +238,10 @@ const removeOutlet = async (id: string) => {
 
 const onDeleteOutlet = (outlet: any) => {
   showConfirm({
-    header: 'Delete Outlet',
-    message: 'Are you sure you want to delete this outlet?',
-    rejectLabel: 'Cancel',
-    acceptLabel: 'Delete',
+    header: 'Hapus Outlet',
+    message: 'Apakah Anda yakin ingin menghapus outlet ini?',
+    rejectLabel: 'Batal',
+    acceptLabel: 'Hapus',
     type: 'warn',
     accept: () => {
       removeOutlet(outlet?.id);

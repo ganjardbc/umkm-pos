@@ -7,7 +7,7 @@
   >
     <template #header>
       <h1 class="text-xl font-semibold">
-        Assign Outlet
+        Tetapkan Outlet
       </h1>
     </template>
 
@@ -15,8 +15,8 @@
       <Stepper v-model:value="activeStep" :linear="true" class="basis-[622px]">
         <StepList>
           <Step :value="1">Outlet</Step>
-          <Step :value="2">Roles</Step>
-          <Step :value="3">Preview</Step>
+          <Step :value="2">Role</Step>
+          <Step :value="3">Pratinjau</Step>
         </StepList>
 
         <StepPanels>
@@ -25,14 +25,14 @@
             <UiCard class="p-0! gap-0! overflow-hidden!">
               <template #header>
                 <h2 class="text-lg font-semibold pt-4 px-4">
-                  Outlets
+                  Outlet
                 </h2>
               </template>
 
               <DataTable :value="outlets" :loading="loadingOutlets">
                 <template #empty>
                   <span class="w-full text-center flex justify-center">
-                    Your outlets are empty.
+                    Belum ada outlet.
                   </span>
                 </template>
                 <Column field="no" header="NO" class="w-18">
@@ -40,8 +40,8 @@
                     {{ getNoTable(slotProps.index, outletPagination.page, outletPagination.rows) }}
                   </template>
                 </Column>
-                <Column field="name" header="Name"></Column>
-                <Column field="location" header="Location"></Column>
+                <Column field="name" header="Nama"></Column>
+                <Column field="location" header="Lokasi"></Column>
                 <Column field="merchants" header="Merchant">
                   <template #body="slotProps">
                     {{ slotProps.data.merchants.name }}
@@ -53,7 +53,7 @@
                       <Button
                         :severity="isOutletSelected(slotProps.data) ? 'default' : 'secondary'"
                         :variant="isOutletSelected(slotProps.data) ? 'soft' : 'outlined'"
-                        :label="isOutletSelected(slotProps.data) ? 'Unselect' : 'Select'"
+                        :label="isOutletSelected(slotProps.data) ? 'Batal Pilih' : 'Pilih'"
                         :icon="isOutletSelected(slotProps.data) ? 'pi pi-check' : 'pi pi-plus'"
                         size="small"
                         class="w-[120px]"
@@ -76,14 +76,14 @@
             <UiCard class="p-0! gap-0! overflow-hidden!">
               <template #header>
                 <h2 class="text-lg font-semibold pt-4 px-4">
-                  Roles
+                  Role
                 </h2>
               </template>
-              
+
               <DataTable :value="roles" :loading="loadingRoles">
                 <template #empty>
                   <span class="w-full text-center flex justify-center">
-                    Your roles are empty.
+                    Belum ada role.
                   </span>
                 </template>
                 <Column field="no" header="NO" class="w-18">
@@ -91,17 +91,17 @@
                     {{ getNoTable(slotProps.index, rolePagination.page, rolePagination.rows) }}
                   </template>
                 </Column>
-                <Column field="name" header="Name">
+                <Column field="name" header="Nama">
                   <template #body="slotProps">
                     {{ slotProps.data.name }}
                   </template>
                 </Column>
-                <Column field="description" header="Description">
+                <Column field="description" header="Deskripsi">
                   <template #body="slotProps">
                     {{ slotProps.data.description }}
                   </template>
                 </Column>
-                <Column field="role_permissions" header="Permissions">
+                <Column field="role_permissions" header="Hak Akses">
                   <template #body="slotProps">
                     {{ slotProps.data.role_permissions?.length }}
                   </template>
@@ -115,7 +115,7 @@
                       <Button
                         :severity="isRoleSelected(slotProps.data) ? 'default' : 'secondary'"
                         :variant="isRoleSelected(slotProps.data) ? 'soft' : 'outlined'"
-                        :label="isRoleSelected(slotProps.data) ? 'Unselect' : 'Select'"
+                        :label="isRoleSelected(slotProps.data) ? 'Batal Pilih' : 'Pilih'"
                         :icon="isRoleSelected(slotProps.data) ? 'pi pi-check' : 'pi pi-plus'"
                         size="small"
                         class="w-[120px]"
@@ -140,14 +140,14 @@
               <UiCard v-if="outletSelected" class="dark:bg-dark!">
                 <template #header>
                   <h2 class="text-lg font-semibold">
-                    Outlet Information
+                    Informasi Outlet
                   </h2>
                 </template>
 
                 <div class="space-y-4">
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label class="text-sm font-medium text-gray-500">Outlet Name</label>
+                      <label class="text-sm font-medium text-gray-500">Nama Outlet</label>
                       <p class="text-base mt-1">{{ outletSelected.name }}</p>
                     </div>
                     <div>
@@ -157,7 +157,7 @@
                   </div>
 
                   <div>
-                    <label class="text-sm font-medium text-gray-500">Location</label>
+                    <label class="text-sm font-medium text-gray-500">Lokasi</label>
                     <p class="text-base mt-1">{{ outletSelected.location }}</p>
                   </div>
 
@@ -169,7 +169,7 @@
                     <div>
                       <label class="text-sm font-medium text-gray-500">Status</label>
                       <p class="text-base mt-1">
-                        <Tag :severity="outletSelected.is_active ? 'success' : 'danger'" :value="outletSelected.is_active ? 'Active' : 'Inactive'" />
+                        <Tag :severity="outletSelected.is_active ? 'success' : 'danger'" :value="outletSelected.is_active ? 'Aktif' : 'Tidak Aktif'" />
                       </p>
                     </div>
                   </div>
@@ -180,32 +180,32 @@
               <UiCard v-if="roleSelected" class="dark:bg-dark!">
                 <template #header>
                   <h2 class="text-lg font-semibold">
-                    Role Information
+                    Informasi Role
                   </h2>
                 </template>
 
                 <div class="space-y-4">
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label class="text-sm font-medium text-gray-500">Role Name</label>
+                      <label class="text-sm font-medium text-gray-500">Nama Role</label>
                       <p class="text-base mt-1">{{ roleSelected.name }}</p>
                     </div>
                     <div>
-                      <label class="text-sm font-medium text-gray-500">Total Permissions</label>
+                      <label class="text-sm font-medium text-gray-500">Total Hak Akses</label>
                       <p class="text-base mt-1">{{ roleSelected.role_permissions?.length || 0 }}</p>
                     </div>
                   </div>
 
                   <div>
-                    <label class="text-sm font-medium text-gray-500">Description</label>
+                    <label class="text-sm font-medium text-gray-500">Deskripsi</label>
                     <p class="text-base mt-1">{{ roleSelected.description }}</p>
                   </div>
 
                   <div v-if="roleSelected.role_permissions && roleSelected.role_permissions.length > 0">
-                    <label class="text-sm font-medium text-gray-500 mb-2 block">Permissions</label>
+                    <label class="text-sm font-medium text-gray-500 mb-2 block">Hak Akses</label>
                     <div class="flex flex-wrap gap-2">
-                      <Tag 
-                        v-for="permission in roleSelected.role_permissions" 
+                      <Tag
+                        v-for="permission in roleSelected.role_permissions"
                         :key="permission.permission_id"
                         severity="secondary"
                         :value="permission.permissions.code"
@@ -218,8 +218,8 @@
               <!-- Empty State -->
               <div v-if="!outletSelected && !roleSelected" class="flex flex-col items-center justify-center h-full text-center py-12">
                 <i class="pi pi-info-circle text-gray-400 text-5xl mb-4"></i>
-                <p class="text-gray-500 text-lg">No outlet or role selected</p>
-                <p class="text-gray-400 text-sm mt-2">Please select an outlet and role from previous steps</p>
+                <p class="text-gray-500 text-lg">Belum ada outlet atau role yang dipilih</p>
+                <p class="text-gray-400 text-sm mt-2">Silakan pilih outlet dan role dari langkah sebelumnya</p>
               </div>
             </div>
           </StepPanel>
@@ -232,13 +232,13 @@
       <div class="flex justify-end gap-4 pt-4">
         <Button
           severity="secondary"
-          :label="activeStep === 1 ? 'Cancel' : 'Back'"
+          :label="activeStep === 1 ? 'Batal' : 'Kembali'"
           size="medium"
           class="w-full md:w-[128px]"
           @click="onCancel"
         />
         <Button
-          :label="activeStep === 3 ? 'Save' : 'Next'"
+          :label="activeStep === 3 ? 'Simpan' : 'Lanjut'"
           size="medium"
           class="w-full md:w-[128px]"
           :disabled="disabledSave"
@@ -323,8 +323,8 @@ const fetchOutlet = async () => {
     console.log(error);
     showToast({
       type: 'error',
-      title: 'Error.',
-      message: getErrorMessage(error) || 'There was an error.',
+      title: 'Gagal.',
+      message: getErrorMessage(error) || 'Terjadi kesalahan.',
     });
   } finally {
     loadingOutlets.value = false;
@@ -390,8 +390,8 @@ const fetchRole = async () => {
   } catch (error) {
     showToast({
       type: 'error',
-      title: 'Error.',
-      message: getErrorMessage(error) || 'There was an error.',
+      title: 'Gagal.',
+      message: getErrorMessage(error) || 'Terjadi kesalahan.',
     });
   } finally {
     loadingRoles.value = false;

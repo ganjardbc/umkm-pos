@@ -15,7 +15,7 @@
       class="flex flex-col gap-4 w-full"
     >
       <div class="w-full space-y-4">
-        <UiFormGroup label="Name" variant="vertical">
+        <UiFormGroup label="Nama" variant="vertical">
           <InputText
             name="name"
             type="text"
@@ -31,7 +31,7 @@
             {{ $form.name.error?.message }}
           </Message>
         </UiFormGroup>
-        <UiFormGroup label="Description" variant="vertical">
+        <UiFormGroup label="Deskripsi" variant="vertical">
           <Textarea
             name="description"
             placeholder=""
@@ -51,14 +51,14 @@
       <div class="w-full flex justify-end gap-4">
         <Button
           severity="secondary"
-          label="Cancel"
+          label="Batal"
           size="medium"
           class="w-full md:w-[128px]"
           @click="onCancel"
         />
         <Button
           type="submit"
-          label="Save"
+          label="Simpan"
           size="medium"
           class="w-full md:w-[128px]"
         />
@@ -91,8 +91,8 @@ const initialValues = ref<Form>({
 
 const resolver = ref(zodResolver(
   z.object({
-    name: z.string().min(1, { message: 'Name is required.' }),
-    description: z.string().min(1, { message: 'Description is required.' })
+    name: z.string().min(1, { message: 'Nama wajib diisi.' }),
+    description: z.string().min(1, { message: 'Deskripsi wajib diisi.' })
   })
 ));
 
@@ -115,8 +115,8 @@ const onFormSubmit = async (event: any) => {
     } catch (error) {
       showToast({
         type: 'error',
-        title: 'Login Failed.',
-        message: getErrorMessage(error) || 'There was an error.',
+        title: 'Gagal Memperbarui Role.',
+        message: getErrorMessage(error) || 'Terjadi kesalahan.',
       });
     } finally {
       hideLoading();
@@ -139,13 +139,13 @@ const fetchDetail = async () => {
       name,
       description
     };
-    
+
     isLoaded.value = true;
   } catch (error) {
     showToast({
       type: 'error',
-      title: 'Failed to fetch data.',
-      message: getErrorMessage(error) || 'There was an error.',
+      title: 'Gagal memuat data.',
+      message: getErrorMessage(error) || 'Terjadi kesalahan.',
     });
   }
 };

@@ -8,7 +8,7 @@
         @click="onBack"
       />
       <h1 class="text-lg font-semibold">
-        Outlet Detail
+        Detail Outlet
       </h1>
     </div>
 
@@ -16,7 +16,7 @@
       <template #header>
         <div class="w-full flex gap-4 items-center justify-between">
           <h1 class="text-lg font-semibold">
-            Outlet Information
+            Informasi Outlet
           </h1>
           <div class="flex gap-2">
             <Button
@@ -46,7 +46,7 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label class="text-sm font-medium text-gray-500">Name</label>
+            <label class="text-sm font-medium text-gray-500">Nama</label>
             <p class="text-base mt-1">{{ outletDetail.name }}</p>
           </div>
           <div>
@@ -57,11 +57,11 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label class="text-sm font-medium text-gray-500">Location</label>
+            <label class="text-sm font-medium text-gray-500">Lokasi</label>
             <p class="text-base mt-1">{{ outletDetail.location }}</p>
           </div>
           <div>
-            <label class="text-sm font-medium text-gray-500">Guest Secret Code</label>
+            <label class="text-sm font-medium text-gray-500">Kode Rahasia Tamu</label>
             <p class="text-base mt-1 font-mono">{{ outletDetail.guest_session_secret || '-' }}</p>
           </div>
         </div>
@@ -75,7 +75,7 @@
             <label class="text-sm font-medium text-gray-500">Status</label>
             <div class="mt-1">
               <Tag
-                :value="outletDetail.is_active ? 'Active' : 'Inactive'"
+                :value="outletDetail.is_active ? 'Aktif' : 'Tidak Aktif'"
                 :severity="outletDetail.is_active ? 'success' : 'danger'"
                 class="capitalize"
               />
@@ -85,11 +85,11 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label class="text-sm font-medium text-gray-500">Created At</label>
+            <label class="text-sm font-medium text-gray-500">Dibuat Pada</label>
             <p class="text-base mt-1">{{ formatDateTime(outletDetail.created_at) }}</p>
           </div>
           <div>
-            <label class="text-sm font-medium text-gray-500">Updated At</label>
+            <label class="text-sm font-medium text-gray-500">Diperbarui Pada</label>
             <p class="text-base mt-1">{{ formatDateTime(outletDetail.updated_at) }}</p>
           </div>
         </div>
@@ -99,10 +99,10 @@
     <UiCard v-if="outletDetail">
       <template #header>
         <div class="flex items-center justify-between gap-3">
-          <h1 class="text-lg font-semibold">Store Tables</h1>
+          <h1 class="text-lg font-semibold">Meja Outlet</h1>
           <Button
             icon="pi pi-plus"
-            label="Add Table"
+            label="Tambah Meja"
             size="small"
             :disabled="!isCanUpdate"
             @click="openCreateTable"
@@ -118,7 +118,7 @@
               <p class="text-sm text-slate-500">Kapasitas: {{ table.capacity || '-' }}</p>
             </div>
             <div class="flex gap-2">
-              <Tag :value="table.is_active ? 'Active' : 'Inactive'" :severity="table.is_active ? 'success' : 'danger'" />
+              <Tag :value="table.is_active ? 'Aktif' : 'Tidak Aktif'" :severity="table.is_active ? 'success' : 'danger'" />
               <Button icon="pi pi-pencil" size="small" text @click="openEditTable(table)" />
               <Button icon="pi pi-trash" size="small" text severity="danger" @click="removeTable(table.id)" />
             </div>
@@ -177,8 +177,8 @@ const fetchDetail = async () => {
   } catch (error) {
     showToast({
       type: 'error',
-      title: 'Failed to fetch data.',
-      message: getErrorMessage(error) || 'There was an error.',
+      title: 'Gagal memuat data.',
+      message: getErrorMessage(error) || 'Terjadi kesalahan.',
     });
   }
 };
@@ -190,8 +190,8 @@ const fetchTables = async () => {
   } catch (error) {
     showToast({
       type: 'error',
-      title: 'Failed to fetch tables.',
-      message: getErrorMessage(error) || 'There was an error.',
+      title: 'Gagal memuat meja.',
+      message: getErrorMessage(error) || 'Terjadi kesalahan.',
     });
   }
 };
@@ -227,8 +227,8 @@ const removeTable = async (id: string) => {
   } catch (error) {
     showToast({
       type: 'error',
-      title: 'Failed to delete table.',
-      message: getErrorMessage(error) || 'There was an error.',
+      title: 'Gagal menghapus meja.',
+      message: getErrorMessage(error) || 'Terjadi kesalahan.',
     });
   }
 };

@@ -8,7 +8,7 @@
         @click="onBack"
       />
       <h1 class="text-lg font-semibold">
-        User Detail
+        Detail Pengguna
       </h1>
     </div>
 
@@ -17,12 +17,12 @@
       <template #header>
         <div class="flex items-center justify-between gap-4">
           <h2 class="text-lg font-semibold">
-            User Information
+            Informasi Pengguna
           </h2>
           <Button
             v-if="isCanUpdate"
             icon="pi pi-pencil"
-            label="Edit User"
+            label="Edit Pengguna"
             size="small"
             @click="onEdit"
           />
@@ -36,7 +36,7 @@
             <p class="text-base mt-1">{{ userDetail?.username }}</p>
           </div>
           <div>
-            <label class="text-sm font-medium text-gray-500">Name</label>
+            <label class="text-sm font-medium text-gray-500">Nama</label>
             <p class="text-base mt-1">{{ userDetail?.name }}</p>
           </div>
         </div>
@@ -49,7 +49,7 @@
           <div>
             <label class="text-sm font-medium text-gray-500">Status</label>
             <p class="text-base mt-1">
-              <Tag :severity="userDetail?.is_active ? 'success' : 'danger'" :value="userDetail?.is_active ? 'Active' : 'Inactive'" />
+              <Tag :severity="userDetail?.is_active ? 'success' : 'danger'" :value="userDetail?.is_active ? 'Aktif' : 'Tidak Aktif'" />
             </p>
           </div>
         </div>
@@ -71,11 +71,11 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label class="text-sm font-medium text-gray-500">Created At</label>
+            <label class="text-sm font-medium text-gray-500">Dibuat Pada</label>
             <p class="text-base mt-1">{{ formatDateTime(userDetail?.created_at) }}</p>
           </div>
           <div>
-            <label class="text-sm font-medium text-gray-500">Updated At</label>
+            <label class="text-sm font-medium text-gray-500">Diperbarui Pada</label>
             <p class="text-base mt-1">{{ formatDateTime(userDetail?.updated_at) }}</p>
           </div>
         </div>
@@ -87,12 +87,12 @@
       <template #header>
         <div class="flex justify-between items-center pt-4 px-4">
           <h2 class="text-lg font-semibold">
-            Outlet Informations
+            Informasi Outlet
           </h2>
           <Button
             v-if="isCanUpdate"
             icon="pi pi-plus"
-            label="Assign Outlet"
+            label="Tetapkan Outlet"
             size="small"
             :disabled="!userDetail?.is_active"
             @click="onAssignOutlet"
@@ -103,7 +103,7 @@
       <DataTable :value="userRoles" :loading="loadingUserRoles">
         <template #empty>
           <span class="w-full text-center flex justify-center">
-            Your works are empty.
+            Belum ada outlet yang ditugaskan.
           </span>
         </template>
         <Column field="no" header="NO" class="w-18">
@@ -121,7 +121,7 @@
             {{ slotProps.data.roles.name }}
           </template>
         </Column>
-        <Column field="permissions" header="Permissions">
+        <Column field="permissions" header="Hak Akses">
           <template #body="slotProps">
             {{ slotProps.data.roles.role_permissions.length || '0' }}
           </template>
@@ -131,7 +131,7 @@
             <Button
               severity="secondary"
               variant="outlined"
-              label="Revoke"
+              label="Cabut"
               icon="pi pi-times"
               size="small"
               fluid
@@ -181,8 +181,8 @@ const fetchDetail = async () => {
   } catch (error) {
     showToast({
       type: 'error',
-      title: 'Failed to fetch data.',
-      message: getErrorMessage(error) || 'There was an error.',
+      title: 'Gagal memuat data.',
+      message: getErrorMessage(error) || 'Terjadi kesalahan.',
     });
   }
 };
@@ -201,8 +201,8 @@ const fetchUserRole = async () => {
   } catch (error) {
     showToast({
       type: 'error',
-      title: 'Failed to fetch data.',
-      message: getErrorMessage(error) || 'There was an error.',
+      title: 'Gagal memuat data.',
+      message: getErrorMessage(error) || 'Terjadi kesalahan.',
     });
   } finally {
     loadingUserRoles.value = false;
@@ -226,20 +226,20 @@ const assignRole = async (userId: string, roleId: string, outletId: string) => {
       outlet_id: outletId,
     };
     const response = await assignRoleToUser(payload);
-    
+
     showAssignOutletModal.value = false;
-    
+
     fetchUserRole();
     showToast({
       type: 'success',
-      title: 'Success.',
-      message: response?.data?.message || 'Role assigned successfully.',
+      title: 'Berhasil.',
+      message: response?.data?.message || 'Role berhasil ditetapkan.',
     });
   } catch (error) {
     showToast({
       type: 'error',
-      title: 'Failed to assign role.',
-      message: getErrorMessage(error) || 'There was an error.',
+      title: 'Gagal menetapkan role.',
+      message: getErrorMessage(error) || 'Terjadi kesalahan.',
     });
   } finally {
     hideLoading();
@@ -272,14 +272,14 @@ const revokeRole = async (userId: string, roleId: string, outletId: string) => {
     fetchUserRole();
     showToast({
       type: 'success',
-      title: 'Success.',
-      message: response?.data?.message || 'Role revoked successfully.',
+      title: 'Berhasil.',
+      message: response?.data?.message || 'Role berhasil dicabut.',
     });
   } catch (error) {
     showToast({
       type: 'error',
-      title: 'Failed to revoke role.',
-      message: getErrorMessage(error) || 'There was an error.',
+      title: 'Gagal mencabut role.',
+      message: getErrorMessage(error) || 'Terjadi kesalahan.',
     });
   } finally {
     hideLoading();
@@ -288,10 +288,10 @@ const revokeRole = async (userId: string, roleId: string, outletId: string) => {
 
 const onCheckRole = (role: any) => {
   showConfirm({
-    header: 'Revoke Role',
-    message: 'This will remove user from this roles.',
-    rejectLabel: 'Cancel',
-    acceptLabel: 'Revoke',
+    header: 'Cabut Role',
+    message: 'Tindakan ini akan mencabut role pengguna dari outlet ini.',
+    rejectLabel: 'Batal',
+    acceptLabel: 'Cabut',
     type: 'danger',
     accept: () => {
       revokeRole(
