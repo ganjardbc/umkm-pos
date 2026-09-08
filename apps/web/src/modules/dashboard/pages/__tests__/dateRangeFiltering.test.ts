@@ -144,30 +144,30 @@ describe('Date Range Filtering and Validation', () => {
   describe('Date Range Error Messages', () => {
     it('should generate error for missing dates', () => {
       const dateRange: Date[] | null = null;
-      const errorMessage = 'Please select both start and end dates';
-      
+      const errorMessage = 'Silakan pilih tanggal mulai dan tanggal akhir';
+
       if (!dateRange || dateRange.length !== 2) {
-        expect(errorMessage).toBe('Please select both start and end dates');
+        expect(errorMessage).toBe('Silakan pilih tanggal mulai dan tanggal akhir');
       }
     });
 
     it('should generate error for invalid date order', () => {
       const start = new Date('2024-01-31');
       const end = new Date('2024-01-01');
-      const errorMessage = 'Start date must be before or equal to end date';
-      
+      const errorMessage = 'Tanggal mulai harus sebelum atau sama dengan tanggal akhir';
+
       if (start > end) {
-        expect(errorMessage).toBe('Start date must be before or equal to end date');
+        expect(errorMessage).toBe('Tanggal mulai harus sebelum atau sama dengan tanggal akhir');
       }
     });
 
     it('should generate error for future dates', () => {
       const end = new Date();
       end.setDate(end.getDate() + 1);
-      const errorMessage = 'End date cannot be in the future';
-      
+      const errorMessage = 'Tanggal akhir tidak boleh lebih dari hari ini';
+
       if (end > new Date()) {
-        expect(errorMessage).toBe('End date cannot be in the future');
+        expect(errorMessage).toBe('Tanggal akhir tidak boleh lebih dari hari ini');
       }
     });
   });

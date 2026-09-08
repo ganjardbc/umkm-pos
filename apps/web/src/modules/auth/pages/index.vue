@@ -28,7 +28,7 @@
           {{ $form.email.error?.message }}
         </Message>
       </UiFormGroup>
-      <UiFormGroup label="Password" variant="vertical">
+      <UiFormGroup label="Kata Sandi" variant="vertical">
         <InputGroup>
           <InputText
             name="password"
@@ -60,21 +60,21 @@
         <Button
           type="submit"
           severity="primary"
-          label="Login"
+          label="Masuk"
           class="w-full"
           :loading="loading"
         />
       </div>
 
       <div class="text-base text-gray-500 dark:text-gray-400 text-center">
-        Don't have an account?
+        Belum punya akun?
         <router-link to="/register" class="text-base text-blue-500 dark:text-blue-400 hover:underline">
-          Register
+          Daftar
         </router-link>
       </div>
 
       <div class="text-xs text-center text-gray-400 dark:text-gray-500">
-        Version 1.0.0
+        Versi 1.0.0
       </div>
     </Form>
   </UiCard>
@@ -111,8 +111,8 @@ const loading = ref(false);
 
 const resolver = ref(zodResolver(
   z.object({
-    email: z.string().email({ message: 'Please enter a valid email address.' }).min(1, { message: 'Email is required.' }),
-    password: z.string().min(1, { message: 'Password is required.' })
+    email: z.string().email({ message: 'Masukkan alamat email yang valid.' }).min(1, { message: 'Email wajib diisi.' }),
+    password: z.string().min(1, { message: 'Kata sandi wajib diisi.' })
   })
 ));
 
@@ -128,21 +128,21 @@ const onFormSubmit = async ({ valid, values }: { valid: boolean; values: any }) 
       const response = await postLogin(payload);
       const { success, data} = response?.data;
 
-      
+
       if (success) {
         setAuth(data);
 
         router.push(PRP_LANDING);
         showToast({
           type: 'success',
-          title: 'Login Success',
+          title: 'Berhasil Masuk',
         });
       }
     } catch (error) {
       showToast({
         type: 'error',
-        title: 'Login Failed.',
-        message: getErrorMessage(error) || 'There was an error.',
+        title: 'Gagal Masuk.',
+        message: getErrorMessage(error) || 'Terjadi kesalahan.',
       });
     } finally {
       loading.value = false;

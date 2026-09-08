@@ -89,7 +89,7 @@ const handleExport = async () => {
     const timestamp = new Date().toISOString().split('T')[0];
     downloadFile(blob, `Top_Products_${timestamp}.xlsx`);
   } catch (error) {
-    console.error('Export failed:', error);
+    console.error('Export gagal:', error);
   } finally {
     isExporting.value = false;
   }
@@ -137,7 +137,7 @@ const initializeChart = () => {
         labels,
         datasets: [
           {
-            label: 'Quantity Sold',
+            label: 'Jumlah Terjual',
             data: quantityData,
             backgroundColor: colors,
             borderColor: colors.map(color => color.replace('55%', '45%')),
@@ -173,10 +173,10 @@ const initializeChart = () => {
                 const index = context.dataIndex;
                 const quantity = quantityData[index];
                 const revenue = revenueData[index];
-                
+
                 return [
-                  `Quantity Sold: ${new Intl.NumberFormat('id-ID').format(quantity)}`,
-                  `Revenue: ${new Intl.NumberFormat('id-ID', {
+                  `Jumlah Terjual: ${new Intl.NumberFormat('id-ID').format(quantity)}`,
+                  `Pendapatan: ${new Intl.NumberFormat('id-ID', {
                     style: 'currency',
                     currency: 'IDR',
                     minimumFractionDigits: 0,
@@ -191,7 +191,7 @@ const initializeChart = () => {
             display: true,
             title: {
               display: !isMobile,
-              text: 'Quantity Sold',
+              text: 'Jumlah Terjual',
               font: {
                 size: 12,
               },

@@ -9,16 +9,16 @@ export default [
     name: PREFIX_ROUTE_NAME,
     component: () => import('@/modules/profile/pages/index.vue'),
     meta: {
-      title: 'Profile',
+      title: 'Profil',
       layout: 'default',
       breadcrumbs: [
         {
-          label: 'Home',
+          label: 'Beranda',
           route: '/landing',
           isActive: false,
         },
         {
-          label: 'Profile',
+          label: 'Profil',
           route: PREFIX_ROUTE_PATH,
           isActive: true,
         },

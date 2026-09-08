@@ -5,7 +5,7 @@
       <p class="text-gray-700 font-medium">{{ error }}</p>
       <Button
         @click="$emit('retry')"
-        label="Retry"
+        label="Coba Lagi"
         icon="pi pi-refresh"
         severity="secondary"
         size="small"

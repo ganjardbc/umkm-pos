@@ -2,7 +2,7 @@
   <UiCard class="max-w-2xl mx-auto">
     <template #header>
       <h1 class="text-xl font-semibold">
-        Edit Profile
+        Ubah Profil
       </h1>
     </template>
 
@@ -15,11 +15,11 @@
       class="flex flex-col gap-4 w-full"
     >
       <div class="w-full space-y-4">
-        <UiFormGroup label="Name" variant="vertical">
+        <UiFormGroup label="Nama Lengkap" variant="vertical">
           <InputText
             name="name"
             type="text"
-            placeholder="Enter your name"
+            placeholder="Masukkan nama Anda"
             fluid
           />
           <Message
@@ -44,15 +44,15 @@
             size="small"
             variant="simple"
           >
-            Email cannot be changed here. Use Change Email page.
+            Email tidak dapat diubah di sini. Gunakan halaman Ubah Email.
           </Message>
         </UiFormGroup>
 
-        <UiFormGroup label="Phone" variant="vertical">
+        <UiFormGroup label="Nomor Telepon" variant="vertical">
           <InputText
             name="phone"
             type="tel"
-            placeholder="Enter your phone number"
+            placeholder="Masukkan nomor telepon Anda"
             fluid
           />
           <Message
@@ -73,7 +73,7 @@
         <UiFormGroup label="Bio" variant="vertical">
           <Textarea
             name="bio"
-            placeholder="Tell us about yourself"
+            placeholder="Ceritakan tentang diri Anda"
             rows="4"
             fluid
           />
@@ -91,14 +91,14 @@
       <div class="w-full flex justify-end gap-4">
         <Button
           severity="secondary"
-          label="Cancel"
+          label="Batal"
           size="medium"
           class="w-full md:w-[128px]"
           @click="onCancel"
         />
         <Button
           type="submit"
-          label="Save"
+          label="Simpan"
           size="medium"
           class="w-full md:w-[128px]"
         />
@@ -155,7 +155,7 @@ const initialValues = ref({
 
 const resolver = ref(zodResolver(
   z.object({
-    name: z.string().min(1, { message: 'Name is required.' }),
+    name: z.string().min(1, { message: 'Nama lengkap wajib diisi.' }),
     phone: z.string().optional(),
     bio: z.string().optional(),
   })
@@ -185,8 +185,8 @@ const fetchProfile = async () => {
   } catch (error) {
     showToast({
       type: 'error',
-      title: 'Error',
-      message: getErrorMessage(error) || 'Failed to load profile.',
+      title: 'Gagal',
+      message: getErrorMessage(error) || 'Gagal memuat profil.',
     });
   } finally {
     hideLoading();
@@ -217,16 +217,16 @@ const onFormSubmit = async ({ valid, values }: { valid: boolean; values: any }) 
 
         showToast({
           type: 'success',
-          title: 'Success',
-          message: 'Profile updated successfully.',
+          title: 'Berhasil',
+          message: 'Profil berhasil diperbarui.',
         });
         router.push({ name: 'settings' });
       }
     } catch (error) {
       showToast({
         type: 'error',
-        title: 'Error',
-        message: getErrorMessage(error) || 'Failed to update profile.',
+        title: 'Gagal',
+        message: getErrorMessage(error) || 'Gagal memperbarui profil.',
       });
     } finally {
       hideLoading();

@@ -95,7 +95,7 @@ const handleExport = async () => {
     const timestamp = new Date().toISOString().split('T')[0];
     downloadFile(blob, `Outlet_Comparison_${timestamp}.xlsx`);
   } catch (error) {
-    console.error('Export failed:', error);
+    console.error('Export gagal:', error);
   } finally {
     isExporting.value = false;
   }
@@ -134,14 +134,14 @@ const initializeChart = () => {
         labels,
         datasets: [
           {
-            label: 'Revenue (IDR)',
+            label: 'Pendapatan (IDR)',
             data: revenueData,
             backgroundColor: CHART_COLORS.revenue,
             borderColor: CHART_COLORS.revenue,
             borderWidth: 1,
           },
           {
-            label: 'Transactions',
+            label: 'Transaksi',
             data: transactionsData,
             backgroundColor: CHART_COLORS.transactions,
             borderColor: CHART_COLORS.transactions,
@@ -183,15 +183,15 @@ const initializeChart = () => {
               label: function(context) {
                 const label = context.dataset.label || '';
                 const value = context.parsed.y ?? 0;
-                
-                if (label.includes('Revenue')) {
+
+                if (label.includes('Pendapatan')) {
                   return `${label}: ${new Intl.NumberFormat('id-ID', {
                     style: 'currency',
                     currency: 'IDR',
                     minimumFractionDigits: 0,
                   }).format(value)}`;
                 }
-                
+
                 return `${label}: ${new Intl.NumberFormat('id-ID').format(value)}`;
               },
             },
@@ -202,7 +202,7 @@ const initializeChart = () => {
             display: true,
             title: {
               display: !isMobile,
-              text: 'Outlet Name',
+              text: 'Nama Outlet',
               font: {
                 size: 12,
               },
@@ -222,7 +222,7 @@ const initializeChart = () => {
             display: true,
             title: {
               display: !isMobile,
-              text: 'Value',
+              text: 'Nilai',
               font: {
                 size: 12,
               },

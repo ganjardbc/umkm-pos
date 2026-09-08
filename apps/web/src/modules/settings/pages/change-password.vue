@@ -2,7 +2,7 @@
   <UiCard class="max-w-2xl mx-auto">
     <template #header>
       <h1 class="text-xl font-semibold">
-        Change Password
+        Ubah Kata Sandi
       </h1>
     </template>
 
@@ -15,10 +15,10 @@
       class="flex flex-col gap-4 w-full"
     >
       <div class="w-full space-y-4">
-        <UiFormGroup label="Current Password" variant="vertical">
+        <UiFormGroup label="Kata Sandi Saat Ini" variant="vertical">
           <Password
             name="currentPassword"
-            placeholder="Enter your current password"
+            placeholder="Masukkan kata sandi saat ini"
             :feedback="false"
             fluid
           />
@@ -32,10 +32,10 @@
           </Message>
         </UiFormGroup>
 
-        <UiFormGroup label="New Password" variant="vertical">
+        <UiFormGroup label="Kata Sandi Baru" variant="vertical">
           <Password
             name="newPassword"
-            placeholder="Enter your new password"
+            placeholder="Masukkan kata sandi baru"
             :feedback="true"
             fluid
             @input="validatePasswordStrength"
@@ -53,14 +53,14 @@
             size="small"
             variant="simple"
           >
-            Password must be at least 8 characters with uppercase, lowercase, and numbers.
+            Kata sandi minimal 8 karakter dengan huruf besar, huruf kecil, dan angka.
           </Message>
         </UiFormGroup>
 
-        <UiFormGroup label="Confirm Password" variant="vertical">
+        <UiFormGroup label="Konfirmasi Kata Sandi Baru" variant="vertical">
           <Password
             name="confirmPassword"
-            placeholder="Confirm your new password"
+            placeholder="Konfirmasi kata sandi baru"
             :feedback="false"
             fluid
           />
@@ -78,14 +78,14 @@
       <div class="w-full flex justify-end gap-4">
         <Button
           severity="secondary"
-          label="Cancel"
+          label="Batal"
           size="medium"
           class="w-full md:w-[128px]"
           @click="onCancel"
         />
         <Button
           type="submit"
-          label="Update"
+          label="Simpan Kata Sandi"
           size="medium"
           class="w-full md:w-[128px]"
         />
@@ -132,18 +132,18 @@ const passwordErrors = ref({
 
 const resolver = ref(zodResolver(
   z.object({
-    currentPassword: z.string().min(1, { message: 'Current password is required.' }),
+    currentPassword: z.string().min(1, { message: 'Kata sandi saat ini wajib diisi.' }),
     newPassword: z.string()
-      .min(8, { message: 'Password must be at least 8 characters.' })
-      .regex(/[A-Z]/, { message: 'Password must contain uppercase letter.' })
-      .regex(/[a-z]/, { message: 'Password must contain lowercase letter.' })
-      .regex(/\d/, { message: 'Password must contain number.' }),
-    confirmPassword: z.string().min(1, { message: 'Confirm password is required.' }),
+      .min(8, { message: 'Kata sandi minimal 8 karakter.' })
+      .regex(/[A-Z]/, { message: 'Kata sandi harus mengandung huruf besar.' })
+      .regex(/[a-z]/, { message: 'Kata sandi harus mengandung huruf kecil.' })
+      .regex(/\d/, { message: 'Kata sandi harus mengandung angka.' }),
+    confirmPassword: z.string().min(1, { message: 'Konfirmasi kata sandi wajib diisi.' }),
   }).refine((data) => data.newPassword === data.confirmPassword, {
-    message: 'Passwords do not match.',
+    message: 'Kata sandi tidak cocok.',
     path: ['confirmPassword'],
   }).refine((data) => data.currentPassword !== data.newPassword, {
-    message: 'New password must be different from current password.',
+    message: 'Kata sandi baru harus berbeda dari kata sandi saat ini.',
     path: ['newPassword'],
   })
 ));
@@ -157,7 +157,7 @@ const validatePasswordStrength = () => {
   const isLongEnough = password.length >= 8;
 
   if (!isLongEnough || !hasUppercase || !hasLowercase || !hasNumbers) {
-    passwordErrors.value.newPassword = 'Password must be at least 8 characters with uppercase, lowercase, and numbers.';
+    passwordErrors.value.newPassword = 'Kata sandi minimal 8 karakter dengan huruf besar, huruf kecil, dan angka.';
   } else {
     passwordErrors.value.newPassword = '';
   }
@@ -181,16 +181,16 @@ const onFormSubmit = async ({ valid, values }: { valid: boolean; values: any }) 
       if (success) {
         showToast({
           type: 'success',
-          title: 'Success',
-          message: 'Password changed successfully.',
+          title: 'Berhasil',
+          message: 'Kata sandi berhasil diubah.',
         });
         router.push({ name: 'settings' });
       }
     } catch (error) {
       showToast({
         type: 'error',
-        title: 'Error',
-        message: getErrorMessage(error) || 'Failed to change password.',
+        title: 'Gagal',
+        message: getErrorMessage(error) || 'Gagal mengubah kata sandi.',
       });
     } finally {
       hideLoading();

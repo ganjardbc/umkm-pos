@@ -18,17 +18,17 @@ export default [
     name: PREFIX_ROUTE_NAME,
     component: () => import('@/modules/settings/pages/index.vue'),
     meta: {
-      title: 'Settings',
+      title: 'Pengaturan',
       layout: 'default',
       permission: PERMISSIONS,
       breadcrumbs: [
         {
-          label: 'Home',
+          label: 'Beranda',
           route: '/landing',
           isActive: false,
         },
         {
-          label: 'Settings',
+          label: 'Pengaturan',
           route: PREFIX_ROUTE_PATH,
           isActive: true,
         },
@@ -40,22 +40,22 @@ export default [
     name: `${PREFIX_ROUTE_NAME}-edit-profile`,
     component: () => import('@/modules/settings/pages/edit-profile.vue'),
     meta: {
-      title: 'Settings',
+      title: 'Pengaturan',
       layout: 'default',
       permission: [PROFILE_READ],
       breadcrumbs: [
         {
-          label: 'Home',
+          label: 'Beranda',
           route: '/landing',
           isActive: false,
         },
         {
-          label: 'Settings',
+          label: 'Pengaturan',
           route: PREFIX_ROUTE_PATH,
           isActive: false,
         },
         {
-          label: 'Edit Profile',
+          label: 'Ubah Profil',
           route: `${PREFIX_ROUTE_PATH}/edit-profile`,
           isActive: true,
         },
@@ -67,22 +67,22 @@ export default [
     name: `${PREFIX_ROUTE_NAME}-change-password`,
     component: () => import('@/modules/settings/pages/change-password.vue'),
     meta: {
-      title: 'Settings',
+      title: 'Pengaturan',
       layout: 'default',
       permission: [PASSWORD_UPDATE],
       breadcrumbs: [
         {
-          label: 'Home',
+          label: 'Beranda',
           route: '/landing',
           isActive: false,
         },
         {
-          label: 'Settings',
+          label: 'Pengaturan',
           route: PREFIX_ROUTE_PATH,
           isActive: false,
         },
         {
-          label: 'Change Password',
+          label: 'Ubah Kata Sandi',
           route: `${PREFIX_ROUTE_PATH}/change-password`,
           isActive: true,
         },
@@ -94,22 +94,22 @@ export default [
     name: `${PREFIX_ROUTE_NAME}-change-email`,
     component: () => import('@/modules/settings/pages/change-email.vue'),
     meta: {
-      title: 'Settings',
+      title: 'Pengaturan',
       layout: 'default',
       permission: [EMAIL_UPDATE],
       breadcrumbs: [
         {
-          label: 'Home',
+          label: 'Beranda',
           route: '/landing',
           isActive: false,
         },
         {
-          label: 'Settings',
+          label: 'Pengaturan',
           route: PREFIX_ROUTE_PATH,
           isActive: false,
         },
         {
-          label: 'Change Email',
+          label: 'Ubah Email',
           route: `${PREFIX_ROUTE_PATH}/change-email`,
           isActive: true,
         },
@@ -121,22 +121,22 @@ export default [
     name: `${PREFIX_ROUTE_NAME}-site-settings`,
     component: () => import('@/modules/settings/pages/site-settings.vue'),
     meta: {
-      title: 'Settings',
+      title: 'Pengaturan',
       layout: 'default',
       permission: [SITE_UPDATE],
       breadcrumbs: [
         {
-          label: 'Home',
+          label: 'Beranda',
           route: '/landing',
           isActive: false,
         },
         {
-          label: 'Settings',
+          label: 'Pengaturan',
           route: PREFIX_ROUTE_PATH,
           isActive: false,
         },
         {
-          label: 'Site Settings',
+          label: 'Pengaturan Situs',
           route: `${PREFIX_ROUTE_PATH}/site-settings`,
           isActive: true,
         },
@@ -148,22 +148,22 @@ export default [
     name: `${PREFIX_ROUTE_NAME}-deactivate-account`,
     component: () => import('@/modules/settings/pages/deactivate-account.vue'),
     meta: {
-      title: 'Settings',
+      title: 'Pengaturan',
       layout: 'default',
       permission: [ACCOUNT_DEACTIVATE],
       breadcrumbs: [
         {
-          label: 'Home',
+          label: 'Beranda',
           route: '/landing',
           isActive: false,
         },
         {
-          label: 'Settings',
+          label: 'Pengaturan',
           route: PREFIX_ROUTE_PATH,
           isActive: false,
         },
         {
-          label: 'Deactivate Account',
+          label: 'Nonaktifkan Akun',
           route: `${PREFIX_ROUTE_PATH}/deactivate-account`,
           isActive: true,
         },

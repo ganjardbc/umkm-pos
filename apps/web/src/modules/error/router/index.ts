@@ -4,7 +4,7 @@ export default [
     name: '404',
     component: () => import('@/modules/error/pages/404.vue'),
     meta: {
-      title: '404 Not Found',
+      title: '404 Halaman Tidak Ditemukan',
       layout: 'default',
     }
   },
@@ -13,7 +13,7 @@ export default [
     name: '403',
     component: () => import('@/modules/error/pages/403.vue'),
     meta: {
-      title: '403 Forbidden',
+      title: '403 Akses Ditolak',
       layout: 'default',
     }
   }

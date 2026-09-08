@@ -13,6 +13,6 @@ interface Props {
 }
 
 withDefaults(defineProps<Props>(), {
-  message: 'Loading data...',
+  message: 'Memuat data...',
 });
 </script>

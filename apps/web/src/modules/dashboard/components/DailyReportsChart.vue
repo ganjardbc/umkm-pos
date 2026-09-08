@@ -88,7 +88,7 @@ const handleExport = async () => {
     const timestamp = new Date().toISOString().split('T')[0];
     downloadFile(blob, `Daily_Reports_${timestamp}.xlsx`);
   } catch (error) {
-    console.error('Export failed:', error);
+    console.error('Export gagal:', error);
   } finally {
     isExporting.value = false;
   }
@@ -108,7 +108,7 @@ const initializeChart = () => {
     // Prepare data for Chart.js
     const labels = props.data.map(item => {
       const date = new Date(item.report_date);
-      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      return date.toLocaleDateString('id-ID', { month: 'short', day: 'numeric' });
     });
 
     const revenueData = props.data.map(item => Number(item.total_sales));
@@ -124,7 +124,7 @@ const initializeChart = () => {
         labels,
         datasets: [
           {
-            label: 'Revenue',
+            label: 'Pendapatan',
             data: revenueData,
             borderColor: '#3B82F6',
             backgroundColor: 'rgba(59, 130, 246, 0.1)',
@@ -135,7 +135,7 @@ const initializeChart = () => {
             yAxisID: 'y',
           },
           {
-            label: 'Transactions',
+            label: 'Transaksi',
             data: transactionsData,
             borderColor: '#10B981',
             backgroundColor: 'rgba(16, 185, 129, 0.1)',
@@ -210,7 +210,7 @@ const initializeChart = () => {
             display: true,
             title: {
               display: !isMobile,
-              text: 'Date',
+              text: 'Tanggal',
               font: {
                 size: 12,
               },
@@ -232,7 +232,7 @@ const initializeChart = () => {
             position: 'left',
             title: {
               display: !isMobile,
-              text: 'Revenue (IDR)',
+              text: 'Pendapatan (IDR)',
               font: {
                 size: 12,
               },
@@ -255,7 +255,7 @@ const initializeChart = () => {
             position: 'right',
             title: {
               display: !isMobile,
-              text: 'Transactions',
+              text: 'Transaksi',
               font: {
                 size: 12,
               },

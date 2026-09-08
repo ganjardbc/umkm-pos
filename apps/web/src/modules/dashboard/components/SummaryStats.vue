@@ -4,7 +4,7 @@
     <UiCard class="bg-white dark:bg-dark-secondary! rounded-lg shadow">
       <div class="flex justify-between items-center">
         <div class="space-y-1">
-          <p class="text-sm text-gray-400 font-medium">Sales Today</p>
+          <p class="text-sm text-gray-400 font-medium">Penjualan Hari Ini</p>
           <div v-if="loading" class="h-7 w-28 bg-gray-200 dark:bg-dark animate-pulse rounded"></div>
           <p v-else class="text-2xl font-bold text-blue-600 dark:text-blue-400">
             {{ formatCurrency(salesToday) }}
@@ -20,7 +20,7 @@
     <UiCard class="bg-white dark:bg-dark-secondary! rounded-lg shadow">
       <div class="flex justify-between items-center">
         <div class="space-y-1">
-          <p class="text-sm text-gray-400 font-medium">Transactions Today</p>
+          <p class="text-sm text-gray-400 font-medium">Transaksi Hari Ini</p>
           <div v-if="loading" class="h-7 w-20 bg-gray-200 dark:bg-dark animate-pulse rounded"></div>
           <p v-else class="text-2xl font-bold text-green-600 dark:text-green-400">
             {{ formatNumber(transactionsToday) }}
@@ -36,7 +36,7 @@
     <UiCard class="bg-white dark:bg-dark-secondary! rounded-lg shadow">
       <div class="flex justify-between items-center">
         <div class="space-y-1">
-          <p class="text-sm text-gray-400 font-medium">Low Stock Items</p>
+          <p class="text-sm text-gray-400 font-medium">Stok Menipis</p>
           <div v-if="loading" class="h-7 w-16 bg-gray-200 dark:bg-dark animate-pulse rounded"></div>
           <p v-else class="text-2xl font-bold text-red-600 dark:text-red-400">
             {{ formatNumber(lowStockCount) }}
@@ -52,7 +52,7 @@
     <UiCard class="bg-white dark:bg-dark-secondary! rounded-lg shadow">
       <div class="flex justify-between items-center">
         <div class="space-y-1">
-          <p class="text-sm text-gray-400 font-medium">Active Shifts</p>
+          <p class="text-sm text-gray-400 font-medium">Shift Aktif</p>
           <div v-if="loading" class="h-7 w-16 bg-gray-200 dark:bg-dark animate-pulse rounded"></div>
           <p v-else class="text-2xl font-bold text-purple-600 dark:text-purple-400">
             {{ formatNumber(activeShiftsCount) }}
