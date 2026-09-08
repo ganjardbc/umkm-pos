@@ -49,7 +49,7 @@ export class RbacController {
   }
 
   @Get('roles')
-  // @RequirePermission('role.read')
+  @RequirePermission('role.read')
   @ApiOperation({ summary: 'List all roles with their permissions' })
   @ApiResponse({ status: 200, description: 'Return all roles (paginated)' })
   findAllRoles(@Query() pagination: PaginationDto) {
@@ -107,7 +107,7 @@ export class RbacController {
   }
 
   @Get('permissions')
-  // @RequirePermission('permission.read')
+  @RequirePermission('permission.read')
   @ApiOperation({ summary: 'List all permissions' })
   @ApiResponse({
     status: 200,
