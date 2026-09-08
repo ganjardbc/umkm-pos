@@ -7,7 +7,7 @@
         <p class="text-sm text-gray-400 mt-1">{{ description }}</p>
       </div>
       <Button
-        :label="isLoading ? 'Downloading...' : 'Download'"
+        :label="isLoading ? 'Mengunduh...' : 'Download'"
         icon="pi pi-download"
         :loading="isLoading"
         :disabled="isLoading || !!error"

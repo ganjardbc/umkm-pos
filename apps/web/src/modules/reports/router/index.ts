@@ -13,17 +13,17 @@ export default [
     name: PREFIX_ROUTE_NAME,
     component: () => import('@/modules/reports/pages/index.vue'),
     meta: {
-      title: 'Reports',
+      title: 'Laporan',
       layout: 'default',
       permission: [READ],
       breadcrumbs: [
         {
-          label: 'Home',
+          label: 'Beranda',
           route: '/landing',
           isActive: false,
         },
         {
-          label: 'Reports',
+          label: 'Laporan',
           route: PREFIX_ROUTE_PATH,
           isActive: true,
         },

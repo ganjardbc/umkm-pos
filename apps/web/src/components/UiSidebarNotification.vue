@@ -23,15 +23,15 @@
     >
       <div class="w-full pb-3">
         <div class="text-sm font-medium">
-          Notifications({{ unreadCount }})
+          Notifikasi ({{ unreadCount }})
         </div>
       </div>
 
       <div class="space-y-4 w-80">
         <UiEmptyState
           icon="pi pi-bell-slash"
-          title="No Notifications"
-          description="You're all caught up!"
+          title="Tidak Ada Notifikasi"
+          description="Semua notifikasi sudah dibaca!"
         />
       </div>
 
@@ -40,7 +40,7 @@
           severity="secondary"
           variant="outlined"
           size="small"
-          label="View All"
+          label="Lihat Semua"
           fluid
           @click="onRouteViewAll"
         />
