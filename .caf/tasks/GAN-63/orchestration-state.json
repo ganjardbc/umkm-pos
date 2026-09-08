@@ -1,0 +1,8 @@
+{
+  "orchestrationRetryCount": 0,
+  "lastFailedGate": "qa",
+  "lastFailedAt": "2026-09-08T10:16:48.925Z",
+  "lastKnownCommitSha": "113f1e219469bd2151aee213e05d51259601b27b",
+  "ticketTitle": "GET /rbac/roles: re-enable disabled role.read permission guard",
+  "ticketDescription": "## Sumber\n\nAuditor Agent scan 2026-07-18, file: `.ai/audits/full-scan-2026-07-18.md`\n\n## Lokasi\n\n`apps/api/src/rbac/rbac.controller.ts:52`\n\n## Masalah\n\n`@RequirePermission('role.read')` di-comment.\n\n## Dampak\n\nUser terautentikasi manapun (role apapun) bisa list semua role beserta full permission set-nya.\n\n## Usulan\n\nUncomment decorator."
+}

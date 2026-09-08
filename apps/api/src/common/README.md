@@ -51,7 +51,7 @@ Require specific permission for endpoint access.
 
 ```typescript
 @Post()
-@RequirePermission('product.create')
+@RequirePermission('products.create')
 create(@Body() dto: CreateProductDto) {
   return this.productsService.create(dto);
 }
@@ -89,9 +89,9 @@ Checks if user has required permission.
 @UseGuards(JwtAuthGuard, PermissionGuard)
 export class ProductsController {
   @Post()
-  @RequirePermission('product.create')
+  @RequirePermission('products.create')
   create() {
-    // Only users with 'product.create' permission can access
+    // Only users with 'products.create' permission can access
   }
 }
 ```
@@ -215,7 +215,7 @@ export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
   @Get()
-  @RequirePermission('product.view')
+  @RequirePermission('products.view')
   async findAll(
     @Query() pagination: PaginationDto,
     @CurrentUser() user: any,
@@ -224,7 +224,7 @@ export class ProductsController {
   }
 
   @Post()
-  @RequirePermission('product.create')
+  @RequirePermission('products.create')
   async create(
     @Body() dto: CreateProductDto,
     @CurrentUser('merchant_id') merchantId: string,

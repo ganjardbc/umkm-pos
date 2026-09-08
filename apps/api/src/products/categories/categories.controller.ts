@@ -35,7 +35,7 @@ export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
 
   @Post()
-  @RequirePermission('category.create')
+  @RequirePermission('categories.create')
   @ApiOperation({
     summary: 'Create a new product category for the current merchant',
   })
@@ -62,7 +62,7 @@ export class CategoriesController {
   }
 
   @Get()
-  @RequirePermission('category.read')
+  @RequirePermission('categories.read')
   @ApiOperation({
     summary: 'List all product categories for the current merchant',
   })
@@ -96,7 +96,7 @@ export class CategoriesController {
   }
 
   @Get('active/list')
-  @RequirePermission('category.read')
+  @RequirePermission('categories.read')
   @ApiOperation({ summary: 'Get active categories for dropdown selection' })
   @ApiResponse({
     status: 200,
@@ -117,7 +117,7 @@ export class CategoriesController {
   }
 
   @Get(':id')
-  @RequirePermission('category.read')
+  @RequirePermission('categories.read')
   @ApiOperation({ summary: 'Get a product category by ID (merchant-scoped)' })
   @ApiParam({
     name: 'id',
@@ -141,7 +141,7 @@ export class CategoriesController {
   }
 
   @Patch(':id')
-  @RequirePermission('category.update')
+  @RequirePermission('categories.update')
   @ApiOperation({ summary: 'Update a product category (merchant-scoped)' })
   @ApiParam({
     name: 'id',
@@ -176,7 +176,7 @@ export class CategoriesController {
   }
 
   @Delete(':id')
-  @RequirePermission('category.delete')
+  @RequirePermission('categories.delete')
   @ApiOperation({ summary: 'Delete a product category (merchant-scoped)' })
   @ApiParam({
     name: 'id',

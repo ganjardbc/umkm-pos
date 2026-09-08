@@ -33,7 +33,7 @@ export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
   @Post()
-  @RequirePermission('product.create')
+  @RequirePermission('products.create')
   @ApiOperation({ summary: 'Create a new product for the current merchant' })
   @ApiResponse({ status: 201, description: 'Product created successfully' })
   @ApiResponse({
@@ -49,7 +49,7 @@ export class ProductsController {
   }
 
   @Get()
-  @RequirePermission('product.read')
+  @RequirePermission('products.read')
   @ApiOperation({ summary: 'List all products for the current merchant' })
   @ApiResponse({ status: 200, description: 'Return all products (paginated)' })
   findAll(
@@ -60,7 +60,7 @@ export class ProductsController {
   }
 
   @Get(':id')
-  @RequirePermission('product.read')
+  @RequirePermission('products.read')
   @ApiOperation({ summary: 'Get product by ID (merchant-scoped)' })
   @ApiResponse({ status: 200, description: 'Return product details' })
   @ApiResponse({ status: 404, description: 'Product not found' })
@@ -79,7 +79,7 @@ export class ProductsController {
   }
 
   @Patch(':id')
-  @RequirePermission('product.update')
+  @RequirePermission('products.update')
   @ApiOperation({ summary: 'Update product details (merchant-scoped)' })
   @ApiResponse({ status: 200, description: 'Product updated successfully' })
   @ApiResponse({ status: 404, description: 'Product not found' })
@@ -97,7 +97,7 @@ export class ProductsController {
   }
 
   @Delete(':id')
-  @RequirePermission('product.delete')
+  @RequirePermission('products.delete')
   @ApiOperation({ summary: 'Delete a product (merchant-scoped)' })
   @ApiResponse({ status: 200, description: 'Product deleted successfully' })
   @ApiResponse({ status: 404, description: 'Product not found' })
@@ -109,7 +109,7 @@ export class ProductsController {
   }
 
   @Patch(':id/image')
-  @RequirePermission('product.update')
+  @RequirePermission('products.update')
   @ApiOperation({ summary: 'Set product image from an uploaded file' })
   @ApiResponse({ status: 200, description: 'Product image set successfully' })
   @ApiResponse({ status: 404, description: 'Product or upload not found' })
@@ -123,7 +123,7 @@ export class ProductsController {
   }
 
   @Delete(':id/image')
-  @RequirePermission('product.update')
+  @RequirePermission('products.update')
   @ApiOperation({ summary: 'Remove product image' })
   @ApiResponse({
     status: 200,

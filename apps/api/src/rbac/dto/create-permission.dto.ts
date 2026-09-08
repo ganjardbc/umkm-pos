@@ -9,7 +9,7 @@ import {
 
 export class CreatePermissionDto {
   @ApiProperty({
-    example: 'product.create',
+    example: 'products.create',
     description: 'Unique permission code (dot-notation, e.g. resource.action)',
   })
   @IsNotEmpty()

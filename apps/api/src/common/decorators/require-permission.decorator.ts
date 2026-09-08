@@ -4,7 +4,7 @@ export const PERMISSION_KEY = 'permission';
 
 /**
  * Decorator to require specific permission for endpoint access
- * Usage: @RequirePermission('product.create')
+ * Usage: @RequirePermission('products.create')
  *
  * This will be checked by PermissionGuard
  */
