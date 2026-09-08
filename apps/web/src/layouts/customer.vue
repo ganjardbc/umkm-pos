@@ -35,7 +35,7 @@
                 {{ outletInitial }}
               </div>
               <div class="min-w-0">
-                <p class="truncate text-base font-semibold">{{ outlet?.name || 'Customer Catalog' }}</p>
+                <p class="truncate text-base font-semibold">{{ outlet?.name || 'Katalog Pelanggan' }}</p>
               </div>
             </div>
           </template>
@@ -110,7 +110,7 @@ const pageTitle = computed(() => {
     'customer-catalog-cart': 'Keranjang',
     'customer-catalog-order': 'Detail Pesanan',
   };
-  return titles[String(route.name)] || 'Customer Catalog';
+  return titles[String(route.name)] || 'Katalog Pelanggan';
 });
 const contentPaddingClass = computed(() => {
   if (showCartFooter.value) return 'pb-28';

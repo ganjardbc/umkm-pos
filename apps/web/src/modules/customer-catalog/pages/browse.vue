@@ -8,7 +8,7 @@
 
     <div class="flex flex-wrap gap-2">
       <Tag
-        value="All Categories"
+        value="Semua Kategori"
         :severity="!selectedCategory ? 'success' : 'secondary'"
         :outlined="!!selectedCategory"
         class="cursor-pointer px-4! py-2!"

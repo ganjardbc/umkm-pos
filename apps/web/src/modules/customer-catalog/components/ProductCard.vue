@@ -17,7 +17,7 @@
       <Tag
         v-if="product.stock_qty <= product.min_stock"
         severity="warn"
-        value="Stok Kosong"
+        value="Stok Habis"
         class="absolute right-3 top-3 text-xs!"
       />
 

@@ -6,7 +6,7 @@ export default [
     name: 'customer-catalog-start',
     component: () => import('@/modules/customer-catalog/pages/start.vue'),
     meta: {
-      title: 'Customer Catalog',
+      title: 'Katalog Pelanggan',
       layout: 'customer',
     },
   },

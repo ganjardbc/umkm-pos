@@ -3,19 +3,19 @@
     <div class="rounded-xl bg-white p-6 shadow-lg backdrop-blur dark:bg-dark space-y-6">
       <div class="space-y-2 text-center">
         <p class="text-sm font-semibold uppercase tracking-[0.3em] text-amber-600 dark:text-amber-400">
-          Menu Customer
+          Menu Pelanggan
         </p>
         <h1 class="text-2xl font-bold text-slate-900 dark:text-slate-50">
           Mulai pesan dari HP
         </h1>
         <p class="text-sm text-slate-500 dark:text-slate-300">
-          Masukkan secret code outlet lalu lanjut pilih menu.
+          Masukkan kode akses outlet lalu lanjut pilih menu.
         </p>
       </div>
 
       <form class="space-y-6" @submit.prevent="submit">
         <div class="space-y-4">
-          <UiFormGroup label="Secret Code" variant="vertical">
+          <UiFormGroup label="Kode Akses" variant="vertical">
             <InputText v-model="form.secret_code" fluid />
           </UiFormGroup>
           <Divider />

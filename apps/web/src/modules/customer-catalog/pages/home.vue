@@ -62,7 +62,7 @@
             <p class="mt-1 text-base">{{ latestOrder.store_tables?.name || '-' }}</p>
           </div>
           <div>
-            <label class="text-sm font-medium text-gray-500">Items</label>
+            <label class="text-sm font-medium text-gray-500">Item</label>
             <p class="mt-1 text-base">{{ latestOrder.transaction_items?.length || 0 }} item</p>
           </div>
           <div>
@@ -71,7 +71,7 @@
           </div>
         </div>
         <div class="w-full space-y-4">
-          <Button label="Lihat Order" icon="pi pi-receipt" size="small" fluid @click="goToOrder" />
+          <Button label="Lihat Pesanan" icon="pi pi-receipt" size="small" fluid @click="goToOrder" />
           <Button label="Buat Pesanan Baru" icon="pi pi-plus" size="small" severity="secondary" variant="outlined" fluid @click="goToBrowse" />
         </div>
       </div>
