@@ -1,0 +1,8 @@
+{
+  "orchestrationRetryCount": 0,
+  "lastFailedGate": "qa",
+  "lastFailedAt": "2026-09-08T09:48:51.971Z",
+  "lastKnownCommitSha": "113f1e219469bd2151aee213e05d51259601b27b",
+  "ticketTitle": "[SECURITY] Endpoint List User Tanpa RBAC Guard",
+  "ticketDescription": "## Sumber\n\nAuditor Agent scan 2026-07-18, file: `.ai/audits/2026-07-18/audit-report.md`\n\n## Lokasi\n\napps/api/src/users/users.controller.ts:51\n\n## Masalah\n\nEndpoint /users tidak memiliki @RequirePermission.\n\n## Dampak\n\nAkses data user merchant tanpa otoritas.\n\n## Usulan\n\nTambahkan @RequirePermission('[user.read](<http://user.read>)')."
+}
