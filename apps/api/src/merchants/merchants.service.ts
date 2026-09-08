@@ -106,7 +106,7 @@ export class MerchantsService {
     return this.attachSignedUrl(merchant);
   }
 
-  async findBySlug(slug: string) {
+  async findBySlug(slug: string, userMerchantId: string) {
     const merchant = await this.prisma.merchants.findUnique({
       where: { slug },
     });
@@ -114,6 +114,8 @@ export class MerchantsService {
     if (!merchant) {
       throw new NotFoundException(`Merchant with slug ${slug} not found`);
     }
+
+    await this.validateMerchantAccess(merchant.id, userMerchantId);
 
     return this.attachSignedUrl(merchant);
   }
