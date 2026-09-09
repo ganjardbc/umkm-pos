@@ -52,7 +52,7 @@
               variant="text"
               icon="pi pi-user"
               size="small"
-              label="Profile"
+              label="Profil"
               fluid
               class="justify-start! items-center!"
             />
@@ -63,7 +63,7 @@
               variant="text"
               icon="pi pi-cog"
               size="small"
-              label="Settings"
+              label="Pengaturan"
               fluid
               class="justify-start! items-center!"
             />

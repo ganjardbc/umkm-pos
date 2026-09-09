@@ -25,7 +25,7 @@ defineProps({
   placeholder: {
     type: String,
     required: false,
-    default: 'Search...',
+    default: 'Cari...',
   },
 });
 </script>

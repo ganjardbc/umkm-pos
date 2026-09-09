@@ -5,6 +5,7 @@
         <UiSearch
           v-model="form.search"
           type="search"
+          placeholder="Cari kategori..."
           class="w-full"
           @input="search"
         />

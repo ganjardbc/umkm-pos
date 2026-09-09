@@ -4,6 +4,7 @@
       <UiSearch
         v-model="form.search"
         type="search"
+        placeholder="Cari riwayat stok..."
         class="w-full"
         @input="search"
       />
