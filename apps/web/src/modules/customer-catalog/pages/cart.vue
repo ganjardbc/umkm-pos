@@ -112,7 +112,7 @@
             <Select
               v-model="selectedTableId"
               :options="tables"
-              optionLabel="name"
+              optionLabel="label"
               optionValue="id"
               placeholder="Pilih meja"
               class="mt-1 w-full"
@@ -261,7 +261,10 @@ const submitOrder = async () => {
 onMounted(async () => {
   try {
     const response = await getCatalogTables(outletId);
-    tables.value = response.data?.data || [];
+    tables.value = (response?.data?.data || []).map((table: any) => ({
+      ...table,
+      label: table.code ? `${table.name} (${table.code})` : table.name,
+    }));
   } catch (error) {
     showToast({
       type: 'error',
