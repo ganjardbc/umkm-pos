@@ -22,8 +22,10 @@
       :is-user-in-shift="isShiftUserCanManage"
       :shift-id="currentShift?.id"
       :outlet-id="currentShift?.outlet_id"
+      :target-transaction-id="targetTransactionId"
       class="pos__cart"
       @checkout-success="clearForm"
+      @add-items-success="onAddItemsSuccess"
     />
   </div>
 </template>
@@ -31,6 +33,7 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue';
 import { storeToRefs } from 'pinia';
+import { useRoute, useRouter } from 'vue-router';
 import { getOutlet } from '@/helpers/auth.ts';
 import { useAuthStore } from '@/modules/auth/stores/index.ts';
 import { useShift } from '@/modules/shift/composables/useShift.ts';
@@ -42,6 +45,14 @@ import PosProduct from '@/modules/transaction/components/Product.vue';
 
 const outlet = getOutlet();
 const posStore = usePosStore();
+const route = useRoute();
+const router = useRouter();
+
+const targetTransactionId = computed(() => (route.query.add_to as string) || '');
+
+const onAddItemsSuccess = () => {
+  router.push(`/transaction/detail/${targetTransactionId.value}`);
+};
 
 // Device type
 const authStore = useAuthStore();
