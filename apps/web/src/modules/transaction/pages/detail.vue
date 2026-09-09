@@ -15,7 +15,7 @@
     <!-- Transaction Information Card -->
     <UiCard v-if="transactionDetail">
       <template #header>
-        <div class="w-full flex flex-col lg:flex-row gap-2 items-center justify-between">
+        <div class="w-full flex flex-col lg:flex-row gap-3 items-center justify-between">
           <div class="w-full flex items-center justify-between">
             <h1 class="flex-1 text-lg font-semibold">
               Informasi Transaksi
@@ -33,7 +33,7 @@
               icon="pi pi-print"
               label="Cetak Struk"
               size="small"
-              class="w-full"
+              class="w-full lg:w-32"
               :disabled="!isCanPrint || transactionDetail?.is_cancelled"
               @click="openPrintReceipt(transactionDetail)"
             />
@@ -43,7 +43,7 @@
               icon="pi pi-times"
               label="Batalkan"
               size="small"
-              class="w-full"
+              class="w-full lg:w-32"
               :disabled="!isCanCancel || transactionDetail?.is_cancelled"
               @click="onCancelTransaction(transactionDetail)"
             />
