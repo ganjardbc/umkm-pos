@@ -79,42 +79,64 @@
 
         <Divider class="my-0!" />
 
-        <div class="grid grid-cols-2 gap-y-2 text-xs">
-          <span class="text-slate-400">Sumber</span>
-          <span class="text-right">
+        <div class="w-full space-y-2">
+          <div class="flex justify-between items-center gap-2">
+            <span class="text-xs text-slate-400">Sumber</span>
             <Tag
               :value="trx.order_source === 'customer_catalog' ? 'CC' : 'POS'"
               :severity="trx.order_source === 'customer_catalog' ? 'warning' : 'info'"
               class="text-xs!"
             />
-          </span>
+          </div>
 
-          <span class="text-slate-400">Mode</span>
-          <span class="text-right">
+          <div class="flex justify-between items-center gap-2">
+            <span class="text-xs text-slate-400">Mode</span>
             <Tag
               :value="trx.is_offline ? 'Offline' : 'Online'"
               :severity="trx.is_offline ? 'danger' : 'success'"
               class="capitalize text-xs!"
             />
-          </span>
+          </div>
 
-          <span class="text-slate-400">Pembayaran</span>
-          <span class="text-right capitalize text-slate-700 dark:text-slate-300">{{ trx.payment_method }}</span>
+          <div class="flex justify-between items-center gap-2">
+            <span class="text-xs text-slate-400">Pembayaran</span>
+            <span class="text-sm text-right capitalize text-slate-700 dark:text-slate-300">{{ trx.payment_method }}</span>
+          </div>
 
-          <span class="text-slate-400">Item</span>
-          <span class="text-right text-slate-700 dark:text-slate-300">{{ trx.transaction_items?.length || 0 }}x</span>
+          <div class="flex justify-between items-center gap-2">
+            <span class="text-xs text-slate-400">Item</span>
+            <span class="text-sm text-right text-slate-700 dark:text-slate-300">{{ trx.transaction_items?.length || 0 }}x</span>
+          </div>
 
-          <span class="text-slate-400">Tanggal</span>
-          <span class="text-right text-slate-700 dark:text-slate-300">{{ formatDateTime(trx.created_at) }}</span>
+          <div class="flex justify-between items-center gap-2">
+            <span class="text-xs text-slate-400">Tanggal</span>
+            <span class="text-sm text-right text-slate-700 dark:text-slate-300">{{ formatDateTime(trx.created_at) }}</span>
+          </div>
         </div>
 
         <Divider class="my-0!" />
 
-        <div class="flex items-center justify-between">
-          <span class="text-lg font-bold text-primary dark:text-primary-400">
+        <div class="flex justify-between items-center gap-2">
+          <span class="text-xs text-slate-400">Total</span>
+          <span class="text-right text-base font-bold text-primary dark:text-primary-400">
             {{ getCurrency(trx.total_amount) }}
           </span>
-          <div class="flex gap-1">
+        </div>
+
+        <Divider class="my-0!" />
+
+        <div class="flex-1 flex justify-between items-center">
+          <Button
+            :label="advanceStatusLabelMap[trx.order_status]"
+            :severity="trx.order_status !== 'selesai' ? 'success' : 'secondary'"
+            variant="outlined"
+            icon="pi pi-ellipsis-h"
+            size="small"
+            :disabled="!isCanUpdateStatus || trx.order_status === 'selesai'"
+            @click="advanceStatus(trx)"
+          />
+
+          <div class="flex gap-1 justify-end">
             <Button
               severity="secondary"
               variant="outlined"
@@ -124,6 +146,16 @@
               @click="openDetail(trx)"
             />
             <Button
+              v-if="trx.payment_method === 'pending'"
+              severity="warning"
+              variant="outlined"
+              icon="pi pi-wallet"
+              size="small"
+              :disabled="!isCanPay || trx.is_cancelled"
+              @click="openPaymentModal(trx)"
+            />
+            <Button
+              v-else
               severity="secondary"
               variant="outlined"
               icon="pi pi-print"
@@ -132,15 +164,7 @@
               @click="openPrintReceipt(trx)"
             />
             <Button
-              v-if="trx.order_status !== 'selesai'"
-              severity="success"
-              variant="outlined"
-              icon="pi pi-arrow-right"
-              size="small"
-              :disabled="!isCanUpdateStatus"
-              @click="advanceStatus(trx)"
-            />
-            <Button
+              v-if="false"
               severity="danger"
               variant="outlined"
               icon="pi pi-times"
@@ -182,7 +206,7 @@ import { type ReceiptData } from '../utils/receiptGenerator';
 import { onMounted, ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { getNoTable, getErrorMessage, getCurrency, formatDateTime } from '@/helpers/utils.ts';
-import { getListTransaction, patchTransactionStatus, postCancelTransaction } from '@/modules/transaction/services/api.ts';
+import { getListTransaction, patchTransactionStatus, patchTransactionPay, postCancelTransaction } from '@/modules/transaction/services/api.ts';
 import { showToast, showConfirm } from '@/helpers/toast.ts';
 import { showLoading, hideLoading } from '@/helpers/loading.ts';
 import { getOutlet } from '@/helpers/auth.ts';
@@ -193,7 +217,7 @@ import UiPagination from '@/components/UiPagination.vue';
 import UiLoading from '@/components/UiLoading.vue';
 import ReceiptModal from '@/modules/transaction/components/ReceiptModal.vue';
 import PaymentModal from '@/modules/transaction/components/PaymentModal.vue';
-import { READ, PRINT, CANCEL, UPDATE_STATUS } from '@/modules/transaction/services/rbac.ts';
+import { READ, PRINT, CREATE, CANCEL, UPDATE_STATUS } from '@/modules/transaction/services/rbac.ts';
 import { getOrderStatusLabel } from '@/modules/transaction/services/status-labels.ts';
 import { PREFIX_ROUTE_NAME } from '@/modules/transaction/services/constants.ts';
 
@@ -205,6 +229,7 @@ const isCanPrint = computed(() => isHasPermission(PRINT));
 const iscanDetail = computed(() => isHasPermission(READ));
 const isCanCancel = computed(() => isHasPermission(CANCEL));
 const isCanUpdateStatus = computed(() => isHasPermission(UPDATE_STATUS));
+const isCanPay = computed(() => isHasPermission(CREATE));
 
 const listOfCancelFilters = [
   { label: 'Semua Status', value: null },
@@ -231,7 +256,7 @@ const filter = ref({
 const pagination = ref({
   page: 1,
   pageCount: 0,
-  rows: 10,
+  rows: 12,
   totalRecords: 0,
 });
 
@@ -286,16 +311,24 @@ const nextStatusMap: Record<string, any> = {
   menunggu_konfirmasi: { order_status: 'diterima' },
   diterima: { order_status: 'diproses' },
   diproses: { order_status: 'sampai' },
+  sampai: { order_status: 'selesai' },
 };
 
-// Payment Modal
+const advanceStatusLabelMap: Record<string, string> = {
+  menunggu_konfirmasi: 'Terima',
+  diterima: 'Proses',
+  diproses: 'Sampai',
+  sampai: 'Selesaikan',
+  selesai: 'Selesai',
+};
+
+// Payment Modal (independent of order status)
 const showPaymentModal = ref(false);
 const paymentTarget = ref<any>(null);
 const paymentPayload = ref({
   total_amount: 0,
   payment_method: 'cash',
   cash_received: 0,
-  is_offline: false,
 });
 
 const openPaymentModal = (transaction: any) => {
@@ -304,7 +337,6 @@ const openPaymentModal = (transaction: any) => {
     total_amount: Number(transaction.total_amount),
     payment_method: 'cash',
     cash_received: 0,
-    is_offline: transaction.is_offline || false,
   };
   showPaymentModal.value = true;
 };
@@ -313,7 +345,6 @@ const confirmPayment = async () => {
   try {
     showLoading();
     const payload: any = {
-      order_status: 'selesai',
       payment_method: paymentPayload.value.payment_method,
       is_offline: paymentPayload.value.is_offline,
     };
@@ -321,7 +352,7 @@ const confirmPayment = async () => {
       payload.cash_received = Number(paymentPayload.value.cash_received);
       payload.change_amount = Math.max(0, payload.cash_received - paymentPayload.value.total_amount);
     }
-    await patchTransactionStatus(paymentTarget.value.id, payload);
+    await patchTransactionPay(paymentTarget.value.id, payload);
     showPaymentModal.value = false;
     showToast({
       type: 'success',
@@ -380,10 +411,6 @@ const onCancelTransaction = (transaction: any) => {
 };
 
 const advanceStatus = async (transaction: any) => {
-  if (transaction.order_status === 'sampai') {
-    openPaymentModal(transaction);
-    return;
-  }
   try {
     const payload = { ...nextStatusMap[transaction.order_status] };
     await patchTransactionStatus(transaction.id, payload);
