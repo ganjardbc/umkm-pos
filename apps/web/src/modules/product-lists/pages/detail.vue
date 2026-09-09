@@ -8,19 +8,19 @@
         @click="onBack"
       />
       <h1 class="text-lg font-semibold">
-        Product Detail
+        Detail Produk
       </h1>
     </div>
 
     <UiCard v-if="productDetail">
-      <template #header>  
+      <template #header>
         <div class="w-full flex gap-4 items-center justify-between">
           <h1 class="text-lg font-semibold">
-            Product Information
+            Informasi Produk
           </h1>
           <Button
             icon="pi pi-pencil"
-            label="Edit Product"
+            label="Ubah Produk"
             size="small"
             :disabled="!isCanUpdate"
             @click="onEdit"
@@ -32,14 +32,14 @@
         <div v-if="productDetail.thumbnail" class="flex justify-center md:justify-start">
           <img
             :src="productDetail.thumbnail"
-            alt="Product Image"
+            alt="Gambar Produk"
             class="w-40 h-40 rounded-lg object-cover border border-gray-200"
           />
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label class="text-sm font-medium text-gray-500">Name</label>
+            <label class="text-sm font-medium text-gray-500">Nama</label>
             <p class="text-base mt-1">{{ productDetail.name }}</p>
           </div>
           <div>
@@ -50,7 +50,7 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label class="text-sm font-medium text-gray-500">Category</label>
+            <label class="text-sm font-medium text-gray-500">Kategori</label>
             <p class="text-base mt-1">{{ productDetail.product_categories?.name || '-' }}</p>
           </div>
           <div>
@@ -61,29 +61,29 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label class="text-sm font-medium text-gray-500">Price</label>
+            <label class="text-sm font-medium text-gray-500">Harga</label>
             <p class="text-base mt-1">{{ getCurrency(productDetail.price) }}</p>
           </div>
           <div>
-            <label class="text-sm font-medium text-gray-500">Cost</label>
+            <label class="text-sm font-medium text-gray-500">Modal</label>
             <p class="text-base mt-1">{{ getCurrency(productDetail.cost) }}</p>
           </div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label class="text-sm font-medium text-gray-500">Stock Quantity</label>
+            <label class="text-sm font-medium text-gray-500">Jumlah Stok</label>
             <p class="text-base mt-1 flex items-center gap-2">
               {{ productDetail.stock_qty }}
               <Tag
                 v-if="isLowStock(productDetail)"
-                value="Low Stock"
+                value="Stok Menipis"
                 severity="warn"
               />
             </p>
           </div>
           <div>
-            <label class="text-sm font-medium text-gray-500">Minimum Stock</label>
+            <label class="text-sm font-medium text-gray-500">Stok Minimum</label>
             <p class="text-base mt-1">{{ productDetail.min_stock }}</p>
           </div>
         </div>
@@ -93,7 +93,7 @@
             <label class="text-sm font-medium text-gray-500">Status</label>
             <div class="mt-1">
               <Tag
-                :value="productDetail.is_active ? 'Active' : 'Inactive'"
+                :value="productDetail.is_active ? 'Aktif' : 'Tidak Aktif'"
                 :severity="productDetail.is_active ? 'success' : 'danger'"
                 class="capitalize"
               />
@@ -103,11 +103,11 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label class="text-sm font-medium text-gray-500">Created At</label>
+            <label class="text-sm font-medium text-gray-500">Dibuat Pada</label>
             <p class="text-base mt-1">{{ formatDateTime(productDetail.created_at) }}</p>
           </div>
           <div>
-            <label class="text-sm font-medium text-gray-500">Updated At</label>
+            <label class="text-sm font-medium text-gray-500">Diperbarui Pada</label>
             <p class="text-base mt-1">{{ formatDateTime(productDetail.updated_at) }}</p>
           </div>
         </div>
@@ -118,11 +118,11 @@
       <template #header>
         <div class="w-full flex gap-4 items-center justify-between">
           <h1 class="text-lg font-semibold">
-            Stock History
+            Riwayat Stok
           </h1>
           <Button
             icon="pi pi-cog"
-            label="Adjust Stock"
+            label="Sesuaikan Stok"
             size="small"
             :disabled="!isCanAdjust"
             @click="openAdjustStockModal"
@@ -142,7 +142,7 @@
           <DataTable :value="stockLogs" :loading="loadingStockLogs" tableStyle="min-width: 50rem">
             <template #empty>
               <span class="w-full text-center flex justify-center">
-                Stock histories are empty.
+                Belum ada riwayat stok.
               </span>
             </template>
             <Column field="no" header="NO" class="w-18">
@@ -150,24 +150,24 @@
                 {{ getNoTable(slotProps.index, stockPagination.page, stockPagination.rows) }}
               </template>
             </Column>
-            <Column field="change_qty" header="Change Qty">
+            <Column field="change_qty" header="Perubahan Stok">
               <template #body="slotProps">
                 <span :class="slotProps.data.change_qty > 0 ? 'text-green-600' : 'text-red-600'">
                   {{ slotProps.data.change_qty > 0 ? '+' : '' }}{{ slotProps.data.change_qty }}
                 </span>
               </template>
             </Column>
-            <Column field="stock_qty" header="Stock After">
+            <Column field="stock_qty" header="Stok Setelahnya">
               <template #body="slotProps">
                 {{ slotProps.data?.stock_after ?? '-' }}
               </template>
             </Column>
-            <Column field="reason" header="Reason">
+            <Column field="reason" header="Alasan">
               <template #body="slotProps">
                 {{ slotProps.data.reason || '-' }}
               </template>
             </Column>
-            <Column field="created_at" header="Created At">
+            <Column field="created_at" header="Dibuat Pada">
               <template #body="slotProps">
                 {{ formatDateTime(slotProps.data.created_at) }}
               </template>
@@ -228,8 +228,8 @@ const fetchDetail = async () => {
   } catch (error) {
     showToast({
       type: 'error',
-      title: 'Failed to fetch data.',
-      message: getErrorMessage(error) || 'There was an error.',
+      title: 'Gagal memuat data.',
+      message: getErrorMessage(error) || 'Terjadi kesalahan.',
     });
   }
 };
@@ -263,8 +263,8 @@ const fetchStockLogs = async () => {
   } catch (error) {
     showToast({
       type: 'error',
-      title: 'Failed to fetch stock logs.',
-      message: getErrorMessage(error) || 'There was an error.',
+      title: 'Gagal memuat riwayat stok.',
+      message: getErrorMessage(error) || 'Terjadi kesalahan.',
     });
   } finally {
     loadingStockLogs.value = false;
@@ -312,12 +312,12 @@ const submitAdjustStockModal = async (payload: any) => {
       outlet_id: getOutlet()?.id,
     });
     const { success } = response?.data || {};
-    
+
     if (success) {
       showToast({
         type: 'success',
-        title: 'Success',
-        message: 'Stock has been adjusted successfully.'
+        title: 'Berhasil',
+        message: 'Stok berhasil disesuaikan.'
       });
       showAdjustStockModal.value = false;
       selectedAdjustStock.value = null;
@@ -328,8 +328,8 @@ const submitAdjustStockModal = async (payload: any) => {
   } catch (error) {
     showToast({
       type: 'error',
-      title: 'Adjust Stock Failed.',
-      message: getErrorMessage(error) || 'There was an error.',
+      title: 'Penyesuaian Stok Gagal.',
+      message: getErrorMessage(error) || 'Terjadi kesalahan.',
     });
   } finally {
     hideLoading();

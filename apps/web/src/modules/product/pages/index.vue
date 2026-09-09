@@ -3,8 +3,8 @@
     <!-- Tabs Shift Management -->
     <Tabs v-model:value="activeTab">
       <TabList class="bg-transparent!">
-        <Tab value="products">Products</Tab>
-        <Tab value="categories">Categories</Tab>
+        <Tab value="products">Produk</Tab>
+        <Tab value="categories">Kategori</Tab>
       </TabList>
     </Tabs>
 

@@ -7,7 +7,7 @@
   >
     <template #header>
       <h1 class="text-xl font-semibold">
-        Adjust Stock
+        Sesuaikan Stok
       </h1>
     </template>
 
@@ -21,19 +21,19 @@
       >
         <div class="w-full space-y-4">
           <div class="grid grid-cols-2 gap-4">
-            <UiFormGroup label="Product Name" variant="vertical">
+            <UiFormGroup label="Nama Produk" variant="vertical">
               <div class="text-base font-semibold">
                 {{ product?.name || '' }}
               </div>
             </UiFormGroup>
-            <UiFormGroup label="Current Stock" variant="vertical">
+            <UiFormGroup label="Stok Saat Ini" variant="vertical">
               <div class="text-base font-semibold">
                 {{ product?.stock_qty || 0 }}
               </div>
             </UiFormGroup>
           </div>
           <Divider />
-          <UiFormGroup label="Adjustment Type" variant="vertical">
+          <UiFormGroup label="Tipe Penyesuaian" variant="vertical">
             <div class="grid grid-cols-2 gap-2">
               <button
                 v-for="method in adjustmentTypeOptions"
@@ -59,10 +59,10 @@
               {{ $form.adjustment_type.error?.message }}
             </Message>
           </UiFormGroup>
-          <UiFormGroup label="Change Quantity" variant="vertical">
+          <UiFormGroup label="Jumlah Perubahan" variant="vertical">
             <InputNumber
               name="change_qty"
-              placeholder="Enter quantity"
+              placeholder="Masukkan jumlah"
               :min="1"
               fluid
             />
@@ -74,15 +74,15 @@
             >
               {{ $form.change_qty.error?.message }}
             </Message>
-            <small class="text-gray-500">Quantity is always positive. Type controls add or reduce.</small>
+            <small class="text-gray-500">Jumlah selalu bernilai positif. Tipe penyesuaian menentukan penambahan atau pengurangan.</small>
           </UiFormGroup>
-          <UiFormGroup label="Reason" variant="vertical">
+          <UiFormGroup label="Alasan" variant="vertical">
             <Select
               name="reason"
               :options="reasonOptions"
               optionLabel="label"
               optionValue="value"
-              placeholder="Select reason"
+              placeholder="Pilih alasan"
               fluid
             />
             <Message
@@ -102,14 +102,14 @@
           <Button
             type="button"
             severity="secondary"
-            label="Cancel"
+            label="Batal"
             size="medium"
             class="w-full md:w-[128px]"
             @click="onCancel"
           />
           <Button
             type="submit"
-            label="Save"
+            label="Simpan"
             size="medium"
             class="w-full md:w-[128px]"
           />
@@ -139,17 +139,17 @@ const visibility = defineModel<boolean>("visibility", {
 
 const allReasonOptions = [
   { label: 'Restock', value: 'restock' },
-  { label: 'Correction (+)', value: 'correction_plus' },
-  { label: 'Stock Opname Adjustment', value: 'opname_adjustment' },
-  { label: 'Damage', value: 'damage' },
-  { label: 'Expired', value: 'expired' },
-  { label: 'Shrinkage', value: 'shrinkage' },
-  { label: 'Correction (-)', value: 'correction_minus' },
+  { label: 'Koreksi (+)', value: 'correction_plus' },
+  { label: 'Penyesuaian Stok Opname', value: 'opname_adjustment' },
+  { label: 'Rusak', value: 'damage' },
+  { label: 'Kedaluwarsa', value: 'expired' },
+  { label: 'Hilang / Penyusutan', value: 'shrinkage' },
+  { label: 'Koreksi (-)', value: 'correction_minus' },
 ];
 
 const adjustmentTypeOptions = [
-  { label: 'Add Stock', value: 'increase' },
-  { label: 'Reduce Stock', value: 'decrease' },
+  { label: 'Tambah Stok', value: 'increase' },
+  { label: 'Kurangi Stok', value: 'decrease' },
 ];
 const selectedAdjustmentType = ref<'increase' | 'decrease'>('increase');
 
@@ -188,8 +188,8 @@ const initialValues = ref<AdjustStock>({
 
 const resolver = ref(zodResolver(
   z.object({
-    change_qty: z.number().min(1, { message: 'Quantity must be at least 1.' }),
-    reason: z.string().min(1, { message: 'Reason is required.' }),
+    change_qty: z.number().min(1, { message: 'Jumlah minimal 1.' }),
+    reason: z.string().min(1, { message: 'Alasan wajib diisi.' }),
     note: z.string().optional()
   })
 ));
@@ -201,12 +201,12 @@ const onFormSubmit = (event: any) => {
       ? -Math.abs(values.change_qty)
       : Math.abs(values.change_qty);
     const newStock = (props.product?.stock_qty || 0) + signedQty;
-    
+
     showConfirm({
-      header: 'Confirm Stock Adjustment',
-      message: `Are you sure you want to adjust stock from ${props.product?.stock_qty || 0} to ${newStock}?`,
-      rejectLabel: 'Cancel',
-      acceptLabel: 'Confirm',
+      header: 'Konfirmasi Penyesuaian Stok',
+      message: `Apakah Anda yakin ingin menyesuaikan stok dari ${props.product?.stock_qty || 0} menjadi ${newStock}?`,
+      rejectLabel: 'Batal',
+      acceptLabel: 'Konfirmasi',
       type: 'warn',
       accept: () => {
         const payload = {

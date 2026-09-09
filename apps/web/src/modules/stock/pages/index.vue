@@ -11,12 +11,12 @@
 
     <UiLoading
       v-if="loading"
-      message="Loading stock movements..."
+      message="Memuat riwayat stok..."
     />
 
     <div v-else-if="stocks.length === 0" class="flex flex-col items-center justify-center py-16 text-gray-400">
       <i class="pi pi-inbox mb-3 text-4xl" />
-      <p class="text-sm">Stocks are empty.</p>
+      <p class="text-sm">Belum ada riwayat stok.</p>
     </div>
 
     <div v-else class="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
@@ -42,17 +42,17 @@
         <Divider class="my-0!" />
 
         <div class="grid grid-cols-2 gap-y-2 text-xs">
-          <span class="text-slate-400">Stock After</span>
+          <span class="text-slate-400">Stok Setelahnya</span>
           <span class="text-right text-slate-700 dark:text-slate-300">{{ item.stock_after || '-' }}</span>
 
-          <span class="text-slate-400">Reason</span>
+          <span class="text-slate-400">Alasan</span>
           <span class="text-right text-slate-700 dark:text-slate-300">{{ item.reason || '-' }}</span>
         </div>
 
         <Divider class="my-0!" />
 
         <div class="flex items-center justify-between">
-          <span class="text-slate-400 text-xs">Created At</span>
+          <span class="text-slate-400 text-xs">Dibuat Pada</span>
           <span class="text-xs text-slate-700 dark:text-slate-300">{{ formatDateTime(item.created_at) }}</span>
         </div>
       </UiCard>
@@ -104,8 +104,8 @@ const fetchStock = async () => {
     console.log(error);
     showToast({
         type: 'error',
-        title: 'Error.',
-        message: getErrorMessage(error) || 'There was an error.',
+        title: 'Gagal.',
+        message: getErrorMessage(error) || 'Terjadi kesalahan.',
     });
   } finally {
     loading.value = false;
