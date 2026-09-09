@@ -138,7 +138,7 @@ export class TransactionsController {
   @Patch(':id/pay')
   @RequirePermission('transaction.create')
   @ApiOperation({
-    summary: 'Pay a previously held (unpaid) POS order — deducts stock',
+    summary: 'Pay a previously unpaid transaction — deducts stock',
   })
   pay(
     @Param('id') id: string,
@@ -146,7 +146,7 @@ export class TransactionsController {
     @CurrentUser('merchant_id') merchantId: string,
     @CurrentUser('id') userId: string,
   ) {
-    return this.transactionsService.payPosOrder(id, dto, merchantId, userId);
+    return this.transactionsService.payTransaction(id, dto, merchantId, userId);
   }
 
   @Patch(':id/items')

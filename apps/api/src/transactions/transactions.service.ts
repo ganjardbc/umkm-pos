@@ -308,15 +308,6 @@ export class TransactionsService {
       );
     }
 
-    if (dto.order_status === ORDER_STATUS_COMPLETED) {
-      return this.finalizeCustomerOrder(
-        transaction.id,
-        dto,
-        merchantId,
-        userId,
-      );
-    }
-
     const data: Record<string, any> = {
       order_status: dto.order_status,
       updated_by: userId,
@@ -328,8 +319,10 @@ export class TransactionsService {
     if (dto.order_status === ORDER_STATUS_PROCESSING)
       data.processed_at = new Date();
     if (dto.order_status === ORDER_STATUS_SERVED) data.served_at = new Date();
+    if (dto.order_status === ORDER_STATUS_COMPLETED)
+      data.completed_at = new Date();
 
-    return this.prisma.transactions.update({
+    const updated = await this.prisma.transactions.update({
       where: { id: transaction.id },
       data,
       include: {
@@ -338,6 +331,18 @@ export class TransactionsService {
         customer_sessions: true,
       },
     });
+
+    if (
+      dto.order_status === ORDER_STATUS_COMPLETED &&
+      transaction.customer_session_id
+    ) {
+      await this.prisma.customer_sessions.update({
+        where: { id: transaction.customer_session_id },
+        data: { status: 'closed', updated_at: new Date() },
+      });
+    }
+
+    return updated;
   }
 
   async cancel(id: string, merchantId: string, userId: string) {
@@ -503,7 +508,7 @@ export class TransactionsService {
     });
   }
 
-  async payPosOrder(
+  async payTransaction(
     transactionId: string,
     dto: {
       payment_method: string;
@@ -576,99 +581,6 @@ export class TransactionsService {
     });
   }
 
-  private async finalizeCustomerOrder(
-    transactionId: string,
-    dto: UpdateTransactionStatusDto,
-    merchantId: string,
-    userId: string,
-  ) {
-    if (!dto.payment_method) {
-      throw new BadRequestException(
-        'payment_method is required when completing an order',
-      );
-    }
-
-    const transaction = await this.prisma.transactions.findFirst({
-      where: { id: transactionId },
-      include: {
-        transaction_items: true,
-        customer_sessions: true,
-      },
-    });
-
-    if (!transaction) {
-      throw new NotFoundException(
-        `Transaction with ID ${transactionId} not found`,
-      );
-    }
-
-    const itemsPayload = transaction.transaction_items
-      .filter((item) => item.product_id)
-      .map((item) => ({
-        product_id: item.product_id!,
-        qty: item.qty,
-        customer_note: item.customer_note ?? undefined,
-      }));
-
-    const prepared = await this.prepareTransactionPayload(
-      {
-        outlet_id: transaction.outlet_id,
-        payment_method: dto.payment_method,
-        cash_received: dto.cash_received,
-        change_amount: dto.change_amount,
-        items: itemsPayload,
-      },
-      merchantId,
-      userId,
-      true,
-    );
-
-    const result = await this.prisma.$transaction(async (tx) => {
-      await this.applyInventorySale(
-        tx,
-        prepared.itemsData,
-        merchantId,
-        transaction.outlet_id,
-        transaction.id,
-        userId,
-      );
-
-      const updated = await tx.transactions.update({
-        where: { id: transaction.id },
-        data: {
-          payment_method: dto.payment_method,
-          cash_received: prepared.cashReceived,
-          change_amount: prepared.changeAmount,
-          order_status: ORDER_STATUS_COMPLETED,
-          completed_at: new Date(),
-          cashier_id: userId,
-          updated_by: userId,
-          updated_at: new Date(),
-        },
-      });
-
-      if (transaction.customer_session_id) {
-        await tx.customer_sessions.update({
-          where: { id: transaction.customer_session_id },
-          data: {
-            status: 'closed',
-            updated_at: new Date(),
-          },
-        });
-      }
-
-      return updated;
-    });
-
-    return this.prisma.transactions.findFirst({
-      where: { id: result.id },
-      include: {
-        transaction_items: true,
-        customer_sessions: true,
-        store_tables: true,
-      },
-    });
-  }
 
   private async prepareTransactionPayload(
     dto: Partial<CreateTransactionDto> & {
