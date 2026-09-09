@@ -514,6 +514,7 @@ export class TransactionsService {
       payment_method: string;
       cash_received?: number;
       change_amount?: number;
+      is_offline?: boolean;
     },
     merchantId: string,
     userId: string,
@@ -565,6 +566,7 @@ export class TransactionsService {
           payment_method: dto.payment_method,
           cash_received: prepared.cashReceived,
           change_amount: prepared.changeAmount,
+          is_offline: dto.is_offline ?? false,
           cashier_id: userId,
           updated_by: userId,
           updated_at: new Date(),

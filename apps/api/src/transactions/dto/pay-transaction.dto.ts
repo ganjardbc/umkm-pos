@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber, IsString, MaxLength, Min } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsNumber, IsString, MaxLength, Min } from 'class-validator';
 import { IsOptional } from 'class-validator';
 
 export class PayTransactionDto {
@@ -29,4 +29,12 @@ export class PayTransactionDto {
   @IsNumber()
   @Min(0)
   change_amount?: number;
+
+  @ApiPropertyOptional({
+    example: false,
+    description: 'Whether payment was recorded offline',
+  })
+  @IsOptional()
+  @IsBoolean()
+  is_offline?: boolean;
 }
