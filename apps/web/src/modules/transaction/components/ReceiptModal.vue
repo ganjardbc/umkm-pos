@@ -160,8 +160,6 @@ import {
   printTestPage
 } from '../utils/bluetoothPrinter';
 
-const emits = defineEmits(['cancel']);
-
 const props = defineProps({
   selected: {
     type: Object as () => ReceiptData,
@@ -344,10 +342,6 @@ const downloadReceipt = async () => {
     isDownloading.value = false;
   }
 };
-
-const onCancel = () => {
-  emits('cancel');
-}
 </script>
 
 <style scoped>
