@@ -2,7 +2,7 @@
   <UiCard class="max-w-2xl mx-auto">
     <template #header>
       <h1 class="text-xl font-semibold">
-        Add Merchant
+        Tambah Merchant
       </h1>
     </template>
 
@@ -14,7 +14,7 @@
       @submit="onFormSubmit"
     >
       <div class="w-full space-y-4">
-        <UiFormGroup label="Name" variant="vertical">
+        <UiFormGroup label="Nama" variant="vertical">
           <InputText
             name="name"
             type="text"
@@ -49,7 +49,7 @@
             {{ $form.slug.error?.message }}
           </Message>
         </UiFormGroup>
-        <UiFormGroup label="Phone" variant="vertical">
+        <UiFormGroup label="Nomor Telepon" variant="vertical">
           <InputText
             name="phone"
             type="text"
@@ -65,7 +65,7 @@
             {{ $form.phone.error?.message }}
           </Message>
         </UiFormGroup>
-        <UiFormGroup label="Address" variant="vertical">
+        <UiFormGroup label="Alamat" variant="vertical">
           <Textarea
             name="address"
             placeholder=""
@@ -90,14 +90,14 @@
       <div class="w-full flex justify-end gap-4">
         <Button
           severity="secondary"
-          label="Cancel"
+          label="Batal"
           size="medium"
           class="w-full md:w-[128px]"
           @click="onCancel"
         />
         <Button
           type="submit"
-          label="Save"
+          label="Simpan"
           size="medium"
           class="w-full md:w-[128px]"
         />
@@ -139,10 +139,10 @@ const initialValues = ref<FormCreate>({
 
 const resolver = ref(zodResolver(
   z.object({
-    slug: z.string().min(1, { message: 'Slug is required.' }),
-    name: z.string().min(1, { message: 'Name is required.' }),
-    phone: z.string().min(1, { message: 'Phone is required.' }),
-    address: z.string().min(1, { message: 'Address is required.' })
+    slug: z.string().min(1, { message: 'Slug wajib diisi.' }),
+    name: z.string().min(1, { message: 'Nama wajib diisi.' }),
+    phone: z.string().min(1, { message: 'Nomor telepon wajib diisi.' }),
+    address: z.string().min(1, { message: 'Alamat wajib diisi.' })
   })
 ));
 
@@ -171,8 +171,8 @@ const onFormSubmit = async (event: any) => {
     } catch (error) {
       showToast({
         type: 'error',
-        title: 'Create Merchant Failed.',
-        message: getErrorMessage(error) || 'There was an error.',
+        title: 'Gagal Menambah Merchant.',
+        message: getErrorMessage(error) || 'Terjadi kesalahan.',
       });
     } finally {
       hideLoading();
@@ -187,7 +187,7 @@ const onNameChange = (name: string, form: any) => {
     .replace(/[^\w\s-]/g, '')
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-');
-  
+
   form.slug.value = slug;
 };
 

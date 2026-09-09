@@ -5,13 +5,14 @@
         <UiSearch
           v-model="form.search"
           type="search"
+          placeholder="Cari merchant..."
           class="w-full"
           @input="search"
         />
       </div>
       <Button
         icon="pi pi-plus"
-        label="Add Merchant"
+        label="Tambah Merchant"
         class="w-full md:w-[192px]"
         :disabled="!isCanCreate"
         @click="addMerchant"
@@ -20,7 +21,7 @@
 
     <UiLoading
       v-if="loading"
-      message="Loading merchants..."
+      message="Memuat merchant..."
     />
 
     <div
@@ -28,7 +29,7 @@
       class="flex flex-col items-center justify-center py-16 text-gray-400"
     >
       <i class="pi pi-inbox mb-3 text-4xl" />
-      <p class="text-sm">Merchants are empty.</p>
+      <p class="text-sm">Belum ada merchant.</p>
     </div>
 
     <div v-else class="space-y-4">
@@ -66,7 +67,7 @@
           <Divider class="my-0!" />
 
           <div class="grid grid-cols-2 gap-y-2 text-xs">
-            <span class="text-slate-400">Created At</span>
+            <span class="text-slate-400">Dibuat Pada</span>
             <span class="text-right text-slate-700 dark:text-slate-300">
               {{ formatDateTime(merchant.created_at) }}
             </span>
@@ -161,8 +162,8 @@ const fetchMerchants = async () => {
     console.log(error);
     showToast({
       type: 'error',
-      title: 'Error.',
-      message: getErrorMessage(error) || 'There was an error.',
+      title: 'Gagal.',
+      message: getErrorMessage(error) || 'Terjadi kesalahan.',
     });
   } finally {
     loading.value = false;
@@ -195,10 +196,10 @@ const onEditMerchant = (merchant: any) => {
 
 const onDeleteMerchant = (merchant: any) => {
   showConfirm({
-    header: 'Delete Merchant',
-    message: 'Are you sure you want to delete this merchant?',
-    rejectLabel: 'Cancel',
-    acceptLabel: 'Delete',
+    header: 'Hapus Merchant',
+    message: 'Apakah Anda yakin ingin menghapus merchant ini?',
+    rejectLabel: 'Batal',
+    acceptLabel: 'Hapus',
     type: 'warn',
     accept: () => {
       removeMerchant(merchant?.id);
@@ -216,16 +217,16 @@ const removeMerchant = async (id: string) => {
     if (success) {
       showToast({
         type: 'success',
-        title: 'Success',
-        message: 'Merchant has been deleted.'
+        title: 'Berhasil',
+        message: 'Merchant berhasil dihapus.'
       });
       fetchMerchants();
     }
   } catch (error) {
     showToast({
       type: 'error',
-      title: 'Error.',
-      message: getErrorMessage(error) || 'There was an error.',
+      title: 'Gagal.',
+      message: getErrorMessage(error) || 'Terjadi kesalahan.',
     });
   } finally {
     hideLoading();

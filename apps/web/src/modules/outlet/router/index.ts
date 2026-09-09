@@ -18,7 +18,7 @@ export default [
       permission: PERMISSIONS,
       breadcrumbs: [
         {
-          label: 'Home',
+          label: 'Beranda',
           route: '/landing',
           isActive: false,
         },
@@ -40,7 +40,7 @@ export default [
       permission: PERMISSIONS,
       breadcrumbs: [
         {
-          label: 'Home',
+          label: 'Beranda',
           route: '/landing',
           isActive: false,
         },
@@ -68,7 +68,7 @@ export default [
       permission: PERMISSIONS,
       breadcrumbs: [
         {
-          label: 'Home',
+          label: 'Beranda',
           route: '/landing',
           isActive: false,
         },
@@ -96,7 +96,7 @@ export default [
       permission: PERMISSIONS,
       breadcrumbs: [
         {
-          label: 'Home',
+          label: 'Beranda',
           route: '/landing',
           isActive: false,
         },
@@ -106,7 +106,7 @@ export default [
           isActive: false,
         },
         {
-          label: 'Add',
+          label: 'Tambah',
           route: `${PREFIX_ROUTE_PATH}/create`,
           isActive: true,
         },

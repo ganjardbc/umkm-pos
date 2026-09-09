@@ -5,13 +5,14 @@
         <UiSearch
           v-model="form.search"
           type="search"
+          placeholder="Cari permission..."
           class="w-full"
           @input="search"
         />
       </div>
       <Button
         icon="pi pi-plus"
-        label="Add Permission"
+        label="Tambah Permission"
         class="w-full md:w-[192px]"
         :disabled="!isCanCreate"
         @click="addPermission"
@@ -20,14 +21,14 @@
 
     <UiLoading
       v-if="loading"
-      message="Loading permissions..."
+      message="Memuat permission..."
     />
 
     <UiEmptyState
       v-else-if="permissions.length === 0"
       icon="pi pi-key"
-      title="Permissions are empty"
-      description="No permissions found."
+      title="Belum ada permission"
+      description="Tidak ada permission yang ditemukan."
     />
 
     <div v-else class="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
@@ -50,12 +51,12 @@
         <Divider class="my-0!" />
 
         <div class="grid grid-cols-2 gap-y-2 text-xs">
-          <span class="text-slate-400">Description</span>
+          <span class="text-slate-400">Deskripsi</span>
           <span class="text-right text-slate-700 dark:text-slate-300">
             {{ permission.description || '-' }}
           </span>
 
-          <span class="text-slate-400">Created At</span>
+          <span class="text-slate-400">Dibuat Pada</span>
           <span class="text-right text-slate-700 dark:text-slate-300">
             {{ formatDateTime(permission.created_at) }}
           </span>
@@ -143,8 +144,8 @@ const fetchPermission = async () => {
     console.log(error);
     showToast({
       type: 'error',
-      title: 'Error.',
-      message: getErrorMessage(error) || 'There was an error.',
+      title: 'Gagal.',
+      message: getErrorMessage(error) || 'Terjadi kesalahan.',
     });
   } finally {
     loading.value = false;
@@ -173,16 +174,16 @@ const removePermission = async (id: string) => {
     if (success) {
       showToast({
         type: 'success',
-        title: 'Success',
-        message: 'Permission has been deleted.'
+        title: 'Berhasil',
+        message: 'Permission berhasil dihapus.'
       });
       fetchPermission();
     }
   } catch (error) {
     showToast({
       type: 'error',
-      title: 'Error.',
-      message: getErrorMessage(error) || 'There was an error.',
+      title: 'Gagal.',
+      message: getErrorMessage(error) || 'Terjadi kesalahan.',
     });
   } finally {
     hideLoading();
@@ -191,10 +192,10 @@ const removePermission = async (id: string) => {
 
 const onDeletePermission = (permission: PermissionItem) => {
   showConfirm({
-    header: 'Delete Permission',
-    message: 'Are you sure you want to delete this permission?',
-    rejectLabel: 'Cancel',
-    acceptLabel: 'Delete',
+    header: 'Hapus Permission',
+    message: 'Apakah Anda yakin ingin menghapus permission ini?',
+    rejectLabel: 'Batal',
+    acceptLabel: 'Hapus',
     type: 'warn',
     accept: () => {
       removePermission(permission?.id);

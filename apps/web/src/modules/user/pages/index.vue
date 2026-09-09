@@ -5,13 +5,14 @@
         <UiSearch
           v-model="form.search"
           type="search"
+          placeholder="Cari pengguna..."
           class="w-full"
           @input="search"
         />
       </div>
       <Button
         icon="pi pi-plus"
-        label="Add User"
+        label="Tambah Pengguna"
         class="w-full md:w-[192px]"
         :disabled="!isCanCreate"
         @click="onAddUser"
@@ -19,7 +20,7 @@
     </div>
 
     <!-- Loading state -->
-    <UiLoading v-if="loading" message="Loading users..." />
+    <UiLoading v-if="loading" message="Memuat pengguna..." />
 
     <!-- Empty state -->
     <div
@@ -27,7 +28,7 @@
       class="flex flex-col items-center justify-center py-16 text-gray-400"
     >
       <i class="pi pi-users mb-3 text-4xl" />
-      <p class="text-sm">Users are empty.</p>
+      <p class="text-sm">Belum ada pengguna.</p>
     </div>
 
     <!-- Card grid -->
@@ -55,7 +56,7 @@
             {{ user.name }}
           </p>
           <Tag
-            :value="user.is_active ? 'Active' : 'Inactive'"
+            :value="user.is_active ? 'Aktif' : 'Tidak Aktif'"
             :severity="user.is_active ? 'success' : 'danger'"
             class="capitalize text-xs! shrink-0"
           />
@@ -71,7 +72,7 @@
           <span class="text-slate-400">Merchant</span>
           <span class="text-right text-slate-700 dark:text-slate-300">{{ user.merchants?.name }}</span>
 
-          <span class="text-slate-400">Created At</span>
+          <span class="text-slate-400">Dibuat Pada</span>
           <span class="text-right text-slate-700 dark:text-slate-300">{{ formatDateTime(user.created_at) }}</span>
         </div>
 
@@ -164,8 +165,8 @@ const fetchUser = async () => {
     console.log(error);
     showToast({
         type: 'error',
-        title: 'Error.',
-        message: getErrorMessage(error) || 'There was an error.',
+        title: 'Gagal.',
+        message: getErrorMessage(error) || 'Terjadi kesalahan.',
     });
   } finally {
     loading.value = false;
@@ -212,16 +213,16 @@ const deleteUser = async (id: string) => {
     if (success) {
       showToast({
         type: 'success',
-        title: 'Success',
-        message: 'User has been deactivated.'
+        title: 'Berhasil',
+        message: 'Pengguna berhasil dinonaktifkan.'
       });
       fetchUser();
     }
   } catch (error) {
     showToast({
       type: 'error',
-      title: 'Error.',
-      message: getErrorMessage(error) || 'There was an error.',
+      title: 'Gagal.',
+      message: getErrorMessage(error) || 'Terjadi kesalahan.',
     });
   } finally {
     hideLoading();
@@ -230,10 +231,10 @@ const deleteUser = async (id: string) => {
 
 const onDeleteUser = (user: any) => {
   showConfirm({
-    header: 'Deactivate User',
-    message: 'Are you sure you want to deactivate this user?',
-    rejectLabel: 'Cancel',
-    acceptLabel: 'Deactivate',
+    header: 'Nonaktifkan Pengguna',
+    message: 'Apakah Anda yakin ingin menonaktifkan pengguna ini?',
+    rejectLabel: 'Batal',
+    acceptLabel: 'Nonaktifkan',
     type: 'warn',
     accept: () => {
       deleteUser(user.id);

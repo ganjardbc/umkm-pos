@@ -2,24 +2,24 @@
   <Dialog
     v-model:visible="visible"
     modal
-    :header="isEditing ? 'Edit Table' : 'Add Table'"
+    :header="isEditing ? 'Edit Meja' : 'Tambah Meja'"
     class="w-[92vw] max-w-lg"
   >
     <div class="space-y-3">
-      <UiFormGroup label="Code" variant="vertical">
+      <UiFormGroup label="Kode" variant="vertical">
         <InputText v-model="form.code" fluid />
       </UiFormGroup>
-      <UiFormGroup label="Name" variant="vertical">
+      <UiFormGroup label="Nama" variant="vertical">
         <InputText v-model="form.name" fluid />
       </UiFormGroup>
-      <UiFormGroup label="Capacity" variant="vertical">
+      <UiFormGroup label="Kapasitas" variant="vertical">
         <InputNumber v-model="form.capacity" fluid />
       </UiFormGroup>
       <div class="flex items-center gap-2">
         <Checkbox v-model="form.is_active" binary inputId="table-active" />
-        <label for="table-active">Active</label>
+        <label for="table-active">Aktif</label>
       </div>
-      <Button label="Save" fluid @click="save" />
+      <Button label="Simpan" fluid @click="save" />
     </div>
   </Dialog>
 </template>
@@ -95,8 +95,8 @@ const save = async () => {
   } catch (error) {
     showToast({
       type: 'error',
-      title: 'Failed to save table.',
-      message: getErrorMessage(error) || 'There was an error.',
+      title: 'Gagal menyimpan meja.',
+      message: getErrorMessage(error) || 'Terjadi kesalahan.',
     });
   }
 };

@@ -10,7 +10,7 @@
         v-if="outlet && !outlet.guest_session_secret"
         severity="warn"
       >
-        Outlet ini belum punya secret code. QR bisa dipreview, tapi customer belum bisa masuk sampai secret code diisi.
+        Outlet ini belum memiliki kode rahasia. QR code dapat dipratinjau, namun pelanggan belum dapat masuk sebelum kode rahasia diatur.
       </Message>
 
       <div
@@ -19,13 +19,13 @@
       >
         <div class="text-center space-y-2">
           <p class="text-xs font-semibold uppercase tracking-[0.32em] text-amber-700">
-            Scan To Order
+            Scan Untuk Pesan
           </p>
           <h2 class="text-2xl font-bold text-slate-900">
             {{ outlet?.name }}
           </h2>
           <p class="text-sm text-slate-500">
-            Scan QR lalu masukkan secret code untuk mulai pesan.
+            Scan QR lalu masukkan kode rahasia untuk mulai memesan.
           </p>
         </div>
 
@@ -48,9 +48,9 @@
             </p>
           </div>
           <div>
-            <p class="text-xs font-medium uppercase tracking-[0.24em] text-slate-400">Secret Code</p>
+            <p class="text-xs font-medium uppercase tracking-[0.24em] text-slate-400">Kode Rahasia</p>
             <p class="mt-1 font-mono text-lg font-semibold text-slate-900">
-              {{ outlet?.guest_session_secret || 'BELUM DISET' }}
+              {{ outlet?.guest_session_secret || 'BELUM DIATUR' }}
             </p>
           </div>
         </div>
@@ -69,7 +69,7 @@
         />
         <Button
           icon="pi pi-print"
-          label="Print QR"
+          label="Cetak QR"
           :disabled="!qrCodeDataUrl"
           @click="printQrCard"
         />
@@ -166,12 +166,12 @@ const printQrCard = () => {
       </head>
       <body>
         <div class="card">
-          <div class="label">Scan To Order</div>
+          <div class="label">Scan Untuk Pesan</div>
           <div class="title">${props.outlet.name}</div>
-          <div class="muted">Scan QR lalu masukkan secret code untuk mulai pesan.</div>
+          <div class="muted">Scan QR lalu masukkan kode rahasia untuk mulai memesan.</div>
           <img class="qr" src="${qrCodeDataUrl.value}" alt="Outlet QR">
           <div class="info"><strong>Scan URL</strong><div class="url">${customerCatalogUrl.value}</div></div>
-          <div class="info"><strong>Secret Code</strong><div class="secret">${props.outlet.guest_session_secret || 'BELUM DISET'}</div></div>
+          <div class="info"><strong>Kode Rahasia</strong><div class="secret">${props.outlet.guest_session_secret || 'BELUM DIATUR'}</div></div>
         </div>
       </body>
     </html>

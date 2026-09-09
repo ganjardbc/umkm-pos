@@ -15,7 +15,7 @@
       @submit="onFormSubmit"
     >
       <div class="w-full space-y-4">
-        <UiFormGroup label="Name" variant="vertical">
+        <UiFormGroup label="Nama" variant="vertical">
           <InputText
             name="name"
             type="text"
@@ -31,7 +31,7 @@
             {{ $form.name.error?.message }}
           </Message>
         </UiFormGroup>
-        <UiFormGroup label="Phone" variant="vertical">
+        <UiFormGroup label="Nomor Telepon" variant="vertical">
           <InputText
             name="phone"
             type="text"
@@ -47,7 +47,7 @@
             {{ $form.phone.error?.message }}
           </Message>
         </UiFormGroup>
-        <UiFormGroup label="Address" variant="vertical">
+        <UiFormGroup label="Alamat" variant="vertical">
           <Textarea
             name="address"
             placeholder=""
@@ -72,14 +72,14 @@
       <div class="w-full flex justify-end gap-4">
         <Button
           severity="secondary"
-          label="Cancel"
+          label="Batal"
           size="medium"
           class="w-full md:w-[128px]"
           @click="onCancel"
         />
         <Button
           type="submit"
-          label="Save"
+          label="Simpan"
           size="medium"
           class="w-full md:w-[128px]"
         />
@@ -124,9 +124,9 @@ const initialValues = ref<FormEdit>({
 
 const resolver = ref(zodResolver(
   z.object({
-    name: z.string().min(1, { message: 'Name is required.' }),
-    phone: z.string().min(1, { message: 'Phone is required.' }),
-    address: z.string().min(1, { message: 'Address is required.' })
+    name: z.string().min(1, { message: 'Nama wajib diisi.' }),
+    phone: z.string().min(1, { message: 'Nomor telepon wajib diisi.' }),
+    address: z.string().min(1, { message: 'Alamat wajib diisi.' })
   })
 ));
 
@@ -155,8 +155,8 @@ const onFormSubmit = async (event: any) => {
     } catch (error) {
       showToast({
         type: 'error',
-        title: 'Update Merchant Failed.',
-        message: getErrorMessage(error) || 'There was an error.',
+        title: 'Gagal Memperbarui Merchant.',
+        message: getErrorMessage(error) || 'Terjadi kesalahan.',
       });
     } finally {
       hideLoading();
@@ -185,13 +185,13 @@ const fetchDetail = async () => {
       hasExistingLogo.value = true
       imagePreview.value = logo
     }
-    
+
     isLoaded.value = true;
   } catch (error) {
     showToast({
       type: 'error',
-      title: 'Failed to fetch data.',
-      message: getErrorMessage(error) || 'There was an error.',
+      title: 'Gagal memuat data.',
+      message: getErrorMessage(error) || 'Terjadi kesalahan.',
     });
   }
 };

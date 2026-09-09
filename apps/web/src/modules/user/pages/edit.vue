@@ -2,7 +2,7 @@
   <UiCard class="max-w-2xl mx-auto">
     <template #header>
       <h1 class="text-xl font-semibold">
-        Edit User
+        Edit Pengguna
       </h1>
     </template>
 
@@ -15,7 +15,7 @@
       class="flex flex-col gap-4 w-full"
     >
       <div class="w-full space-y-4">
-        <UiFormGroup label="Name" variant="vertical">
+        <UiFormGroup label="Nama" variant="vertical">
           <InputText
             name="name"
             type="text"
@@ -54,13 +54,13 @@
           @select="onUploadImage"
           @remove="onRemoveImage"
         />
-        <UiFormGroup label="Active Status" variant="vertical">
+        <UiFormGroup label="Status Aktif" variant="vertical">
           <div class="flex items-center gap-2">
             <Checkbox
               name="is_active"
               :binary="true"
             />
-            <label class="text-sm text-gray-700">User is active</label>
+            <label class="text-sm text-gray-700">Pengguna aktif</label>
           </div>
         </UiFormGroup>
       </div>
@@ -68,14 +68,14 @@
       <div class="w-full flex justify-end gap-4">
         <Button
           severity="secondary"
-          label="Cancel"
+          label="Batal"
           size="medium"
           class="w-full md:w-[128px]"
           @click="onCancel"
         />
         <Button
           type="submit"
-          label="Save"
+          label="Simpan"
           size="medium"
           class="w-full md:w-[128px]"
         />
@@ -120,8 +120,8 @@ const initialValues = ref<FormEdit>({
 
 const resolver = ref(zodResolver(
   z.object({
-    name: z.string().min(1, { message: 'Name is required.' }),
-    email: z.string().email({ message: 'Invalid email address.' }),
+    name: z.string().min(1, { message: 'Nama wajib diisi.' }),
+    email: z.string().email({ message: 'Format email tidak valid.' }),
     is_active: z.boolean()
   })
 ));
@@ -151,8 +151,8 @@ const onFormSubmit = async (event: any) => {
     } catch (error) {
       showToast({
         type: 'error',
-        title: 'Update User Failed.',
-        message: getErrorMessage(error) || 'There was an error.',
+        title: 'Gagal Memperbarui Pengguna.',
+        message: getErrorMessage(error) || 'Terjadi kesalahan.',
       });
     } finally {
       hideLoading();
@@ -181,13 +181,13 @@ const fetchDetail = async () => {
       hasExistingAvatar.value = true
       imagePreview.value = avatar
     }
-    
+
     isLoaded.value = true;
   } catch (error) {
     showToast({
       type: 'error',
-      title: 'Failed to fetch data.',
-      message: getErrorMessage(error) || 'There was an error.',
+      title: 'Gagal memuat data.',
+      message: getErrorMessage(error) || 'Terjadi kesalahan.',
     });
   }
 };

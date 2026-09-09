@@ -15,17 +15,17 @@ export default [
     name: PREFIX_ROUTE_NAME,
     component: () => import('@/modules/user/pages/index.vue'),
     meta: {
-      title: 'User',
+      title: 'Pengguna',
       layout: 'default',
       permission: [READ],
       breadcrumbs: [
         {
-          label: 'Home',
+          label: 'Beranda',
           route: '/landing',
           isActive: false,
         },
         {
-          label: 'User',
+          label: 'Pengguna',
           route: PREFIX_ROUTE_PATH,
           isActive: true,
         },
@@ -37,22 +37,22 @@ export default [
     name: `${PREFIX_ROUTE_NAME}-create`,
     component: () => import('@/modules/user/pages/create.vue'),
     meta: {
-      title: 'User',
+      title: 'Pengguna',
       layout: 'default',
       permission: [CREATE],
       breadcrumbs: [
         {
-          label: 'Home',
+          label: 'Beranda',
           route: '/landing',
           isActive: false,
         },
         {
-          label: 'User',
+          label: 'Pengguna',
           route: PREFIX_ROUTE_PATH,
           isActive: false,
         },
         {
-          label: 'Add',
+          label: 'Tambah',
           route: `${PREFIX_ROUTE_PATH}/create`,
           isActive: true,
         },
@@ -64,17 +64,17 @@ export default [
     name: `${PREFIX_ROUTE_NAME}-edit`,
     component: () => import('@/modules/user/pages/edit.vue'),
     meta: {
-      title: 'User',
+      title: 'Pengguna',
       layout: 'default',
       permission: [UPDATE],
       breadcrumbs: [
         {
-          label: 'Home',
+          label: 'Beranda',
           route: '/landing',
           isActive: false,
         },
         {
-          label: 'User',
+          label: 'Pengguna',
           route: PREFIX_ROUTE_PATH,
           isActive: false,
         },
@@ -91,17 +91,17 @@ export default [
     name: `${PREFIX_ROUTE_NAME}-detail`,
     component: () => import('@/modules/user/pages/detail.vue'),
     meta: {
-      title: 'User',
+      title: 'Pengguna',
       layout: 'default',
       permission: [READ],
       breadcrumbs: [
         {
-          label: 'Home',
+          label: 'Beranda',
           route: '/landing',
           isActive: false,
         },
         {
-          label: 'User',
+          label: 'Pengguna',
           route: PREFIX_ROUTE_PATH,
           isActive: false,
         },
