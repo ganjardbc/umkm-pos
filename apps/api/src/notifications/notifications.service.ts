@@ -81,4 +81,27 @@ export class NotificationsService {
 
     return { updated: result.count };
   }
+
+  async notifyOutletUsers(
+    outletId: string,
+    payload: { title: string; message: string; type?: string },
+  ) {
+    const userRoles = await this.prisma.user_roles.findMany({
+      where: { outlet_id: outletId },
+      select: { user_id: true },
+      distinct: ['user_id'],
+    });
+
+    if (userRoles.length === 0) return;
+
+    await this.prisma.notifications.createMany({
+      data: userRoles.map((role) => ({
+        user_id: role.user_id,
+        outlet_id: outletId,
+        title: payload.title,
+        message: payload.message,
+        type: payload.type ?? 'general',
+      })),
+    });
+  }
 }

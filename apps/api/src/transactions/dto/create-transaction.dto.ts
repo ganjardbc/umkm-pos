@@ -162,4 +162,14 @@ export class CreateTransactionDto {
   @IsNumber()
   @Min(0)
   change_amount?: number;
+
+  @ApiPropertyOptional({
+    example: true,
+    description:
+      'POS only: whether to charge payment immediately on create (default true). Set false for "Buat Pesanan" — creates an unpaid, held order to be paid later.',
+    default: true,
+  })
+  @IsOptional()
+  @IsBoolean()
+  pay_now?: boolean;
 }

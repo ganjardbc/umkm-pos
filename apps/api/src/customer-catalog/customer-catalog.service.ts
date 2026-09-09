@@ -10,14 +10,17 @@ import { StartCustomerSessionDto } from './dto/start-customer-session.dto';
 import { CatalogProductsQueryDto } from './dto/catalog-products-query.dto';
 import { TransactionsService } from '../transactions/transactions.service';
 import { CreateTransactionDto } from '../transactions/dto/create-transaction.dto';
+import { NotificationsService } from '../notifications/notifications.service';
 
 const SESSION_DURATION_HOURS = 6;
+const ORDER_STATUS_COMPLETED = 'selesai';
 
 @Injectable()
 export class CustomerCatalogService {
   constructor(
     private prisma: PrismaService,
     private transactionsService: TransactionsService,
+    private notificationsService: NotificationsService,
   ) {}
 
   async startSession(dto: StartCustomerSessionDto) {
@@ -211,6 +214,31 @@ export class CustomerCatalogService {
     const shift = await this.findOpenShift(dto.outlet_id);
     if (!shift) {
       throw new BadRequestException('Shift outlet belum dibuka');
+    }
+
+    const activeOrder = await this.prisma.transactions.findFirst({
+      where: {
+        customer_session_id: session.id,
+        is_cancelled: false,
+        order_status: { not: ORDER_STATUS_COMPLETED },
+      },
+      orderBy: { created_at: 'desc' },
+    });
+
+    if (activeOrder) {
+      const updatedOrder = await this.transactionsService.addItemsToCatalogOrder(
+        activeOrder.id,
+        dto.items,
+        session.merchant_id,
+      );
+
+      await this.notificationsService.notifyOutletUsers(dto.outlet_id, {
+        title: 'Tambahan Pesanan',
+        message: `Ada tambahan pesanan dari ${session.customer_name} (Meja ${updatedOrder?.store_tables?.code ?? '-'})`,
+        type: 'order_item_added',
+      });
+
+      return updatedOrder;
     }
 
     return this.transactionsService.createCatalogOrder(

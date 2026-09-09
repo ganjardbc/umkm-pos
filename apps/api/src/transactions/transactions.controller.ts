@@ -19,6 +19,8 @@ import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { CancelTransactionDto } from './dto/cancel-transaction.dto';
 import { FindAllTransactionsDto } from './dto/find-all-transactions.dto';
 import { UpdateTransactionStatusDto } from './dto/update-transaction-status.dto';
+import { PayTransactionDto } from './dto/pay-transaction.dto';
+import { AddTransactionItemsDto } from './dto/add-transaction-items.dto';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { RequirePermission } from '../common/decorators/require-permission.decorator';
 import { PermissionGuard } from '../common/guards/permission.guard';
@@ -131,5 +133,36 @@ export class TransactionsController {
     @CurrentUser('id') userId: string,
   ) {
     return this.transactionsService.updateStatus(id, dto, merchantId, userId);
+  }
+
+  @Patch(':id/pay')
+  @RequirePermission('transaction.create')
+  @ApiOperation({
+    summary: 'Pay a previously held (unpaid) POS order — deducts stock',
+  })
+  pay(
+    @Param('id') id: string,
+    @Body() dto: PayTransactionDto,
+    @CurrentUser('merchant_id') merchantId: string,
+    @CurrentUser('id') userId: string,
+  ) {
+    return this.transactionsService.payPosOrder(id, dto, merchantId, userId);
+  }
+
+  @Patch(':id/items')
+  @RequirePermission('transaction.create')
+  @ApiOperation({
+    summary: 'Add items to an existing, unpaid, not-yet-completed order',
+  })
+  addItems(
+    @Param('id') id: string,
+    @Body() dto: AddTransactionItemsDto,
+    @CurrentUser('merchant_id') merchantId: string,
+  ) {
+    return this.transactionsService.addItemsToCatalogOrder(
+      id,
+      dto.items,
+      merchantId,
+    );
   }
 }

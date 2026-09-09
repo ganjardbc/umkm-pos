@@ -215,6 +215,80 @@ export class TransactionsService {
     });
   }
 
+  async addItemsToCatalogOrder(
+    transactionId: string,
+    items: CreateTransactionDto['items'],
+    merchantId: string,
+  ) {
+    const transaction = await this.prisma.transactions.findFirst({
+      where: { id: transactionId },
+    });
+
+    if (!transaction) {
+      throw new NotFoundException(
+        `Transaction with ID ${transactionId} not found`,
+      );
+    }
+
+    if (transaction.is_cancelled) {
+      throw new BadRequestException(
+        'Cannot add items to a cancelled transaction',
+      );
+    }
+
+    if (transaction.order_status === ORDER_STATUS_COMPLETED) {
+      throw new BadRequestException(
+        'Cannot add items to a completed transaction',
+      );
+    }
+
+    if (transaction.payment_method !== 'pending') {
+      throw new BadRequestException(
+        'Cannot add items to a transaction that has already been paid',
+      );
+    }
+
+    const prepared = await this.prepareTransactionPayload(
+      { outlet_id: transaction.outlet_id, items },
+      merchantId,
+      undefined,
+      false,
+    );
+
+    const result = await this.prisma.$transaction(async (tx) => {
+      await tx.transaction_items.createMany({
+        data: prepared.itemsData.map((item) => ({
+          transaction_id: transaction.id,
+          product_id: item.product_id,
+          product_name_snapshot: item.product_name_snapshot,
+          price_snapshot: item.price_snapshot,
+          qty: item.qty,
+          subtotal: item.subtotal,
+          customer_note: item.customer_note
+            ? `Tambahan - ${item.customer_note}`
+            : 'Tambahan',
+        })),
+      });
+
+      return tx.transactions.update({
+        where: { id: transaction.id },
+        data: {
+          total_amount: { increment: prepared.totalAmount },
+          updated_at: new Date(),
+        },
+      });
+    });
+
+    return this.prisma.transactions.findFirst({
+      where: { id: result.id },
+      include: {
+        transaction_items: true,
+        store_tables: true,
+        customer_sessions: true,
+      },
+    });
+  }
+
   async updateStatus(
     id: string,
     dto: UpdateTransactionStatusDto,
@@ -222,12 +296,6 @@ export class TransactionsService {
     userId: string,
   ) {
     const transaction = await this.findOne(id, merchantId, userId);
-
-    if (transaction.order_source !== ORDER_SOURCE_CUSTOMER) {
-      throw new BadRequestException(
-        'Status updates are only available for customer catalog orders',
-      );
-    }
 
     if (transaction.is_cancelled) {
       throw new BadRequestException('Cancelled transaction cannot be updated');
@@ -365,12 +433,13 @@ export class TransactionsService {
     merchantId: string,
     userId: string,
   ) {
+    const payNow = dto.pay_now !== false;
     const cashierId = await this.resolveCashierForPos(dto, merchantId, userId);
     const prepared = await this.prepareTransactionPayload(
       dto,
       merchantId,
       userId,
-      true,
+      payNow,
     );
     const tableId = dto.table_id ?? null;
 
@@ -386,13 +455,13 @@ export class TransactionsService {
           user_id: userId,
           shift_id: dto.shift_id ?? null,
           cashier_id: cashierId,
-          payment_method: dto.payment_method,
+          payment_method: payNow ? dto.payment_method : 'pending',
           total_amount: prepared.totalAmount,
-          cash_received: prepared.cashReceived,
-          change_amount: prepared.changeAmount,
+          cash_received: payNow ? prepared.cashReceived : null,
+          change_amount: payNow ? prepared.changeAmount : null,
           order_source: ORDER_SOURCE_POS,
-          order_status: ORDER_STATUS_COMPLETED,
-          completed_at: new Date(),
+          order_status: ORDER_STATUS_ACCEPTED,
+          accepted_at: new Date(),
           is_offline: dto.is_offline ?? false,
           device_id: dto.device_id ?? null,
           created_by: userId,
@@ -414,14 +483,16 @@ export class TransactionsService {
         })),
       });
 
-      await this.applyInventorySale(
-        tx,
-        prepared.itemsData,
-        merchantId,
-        dto.outlet_id,
-        transaction.id,
-        userId,
-      );
+      if (payNow) {
+        await this.applyInventorySale(
+          tx,
+          prepared.itemsData,
+          merchantId,
+          dto.outlet_id,
+          transaction.id,
+          userId,
+        );
+      }
 
       return transaction;
     });
@@ -429,6 +500,83 @@ export class TransactionsService {
     return this.prisma.transactions.findFirst({
       where: { id: result.id },
       include: { transaction_items: true, store_tables: true },
+    });
+  }
+
+  async payPosOrder(
+    transactionId: string,
+    dto: { payment_method: string; cash_received?: number; change_amount?: number },
+    merchantId: string,
+    userId: string,
+  ) {
+    const transaction = await this.findOne(transactionId, merchantId, userId);
+
+    if (transaction.order_source !== ORDER_SOURCE_POS) {
+      throw new BadRequestException(
+        'This endpoint is only for POS transactions',
+      );
+    }
+
+    if (transaction.is_cancelled) {
+      throw new BadRequestException(
+        'Cannot pay a cancelled transaction',
+      );
+    }
+
+    if (transaction.payment_method !== 'pending') {
+      throw new BadRequestException('Transaction has already been paid');
+    }
+
+    const itemsPayload = transaction.transaction_items
+      .filter((item) => item.product_id)
+      .map((item) => ({
+        product_id: item.product_id!,
+        qty: item.qty,
+        customer_note: item.customer_note ?? undefined,
+      }));
+
+    const prepared = await this.prepareTransactionPayload(
+      {
+        outlet_id: transaction.outlet_id,
+        payment_method: dto.payment_method,
+        cash_received: dto.cash_received,
+        change_amount: dto.change_amount,
+        items: itemsPayload,
+      },
+      merchantId,
+      userId,
+      true,
+    );
+
+    const result = await this.prisma.$transaction(async (tx) => {
+      await this.applyInventorySale(
+        tx,
+        prepared.itemsData,
+        merchantId,
+        transaction.outlet_id,
+        transaction.id,
+        userId,
+      );
+
+      return tx.transactions.update({
+        where: { id: transaction.id },
+        data: {
+          payment_method: dto.payment_method,
+          cash_received: prepared.cashReceived,
+          change_amount: prepared.changeAmount,
+          cashier_id: userId,
+          updated_by: userId,
+          updated_at: new Date(),
+        },
+      });
+    });
+
+    return this.prisma.transactions.findFirst({
+      where: { id: result.id },
+      include: {
+        transaction_items: true,
+        store_tables: true,
+      },
     });
   }
 
