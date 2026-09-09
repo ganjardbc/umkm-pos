@@ -49,10 +49,12 @@
   </div>
 </template>
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { onMounted, onUnmounted, ref } from 'vue';
 import { getListNotification } from '@/modules/notification/services/api.ts';
 import { useRouter } from 'vue-router';
 import UiEmptyState from '@/components/UiEmptyState.vue';
+
+const NOTIFICATION_POLL_INTERVAL_MS = 30000;
 
 const router = useRouter();
 
@@ -62,6 +64,7 @@ const openNotificationMenu = (event: MouseEvent) => {
 };
 
 const unreadCount = ref(0);
+let pollTimer: ReturnType<typeof setInterval> | undefined;
 
 const loadUnreadCount = async () => {
   try {
@@ -77,7 +80,14 @@ const onRouteViewAll = () => {
   router.push('/notification');
 };
 
-onMounted(loadUnreadCount);
+onMounted(() => {
+  loadUnreadCount();
+  pollTimer = setInterval(loadUnreadCount, NOTIFICATION_POLL_INTERVAL_MS);
+});
+
+onUnmounted(() => {
+  if (pollTimer) clearInterval(pollTimer);
+});
 </script>
 <style>
 @import 'tailwindcss';
