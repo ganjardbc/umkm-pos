@@ -15,7 +15,7 @@
     <!-- User Information -->
     <UiCard v-if="userDetail">
       <template #header>
-        <div class="flex items-center justify-between gap-4">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <h2 class="text-lg font-semibold">
             Informasi Pengguna
           </h2>
@@ -85,7 +85,7 @@
     <!-- Your Jobs -->
     <UiCard class="p-0! gap-0! overflow-hidden!">
       <template #header>
-        <div class="flex justify-between items-center pt-4 px-4">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-4 px-4">
           <h2 class="text-lg font-semibold">
             Informasi Outlet
           </h2>
@@ -100,35 +100,29 @@
         </div>
       </template>
 
-      <DataTable :value="userRoles" :loading="loadingUserRoles">
-        <template #empty>
-          <span class="w-full text-center flex justify-center">
-            Belum ada outlet yang ditugaskan.
-          </span>
-        </template>
-        <Column field="no" header="NO" class="w-18">
-          <template #body="slotProps">
-            {{ slotProps.index + 1 }}
-          </template>
-        </Column>
-        <Column field="outlet" header="Outlet">
-          <template #body="slotProps">
-            {{ slotProps.data.outlets.name }}
-          </template>
-        </Column>
-        <Column field="role" header="Role">
-          <template #body="slotProps">
-            {{ slotProps.data.roles.name }}
-          </template>
-        </Column>
-        <Column field="permissions" header="Hak Akses">
-          <template #body="slotProps">
-            {{ slotProps.data.roles.role_permissions.length || '0' }}
-          </template>
-        </Column>
-        <Column v-if="isCanUpdate" field="action" header="#" class="w-full md:w-[128px]">
-          <template #body="slotProps">
+      <div class="p-4">
+        <div v-if="loadingUserRoles" class="flex justify-center py-8">
+          <i class="pi pi-spin pi-spinner text-2xl text-gray-400"></i>
+        </div>
+        <div v-else-if="!userRoles.length" class="w-full text-center flex justify-center py-8 text-gray-500">
+          Belum ada outlet yang ditugaskan.
+        </div>
+        <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <UiCard
+            v-for="(role, index) in userRoles"
+            :key="index"
+            class="rounded-xl border border-gray-200 dark:border-dark! dark:bg-dark! p-3 flex flex-col gap-2"
+          >
+            <div class="flex items-center justify-between">
+              <h3 class="font-semibold text-base">{{ role.outlets.name }}</h3>
+              <Tag :value="role.roles.name" />
+            </div>
+            <div class="flex items-center justify-between text-sm text-gray-500">
+              <span>Hak Akses</span>
+              <span>{{ role.roles.role_permissions.length || '0' }}</span>
+            </div>
             <Button
+              v-if="isCanUpdate"
               severity="secondary"
               variant="outlined"
               label="Cabut"
@@ -136,11 +130,11 @@
               size="small"
               fluid
               :disabled="!userDetail?.is_active"
-              @click="onCheckRole(slotProps.data)"
+              @click="onCheckRole(role)"
             />
-          </template>
-        </Column>
-      </DataTable>
+          </UiCard>
+        </div>
+      </div>
     </UiCard>
   </div>
   <AssignOutletModal
@@ -188,7 +182,7 @@ const fetchDetail = async () => {
 };
 
 // Fetch User Role
-const userRoles = ref<string[]>([]);
+const userRoles = ref<any[]>([]);
 const loadingUserRoles = ref(false);
 
 const fetchUserRole = async () => {

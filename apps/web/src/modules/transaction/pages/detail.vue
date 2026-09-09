@@ -15,7 +15,7 @@
     <!-- Transaction Information Card -->
     <UiCard v-if="transactionDetail">
       <template #header>
-        <div class="w-full flex flex-col md:flex-row gap-2 items-center justify-between">
+        <div class="w-full flex flex-col lg:flex-row gap-2 items-center justify-between">
           <div class="w-full flex items-center justify-between">
             <h1 class="flex-1 text-lg font-semibold">
               Informasi Transaksi
@@ -26,7 +26,7 @@
               class="capitalize"
             />
           </div>
-          <div class="w-full md:w-auto flex justify-end gap-2">
+          <div class="w-full lg:w-auto flex justify-end gap-2">
             <Button
               severity="secondary"
               variant="outlined"
@@ -116,48 +116,48 @@
       </template>
 
       <div class="space-y-4">
-        <DataTable :value="transactionDetail.transaction_items" :loading="loading" tableStyle="min-width: 50rem">
-          <template #empty>
-            <span class="w-full text-center flex justify-center">
-              Tidak ada item dalam transaksi ini.
-            </span>
-          </template>
-          <Column field="no" header="NO" class="w-18">
-            <template #body="slotProps">
-              {{ slotProps.index + 1 }}
-            </template>
-          </Column>
-          <Column field="product_name_snapshot" header="Nama Produk">
-            <template #body="slotProps">
-              {{ slotProps.data.product_name_snapshot }}
-            </template>
-          </Column>
-          <Column field="price_snapshot" header="Harga">
-            <template #body="slotProps">
-              {{ getCurrency(slotProps.data.price_snapshot) }}
-            </template>
-          </Column>
-          <Column field="qty" header="Jumlah">
-            <template #body="slotProps">
-              {{ slotProps.data.qty }}
-            </template>
-          </Column>
-          <Column field="subtotal" header="Subtotal" class="min-w-28">
-            <template #body="slotProps">
-              {{ getCurrency(slotProps.data.subtotal) }}
-            </template>
-          </Column>
-          <Column field="customer_note" header="Catatan" class="min-w-48">
-            <template #body="slotProps">
-              {{ slotProps.data.customer_note || '-' }}
-            </template>
-          </Column>
-        </DataTable>
+        <div v-if="loading" class="w-full text-center flex justify-center py-4 text-gray-500">
+          Memuat data...
+        </div>
+        <div
+          v-else-if="!transactionDetail.transaction_items?.length"
+          class="w-full text-center flex justify-center py-4 text-gray-500"
+        >
+          Tidak ada item dalam transaksi ini.
+        </div>
+        <div
+          v-for="(item, index) in transactionDetail.transaction_items"
+          :key="item.id || index"
+          class="bg-gray-50 dark:bg-dark! rounded-lg p-3 flex flex-col gap-2"
+        >
+          <div class="flex items-start justify-between gap-2">
+            <div class="flex-1 flex items-center gap-2">
+              <span class="text-base font-medium text-gray-500">#{{ Number(index) + 1 }}</span>
+              <p class="text-base font-semibold">{{ item.product_name_snapshot }}</p>
+            </div>
+          </div>
+          <div v-if="item.customer_note">
+            <p class="text-xs text-gray-500">Catatan</p>
+            <p class="text-base text-right">{{ item.customer_note }}</p>
+          </div>
+          <div class="flex gap-4 items-center justify-between">
+            <p class="text-xs text-gray-500">Jumlah</p>
+            <p class="text-base text-right font-semibold">{{ item.qty }}</p>
+          </div>
+          <div class="flex gap-4 items-center justify-between">
+            <p class="text-xs text-gray-500">Harga</p>
+            <p class="text-base text-right">{{ getCurrency(item.price_snapshot) }}</p>
+          </div>
+          <div class="flex gap-4 items-center justify-between">
+            <p class="text-xs text-gray-500">Subtotal</p>
+            <p class="text-base text-right font-medium">{{ getCurrency(item.subtotal) }}</p>
+          </div>
+        </div>
 
         <div class="bg-gray-50 dark:bg-dark! p-3 rounded">
           <div class="flex flex-col gap-2 justify-start">
             <div class="flex gap-4 items-center">
-              <label class="flex-1 text-sm font-medium text-gray-500">
+              <label class="flex-1 text-xs font-medium text-gray-500">
                 Total Jumlah :
               </label>
               <div class="text-base">
@@ -165,7 +165,7 @@
               </div>
             </div>
             <div class="flex gap-4 items-center">
-              <label class="flex-1 text-sm font-medium text-gray-500">
+              <label class="flex-1 text-xs font-medium text-gray-500">
                 Total Pembayaran :
               </label>
               <div class="text-base">
@@ -173,7 +173,7 @@
               </div>
             </div>
             <div v-if="transactionDetail.change_amount" class="flex gap-4 items-center">
-              <label class="flex-1 text-sm font-medium text-gray-500">
+              <label class="flex-1 text-xs font-medium text-gray-500">
                 Kembalian :
               </label>
               <div class="text-base">
@@ -207,8 +207,6 @@ import { getOrderStatusLabel } from '@/modules/transaction/services/status-label
 import ReceiptModal from '@/modules/transaction/components/ReceiptModal.vue';
 
 import UiCard from '@/components/UiCard.vue';
-import DataTable from 'primevue/datatable';
-import Column from 'primevue/column';
 import Tag from 'primevue/tag';
 import Button from 'primevue/button';
 

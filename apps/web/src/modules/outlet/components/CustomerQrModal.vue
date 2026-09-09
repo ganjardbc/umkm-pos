@@ -15,7 +15,7 @@
 
       <div
         ref="qrCardRef"
-        class="mx-auto max-w-md rounded-[28px] bg-gradient-to-b from-amber-50 via-white to-stone-50 p-6 shadow-sm ring-1 ring-amber-100"
+        class="mx-auto max-w-md rounded-md bg-linear-to-b from-amber-50 via-white to-stone-50 p-6 shadow-sm ring-1 ring-amber-100"
       >
         <div class="text-center space-y-2">
           <p class="text-xs font-semibold uppercase tracking-[0.32em] text-amber-700">
@@ -58,18 +58,20 @@
     </div>
 
     <template #footer>
-      <div class="flex gap-2">
+      <div class="flex-1 flex gap-2 pt-4">
         <Button
           icon="pi pi-download"
-          label="Download QR"
+          label="Download"
           severity="secondary"
           variant="outlined"
+          fluid
           :disabled="!qrCodeDataUrl"
           @click="downloadQrCard"
         />
         <Button
           icon="pi pi-print"
-          label="Cetak QR"
+          label="Cetak"
+          fluid
           :disabled="!qrCodeDataUrl"
           @click="printQrCard"
         />

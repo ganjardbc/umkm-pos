@@ -14,11 +14,11 @@
 
     <UiCard v-if="outletDetail">
       <template #header>
-        <div class="w-full flex gap-4 items-center justify-between">
-          <h1 class="text-lg font-semibold">
+        <div class="w-full flex flex-col md:flex-row gap-4 md:items-center justify-between">
+          <h1 class="flex-1 text-lg font-semibold">
             Informasi Outlet
           </h1>
-          <div class="flex gap-2">
+          <div class="flex flex-col md:flex-row gap-2">
             <Button
               icon="pi pi-qrcode"
               label="Customer QR"
@@ -98,7 +98,7 @@
 
     <UiCard v-if="outletDetail">
       <template #header>
-        <div class="flex items-center justify-between gap-3">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
           <h1 class="text-lg font-semibold">Meja Outlet</h1>
           <Button
             icon="pi pi-plus"
@@ -111,7 +111,7 @@
       </template>
 
       <div class="space-y-3">
-        <div v-for="table in tables" :key="table.id" class="rounded-xl border border-gray-200 dark:border-dark! dark:bg-dark! p-3">
+        <UiCard v-for="table in tables" :key="table.id" class="rounded-xl border border-gray-200 dark:border-dark! dark:bg-dark! p-3">
           <div class="flex items-center justify-between gap-3">
             <div>
               <p class="font-semibold">{{ table.name }} <span class="text-xs text-slate-500">({{ table.code }})</span></p>
@@ -123,7 +123,7 @@
               <Button icon="pi pi-trash" size="small" text severity="danger" @click="removeTable(table.id)" />
             </div>
           </div>
-        </div>
+        </UiCard>
         <p v-if="tables.length === 0" class="text-sm text-slate-500">Belum ada meja untuk outlet ini.</p>
       </div>
     </UiCard>

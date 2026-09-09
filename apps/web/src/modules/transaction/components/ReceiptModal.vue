@@ -11,139 +11,134 @@
       </h1>
     </template>
 
-    <div class="flex flex-col gap-4 max-h-[70vh] overflow-y-auto pr-1">
+    <div class="flex flex-col gap-4 pr-1">
       <ReceiptPreview :transaction="selected" />
-
-      <!-- Bluetooth Printer Section -->
-      <div v-if="isSupported" class="mt-2 border border-gray-200 dark:border-dark-secondary rounded-lg p-4 bg-gray-50 dark:bg-dark-secondary">
-        <div class="flex items-center justify-between cursor-pointer select-none" @click="showSettings = !showSettings">
-          <div class="flex items-center gap-2">
-            <i class="pi pi-print text-gray-500 dark:text-gray-400" />
-            <span class="text-sm font-semibold text-gray-700 dark:text-gray-200">Printer Termal Bluetooth</span>
-          </div>
-          <div class="flex items-center gap-2">
-            <span v-if="isConnected" class="text-xs text-green-600 dark:text-green-400 font-medium flex items-center gap-1.5">
-              <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
-              {{ deviceName }}
-            </span>
-            <i :class="['pi', showSettings ? 'pi-chevron-up' : 'pi-chevron-down', 'text-xs text-gray-400']" />
-          </div>
-        </div>
-
-        <div v-if="showSettings" class="mt-3 space-y-4 pt-3 border-t border-gray-200 dark:border-gray-700">
-          <!-- Printer Status & Actions -->
-          <div class="flex items-center justify-between text-xs">
-            <span class="text-gray-500 dark:text-gray-400">Status Koneksi:</span>
-            <span v-if="isConnected" class="text-green-600 dark:text-green-400 font-semibold flex items-center gap-1">
-              Terhubung
-            </span>
-            <span v-else-if="isConnecting" class="text-yellow-600 dark:text-yellow-400 font-semibold flex items-center gap-1">
-              Menghubungkan...
-            </span>
-            <span v-else class="text-gray-400 dark:text-gray-500">Terputus</span>
-          </div>
-
-          <div class="flex gap-2">
-            <Button
-              v-if="!isConnected"
-              label="Pasangkan & Hubungkan"
-              icon="pi pi-plus"
-              size="small"
-              class="flex-1 text-xs"
-              @click="handleConnect"
-              :loading="isConnecting"
-            />
-            <Button
-              v-else
-              label="Putuskan Koneksi"
-              icon="pi pi-power-off"
-              severity="danger"
-              size="small"
-              class="flex-1 text-xs animate-fade-in"
-              @click="handleDisconnect"
-            />
-            <Button
-              label="Uji Cetak"
-              icon="pi pi-file"
-              severity="secondary"
-              size="small"
-              class="text-xs"
-              :disabled="!isConnected"
-              @click="handlePrintTest"
-              :loading="isPrintingTest"
-            />
-          </div>
-
-          <!-- Paper Size Selection -->
-          <div class="flex flex-col gap-1.5">
-            <span class="text-xs text-gray-500 dark:text-gray-400 font-medium">Pengaturan Lebar Kertas:</span>
-            <div class="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                :class="[
-                  'px-3 py-2 text-xs font-semibold rounded-lg border transition-all cursor-pointer text-center',
-                  paperSize === '58mm'
-                    ? 'bg-primary/10 border-primary text-primary dark:bg-primary-500/20 dark:border-primary-400 dark:text-primary-300'
-                    : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50 dark:bg-dark! dark:border-gray-700 dark:text-gray-400 dark:hover:bg-dark-secondary'
-                ]"
-                @click="setPaperSize('58mm')"
-              >
-                58mm (Kecil)
-              </button>
-              <button
-                type="button"
-                :class="[
-                  'px-3 py-2 text-xs font-semibold rounded-lg border transition-all cursor-pointer text-center',
-                  paperSize === '80mm'
-                    ? 'bg-primary/10 border-primary text-primary dark:bg-primary-500/20 dark:border-primary-400 dark:text-primary-300'
-                    : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50 dark:bg-dark! dark:border-gray-700 dark:text-gray-400 dark:hover:bg-dark-secondary'
-                ]"
-                @click="setPaperSize('80mm')"
-              >
-                80mm (Lebar)
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div v-else class="mt-2 border border-yellow-200 dark:border-yellow-900/30 rounded-lg p-3 bg-yellow-50 dark:bg-yellow-950/20 text-xs text-yellow-800 dark:text-yellow-300 flex items-start gap-2">
-        <i class="pi pi-exclamation-triangle mt-0.5 shrink-0" />
-        <div>
-          Pencetakan Bluetooth tidak didukung pada peramban ini. Silakan gunakan peramban berbasis Chromium (Chrome, Edge, Opera) melalui koneksi HTTPS yang aman.
-        </div>
-      </div>
     </div>
 
     <template #footer>
-      <!-- Footer -->
-      <div class="w-full flex flex-col gap-4">
-        <Button
-          v-if="isSupported"
-          severity="success"
-          label="Cetak Struk (Bluetooth)"
-          icon="pi pi-print"
-          size="medium"
-          fluid
-          @click="handlePrint"
-          :loading="isPrinting"
-        />
-        <Button
-          label="Download Gambar Struk"
-          icon="pi pi-download"
-          severity="secondary"
-          size="medium"
-          fluid
-          @click="downloadReceipt"
-          :loading="isDownloading"
-        />
-        <Button
-          severity="secondary"
-          variant="outlined"
-          label="Tutup"
-          size="medium"
-          fluid
-          @click="onCancel"
-        />
+      <div class="flex-1 flex flex-col gap-4">
+        <!-- Bluetooth Printer Section -->
+        <div v-if="isSupported" class="bg-gray-50 dark:bg-dark! rounded-lg p-3 flex flex-col gap-2">
+          <div class="flex items-center justify-between cursor-pointer select-none" @click="showSettings = !showSettings">
+            <div class="flex items-center gap-2">
+              <i class="pi pi-print text-gray-500 dark:text-gray-400" />
+              <span class="text-sm font-semibold text-gray-700 dark:text-gray-200">Printer Termal Bluetooth</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span v-if="isConnected" class="text-xs text-green-600 dark:text-green-400 font-medium flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+                {{ deviceName }}
+              </span>
+              <i :class="['pi', showSettings ? 'pi-chevron-up' : 'pi-chevron-down', 'text-xs text-gray-400']" />
+            </div>
+          </div>
+
+          <div v-if="showSettings" class="mt-3 space-y-4 pt-3 border-t border-gray-200 dark:border-gray-700">
+            <!-- Printer Status & Actions -->
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-gray-500 dark:text-gray-400">Status Koneksi:</span>
+              <span v-if="isConnected" class="text-green-600 dark:text-green-400 font-semibold flex items-center gap-1">
+                Terhubung
+              </span>
+              <span v-else-if="isConnecting" class="text-yellow-600 dark:text-yellow-400 font-semibold flex items-center gap-1">
+                Menghubungkan...
+              </span>
+              <span v-else class="text-gray-400 dark:text-gray-500">Terputus</span>
+            </div>
+
+            <div class="flex flex-col gap-2">
+              <Button
+                v-if="!isConnected"
+                label="Pasangkan & Hubungkan"
+                icon="pi pi-plus"
+                size="small"
+                fluid
+                :loading="isConnecting"
+                @click="handleConnect"
+              />
+              <Button
+                v-else
+                label="Putuskan Koneksi"
+                icon="pi pi-power-off"
+                severity="danger"
+                size="small"
+                @click="handleDisconnect"
+                fluid
+              />
+              <Button
+                label="Uji Cetak"
+                icon="pi pi-file"
+                severity="secondary"
+                variant="outlined"
+                size="small"
+                fluid
+                :disabled="!isConnected"
+                :loading="isPrintingTest"
+                @click="handlePrintTest"
+              />
+            </div>
+
+            <!-- Paper Size Selection -->
+            <div class="flex flex-col gap-1.5">
+              <span class="text-xs text-gray-500 dark:text-gray-400 font-medium">Pengaturan Lebar Kertas:</span>
+              <div class="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  :class="[
+                    'px-3 py-2 text-xs font-semibold rounded-lg border transition-all cursor-pointer text-center',
+                    paperSize === '58mm'
+                      ? 'bg-primary/10 border-primary text-primary dark:bg-primary-500/20 dark:border-primary-400 dark:text-primary-300'
+                      : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50 dark:bg-dark! dark:border-gray-700 dark:text-gray-400 dark:hover:bg-dark-secondary'
+                  ]"
+                  @click="setPaperSize('58mm')"
+                >
+                  58mm (Kecil)
+                </button>
+                <button
+                  type="button"
+                  :class="[
+                    'px-3 py-2 text-xs font-semibold rounded-lg border transition-all cursor-pointer text-center',
+                    paperSize === '80mm'
+                      ? 'bg-primary/10 border-primary text-primary dark:bg-primary-500/20 dark:border-primary-400 dark:text-primary-300'
+                      : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50 dark:bg-dark! dark:border-gray-700 dark:text-gray-400 dark:hover:bg-dark-secondary'
+                  ]"
+                  @click="setPaperSize('80mm')"
+                >
+                  80mm (Lebar)
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div v-else class="mt-2 border border-yellow-200 dark:border-yellow-900/30 rounded-lg p-3 bg-yellow-50 dark:bg-yellow-950/20 text-xs text-yellow-800 dark:text-yellow-300 flex items-start gap-2">
+          <i class="pi pi-exclamation-triangle mt-0.5 shrink-0" />
+          <div>
+            Pencetakan Bluetooth tidak didukung pada peramban ini. Silakan gunakan peramban berbasis Chromium (Chrome, Edge, Opera) melalui koneksi HTTPS yang aman.
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="w-full grid grid-cols-2 gap-4">
+          <Button
+            v-if="isSupported"
+            severity="success"
+            label="Cetak"
+            icon="pi pi-print"
+            size="medium"
+            fluid
+            @click="handlePrint"
+            :loading="isPrinting"
+          />
+          <Button
+            label="Download"
+            icon="pi pi-download"
+            severity="secondary"
+            size="medium"
+            fluid
+            @click="downloadReceipt"
+            :loading="isDownloading"
+          />
+        </div>
       </div>
     </template>
   </Dialog>

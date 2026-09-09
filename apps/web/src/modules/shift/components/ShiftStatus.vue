@@ -43,6 +43,7 @@
           label="Tutup Shift"
           size="small"
           severity="success"
+          class="w-full md:w-auto"
           :loading="loading"
           :disabled="loading"
           @click="handleCloseConfirm"
@@ -52,6 +53,7 @@
           label="Buka Shift"
           size="small"
           severity="danger"
+          class="w-full md:w-auto"
           :loading="loading"
           :disabled="loading"
           @click="handleOpenShift"
@@ -275,7 +277,7 @@ watch(
 }
 
 .pos-shift-status__content {
-  @apply flex items-center justify-between gap-4;
+  @apply flex flex-col md:flex-row md:items-center justify-between gap-4;
 }
 
 .pos-shift-status__left {

@@ -14,7 +14,7 @@
 
     <UiCard v-if="productDetail">
       <template #header>
-        <div class="w-full flex gap-4 items-center justify-between">
+        <div class="w-full flex gap-4 flex-col md:flex-row md:items-center justify-between">
           <h1 class="text-lg font-semibold">
             Informasi Produk
           </h1>
@@ -116,7 +116,7 @@
 
     <UiCard>
       <template #header>
-        <div class="w-full flex gap-4 items-center justify-between">
+        <div class="w-full flex gap-4 flex-col md:flex-row md:items-center justify-between">
           <h1 class="text-lg font-semibold">
             Riwayat Stok
           </h1>

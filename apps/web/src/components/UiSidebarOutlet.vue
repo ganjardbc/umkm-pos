@@ -36,7 +36,7 @@
     >
       <div class="space-y-4 w-75">
         <div class="text-xs font-semibold">
-          Outlet Lists
+          Daftar Outlet
         </div>
         <div
           v-for="(outlet, i) in listOutlet"

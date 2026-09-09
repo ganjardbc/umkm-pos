@@ -25,64 +25,52 @@
         <!-- Individual Metrics -->
         <div class="metrics-display__chart-container">
           <h4 class="chart-title">Detail Peserta</h4>
-          <DataTable :value="metrics" tableStyle="min-width: 50rem">
-            <template #empty>
-              <span class="w-full text-center flex justify-center">
-                Data metrik masih kosong.
-              </span>
-            </template>
-            <Column field="no" header="NO" class="w-18">
-              <template #body="slotProps">
-                {{ slotProps.index + 1 }}
-              </template>
-            </Column>
-            <Column field="user_name" header="Nama" class="min-w-48">
-              <template #body="slotProps">
-                {{ slotProps.data.user_name }}
-              </template>
-            </Column>
-            <Column field="transaction_count" header="Transaksi">
-              <template #body="slotProps">
-                {{ slotProps.data.transaction_count }}x
-              </template>
-            </Column>
-            <Column field="total_amount" header="Total Pendapatan">
-              <template #body="slotProps">
-                {{ formatCurrency(slotProps.data.total_amount) }}
-              </template>
-            </Column>
-            <Column field="average_transaction_amount" header="Rata-rata">
-              <template #body="slotProps">
-                {{ formatCurrency(slotProps.data.average_transaction_amount) }}
-              </template>
-            </Column>
-            <Column field="participation_duration_minutes" header="Durasi" class="min-w-32">
-              <template #body="slotProps">
-                {{ formatDuration(slotProps.data.participation_duration_minutes) }}
-              </template>
-            </Column>
-            <Column field="participant_added_at" header="Waktu Ditambahkan" class="min-w-54">
-              <template #body="slotProps">
-                {{ formatDate(slotProps.data.participant_added_at) }}
-              </template>
-            </Column>
-            <Column field="status" header="Status" class="min-w-58">
-              <template #body="slotProps">
-                <div class="flex justify-start gap-2">
-                  <Tag
-                    v-if="showOwnerStatus && slotProps.data.is_owner"
-                    value="Pemilik Shift"
-                    severity="info"
-                  />
-                  <Tag
-                    v-if="showRemovedStatus && slotProps.data.participant_removed_at"
-                    value="Dihapus"
-                    severity="warning"
-                  />
-                </div>
-              </template>
-            </Column>
-          </DataTable>
+          <div v-if="metrics.length === 0" class="metrics-display__empty">
+            Data metrik masih kosong.
+          </div>
+          <div v-for="(metric, index) in metrics" :key="metric.user_id" class="metric-card">
+            <div class="metric-card__header">
+              <span class="metric-card__index">#{{ index + 1 }}</span>
+              <span class="metric-card__name">{{ metric.user_name }}</span>
+              <div class="metric-card__tags">
+                <Tag
+                  v-if="showOwnerStatus && metric.is_owner"
+                  value="Pemilik Shift"
+                  severity="info"
+                />
+                <Tag
+                  v-if="showRemovedStatus && metric.participant_removed_at"
+                  value="Dihapus"
+                  severity="warning"
+                />
+              </div>
+            </div>
+
+            <Divider />
+
+            <div class="metric-card__body">
+              <div class="metric-card__item">
+                <span class="metric-label">Transaksi</span>
+                <span class="metric-value">{{ metric.transaction_count }}x</span>
+              </div>
+              <div class="metric-card__item">
+                <span class="metric-label">Total Pendapatan</span>
+                <span class="metric-value">{{ formatCurrency(metric.total_amount) }}</span>
+              </div>
+              <div class="metric-card__item">
+                <span class="metric-label">Rata-rata</span>
+                <span class="metric-value">{{ formatCurrency(metric.average_transaction_amount) }}</span>
+              </div>
+              <div class="metric-card__item">
+                <span class="metric-label">Durasi</span>
+                <span class="metric-value">{{ formatDuration(metric.participation_duration_minutes) }}</span>
+              </div>
+              <div class="metric-card__item">
+                <span class="metric-label">Waktu Ditambahkan</span>
+                <span class="metric-value">{{ formatDate(metric.participant_added_at) }}</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -398,10 +386,6 @@ onBeforeUnmount(() => {
   @apply text-center py-8 text-gray-500 dark:text-gray-400;
 }
 
-.metrics-display__chart-container {
-  @apply bg-gray-50 dark:bg-dark rounded-lg p-4 border border-gray-200 dark:border-dark;
-}
-
 .chart-wrapper {
   @apply relative w-full;
   height: 350px;
@@ -421,5 +405,37 @@ onBeforeUnmount(() => {
 
 .metric-value {
   @apply font-medium text-gray-900 dark:text-white;
+}
+
+.metrics-cards {
+  @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 bg-white dark:bg-dark;
+}
+
+.metric-card {
+  @apply bg-white dark:bg-dark-secondary rounded-lg p-4 border border-gray-200 dark:border-dark;
+}
+
+.metric-card__header {
+  @apply flex items-center flex-wrap gap-2 mb-3 pb-3;
+}
+
+.metric-card__index {
+  @apply text-xs text-gray-500 dark:text-gray-400;
+}
+
+.metric-card__name {
+  @apply font-semibold text-gray-900 dark:text-white flex-1;
+}
+
+.metric-card__tags {
+  @apply flex gap-2;
+}
+
+.metric-card__body {
+  @apply space-y-2;
+}
+
+.metric-card__item {
+  @apply flex justify-between items-center text-sm;
 }
 </style>

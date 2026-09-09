@@ -14,7 +14,7 @@
 
     <UiCard v-if="categoryDetail">
       <template #header>
-        <div class="w-full flex gap-4 items-center justify-between">
+        <div class="w-full flex gap-4 flex-col md:flex-row md:items-center justify-between">
           <h1 class="text-lg font-semibold">
             Informasi Kategori
           </h1>
