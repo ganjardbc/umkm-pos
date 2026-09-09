@@ -25,6 +25,8 @@ export class PrismaService
       user: url.username || 'root',
       password: url.password || '',
       database: url.pathname.slice(1), // Remove leading slash
+      // Required by MySQL 8 caching_sha2_password authentication.
+      allowPublicKeyRetrieval: true,
     });
 
     super({
