@@ -505,22 +505,18 @@ export class TransactionsService {
 
   async payPosOrder(
     transactionId: string,
-    dto: { payment_method: string; cash_received?: number; change_amount?: number },
+    dto: {
+      payment_method: string;
+      cash_received?: number;
+      change_amount?: number;
+    },
     merchantId: string,
     userId: string,
   ) {
     const transaction = await this.findOne(transactionId, merchantId, userId);
 
-    if (transaction.order_source !== ORDER_SOURCE_POS) {
-      throw new BadRequestException(
-        'This endpoint is only for POS transactions',
-      );
-    }
-
     if (transaction.is_cancelled) {
-      throw new BadRequestException(
-        'Cannot pay a cancelled transaction',
-      );
+      throw new BadRequestException('Cannot pay a cancelled transaction');
     }
 
     if (transaction.payment_method !== 'pending') {
@@ -701,15 +697,16 @@ export class TransactionsService {
     }
 
     const productIds = dto.items.map((i) => i.product_id);
+    const uniqueProductIds = [...new Set(productIds)];
     const products = await this.prisma.products.findMany({
       where: {
-        id: { in: productIds },
+        id: { in: uniqueProductIds },
         merchant_id: merchantId,
         is_active: true,
       },
     });
 
-    if (products.length !== productIds.length) {
+    if (products.length !== uniqueProductIds.length) {
       throw new NotFoundException('One or more products not found or inactive');
     }
 
@@ -717,7 +714,7 @@ export class TransactionsService {
       where: {
         merchant_id: merchantId,
         outlet_id: dto.outlet_id,
-        product_id: { in: productIds },
+        product_id: { in: uniqueProductIds },
         is_active: true,
       },
     });
@@ -738,6 +735,14 @@ export class TransactionsService {
       customer_note?: string;
     }> = [];
 
+    // Track remaining stock across items so duplicate product_id entries
+    // (e.g. an original order line plus a later "Tambahan" line for the
+    // same product) are validated and logged cumulatively, not against a
+    // stale snapshot.
+    const remainingStockMap = new Map(
+      inventoryRows.map((row) => [row.product_id, row.stock_qty]),
+    );
+
     for (const item of dto.items) {
       const product = productMap.get(item.product_id);
       const outletInventory = inventoryMap.get(item.product_id);
@@ -746,9 +751,11 @@ export class TransactionsService {
           `Inventory for product ${item.product_id} was not found`,
         );
       }
-      if (outletInventory.stock_qty < item.qty) {
+
+      const remainingStock = remainingStockMap.get(item.product_id) ?? 0;
+      if (remainingStock < item.qty) {
         throw new BadRequestException(
-          `Insufficient stock for product "${product.name}" in this outlet. Available: ${outletInventory.stock_qty}, Requested: ${item.qty}`,
+          `Insufficient stock for product "${product.name}" in this outlet. Available: ${remainingStock}, Requested: ${item.qty}`,
         );
       }
 
@@ -756,13 +763,16 @@ export class TransactionsService {
       const subtotal = price * item.qty;
       totalAmount += subtotal;
 
+      const stockAfter = remainingStock - item.qty;
+      remainingStockMap.set(item.product_id, stockAfter);
+
       itemsData.push({
         product_id: product.id,
         product_name_snapshot: product.name,
         price_snapshot: price,
         qty: item.qty,
         subtotal,
-        stock_after: outletInventory.stock_qty - item.qty,
+        stock_after: stockAfter,
         customer_note: item.customer_note,
       });
     }
