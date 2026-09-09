@@ -29,7 +29,7 @@
 
         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div>
-            <label class="text-sm font-medium text-gray-500">Order ID</label>
+            <label class="text-sm font-medium text-gray-500">ID Pesanan</label>
             <p class="mt-1 font-mono text-base">{{ order.id }}</p>
           </div>
           <div>
@@ -37,41 +37,41 @@
             <p class="mt-1 text-base">{{ order.store_tables?.name || '-' }}</p>
           </div>
           <div>
-            <label class="text-sm font-medium text-gray-500">Customer</label>
+            <label class="text-sm font-medium text-gray-500">Pelanggan</label>
             <p class="mt-1 text-base">{{ order.customer_name_snapshot || '-' }}</p>
           </div>
           <div>
-            <label class="text-sm font-medium text-gray-500">Waktu Order</label>
+            <label class="text-sm font-medium text-gray-500">Waktu Pemesanan</label>
             <p class="mt-1 text-base">{{ formatDateTime(order.ordered_at || order.created_at) }}</p>
           </div>
         </div>
       </UiCard>
 
       <UiCard>
-        <h1 class="text-lg font-semibold">Items</h1>
+        <h1 class="text-lg font-semibold">Daftar Item</h1>
 
         <DataTable :value="order.transaction_items || []" tableStyle="min-width: 48rem">
           <template #empty>
-            <span class="flex w-full justify-center text-center">No items in this order.</span>
+            <span class="flex w-full justify-center text-center">Tidak ada item dalam pesanan ini.</span>
           </template>
           <Column field="no" header="NO" class="w-18">
             <template #body="slotProps">
               {{ slotProps.index + 1 }}
             </template>
           </Column>
-          <Column field="product_name_snapshot" header="Product Name" />
-          <Column field="price_snapshot" header="Price">
+          <Column field="product_name_snapshot" header="Nama Menu" />
+          <Column field="price_snapshot" header="Harga">
             <template #body="slotProps">
               {{ getCurrency(slotProps.data.price_snapshot) }}
             </template>
           </Column>
-          <Column field="qty" header="Qty" />
+          <Column field="qty" header="Jumlah" />
           <Column field="subtotal" header="Subtotal">
             <template #body="slotProps">
               {{ getCurrency(slotProps.data.subtotal) }}
             </template>
           </Column>
-          <Column field="customer_note" header="Note">
+          <Column field="customer_note" header="Catatan">
             <template #body="slotProps">
               {{ slotProps.data.customer_note || '-' }}
             </template>
@@ -80,7 +80,7 @@
 
         <div class="w-full bg-gray-50 dark:bg-dark-secondary">
           <div class="flex items-center justify-between">
-            <label class="text-sm font-medium text-gray-500">Total Amount</label>
+            <label class="text-sm font-medium text-gray-500">Total Pembayaran</label>
             <div class="text-base font-semibold">{{ getCurrency(order.total_amount) }}</div>
           </div>
         </div>

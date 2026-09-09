@@ -103,7 +103,7 @@
       <UiCard>
         <div class="space-y-4">
           <div>
-            <h1 class="text-lg font-semibold">Checkout</h1>
+            <h1 class="text-lg font-semibold">Detail Pemesanan</h1>
             <p class="text-sm text-gray-500">Pilih meja sebelum membuat pesanan.</p>
           </div>
 

@@ -16,7 +16,7 @@
             <p v-if="outlet?.location" class="text-xs text-slate-500 dark:text-slate-400 truncate max-w-64">{{ outlet?.location }}</p>
           </div>
         </div>
-        <Button label="Logout" severity="secondary" variant="outlined" size="small" @click="$emit('reset')" />
+        <Button label="Keluar" severity="secondary" variant="outlined" size="small" @click="$emit('reset')" />
       </div>
 
       <Divider />
@@ -24,7 +24,7 @@
       <div class="space-y-2">
         <div class="flex items-center gap-2">
           <p class="text-sm text-slate-500 dark:text-slate-300">
-            Halo, <span class="font-semibold text-slate-700 dark:text-slate-200">{{ session?.customer_name || 'Customer' }}</span>
+            Halo, <span class="font-semibold text-slate-700 dark:text-slate-200">{{ session?.customer_name || 'Pelanggan' }}</span>
           </p>
           <p v-if="session?.expires_at" class="text-xs text-slate-400 dark:text-slate-500">
             Sesi berlaku hingga {{ formatExpiry(session.expires_at) }}
@@ -32,7 +32,7 @@
         </div>
         <div class="p-4 bg-slate-100 dark:bg-dark-secondary rounded-lg">
           <p class="text-xs text-slate-500 dark:text-slate-300">
-            Status order:
+            Status pesanan:
             <span class="font-semibold" :class="orderStatusClass">{{ orderStatusText }}</span>
           </p>
         </div>
@@ -61,7 +61,7 @@ const orderStatusText = computed(() => {
   if (props.latestOrder?.order_status) {
     return getCustomerCatalogStatusLabel(props.latestOrder.order_status);
   }
-  return 'belum ada order';
+  return 'belum ada pesanan';
 });
 
 const orderStatusClass = computed(() => {
