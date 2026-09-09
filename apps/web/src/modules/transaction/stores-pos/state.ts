@@ -6,6 +6,7 @@ export interface CartItem {
 	stock_qty: number;
 	thumbnail: string | null;
 	category: string;
+	customer_note?: string;
 }
 
 export function state() {

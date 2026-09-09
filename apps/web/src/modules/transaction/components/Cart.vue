@@ -128,21 +128,18 @@
                 {{ getCurrency(Number(item.price) * item.quantity) }}
               </span>
             </div>
+
+            <Textarea
+              v-model="item.customer_note"
+              class="w-full"
+              rows="2"
+              placeholder="Catatan untuk item ini..."
+            />
           </div>
         </UiCard>
-      </div>
-    </div>
 
-    <Divider class="m-0!" />
+        <Divider />
 
-    <div
-      v-if="isUserInShift"
-      class="post-cart__footer"
-      :class="{
-        'post-cart__footer--mobile': isMobile,
-      }"
-    >
-      <div class="pos-cart__section space-y-2">
         <UiFormGroup label="Meja" variant="vertical">
           <div class="flex gap-2">
             <Dropdown
@@ -172,6 +169,19 @@
             Tidak ada meja aktif untuk outlet ini.
           </p>
         </UiFormGroup>
+      </div>
+    </div>
+
+    <Divider class="m-0!" />
+
+    <div
+      v-if="isUserInShift"
+      class="post-cart__footer"
+      :class="{
+        'post-cart__footer--mobile': isMobile,
+      }"
+    >
+      <div class="pos-cart__section space-y-2">
         <div class="flex items-center justify-between">
           <span class="text-sm">
             Total ({{ posStore.cartItemCount }})
@@ -180,13 +190,39 @@
             {{ getCurrency(posStore.cartTotal) }}
           </span>
         </div>
-        <Button
-          label="Lanjut ke Pembayaran"
-          size="medium"
-          fluid
-          :disabled="isCanCheckout"
-          @click="openPaymentModal"
-        />
+        <div
+          v-if="targetTransactionId"
+          class="flex gap-2"
+        >
+          <Button
+            label="Tambah ke Pesanan"
+            size="medium"
+            fluid
+            :disabled="posStore.cartItems.length === 0 || isAddingItems"
+            @click="onAddItemsToOrder"
+          />
+        </div>
+        <div
+          v-else
+          class="flex flex-col gap-2"
+        >
+          <Button
+            label="Buat Pesanan"
+            size="medium"
+            severity="secondary"
+            variant="outlined"
+            fluid
+            :disabled="isCanCheckout || isCreatingOrder"
+            @click="onCreateOrder"
+          />
+          <Button
+            label="Lanjut ke Pembayaran"
+            size="medium"
+            fluid
+            :disabled="isCanCheckout"
+            @click="openPaymentModal"
+          />
+        </div>
       </div>
     </div>
   </div>
@@ -256,7 +292,7 @@ import { usePosStore } from '@/modules/transaction/stores-pos';
 import { getCurrency } from '@/helpers/utils.ts';
 import { useGlobalLoading } from '@/composables/useGlobalLoading.ts';
 import { showConfirm, showToast } from '@/helpers/toast.ts';
-import { getOutletTables, postTransaction } from '@/modules/transaction/services/api.ts';
+import { getOutletTables, postTransaction, patchTransactionItems } from '@/modules/transaction/services/api.ts';
 import UiCard from '@/components/UiCard.vue';
 import PaymentModal from '@/modules/transaction/components/PaymentModal.vue';
 
@@ -273,13 +309,19 @@ const props = defineProps({
     type: String,
     default: ''
   },
+  targetTransactionId: {
+    type: String,
+    default: ''
+  },
 });
 
-const emit = defineEmits(['checkout-success']);
+const emit = defineEmits(['checkout-success', 'add-items-success']);
 
 const { show, hide } = useGlobalLoading();
 const posStore = usePosStore();
 const isCheckingOut = ref(false);
+const isCreatingOrder = ref(false);
+const isAddingItems = ref(false);
 
 const transactionForm = ref({
   outlet_id: '',
@@ -432,7 +474,8 @@ const onCheckout = async () => {
       change_amount: isCashPayment.value ? cashChangeAmount.value : undefined,
       items: posStore.cartItems.map(item => ({
         product_id: item.id,
-        qty: item.quantity
+        qty: item.quantity,
+        customer_note: item.customer_note || undefined
       }))
     };
 
@@ -462,6 +505,108 @@ const onCheckout = async () => {
     });
   } finally {
     isCheckingOut.value = false;
+    hide();
+  }
+};
+
+const onCreateOrder = () => {
+  if (isCanCheckout.value || isCreatingOrder.value) return;
+
+  showConfirm({
+    header: 'Buat Pesanan',
+    message: 'Apakah Anda yakin ingin membuat pesanan ini? Pesanan akan dibuat tanpa pembayaran dan bisa dibayar nanti.',
+    rejectLabel: 'Batal',
+    acceptLabel: 'Ya, Buat Pesanan',
+    type: 'info',
+    accept: () => {
+      submitCreateOrder();
+    },
+  });
+};
+
+const submitCreateOrder = async () => {
+  try {
+    isCreatingOrder.value = true;
+    show();
+
+    const payload: any = {
+      outlet_id: transactionForm.value.outlet_id,
+      shift_id: transactionForm.value.shift_id,
+      payment_method: 'pending',
+      pay_now: false,
+      is_offline: transactionForm.value.is_offline,
+      device_id: transactionForm.value.device_id,
+      table_id: transactionForm.value.table_id || undefined,
+      items: posStore.cartItems.map(item => ({
+        product_id: item.id,
+        qty: item.quantity,
+        customer_note: item.customer_note || undefined
+      }))
+    };
+
+    const response = await postTransaction(payload);
+
+    if (response.data) {
+      showToast({
+        type: 'success',
+        title: 'Pesanan Dibuat',
+        message: 'Pesanan berhasil dibuat, menunggu pembayaran',
+      });
+
+      posStore.clearCart();
+      openCloseCart();
+
+      emit('checkout-success');
+    }
+  } catch (error: any) {
+    console.error('Create order error:', error);
+    showToast({
+      type: 'error',
+      title: 'Gagal Membuat Pesanan',
+      message: error.response?.data?.message || 'Gagal membuat pesanan',
+    });
+  } finally {
+    isCreatingOrder.value = false;
+    hide();
+  }
+};
+
+const onAddItemsToOrder = async () => {
+  if (posStore.cartItems.length === 0 || isAddingItems.value) return;
+
+  try {
+    isAddingItems.value = true;
+    show();
+
+    const payload = {
+      items: posStore.cartItems.map(item => ({
+        product_id: item.id,
+        qty: item.quantity,
+        customer_note: item.customer_note || undefined
+      })),
+    };
+
+    const response = await patchTransactionItems(props.targetTransactionId, payload);
+
+    if (response.data) {
+      showToast({
+        type: 'success',
+        title: 'Item Ditambahkan',
+        message: 'Item berhasil ditambahkan ke pesanan',
+      });
+
+      posStore.clearCart();
+      emit('add-items-success');
+    }
+  } catch (error: any) {
+    console.error('Add items error:', error);
+    showToast({
+      type: 'error',
+      title: 'Gagal Menambah Item',
+      message: error.response?.data?.message || 'Gagal menambahkan item ke pesanan',
+    });
+  } finally {
+    isAddingItems.value = false;
     hide();
   }
 };

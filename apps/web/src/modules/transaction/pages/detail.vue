@@ -26,24 +26,14 @@
               class="capitalize"
             />
           </div>
-          <div class="w-full lg:w-auto flex justify-end gap-2">
-            <Button
-              severity="secondary"
-              variant="outlined"
-              icon="pi pi-print"
-              label="Cetak Struk"
-              size="small"
-              class="w-full lg:w-32"
-              :disabled="!isCanPrint || transactionDetail?.is_cancelled"
-              @click="openPrintReceipt(transactionDetail)"
-            />
+          <div class="w-full lg:w-auto flex flex-wrap justify-end gap-2">
             <Button
               severity="danger"
               variant="outlined"
               icon="pi pi-times"
               label="Batalkan"
               size="small"
-              class="w-full lg:w-32"
+              class="w-full lg:w-auto"
               :disabled="!isCanCancel || transactionDetail?.is_cancelled"
               @click="onCancelTransaction(transactionDetail)"
             />
@@ -59,8 +49,13 @@
             <p class="text-base mt-1 font-mono">{{ transactionDetail.id }}</p>
           </div>
           <div>
-            <label class="text-sm font-medium text-gray-500">ID Perangkat</label>
-            <p class="text-base mt-1 font-mono">{{ transactionDetail.device_id || '-' }}</p>
+            <label class="text-sm font-medium text-gray-500">Mode Pesanan</label>
+            <div class="mt-1">
+              <Tag
+                :value="transactionDetail.is_offline ? 'Offline' : 'Online'"
+                :severity="transactionDetail.is_offline ? 'warning' : 'info'"
+              />
+            </div>
           </div>
           <div>
             <label class="text-sm font-medium text-gray-500">Metode Pembayaran</label>
@@ -75,21 +70,20 @@
             <p class="text-base mt-1">{{ getOrderStatusLabel(transactionDetail.order_status) }}</p>
           </div>
           <div>
-            <label class="text-sm font-medium text-gray-500">Mode Offline</label>
-            <div class="mt-1">
-              <Tag
-                :value="transactionDetail.is_offline ? 'Ya' : 'Tidak'"
-                :severity="transactionDetail.is_offline ? 'warning' : 'info'"
-              />
-            </div>
-          </div>
-          <div>
             <label class="text-sm font-medium text-gray-500">Waktu Dibuat</label>
             <p class="text-base mt-1">{{ formatDateTime(transactionDetail.created_at) }}</p>
           </div>
           <div>
             <label class="text-sm font-medium text-gray-500">Waktu Diperbarui</label>
             <p class="text-base mt-1">{{ formatDateTime(transactionDetail.updated_at) }}</p>
+          </div>
+        </div>
+
+        <!-- Customer -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="text-sm font-medium text-gray-500">ID Perangkat</label>
+            <p class="text-base mt-1 font-mono">{{ transactionDetail.device_id || '-' }}</p>
           </div>
           <div>
             <label class="text-sm font-medium text-gray-500">Pelanggan</label>
@@ -110,9 +104,19 @@
     <!-- Transaction Items -->
     <UiCard v-if="transactionDetail && transactionDetail.transaction_items">
       <template #header>
-        <h1 class="text-lg font-semibold">
-          Daftar Item Transaksi
-        </h1>
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <h1 class="text-lg font-semibold">
+            Daftar Item Transaksi
+          </h1>
+          <Button
+            v-if="isCanAddItems"
+            icon="pi pi-plus"
+            label="Tambah Item"
+            size="small"
+            class="w-full lg:w-auto"
+            @click="onGoToAddItems"
+          />
+        </div>
       </template>
 
       <div class="space-y-4">
@@ -136,7 +140,7 @@
               <p class="text-base font-semibold">{{ item.product_name_snapshot }}</p>
             </div>
           </div>
-          <div v-if="item.customer_note">
+          <div v-if="item.customer_note" class="flex gap-4 items-center justify-between">
             <p class="text-xs text-gray-500">Catatan</p>
             <p class="text-base text-right">{{ item.customer_note }}</p>
           </div>
@@ -158,7 +162,7 @@
           <div class="flex flex-col gap-2 justify-start">
             <div class="flex gap-4 items-center">
               <label class="flex-1 text-xs font-medium text-gray-500">
-                Total Jumlah :
+                Total Item :
               </label>
               <div class="text-base">
                 {{ getProductTotalQuantity(transactionDetail.transaction_items) }}
@@ -182,6 +186,28 @@
             </div>
           </div>
         </div>
+
+        <div class="w-full flex flex-wrap justify-end gap-3">
+          <Button
+            v-if="isCanPay"
+            severity="success"
+            icon="pi pi-wallet"
+            label="Bayar"
+            size="small"
+            class="w-full lg:w-auto"
+            @click="showPaymentModal = true"
+          />
+          <Button
+            severity="secondary"
+            variant="outlined"
+            icon="pi pi-print"
+            label="Cetak Struk"
+            size="small"
+            class="w-full lg:w-auto"
+            :disabled="!isCanPrint || transactionDetail?.is_cancelled"
+            @click="openPrintReceipt(transactionDetail)"
+          />
+        </div>
       </div>
     </UiCard>
   </div>
@@ -192,6 +218,16 @@
     :selected="selectedTransaction"
     @cancel="cancelReceiptModal"
   />
+
+  <PaymentModal
+    v-if="isCanPay"
+    v-model:visibility="showPaymentModal"
+    v-model:payment-method="paymentForm.payment_method"
+    v-model:is-offline="paymentForm.is_offline"
+    v-model:cash-amount="paymentForm.cash_amount"
+    :total-amount="Number(transactionDetail?.total_amount || 0)"
+    @confirm="onPayTransaction"
+  />
 </template>
 <script lang="ts" setup>
 import { type ReceiptData } from '../utils/receiptGenerator';
@@ -201,10 +237,11 @@ import { getErrorMessage, getCurrency, formatDateTime, formatPrice } from '@/hel
 import { showToast, showConfirm } from '@/helpers/toast.ts';
 import { showLoading, hideLoading } from '@/helpers/loading.ts';
 import { isHasPermission } from '@/helpers/auth.ts';
-import { getDetailTransaction, postCancelTransaction } from '@/modules/transaction/services/api.ts';
+import { getDetailTransaction, postCancelTransaction, patchTransactionPay } from '@/modules/transaction/services/api.ts';
 import { PRINT, CANCEL } from '@/modules/transaction/services/rbac.ts';
 import { getOrderStatusLabel } from '@/modules/transaction/services/status-labels.ts';
 import ReceiptModal from '@/modules/transaction/components/ReceiptModal.vue';
+import PaymentModal from '@/modules/transaction/components/PaymentModal.vue';
 
 import UiCard from '@/components/UiCard.vue';
 import Tag from 'primevue/tag';
@@ -217,6 +254,16 @@ const transactionID = computed(() => route.params.id as string);
 // RBAC
 const isCanPrint = computed(() => isHasPermission(PRINT));
 const isCanCancel = computed(() => isHasPermission(CANCEL));
+
+const isPosOrderActive = computed(() => {
+  return (
+    transactionDetail.value?.order_source === 'pos' &&
+    !transactionDetail.value?.is_cancelled &&
+    transactionDetail.value?.order_status !== 'selesai'
+  );
+});
+const isCanAddItems = computed(() => isPosOrderActive.value && transactionDetail.value?.payment_method === 'pending');
+const isCanPay = computed(() => isPosOrderActive.value && transactionDetail.value?.payment_method === 'pending');
 
 // Receipt Modal
 const showReceiptModal = ref(false);
@@ -290,6 +337,53 @@ const onCancelTransaction = (transaction: any) => {
       cancelTransaction(transaction?.id);
     },
   });
+};
+
+// Pay held order
+const showPaymentModal = ref(false);
+const paymentForm = ref({
+  payment_method: 'cash',
+  is_offline: true,
+  cash_amount: 0,
+});
+
+const onPayTransaction = async () => {
+  try {
+    showLoading();
+
+    const payload: any = {
+      payment_method: paymentForm.value.payment_method,
+      cash_received: paymentForm.value.payment_method === 'cash' ? paymentForm.value.cash_amount : undefined,
+      change_amount: paymentForm.value.payment_method === 'cash'
+        ? Math.max(0, paymentForm.value.cash_amount - Number(transactionDetail.value?.total_amount || 0))
+        : undefined,
+    };
+
+    const response = await patchTransactionPay(transactionID.value, payload);
+    if (response.data) {
+      showToast({
+        type: 'success',
+        title: 'Pembayaran Berhasil',
+        message: 'Transaksi telah dibayar dan stok telah dikurangi.',
+      });
+      showPaymentModal.value = false;
+      paymentForm.value.cash_amount = 0;
+      fetchDetail();
+    }
+  } catch (error) {
+    showToast({
+      type: 'error',
+      title: 'Gagal',
+      message: getErrorMessage(error) || 'Terjadi kesalahan.',
+    });
+  } finally {
+    hideLoading();
+  }
+};
+
+// Add items to held order
+const onGoToAddItems = () => {
+  router.push({ path: '/cashier', query: { add_to: transactionID.value } });
 };
 
 // Helpers

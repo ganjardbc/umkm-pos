@@ -50,3 +50,27 @@ export const patchTransactionStatus = async (
     { ...(options || {}) },
   );
 };
+
+export const patchTransactionPay = async (
+  id: string | number,
+  data: any,
+  options: any = {},
+) => {
+  return await api.patch(
+    `/api/v1/transactions/${id}/pay`,
+    data,
+    { ...(options || {}) },
+  );
+};
+
+export const patchTransactionItems = async (
+  id: string | number,
+  data: any,
+  options: any = {},
+) => {
+  return await api.patch(
+    `/api/v1/transactions/${id}/items`,
+    data,
+    { ...(options || {}) },
+  );
+};

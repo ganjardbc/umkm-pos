@@ -70,7 +70,6 @@
               class="capitalize text-xs!"
             />
             <Tag
-              v-if="trx.order_source === 'customer_catalog'"
               :value="getOrderStatusLabel(trx.order_status)"
               severity="warning"
               class="capitalize text-xs!"
@@ -85,8 +84,7 @@
           <span class="text-right">
             <Tag
               :value="trx.order_source === 'customer_catalog' ? 'CC' : 'POS'"
-              :severity="trx.order_source === 'customer_catalog' ? 'warning' : 'info'
-"
+              :severity="trx.order_source === 'customer_catalog' ? 'warning' : 'info'"
               class="text-xs!"
             />
           </span>
@@ -134,7 +132,7 @@
               @click="openPrintReceipt(trx)"
             />
             <Button
-              v-if="trx.order_source === 'customer_catalog' && trx.order_status !== 'selesai'"
+              v-if="trx.order_status !== 'selesai'"
               severity="success"
               variant="outlined"
               icon="pi pi-arrow-right"
