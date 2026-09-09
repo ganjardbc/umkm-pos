@@ -79,7 +79,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted } from 'vue';
+import { computed, onBeforeUnmount, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { getErrorMessage } from '@/helpers/utils.ts';
 import { showToast } from '@/helpers/toast.ts';
@@ -172,6 +172,10 @@ const initializeSession = async () => {
 };
 
 onMounted(initializeSession);
+
+watch(isStartRoute, (isStart) => {
+  if (!isStart) initializeSession();
+});
 
 onBeforeUnmount(() => {
   if (pollTimer) window.clearInterval(pollTimer);

@@ -50,33 +50,42 @@
       <UiCard>
         <h1 class="text-lg font-semibold">Daftar Item</h1>
 
-        <DataTable :value="order.transaction_items || []" tableStyle="min-width: 48rem">
-          <template #empty>
-            <span class="flex w-full justify-center text-center">Tidak ada item dalam pesanan ini.</span>
-          </template>
-          <Column field="no" header="NO" class="w-18">
-            <template #body="slotProps">
-              {{ slotProps.index + 1 }}
-            </template>
-          </Column>
-          <Column field="product_name_snapshot" header="Nama Menu" />
-          <Column field="price_snapshot" header="Harga">
-            <template #body="slotProps">
-              {{ getCurrency(slotProps.data.price_snapshot) }}
-            </template>
-          </Column>
-          <Column field="qty" header="Jumlah" />
-          <Column field="subtotal" header="Subtotal">
-            <template #body="slotProps">
-              {{ getCurrency(slotProps.data.subtotal) }}
-            </template>
-          </Column>
-          <Column field="customer_note" header="Catatan">
-            <template #body="slotProps">
-              {{ slotProps.data.customer_note || '-' }}
-            </template>
-          </Column>
-        </DataTable>
+        <div class="space-y-2">
+          <div
+            v-if="!order.transaction_items?.length"
+            class="w-full py-4 text-center text-gray-500"
+          >
+            Tidak ada item dalam pesanan ini.
+          </div>
+          <div
+            v-for="(item, index) in order.transaction_items"
+            :key="item.id || index"
+            class="bg-gray-50 dark:bg-dark! rounded-lg p-3 flex flex-col gap-2"
+          >
+            <div class="flex items-start justify-between gap-2">
+              <div class="flex-1 flex items-center gap-2">
+                <span class="text-base font-medium text-gray-500">#{{ Number(index) + 1 }}</span>
+                <p class="text-base font-semibold">{{ item.product_name_snapshot }}</p>
+              </div>
+            </div>
+            <div v-if="item.customer_note">
+              <p class="text-xs text-gray-500">Catatan</p>
+              <p class="text-base text-right">{{ item.customer_note }}</p>
+            </div>
+            <div class="flex gap-4 items-center justify-between">
+              <p class="text-xs text-gray-500">Jumlah</p>
+              <p class="text-base text-right font-semibold">{{ item.qty }}</p>
+            </div>
+            <div class="flex gap-4 items-center justify-between">
+              <p class="text-xs text-gray-500">Harga</p>
+              <p class="text-base text-right">{{ getCurrency(item.price_snapshot) }}</p>
+            </div>
+            <div class="flex gap-4 items-center justify-between">
+              <p class="text-xs text-gray-500">Subtotal</p>
+              <p class="text-base text-right font-medium">{{ getCurrency(item.subtotal) }}</p>
+            </div>
+          </div>
+        </div>
 
         <div class="w-full bg-gray-50 dark:bg-dark-secondary">
           <div class="flex items-center justify-between">
