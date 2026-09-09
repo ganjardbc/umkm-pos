@@ -2,7 +2,7 @@
   <UiCard class="max-w-2xl mx-auto">
     <template #header>
       <h1 class="text-xl font-semibold">
-        Deactivate Account
+        Nonaktifkan Akun
       </h1>
     </template>
 
@@ -20,7 +20,7 @@
           size="small"
           variant="simple"
         >
-          <strong>Warning:</strong> This action cannot be undone. Your account will be permanently deactivated and all your data will be deleted after 30 days.
+          <strong>Peringatan:</strong> Tindakan ini tidak dapat dibatalkan. Akun Anda akan dinonaktifkan secara permanen dan seluruh data Anda akan dihapus setelah 30 hari.
         </Message>
 
         <UiFormGroup variant="vertical">
@@ -31,7 +31,7 @@
               input-id="confirm-deactivation"
             />
             <label for="confirm-deactivation" class="text-sm">
-              I understand that this action is permanent and cannot be undone
+              Saya memahami bahwa tindakan ini permanen dan tidak dapat dibatalkan
             </label>
           </div>
           <Message
@@ -44,10 +44,10 @@
           </Message>
         </UiFormGroup>
 
-        <UiFormGroup label="Confirm with Password" variant="vertical">
+        <UiFormGroup label="Kata Sandi untuk Konfirmasi" variant="vertical">
           <Password
             name="password"
-            placeholder="Enter your password to confirm"
+            placeholder="Masukkan kata sandi untuk konfirmasi"
             :feedback="false"
             fluid
           />
@@ -61,10 +61,10 @@
           </Message>
         </UiFormGroup>
 
-        <UiFormGroup label="Reason for Deactivation (Optional)" variant="vertical">
+        <UiFormGroup label="Alasan Penonaktifan (Opsional)" variant="vertical">
           <Textarea
             name="reason"
-            placeholder="Tell us why you're deactivating your account"
+            placeholder="Ceritakan alasan Anda menonaktifkan akun"
             rows="3"
             fluid
           />
@@ -74,7 +74,7 @@
       <div class="w-full flex justify-end gap-4">
         <Button
           severity="secondary"
-          label="Cancel"
+          label="Batal"
           size="medium"
           class="w-full md:w-[128px]"
           @click="onCancel"
@@ -82,7 +82,7 @@
         <Button
           type="submit"
           severity="danger"
-          label="Deactivate"
+          label="Nonaktifkan Akun"
           size="medium"
           class="w-full md:w-[128px]"
         />
@@ -128,9 +128,9 @@ const initialValues = ref({
 const resolver = ref(zodResolver(
   z.object({
     confirmDeactivation: z.boolean().refine((val) => val === true, {
-      message: 'You must confirm to deactivate your account.',
+      message: 'Anda harus mengonfirmasi untuk menonaktifkan akun Anda.',
     }),
-    password: z.string().min(1, { message: 'Password is required to confirm deactivation.' }),
+    password: z.string().min(1, { message: 'Kata sandi wajib diisi untuk mengonfirmasi penonaktifan.' }),
     reason: z.string().optional(),
   })
 ));
@@ -139,10 +139,10 @@ const resolver = ref(zodResolver(
 const onFormSubmit = async ({ valid, values }: { valid: boolean; values: any }) => {
   if (valid) {
     showConfirm({
-      header: 'Deactivate Account',
-      message: 'Are you absolutely sure? This action cannot be undone. Your account will be permanently deactivated.',
-      rejectLabel: 'Cancel',
-      acceptLabel: 'Yes, Deactivate',
+      header: 'Nonaktifkan Akun',
+      message: 'Apakah Anda benar-benar yakin? Tindakan ini tidak dapat dibatalkan. Akun Anda akan dinonaktifkan secara permanen.',
+      rejectLabel: 'Batal',
+      acceptLabel: 'Ya, Nonaktifkan',
       type: 'warn',
       accept: () => {
         submitDeactivation(values);
@@ -167,8 +167,8 @@ const submitDeactivation = async (values: any) => {
     if (success) {
       showToast({
         type: 'success',
-        title: 'Account Deactivated',
-        message: 'Your account has been deactivated. You will be logged out.',
+        title: 'Akun Dinonaktifkan',
+        message: 'Akun Anda telah dinonaktifkan. Anda akan dialihkan keluar.',
       });
       // Redirect to login after a short delay
       setTimeout(() => {
@@ -178,8 +178,8 @@ const submitDeactivation = async (values: any) => {
   } catch (error) {
     showToast({
       type: 'error',
-      title: 'Error',
-      message: getErrorMessage(error) || 'Failed to deactivate account.',
+      title: 'Gagal',
+      message: getErrorMessage(error) || 'Gagal menonaktifkan akun.',
     });
   } finally {
     hideLoading();

@@ -14,7 +14,7 @@ interface Props {
 }
 
 withDefaults(defineProps<Props>(), {
-  message: 'No data available',
+  message: 'Tidak ada data tersedia',
   icon: 'pi-chart-line',
 });
 </script>

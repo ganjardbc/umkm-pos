@@ -2,7 +2,7 @@
   <UiCard class="max-w-2xl mx-auto">
     <template #header>
       <h1 class="text-xl font-semibold">
-        Change Email
+        Ubah Email
       </h1>
     </template>
 
@@ -21,10 +21,10 @@
           size="small"
           variant="simple"
         >
-          We'll send a verification code to your new email address.
+          Kami akan mengirimkan kode verifikasi ke alamat email baru Anda.
         </Message>
 
-        <UiFormGroup label="Current Email" variant="vertical">
+        <UiFormGroup label="Email Saat Ini" variant="vertical">
           <InputText
             :model-value="currentEmail"
             type="email"
@@ -33,11 +33,11 @@
           />
         </UiFormGroup>
 
-        <UiFormGroup label="New Email" variant="vertical">
+        <UiFormGroup label="Email Baru" variant="vertical">
           <InputText
             name="newEmail"
             type="email"
-            placeholder="Enter your new email address"
+            placeholder="Masukkan alamat email baru"
             fluid
           />
           <Message
@@ -54,14 +54,14 @@
       <div class="w-full flex justify-end gap-4">
         <Button
           severity="secondary"
-          label="Cancel"
+          label="Batal"
           size="medium"
           class="w-full md:w-[128px]"
           @click="onCancel"
         />
         <Button
           type="submit"
-          label="Send Code"
+          label="Kirim Kode"
           size="medium"
           class="w-full md:w-[128px]"
         />
@@ -83,14 +83,14 @@
           size="small"
           variant="simple"
         >
-          Verification code has been sent to <strong>{{ newEmailForVerification }}</strong>
+          Kode verifikasi telah dikirim ke <strong>{{ newEmailForVerification }}</strong>
         </Message>
 
-        <UiFormGroup label="Verification Code" variant="vertical">
+        <UiFormGroup label="Kode Verifikasi" variant="vertical">
           <InputText
             name="verificationCode"
             type="text"
-            placeholder="Enter the 6-digit code"
+            placeholder="Masukkan 6 digit kode"
             maxlength="6"
             fluid
           />
@@ -111,7 +111,7 @@
             :disabled="resendCountdown > 0"
             class="text-blue-600 hover:text-blue-800 disabled:text-gray-400"
           >
-            {{ resendCountdown > 0 ? `Resend in ${resendCountdown}s` : 'Resend Code' }}
+            {{ resendCountdown > 0 ? `Kirim ulang dalam ${resendCountdown}d` : 'Kirim Ulang Kode' }}
           </button>
         </div>
       </div>
@@ -119,14 +119,14 @@
       <div class="w-full flex justify-end gap-4">
         <Button
           severity="secondary"
-          label="Back"
+          label="Kembali"
           size="medium"
           class="w-full md:w-[128px]"
           @click="step = 1"
         />
         <Button
           type="submit"
-          label="Verify"
+          label="Verifikasi"
           size="medium"
           class="w-full md:w-[128px]"
         />
@@ -178,9 +178,9 @@ const initialValuesStep2 = ref({
 const resolverStep1 = ref(zodResolver(
   z.object({
     newEmail: z.string()
-      .email({ message: 'Please enter a valid email address.' })
+      .email({ message: 'Masukkan alamat email yang valid.' })
       .refine((email) => email !== currentEmail.value, {
-        message: 'New email must be different from current email.',
+        message: 'Email baru harus berbeda dari email saat ini.',
       }),
   })
 ));
@@ -188,8 +188,8 @@ const resolverStep1 = ref(zodResolver(
 const resolverStep2 = ref(zodResolver(
   z.object({
     verificationCode: z.string()
-      .length(6, { message: 'Verification code must be 6 digits.' })
-      .regex(/^\d+$/, { message: 'Verification code must contain only numbers.' }),
+      .length(6, { message: 'Kode verifikasi harus 6 digit.' })
+      .regex(/^\d+$/, { message: 'Kode verifikasi hanya boleh berisi angka.' }),
   })
 ));
 
@@ -205,8 +205,8 @@ const fetchCurrentEmail = async () => {
   } catch (error) {
     showToast({
       type: 'error',
-      title: 'Error',
-      message: getErrorMessage(error) || 'Failed to load profile.',
+      title: 'Gagal',
+      message: getErrorMessage(error) || 'Gagal memuat profil.',
     });
   }
 };
@@ -227,8 +227,8 @@ const onFormSubmitStep1 = async ({ valid, values }: { valid: boolean; values: an
       if (success) {
         showToast({
           type: 'success',
-          title: 'Success',
-          message: 'Verification code sent to your new email.',
+          title: 'Berhasil',
+          message: 'Kode verifikasi berhasil dikirim ke email baru Anda.',
         });
         newEmailForVerification.value = values.newEmail;
         step.value = 2;
@@ -237,8 +237,8 @@ const onFormSubmitStep1 = async ({ valid, values }: { valid: boolean; values: an
     } catch (error) {
       showToast({
         type: 'error',
-        title: 'Error',
-        message: getErrorMessage(error) || 'Failed to send verification code.',
+        title: 'Gagal',
+        message: getErrorMessage(error) || 'Gagal mengirim kode verifikasi.',
       });
     } finally {
       hideLoading();
@@ -263,16 +263,16 @@ const onFormSubmitStep2 = async ({ valid, values }: { valid: boolean; values: an
       if (success) {
         showToast({
           type: 'success',
-          title: 'Success',
-          message: 'Email updated successfully.',
+          title: 'Berhasil',
+          message: 'Email berhasil diperbarui.',
         });
         router.push({ name: 'settings' });
       }
     } catch (error) {
       showToast({
         type: 'error',
-        title: 'Error',
-        message: getErrorMessage(error) || 'Failed to update email.',
+        title: 'Gagal',
+        message: getErrorMessage(error) || 'Gagal memperbarui email.',
       });
     } finally {
       hideLoading();
@@ -295,16 +295,16 @@ const requestVerificationAgain = async () => {
     if (success) {
       showToast({
         type: 'success',
-        title: 'Success',
-        message: 'Verification code resent.',
+        title: 'Berhasil',
+        message: 'Kode verifikasi telah dikirim ulang.',
       });
       startResendCountdown();
     }
   } catch (error) {
     showToast({
       type: 'error',
-      title: 'Error',
-      message: getErrorMessage(error) || 'Failed to resend code.',
+      title: 'Gagal',
+      message: getErrorMessage(error) || 'Gagal mengirim ulang kode.',
     });
   } finally {
     hideLoading();

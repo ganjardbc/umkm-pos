@@ -2,7 +2,7 @@
   <UiCard class="max-w-2xl mx-auto">
     <template #header>
       <h1 class="text-xl font-semibold">
-        Site Settings
+        Pengaturan Situs
       </h1>
     </template>
 
@@ -16,31 +16,31 @@
     >
       <div class="w-full space-y-4">
         <!-- Dark Mode -->
-        <UiFormGroup label="Dark Mode" variant="vertical">
+        <UiFormGroup label="Mode Gelap" variant="vertical">
           <ToggleButton
             name="darkMode"
-            on-label="On"
-            off-label="Off"
+            on-label="Aktif"
+            off-label="Nonaktif"
           />
         </UiFormGroup>
 
         <!-- Notifications -->
-        <UiFormGroup label="Notifications" variant="vertical">
+        <UiFormGroup label="Notifikasi" variant="vertical">
           <ToggleButton
             name="notificationsEnabled"
-            on-label="On"
-            off-label="Off"
+            on-label="Aktif"
+            off-label="Nonaktif"
           />
         </UiFormGroup>
 
         <!-- Language -->
-        <UiFormGroup label="Language" variant="vertical">
+        <UiFormGroup label="Bahasa" variant="vertical">
           <Select
             name="language"
             :options="languageOptions"
             option-label="label"
             option-value="value"
-            placeholder="Select language"
+            placeholder="Pilih bahasa"
             fluid
           />
           <Message
@@ -54,11 +54,11 @@
         </UiFormGroup>
 
         <!-- Timezone -->
-        <UiFormGroup label="Timezone" variant="vertical">
+        <UiFormGroup label="Zona Waktu" variant="vertical">
           <Select
             name="timezone"
             :options="timezoneOptions"
-            placeholder="Select timezone"
+            placeholder="Pilih zona waktu"
             fluid
             filter
           />
@@ -76,7 +76,7 @@
       <div class="w-full flex justify-end gap-4">
         <Button
           severity="secondary"
-          label="Cancel"
+          label="Batal"
           size="medium"
           class="w-full md:w-[128px]"
           @click="onCancel"
@@ -91,7 +91,7 @@
         />
         <Button
           type="submit"
-          label="Save"
+          label="Simpan"
           size="medium"
           class="w-full md:w-[128px]"
         />
@@ -135,8 +135,8 @@ const initialValues = ref<SiteSettingsDto>({
 const resolver = ref(zodResolver(
   z.object({
     darkMode: z.boolean(),
-    language: z.string().min(1, { message: 'Language is required.' }),
-    timezone: z.string().min(1, { message: 'Timezone is required.' }),
+    language: z.string().min(1, { message: 'Bahasa wajib dipilih.' }),
+    timezone: z.string().min(1, { message: 'Zona waktu wajib dipilih.' }),
     notificationsEnabled: z.boolean(),
   })
 ));
@@ -207,16 +207,16 @@ const onFormSubmit = async ({ valid, values }: { valid: boolean; values: any }) 
 
         showToast({
           type: 'success',
-          title: 'Success',
-          message: 'Site settings updated successfully.',
+          title: 'Berhasil',
+          message: 'Pengaturan situs berhasil diperbarui.',
         });
         router.push({ name: 'settings' });
       }
     } catch (error) {
       showToast({
         type: 'error',
-        title: 'Error',
-        message: getErrorMessage(error) || 'Failed to update settings.',
+        title: 'Gagal',
+        message: getErrorMessage(error) || 'Gagal memperbarui pengaturan.',
       });
     } finally {
       hideLoading();
@@ -227,9 +227,9 @@ const onFormSubmit = async ({ valid, values }: { valid: boolean; values: any }) 
 // Reset to defaults
 const confirmReset = () => {
   showConfirm({
-    header: 'Reset Settings',
-    message: 'Are you sure you want to reset all settings to defaults?',
-    rejectLabel: 'Cancel',
+    header: 'Reset Pengaturan',
+    message: 'Apakah Anda yakin ingin mengatur ulang semua pengaturan ke default?',
+    rejectLabel: 'Batal',
     acceptLabel: 'Reset',
     type: 'warn',
     accept: () => {
@@ -237,8 +237,8 @@ const confirmReset = () => {
       initializeForm();
       showToast({
         type: 'success',
-        title: 'Success',
-        message: 'Settings reset to defaults.',
+        title: 'Berhasil',
+        message: 'Pengaturan berhasil diatur ulang ke default.',
       });
     },
   });

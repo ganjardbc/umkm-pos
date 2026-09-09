@@ -17,7 +17,7 @@ export default [
       permission: [READ],
       breadcrumbs: [
         {
-          label: 'Home',
+          label: 'Beranda',
           route: '/landing',
         },
         {

@@ -7,9 +7,9 @@
     <div class="w-full pt-2">
       <Stepper v-model:value="activeStep" :linear="true" class="w-full">
         <StepList>
-          <Step :value="1">User Info</Step>
-          <Step :value="2">Merchant Info</Step>
-          <Step :value="3">Outlet Info</Step>
+          <Step :value="1">Informasi Pengguna</Step>
+          <Step :value="2">Informasi Merchant</Step>
+          <Step :value="3">Informasi Outlet</Step>
         </StepList>
 
         <StepPanels>
@@ -22,7 +22,7 @@
               @submit="(e) => onUserFormSubmit(e, activateCallback)"
               class="flex flex-col gap-4 w-full pt-4"
             >
-              <UiFormGroup label="Full Name" variant="vertical">
+              <UiFormGroup label="Nama Lengkap" variant="vertical">
                 <InputText
                   name="name"
                   type="text"
@@ -58,12 +58,12 @@
                 </Message>
               </UiFormGroup>
 
-              <UiFormGroup label="Password" variant="vertical">
+              <UiFormGroup label="Kata Sandi" variant="vertical">
                 <InputGroup>
                   <InputText
                     name="password"
                     :type="showPassword ? 'text' : 'password'"
-                    placeholder="Min. 6 characters"
+                    placeholder="Min. 6 karakter"
                     fluid
                     :disabled="loading"
                   />
@@ -91,7 +91,7 @@
                 <Button
                   type="button"
                   severity="secondary"
-                  label="Cancel"
+                  label="Batal"
                   class="w-full"
                   :disabled="loading"
                   @click="router.push('/')"
@@ -99,7 +99,7 @@
                 <Button
                   type="submit"
                   variant="primary"
-                  label="Next"
+                  label="Lanjut"
                   class="w-full"
                   :disabled="loading"
                 />
@@ -116,11 +116,11 @@
               @submit="(e) => onMerchantFormSubmit(e, activateCallback)"
               class="flex flex-col gap-4 w-full pt-4"
             >
-              <UiFormGroup label="Merchant Name" variant="vertical">
+              <UiFormGroup label="Nama Merchant" variant="vertical">
                 <InputText
                   name="name"
                   type="text"
-                  placeholder="My Store"
+                  placeholder="Toko Saya"
                   fluid
                   :disabled="loading"
                   @update:modelValue="(value: any) => onMerchantNameChange(value, $form)"
@@ -135,11 +135,11 @@
                 </Message>
               </UiFormGroup>
 
-              <UiFormGroup label="Merchant Slug" variant="vertical">
+              <UiFormGroup label="Slug Merchant" variant="vertical">
                 <InputText
                   name="slug"
                   type="text"
-                  placeholder="my-store"
+                  placeholder="toko-saya"
                   fluid
                   readonly
                   disabled
@@ -154,7 +154,7 @@
                 </Message>
               </UiFormGroup>
 
-              <UiFormGroup label="Phone (Optional)" variant="vertical">
+              <UiFormGroup label="Nomor Telepon (Opsional)" variant="vertical">
                 <InputText
                   name="phone"
                   type="text"
@@ -172,7 +172,7 @@
                 </Message>
               </UiFormGroup>
 
-              <UiFormGroup label="Address (Optional)" variant="vertical">
+              <UiFormGroup label="Alamat (Opsional)" variant="vertical">
                 <Textarea
                   name="address"
                   placeholder="Jl. Ahmad Yani No. 123"
@@ -194,7 +194,7 @@
                 <Button
                   type="button"
                   severity="secondary"
-                  label="Back"
+                  label="Kembali"
                   class="w-full"
                   :disabled="loading"
                   @click="activateCallback(1)"
@@ -202,7 +202,7 @@
                 <Button
                   type="submit"
                   variant="primary"
-                  label="Next"
+                  label="Lanjut"
                   class="w-full"
                   :disabled="loading"
                 />
@@ -219,11 +219,11 @@
               @submit="onOutletFormSubmit"
               class="flex flex-col gap-4 w-full pt-4"
             >
-              <UiFormGroup label="Outlet Name" variant="vertical">
+              <UiFormGroup label="Nama Outlet" variant="vertical">
                 <InputText
                   name="name"
                   type="text"
-                  placeholder="Main Branch"
+                  placeholder="Cabang Utama"
                   fluid
                   :disabled="loading"
                   @update:modelValue="(value: any) => onOutletNameChange(value, $form)"
@@ -238,11 +238,11 @@
                 </Message>
               </UiFormGroup>
 
-              <UiFormGroup label="Outlet Slug" variant="vertical">
+              <UiFormGroup label="Slug Outlet" variant="vertical">
                 <InputText
                   name="slug"
                   type="text"
-                  placeholder="main-branch"
+                  placeholder="cabang-utama"
                   fluid
                   readonly
                   disabled
@@ -257,7 +257,7 @@
                 </Message>
               </UiFormGroup>
 
-              <UiFormGroup label="Location (Optional)" variant="vertical">
+              <UiFormGroup label="Lokasi (Opsional)" variant="vertical">
                 <Textarea
                   name="location"
                   placeholder="Jl. Sudirman No. 1"
@@ -279,7 +279,7 @@
                 <Button
                   type="button"
                   severity="secondary"
-                  label="Back"
+                  label="Kembali"
                   class="w-full"
                   :disabled="loading"
                   @click="activateCallback(2)"
@@ -287,7 +287,7 @@
                 <Button
                   type="submit"
                   variant="primary"
-                  label="Register"
+                  label="Daftar"
                   class="w-full"
                   :loading="loading"
                 />
@@ -298,14 +298,14 @@
       </Stepper>
 
       <div class="text-base text-gray-500 dark:text-gray-400 text-center">
-        Already have an account?
+        Sudah punya akun?
         <router-link to="/" class="text-base text-blue-500 dark:text-blue-400 hover:underline">
-          Sign In
+          Masuk
         </router-link>
       </div>
 
       <div class="text-xs text-center text-gray-400 dark:text-gray-500 pt-4">
-        Version 1.0.0
+        Versi 1.0.0
       </div>
     </div>
   </UiCard>
@@ -356,9 +356,9 @@ const userFormValues = ref({
 
 const userResolver = ref(zodResolver(
   z.object({
-    name: z.string().min(1, { message: 'Full name is required.' }),
-    email: z.string().email({ message: 'Please enter a valid email address.' }).min(1, { message: 'Email is required.' }),
-    password: z.string().min(6, { message: 'Password must be at least 6 characters.' })
+    name: z.string().min(1, { message: 'Nama lengkap wajib diisi.' }),
+    email: z.string().email({ message: 'Masukkan alamat email yang valid.' }).min(1, { message: 'Email wajib diisi.' }),
+    password: z.string().min(6, { message: 'Kata sandi minimal 6 karakter.' })
   })
 ));
 
@@ -379,10 +379,10 @@ const merchantFormValues = ref({
 
 const merchantResolver = ref(zodResolver(
   z.object({
-    name: z.string().min(1, { message: 'Merchant name is required.' }),
+    name: z.string().min(1, { message: 'Nama merchant wajib diisi.' }),
     slug: z.string()
-      .min(1, { message: 'Merchant slug is required.' })
-      .regex(slugPattern, { message: 'Slug must only contain lowercase letters, numbers and hyphens.' }),
+      .min(1, { message: 'Slug merchant wajib diisi.' })
+      .regex(slugPattern, { message: 'Slug hanya boleh berisi huruf kecil, angka, dan tanda hubung.' }),
     phone: z.string().optional(),
     address: z.string().optional()
   })
@@ -409,10 +409,10 @@ const outletFormValues = ref({
 
 const outletResolver = ref(zodResolver(
   z.object({
-    name: z.string().min(1, { message: 'Outlet name is required.' }),
+    name: z.string().min(1, { message: 'Nama outlet wajib diisi.' }),
     slug: z.string()
-      .min(1, { message: 'Outlet slug is required.' })
-      .regex(slugPattern, { message: 'Slug must only contain lowercase letters, numbers and hyphens.' }),
+      .min(1, { message: 'Slug outlet wajib diisi.' })
+      .regex(slugPattern, { message: 'Slug hanya boleh berisi huruf kecil, angka, dan tanda hubung.' }),
     location: z.string().optional()
   })
 ));
@@ -462,15 +462,15 @@ const submitRegistration = async () => {
       router.push(PRP_LANDING);
       showToast({
         type: 'success',
-        title: 'Registration Success',
-        message: 'Your account has been created successfully.',
+        title: 'Pendaftaran Berhasil',
+        message: 'Akun Anda berhasil dibuat.',
       });
     }
   } catch (error) {
     showToast({
       type: 'error',
-      title: 'Registration Failed.',
-      message: getErrorMessage(error) || 'There was an error.',
+      title: 'Pendaftaran Gagal.',
+      message: getErrorMessage(error) || 'Terjadi kesalahan.',
     });
   } finally {
     loading.value = false;

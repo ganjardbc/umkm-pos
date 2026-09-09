@@ -32,7 +32,7 @@ entireModules.push({
   path: '/:catchAll(.*)',
   name: '404',
   meta: {
-    title: '404 Not Found',
+    title: '404 Halaman Tidak Ditemukan',
     layout: 'default',
   },
   component: () => import('@/modules/error/pages/404.vue'),

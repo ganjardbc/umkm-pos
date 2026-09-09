@@ -13,9 +13,9 @@
         <div class="flex justify-between items-center">
           <div class="space-y-2">
             <h1 class="text-xl font-semibold">{{ profile?.name }}</h1>
-            <Tag 
-              :severity="profile?.is_active ? 'success' : 'danger'" 
-              :value="profile?.is_active ? 'Active' : 'Inactive'" 
+            <Tag
+              :severity="profile?.is_active ? 'success' : 'danger'"
+              :value="profile?.is_active ? 'Aktif' : 'Tidak Aktif'"
             />
           </div>
           <Avatar
@@ -31,11 +31,11 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label class="text-sm font-medium text-gray-500">Username</label>
+            <label class="text-sm font-medium text-gray-500">Nama Pengguna</label>
             <p class="text-base mt-1">{{ profile?.username }}</p>
           </div>
           <div>
-            <label class="text-sm font-medium text-gray-500">Name</label>
+            <label class="text-sm font-medium text-gray-500">Nama Lengkap</label>
             <p class="text-base mt-1">{{ profile?.name }}</p>
           </div>
           <div>
@@ -47,11 +47,11 @@
             <p class="text-base mt-1">{{ profile?.merchants?.name }}</p>
           </div>
           <div>
-            <label class="text-sm font-medium text-gray-500">Created At</label>
+            <label class="text-sm font-medium text-gray-500">Dibuat Pada</label>
             <p class="text-base mt-1">{{ formatDateTime(profile?.created_at) }}</p>
           </div>
           <div>
-            <label class="text-sm font-medium text-gray-500">Updated At</label>
+            <label class="text-sm font-medium text-gray-500">Diperbarui Pada</label>
             <p class="text-base mt-1">{{ formatDateTime(profile?.updated_at) }}</p>
           </div>
         </div>
@@ -100,7 +100,7 @@
       variant="outlined"
       icon="pi pi-power-off"
       size="small"
-      label="Logout"
+      label="Keluar"
       fluid
       @click="handleLogout"
     />
@@ -137,29 +137,29 @@ const fetchProfile = async () => {
   try {
     const response = await getDetailprofile();
     const { data } = response?.data || {};
-    
+
     profile.value = data || null;
   } catch (error) {
     showToast({
       type: 'error',
-      title: 'Failed to fetch profile.',
-      message: getErrorMessage(error) || 'There was an error.',
+      title: 'Gagal memuat profil.',
+      message: getErrorMessage(error) || 'Terjadi kesalahan.',
     });
   }
 };
 
 const handleLogout = () => {
   showConfirm({
-    header: 'Logout dari Akun ini?',
+    header: 'Keluar dari Akun?',
     rejectLabel: 'Batal',
-    acceptLabel: 'Ok, Lanjutkan',
+    acceptLabel: 'Ya, Lanjutkan',
     type: 'warn',
     accept: () => {
       removeAuth();
 
       showToast({
         type: 'success',
-        title: 'Logout Succesfully',
+        title: 'Berhasil Keluar',
       });
       router.push(PRP_AUTH);
     }

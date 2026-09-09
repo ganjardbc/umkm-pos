@@ -8,7 +8,7 @@
       date-format="yy-mm-dd"
       show-button-bar
       :manual-input="false"
-      placeholder="Select date range"
+      placeholder="Pilih rentang tanggal"
       showIcon
       class="w-full"
     />
@@ -37,7 +37,7 @@
       :data="salesSummaryData"
       :loading="salesSummaryLoading"
       :error="salesSummaryError"
-      title="Sales Summary"
+      title="Ringkasan Penjualan"
       @retry="retrySalesSummary"
     />
 
@@ -46,7 +46,7 @@
       :data="dailyReportsData"
       :loading="dailyReportsLoading"
       :error="dailyReportsError"
-      title="Daily Sales Trends"
+      title="Tren Penjualan Harian"
       @retry="retryDailyReports"
     />
 
@@ -56,7 +56,7 @@
         :data="topProductsData"
         :loading="topProductsLoading"
         :error="topProductsError"
-        title="Top Products"
+        title="Produk Terlaris"
         @retry="retryTopProducts"
       />
 
@@ -65,7 +65,7 @@
         :data="outletComparisonData"
         :loading="outletComparisonLoading"
         :error="outletComparisonError"
-        title="Outlet Comparison"
+        title="Perbandingan Outlet"
         @retry="retryOutletComparison"
       />
     </div>
@@ -157,17 +157,17 @@ const validateDateRange = (): boolean => {
   const [start, end] = dateRange.value ?? [];
 
   if (!start || !end) {
-    dateRangeError.value = 'Please select both start and end dates';
+    dateRangeError.value = 'Silakan pilih tanggal mulai dan tanggal akhir';
     return false;
   }
 
   if (start > end) {
-    dateRangeError.value = 'Start date must be before or equal to end date';
+    dateRangeError.value = 'Tanggal mulai harus sebelum atau sama dengan tanggal akhir';
     return false;
   }
 
   if (end > new Date()) {
-    dateRangeError.value = 'End date cannot be in the future';
+    dateRangeError.value = 'Tanggal akhir tidak boleh lebih dari hari ini';
     return false;
   }
 
@@ -299,9 +299,9 @@ const fetchAllReports = async () => {
   if (results[0].status === 'fulfilled') {
     salesSummaryData.value = results[0].value;
   } else {
-    salesSummaryError.value = results[0].reason instanceof Error 
-      ? results[0].reason.message 
-      : 'Failed to fetch sales summary';
+    salesSummaryError.value = results[0].reason instanceof Error
+      ? results[0].reason.message
+      : 'Gagal memuat ringkasan penjualan';
     salesSummaryData.value = null;
   }
   salesSummaryLoading.value = false;
@@ -310,9 +310,9 @@ const fetchAllReports = async () => {
   if (results[1].status === 'fulfilled') {
     dailyReportsData.value = results[1].value;
   } else {
-    dailyReportsError.value = results[1].reason instanceof Error 
-      ? results[1].reason.message 
-      : 'Failed to fetch daily reports';
+    dailyReportsError.value = results[1].reason instanceof Error
+      ? results[1].reason.message
+      : 'Gagal memuat laporan harian';
     dailyReportsData.value = null;
   }
   dailyReportsLoading.value = false;
@@ -321,9 +321,9 @@ const fetchAllReports = async () => {
   if (results[2].status === 'fulfilled') {
     topProductsData.value = results[2].value;
   } else {
-    topProductsError.value = results[2].reason instanceof Error 
-      ? results[2].reason.message 
-      : 'Failed to fetch top products';
+    topProductsError.value = results[2].reason instanceof Error
+      ? results[2].reason.message
+      : 'Gagal memuat produk terlaris';
     topProductsData.value = null;
   }
   topProductsLoading.value = false;
@@ -332,9 +332,9 @@ const fetchAllReports = async () => {
   if (results[3].status === 'fulfilled') {
     outletComparisonData.value = results[3].value;
   } else {
-    outletComparisonError.value = results[3].reason instanceof Error 
-      ? results[3].reason.message 
-      : 'Failed to fetch outlet comparison';
+    outletComparisonError.value = results[3].reason instanceof Error
+      ? results[3].reason.message
+      : 'Gagal memuat perbandingan outlet';
     outletComparisonData.value = null;
   }
   outletComparisonLoading.value = false;
@@ -345,16 +345,16 @@ const fetchAllReports = async () => {
  */
 const retrySalesSummary = async () => {
   if (!params.value) return;
-  
+
   salesSummaryLoading.value = true;
   salesSummaryError.value = null;
-  
+
   try {
     salesSummaryData.value = await getSalesSummary(params.value);
   } catch (error) {
-    salesSummaryError.value = error instanceof Error 
-      ? error.message 
-      : 'Failed to fetch sales summary';
+    salesSummaryError.value = error instanceof Error
+      ? error.message
+      : 'Gagal memuat ringkasan penjualan';
     salesSummaryData.value = null;
   } finally {
     salesSummaryLoading.value = false;
@@ -363,16 +363,16 @@ const retrySalesSummary = async () => {
 
 const retryDailyReports = async () => {
   if (!params.value) return;
-  
+
   dailyReportsLoading.value = true;
   dailyReportsError.value = null;
-  
+
   try {
     dailyReportsData.value = await getDailyReports(params.value);
   } catch (error) {
-    dailyReportsError.value = error instanceof Error 
-      ? error.message 
-      : 'Failed to fetch daily reports';
+    dailyReportsError.value = error instanceof Error
+      ? error.message
+      : 'Gagal memuat laporan harian';
     dailyReportsData.value = null;
   } finally {
     dailyReportsLoading.value = false;
@@ -381,19 +381,19 @@ const retryDailyReports = async () => {
 
 const retryTopProducts = async () => {
   if (!params.value) return;
-  
+
   topProductsLoading.value = true;
   topProductsError.value = null;
-  
+
   try {
-    topProductsData.value = await getTopProducts({ 
-      ...params.value, 
-      limit: 10 
+    topProductsData.value = await getTopProducts({
+      ...params.value,
+      limit: 10
     });
   } catch (error) {
-    topProductsError.value = error instanceof Error 
-      ? error.message 
-      : 'Failed to fetch top products';
+    topProductsError.value = error instanceof Error
+      ? error.message
+      : 'Gagal memuat produk terlaris';
     topProductsData.value = null;
   } finally {
     topProductsLoading.value = false;
@@ -402,16 +402,16 @@ const retryTopProducts = async () => {
 
 const retryOutletComparison = async () => {
   if (!params.value) return;
-  
+
   outletComparisonLoading.value = true;
   outletComparisonError.value = null;
-  
+
   try {
     outletComparisonData.value = await getOutletComparison(params.value);
   } catch (error) {
-    outletComparisonError.value = error instanceof Error 
-      ? error.message 
-      : 'Failed to fetch outlet comparison';
+    outletComparisonError.value = error instanceof Error
+      ? error.message
+      : 'Gagal memuat perbandingan outlet';
     outletComparisonData.value = null;
   } finally {
     outletComparisonLoading.value = false;

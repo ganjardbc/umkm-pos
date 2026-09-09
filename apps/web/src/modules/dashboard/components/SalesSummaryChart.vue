@@ -25,28 +25,28 @@
       <!-- Metrics Cards -->
       <div class="col-span-2 grid grid-cols-2 gap-4">
         <div class="bg-blue-50 dark:bg-dark! rounded-lg p-4">
-          <p class="text-sm text-gray-400 mb-1">Total Sales</p>
+          <p class="text-sm text-gray-400 mb-1">Total Penjualan</p>
           <p class="text-xl md:text-2xl font-bold text-blue-600">
             {{ formatCurrency(data?.total_sales) }}
           </p>
         </div>
 
         <div class="bg-green-50 dark:bg-dark! rounded-lg p-4">
-          <p class="text-sm text-gray-400 mb-1">Total Transactions</p>
+          <p class="text-sm text-gray-400 mb-1">Total Transaksi</p>
           <p class="text-xl md:text-2xl font-bold text-green-600">
             {{ formatNumber(data?.total_transactions) }}
           </p>
         </div>
 
         <div class="bg-amber-50 dark:bg-dark! rounded-lg p-4">
-          <p class="text-sm text-gray-400 mb-1">Avg Daily Sales</p>
+          <p class="text-sm text-gray-400 mb-1">Rata-rata Penjualan Harian</p>
           <p class="text-xl md:text-2xl font-bold text-amber-600">
             {{ formatCurrency(data?.avg_daily_sales) }}
           </p>
         </div>
 
         <div class="bg-purple-50 dark:bg-dark! rounded-lg p-4">
-          <p class="text-sm text-gray-400 mb-1">Avg Daily Transactions</p>
+          <p class="text-sm text-gray-400 mb-1">Rata-rata Transaksi Harian</p>
           <p class="text-xl md:text-2xl font-bold text-purple-600">
             {{ formatNumber(data?.avg_daily_transactions) }}
           </p>
@@ -130,7 +130,7 @@ const handleExport = async () => {
     const timestamp = new Date().toISOString().split('T')[0];
     downloadFile(blob, `Sales_Summary_${timestamp}.xlsx`);
   } catch (error) {
-    exportError.value = error instanceof Error ? error.message : 'Export failed';
+    exportError.value = error instanceof Error ? error.message : 'Export gagal';
   } finally {
     isExporting.value = false;
   }
@@ -163,7 +163,7 @@ const initializeChart = () => {
     chartInstance = new Chart(chartCanvas.value, {
       type: 'pie',
       data: {
-        labels: ['Total Sales', 'Avg Daily Sales', 'Total Transactions'],
+        labels: ['Total Penjualan', 'Rata-rata Penjualan Harian', 'Total Transaksi'],
         datasets: [
           {
             data: [
@@ -213,8 +213,8 @@ const initializeChart = () => {
             callbacks: {
               label: (context) => {
                 const label = context.label || '';
-                if (label === 'Total Sales' || label === 'Avg Daily Sales') {
-                  const actualValue = label === 'Total Sales' ? props.data!.total_sales : props.data!.avg_daily_sales;
+                if (label === 'Total Penjualan' || label === 'Rata-rata Penjualan Harian') {
+                  const actualValue = label === 'Total Penjualan' ? props.data!.total_sales : props.data!.avg_daily_sales;
                   return `${label}: ${formatCurrency(actualValue)}`;
                 }
                 return `${label}: ${formatNumber(props.data!.total_transactions)}`;
