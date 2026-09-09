@@ -76,7 +76,7 @@
           severity="secondary"
           label="Batal"
           size="medium"
-          class="w-full md:w-[128px]"
+          class="w-full md:w-32"
           @click="onCancel"
         />
         <Button
@@ -84,7 +84,7 @@
           severity="danger"
           label="Nonaktifkan Akun"
           size="medium"
-          class="w-full md:w-[128px]"
+          class="w-full md:w-48"
         />
       </div>
     </Form>
