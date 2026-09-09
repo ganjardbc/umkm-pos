@@ -329,14 +329,15 @@ const paymentPayload = ref({
   total_amount: 0,
   payment_method: 'cash',
   cash_received: 0,
+  is_offline: false,
 });
 
 const openPaymentModal = (transaction: any) => {
   paymentTarget.value = transaction;
   paymentPayload.value = {
+    ...paymentPayload.value,
     total_amount: Number(transaction.total_amount),
     payment_method: 'cash',
-    cash_received: 0,
   };
   showPaymentModal.value = true;
 };
