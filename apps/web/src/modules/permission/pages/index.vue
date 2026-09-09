@@ -13,7 +13,7 @@
       <Button
         icon="pi pi-plus"
         label="Tambah Permission"
-        class="w-full md:w-[192px]"
+        class="w-full md:w-56"
         :disabled="!isCanCreate"
         @click="addPermission"
       />
