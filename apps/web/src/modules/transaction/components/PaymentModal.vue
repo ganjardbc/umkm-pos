@@ -98,7 +98,7 @@
         </div>
       </div>
 
-      <UiFormGroup label="Tipe Pesanan" variant="vertical">
+      <UiFormGroup label="Mode Pesanan" variant="vertical">
         <div class="flex items-center justify-between">
           <label class="text-sm text-gray-700 dark:text-gray-300">Pesanan Offline?</label>
         <InputSwitch
