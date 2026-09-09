@@ -2,7 +2,7 @@
   <UiCard>
     <div class="w-full flex gap-4 items-center justify-between">
       <h1 class="text-lg font-semibold">
-        Shift Information
+        Informasi Shift
       </h1>
     </div>
 
@@ -12,23 +12,23 @@
         <div class="space-y-2">
           <label class="text-sm font-medium text-gray-600 dark:text-gray-400">Outlet</label>
           <div class="text-base font-semibold text-gray-900 dark:text-white">
-            {{ currentShift.outlet?.name || 'N/A' }}
+            {{ currentShift.outlet?.name || '-' }}
           </div>
         </div>
 
         <!-- Shift Owner -->
         <div class="space-y-2">
-          <label class="text-sm font-medium text-gray-600 dark:text-gray-400">Shift Owner</label>
+          <label class="text-sm font-medium text-gray-600 dark:text-gray-400">Pemilik Shift</label>
           <div class="text-base font-semibold text-gray-900 dark:text-white">
-            {{ currentShift.shift_owner?.name || 'N/A' }}
+            {{ currentShift.shift_owner?.name || '-' }}
           </div>
         </div>
 
         <!-- Created At -->
         <div class="space-y-2">
-          <label class="text-sm font-medium text-gray-600 dark:text-gray-400">Created</label>
+          <label class="text-sm font-medium text-gray-600 dark:text-gray-400">Waktu Dibuat</label>
           <div class="text-base font-semibold text-gray-900 dark:text-white">
-            {{ currentShift.created_at ? formatDateTime(currentShift.created_at) : 'N/A' }}
+            {{ currentShift.created_at ? formatDateTime(currentShift.created_at) : '-' }}
           </div>
         </div>
 
@@ -37,7 +37,7 @@
           <label class="text-sm font-medium text-gray-600 dark:text-gray-400">Status</label>
           <div>
             <Tag
-              :value="currentShift.status?.toUpperCase() || 'N/A'"
+              :value="currentShift.status === 'open' ? 'BUKA' : 'TUTUP'"
               :severity="currentShift.status === 'open' ? 'success' : 'secondary'"
             />
           </div>
@@ -49,7 +49,7 @@
       <div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
         <!-- Participant Count -->
         <div class="p-4 flex flex-row xl:flex-col gap-2 justify-between items-center rounded-lg bg-gray-50 dark:bg-dark">
-          <label class="text-sm font-medium text-gray-600 dark:text-gray-400">Participants</label>
+          <label class="text-sm font-medium text-gray-600 dark:text-gray-400">Peserta</label>
           <div class="text-base font-semibold text-gray-900 dark:text-white">
             {{ currentShift.participant_count || 0 }}
           </div>
@@ -57,7 +57,7 @@
 
         <!-- Total Transactions -->
         <div class="p-4 flex flex-row xl:flex-col gap-2 justify-between items-center rounded-lg bg-gray-50 dark:bg-dark">
-          <label class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Transactions</label>
+          <label class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Transaksi</label>
           <div class="text-base font-semibold text-gray-900 dark:text-white">
             {{ currentShift.total_transactions || 0 }}
           </div>
@@ -65,7 +65,7 @@
 
         <!-- Shift Time -->
         <div class="p-4 flex flex-row xl:flex-col gap-2 justify-between items-center rounded-lg bg-gray-50 dark:bg-dark">
-          <label class="text-sm font-medium text-gray-600 dark:text-gray-400">Shift Time</label>
+          <label class="text-sm font-medium text-gray-600 dark:text-gray-400">Waktu Shift</label>
           <div class="text-base font-semibold text-gray-900 dark:text-white">
             {{ formatRangeTime(currentShift.start_time, currentShift.end_time) }}
           </div>

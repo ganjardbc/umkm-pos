@@ -1,12 +1,12 @@
 <template>
   <UiCard class="participant-management">
     <div class="participant-management__header">
-      <h3 class="participant-management__title">User Shifts</h3>
+      <h3 class="participant-management__title">Peserta Shift</h3>
       <div class="flex justify-end gap-2 items-center">
         <Button
           v-if="isShiftOwner && isShiftOpen"
           icon="pi pi-pencil"
-          label="Handoff Shift"
+          label="Oper Shift"
           severity="secondary"
           size="small"
           :loading="loading"
@@ -40,23 +40,23 @@
             <div class="flex justify-end gap-2">
               <Tag
                 v-if="participant.is_owner"
-                value="Shift Owner"
+                value="Pemilik Shift"
                 severity="info"
               />
               <Tag
                 v-if="participant.participant_removed_at"
-                value="Removed"
+                value="Dihapus"
                 severity="warning"
               />
             </div>
           </div>
           <div class="participant-item__meta">
             <span class="text-xs text-gray-500">
-              Added: {{ formatDate(participant.participant_added_at) }}
+              Ditambahkan: {{ formatDate(participant.participant_added_at) }}
             </span>
             <Divider v-if="participant.transaction_count" layout="vertical" />
             <span v-if="participant.transaction_count" class="text-xs text-gray-500">
-              Transactions: {{ participant.transaction_count }}
+              Transaksi: {{ participant.transaction_count }}
             </span>
           </div>
         </div>
@@ -80,44 +80,44 @@
             size="small"
             @click="confirmRestoreParticipant(participant)"
             :loading="loading"
-            title="Restore participant"
+            title="Kembalikan peserta"
           />
         </div>
       </div>
     </div>
     <div v-if="participants.length === 0" class="participant-management__empty">
-      <p>No participants yet</p>
+      <p>Belum ada peserta shift</p>
     </div>
   </UiCard>
 
   <!-- Add Participant Dialog -->
   <Dialog
     v-model:visible="showAddDialog"
-    header="Add Participant"
+    header="Tambah Peserta"
     :modal="true"
     class="w-full md:w-96"
   >
     <div class="space-y-4">
       <div>
-        <label class="block text-sm font-medium mb-2">Select User</label>
+        <label class="block text-sm font-medium mb-2">Pilih Pengguna</label>
         <Dropdown
           v-model="selectedUserId"
           :options="usersNotInShift"
           option-label="name"
           option-value="id"
-          placeholder="Choose a user"
+          placeholder="Pilih pengguna"
           class="w-full"
           :loading="loadingUsers"
         />
       </div>
       <div class="flex gap-2 justify-end">
         <Button
-          label="Cancel"
+          label="Batal"
           severity="secondary"
           @click="showAddDialog = false"
         />
         <Button
-          label="Add"
+          label="Tambah"
           @click="handleAddParticipant"
           :loading="loading"
           :disabled="!selectedUserId"
@@ -129,48 +129,48 @@
   <!-- Handoff Shift Dialog -->
   <Dialog
     v-model:visible="showHandoffDialog"
-    header="Handoff Shift"
+    header="Oper Shift"
     :modal="true"
     class="w-full md:w-96"
   >
     <div class="space-y-4">
       <p class="text-sm text-gray-600 dark:text-gray-400">
-        Transfer shift responsibility to another participant
+        Oper tanggung jawab shift kepada peserta lain
       </p>
       <div>
-        <label class="block text-sm font-medium mb-2">Select Target Participant</label>
+        <label class="block text-sm font-medium mb-2">Pilih Peserta Tujuan</label>
         <Dropdown
           v-model="selectedHandoffUserId"
           :options="otherParticipants"
           option-label="user_name"
           option-value="user_id"
-          placeholder="Choose a participant"
+          placeholder="Pilih peserta"
           class="w-full"
           :disabled="isHandoffComplete"
         />
       </div>
 
       <div class="flex items-center gap-2">
-        <InputSwitch 
+        <InputSwitch
           v-model="removePreviousOwner"
           :disabled="isHandoffComplete"
         />
-        <label class="text-sm">Remove me from participants after handoff</label>
+        <label class="text-sm">Keluarkan saya dari peserta shift setelah oper shift</label>
       </div>
 
       <div v-if="isHandoffComplete" class="text-center text-sm text-green-600 dark:text-green-400">
-        ✓ Shift handoff completed successfully
+        ✓ Oper shift berhasil diselesaikan
       </div>
 
       <div class="flex gap-2 justify-end">
         <Button
-          label="Cancel"
+          label="Batal"
           severity="secondary"
           :disabled="isHandoffComplete || loading"
           @click="handleCloseHandoffDialog"
         />
         <Button
-          label="Handoff"
+          label="Oper Shift"
           :loading="loading"
           :disabled="!selectedHandoffUserId || isHandoffComplete"
           @click="handleConfirmHandoff"
@@ -256,8 +256,8 @@ const handleAddParticipant = async () => {
     });
     showToast({
       type: 'success',
-      title: 'Success',
-      message: 'Participant added successfully',
+      title: 'Sukses',
+      message: 'Peserta berhasil ditambahkan',
     } as any);
     showAddDialog.value = false;
     selectedUserId.value = '';
@@ -265,8 +265,8 @@ const handleAddParticipant = async () => {
   } catch (error) {
     showToast({
       type: 'error',
-      title: 'Error',
-      message: getErrorMessage(error) || 'Failed to add participant',
+      title: 'Gagal',
+      message: getErrorMessage(error) || 'Gagal menambahkan peserta',
     } as any);
   }
 };
@@ -274,10 +274,10 @@ const handleAddParticipant = async () => {
 const confirmRemoveParticipant = (participant: Participant) => {
   participantToRemove.value = participant;
   showConfirm({
-    header: 'Remove User',
-    message: 'Are you sure you want to remove user from this shift?',
-    rejectLabel: 'Cancel',
-    acceptLabel: 'Remove',
+    header: 'Hapus Peserta',
+    message: 'Apakah Anda yakin ingin menghapus pengguna ini dari shift?',
+    rejectLabel: 'Batal',
+    acceptLabel: 'Hapus',
     type: 'warn',
     accept: () => {
       handleRemoveParticipant();
@@ -295,8 +295,8 @@ const handleRemoveParticipant = async () => {
     });
     showToast({
       type: 'success',
-      title: 'Success',
-      message: 'Participant removed successfully',
+      title: 'Sukses',
+      message: 'Peserta berhasil dihapus',
     } as any);
     showRemoveConfirm.value = false;
     participantToRemove.value = null;
@@ -304,8 +304,8 @@ const handleRemoveParticipant = async () => {
   } catch (error) {
     showToast({
       type: 'error',
-      title: 'Error',
-      message: getErrorMessage(error) || 'Failed to remove participant',
+      title: 'Gagal',
+      message: getErrorMessage(error) || 'Gagal menghapus peserta',
     } as any);
   }
 };
@@ -313,10 +313,10 @@ const handleRemoveParticipant = async () => {
 const confirmRestoreParticipant = (participant: Participant) => {
   participantToRemove.value = participant;
   showConfirm({
-    header: 'Restore User',
-    message: 'Are you sure you want to restore this user to the shift?',
-    rejectLabel: 'Cancel',
-    acceptLabel: 'Restore',
+    header: 'Kembalikan Peserta',
+    message: 'Apakah Anda yakin ingin mengembalikan pengguna ini ke dalam shift?',
+    rejectLabel: 'Batal',
+    acceptLabel: 'Kembalikan',
     type: 'info',
     accept: () => {
       handleRestoreParticipant();
@@ -334,16 +334,16 @@ const handleRestoreParticipant = async () => {
     });
     showToast({
       type: 'success',
-      title: 'Success',
-      message: 'Participant restored successfully',
+      title: 'Sukses',
+      message: 'Peserta berhasil dikembalikan',
     } as any);
     participantToRemove.value = null;
     emit('participant-added');
   } catch (error) {
     showToast({
       type: 'error',
-      title: 'Error',
-      message: getErrorMessage(error) || 'Failed to restore participant',
+      title: 'Gagal',
+      message: getErrorMessage(error) || 'Gagal mengembalikan peserta',
     } as any);
   }
 };
@@ -367,10 +367,10 @@ const loadAvailableUsers = async () => {
 
 const handleConfirmHandoff = () => {
   showConfirm({
-    header: 'Handoff Shift?',
-    message: 'Are you sure you want to handoff this shift?',
-    rejectLabel: 'Cancel',
-    acceptLabel: 'Handoff',
+    header: 'Oper Shift?',
+    message: 'Apakah Anda yakin ingin mengoper shift ini?',
+    rejectLabel: 'Batal',
+    acceptLabel: 'Oper Shift',
     type: 'warn',
     accept: () => {
       handleHandoff();
@@ -389,22 +389,22 @@ const handleHandoff = async () => {
     });
     showToast({
       type: 'success',
-      title: 'Success',
-      message: 'Shift handed off successfully',
+      title: 'Sukses',
+      message: 'Shift berhasil dioper',
     } as any);
-    
+
     // Mark as complete to disable form
     isHandoffComplete.value = true;
     handleCloseHandoffDialog();
-    
+
     // Emit event for parent to reload data
     emit('handoff-complete');
   } catch (error) {
     console.error('Handoff error:', error);
     showToast({
       type: 'error',
-      title: 'Error',
-      message: getErrorMessage(error) || 'Failed to handoff shift',
+      title: 'Gagal',
+      message: getErrorMessage(error) || 'Gagal mengoper shift',
     } as any);
   }
 };

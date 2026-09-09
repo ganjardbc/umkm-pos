@@ -83,7 +83,7 @@ export const generateReceiptHTML = (transaction: ReceiptData): string => {
           font-size: 12px;
           color: #999;
           margin: 8px 0 0 0;
-        ">Receipt #${transaction?.id?.slice(0, 8).toUpperCase()}</p>
+        ">Struk #${transaction?.id?.slice(0, 8).toUpperCase()}</p>
       </div>
 
       <!-- Transaction Info -->
@@ -94,19 +94,19 @@ export const generateReceiptHTML = (transaction: ReceiptData): string => {
         line-height: 1.6;
       ">
         <div style="display: flex; justify-content: space-between;">
-          <span>Date:</span>
+          <span>Tanggal:</span>
           <span>${formatDate(transaction?.created_at)}</span>
         </div>
         <div style="display: flex; justify-content: space-between;">
-          <span>Time:</span>
+          <span>Waktu:</span>
           <span>${formatTime(transaction?.created_at)}</span>
         </div>
         <div style="display: flex; justify-content: space-between;">
-          <span>Cashier:</span>
+          <span>Kasir:</span>
           <span>${transaction?.users?.name || ''}</span>
         </div>
         <div style="display: flex; justify-content: space-between;">
-          <span>Payment:</span>
+          <span>Pembayaran:</span>
           <span style="text-transform: capitalize;">${transaction?.payment_method || ''}</span>
         </div>
       </div>
@@ -123,7 +123,7 @@ export const generateReceiptHTML = (transaction: ReceiptData): string => {
       ">
         <div>Item</div>
         <div style="text-align: right;">Qty</div>
-        <div style="text-align: right;">Price</div>
+        <div style="text-align: right;">Harga</div>
         <div style="text-align: right;">Total</div>
       </div>
 
@@ -167,7 +167,7 @@ export const generateReceiptHTML = (transaction: ReceiptData): string => {
           font-weight: bold;
           color: #111;
         ">
-          <span>Total Amount:</span>
+          <span>Total Pembayaran:</span>
           <span>${formatCurrency(transaction?.total_amount)}</span>
         </div>
         ${
@@ -182,7 +182,7 @@ export const generateReceiptHTML = (transaction: ReceiptData): string => {
             color: #374151;
             margin-top: 8px;
           ">
-            <span>Cash Received:</span>
+            <span>Uang Tunai Diterima:</span>
             <span>${formatCurrency(transaction?.cash_received)}</span>
           </div>
         `
@@ -200,7 +200,7 @@ export const generateReceiptHTML = (transaction: ReceiptData): string => {
             color: #374151;
             margin-top: 4px;
           ">
-            <span>Change:</span>
+            <span>Kembalian:</span>
             <span>${formatCurrency(transaction?.change_amount)}</span>
           </div>
         `
@@ -235,7 +235,7 @@ export const generateReceiptHTML = (transaction: ReceiptData): string => {
             margin-top: 8px;
           ">
             <span>Status:</span>
-            <span>CANCELLED</span>
+            <span>DIBATALKAN</span>
           </div>
         `
             : ''
@@ -251,7 +251,7 @@ export const generateReceiptHTML = (transaction: ReceiptData): string => {
           font-size: 12px;
           color: #666;
           margin: 0;
-        ">Thank you for your purchase!</p>
+        ">Terima kasih atas kunjungan Anda!</p>
         <p style="
           font-size: 12px;
           color: #999;

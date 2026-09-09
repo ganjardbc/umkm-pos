@@ -8,40 +8,40 @@
         @click="onBack"
       />
       <h1 class="text-lg font-semibold">
-        Transaction Detail
+        Detail Transaksi
       </h1>
     </div>
 
     <!-- Transaction Information Card -->
     <UiCard v-if="transactionDetail">
-      <template #header>  
+      <template #header>
         <div class="w-full flex flex-col md:flex-row gap-2 items-center justify-between">
           <div class="w-full flex items-center justify-between">
             <h1 class="flex-1 text-lg font-semibold">
-              Transaction Information
+              Informasi Transaksi
             </h1>
             <Tag
-              :value="transactionDetail?.is_cancelled ? 'Cancelled' : 'Active'"
+              :value="transactionDetail?.is_cancelled ? 'Dibatalkan' : 'Aktif'"
               :severity="transactionDetail?.is_cancelled ? 'danger' : 'success'"
               class="capitalize"
             />
           </div>
           <div class="w-full md:w-auto flex justify-end gap-2">
             <Button
-              severity="secondary" 
+              severity="secondary"
               variant="outlined"
               icon="pi pi-print"
-              label="Receipt"
+              label="Cetak Struk"
               size="small"
               class="w-full"
               :disabled="!isCanPrint || transactionDetail?.is_cancelled"
               @click="openPrintReceipt(transactionDetail)"
             />
             <Button
-              severity="danger" 
+              severity="danger"
               variant="outlined"
               icon="pi pi-times"
-              label="Cancel"
+              label="Batalkan"
               size="small"
               class="w-full"
               :disabled="!isCanCancel || transactionDetail?.is_cancelled"
@@ -55,52 +55,52 @@
         <!-- Transaction ID and Outlet -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label class="text-sm font-medium text-gray-500">Transaction ID</label>
+            <label class="text-sm font-medium text-gray-500">ID Transaksi</label>
             <p class="text-base mt-1 font-mono">{{ transactionDetail.id }}</p>
           </div>
           <div>
-            <label class="text-sm font-medium text-gray-500">Device ID</label>
+            <label class="text-sm font-medium text-gray-500">ID Perangkat</label>
             <p class="text-base mt-1 font-mono">{{ transactionDetail.device_id || '-' }}</p>
           </div>
           <div>
-            <label class="text-sm font-medium text-gray-500">Payment Method</label>
+            <label class="text-sm font-medium text-gray-500">Metode Pembayaran</label>
             <p class="text-base mt-1 capitalize">{{ transactionDetail.payment_method }}</p>
           </div>
           <div>
-            <label class="text-sm font-medium text-gray-500">Order Source</label>
+            <label class="text-sm font-medium text-gray-500">Sumber Pesanan</label>
             <p class="text-base mt-1 capitalize">{{ transactionDetail.order_source || 'pos' }}</p>
           </div>
           <div>
-            <label class="text-sm font-medium text-gray-500">Order Status</label>
+            <label class="text-sm font-medium text-gray-500">Status Pesanan</label>
             <p class="text-base mt-1">{{ getOrderStatusLabel(transactionDetail.order_status) }}</p>
           </div>
           <div>
-            <label class="text-sm font-medium text-gray-500">Offline Mode</label>
+            <label class="text-sm font-medium text-gray-500">Mode Offline</label>
             <div class="mt-1">
               <Tag
-                :value="transactionDetail.is_offline ? 'Yes' : 'No'"
+                :value="transactionDetail.is_offline ? 'Ya' : 'Tidak'"
                 :severity="transactionDetail.is_offline ? 'warning' : 'info'"
               />
             </div>
           </div>
           <div>
-            <label class="text-sm font-medium text-gray-500">Created At</label>
+            <label class="text-sm font-medium text-gray-500">Waktu Dibuat</label>
             <p class="text-base mt-1">{{ formatDateTime(transactionDetail.created_at) }}</p>
           </div>
           <div>
-            <label class="text-sm font-medium text-gray-500">Updated At</label>
+            <label class="text-sm font-medium text-gray-500">Waktu Diperbarui</label>
             <p class="text-base mt-1">{{ formatDateTime(transactionDetail.updated_at) }}</p>
           </div>
           <div>
-            <label class="text-sm font-medium text-gray-500">Customer</label>
+            <label class="text-sm font-medium text-gray-500">Pelanggan</label>
             <p class="text-base mt-1">{{ transactionDetail.customer_name_snapshot || transactionDetail.users?.name || '-' }}</p>
           </div>
           <div>
-            <label class="text-sm font-medium text-gray-500">Phone</label>
+            <label class="text-sm font-medium text-gray-500">No. Telepon</label>
             <p class="text-base mt-1">{{ transactionDetail.customer_phone_snapshot || '-' }}</p>
           </div>
           <div>
-            <label class="text-sm font-medium text-gray-500">Table</label>
+            <label class="text-sm font-medium text-gray-500">Meja</label>
             <p class="text-base mt-1">{{ transactionDetail.store_tables?.name || '-' }}</p>
           </div>
         </div>
@@ -111,7 +111,7 @@
     <UiCard v-if="transactionDetail && transactionDetail.transaction_items">
       <template #header>
         <h1 class="text-lg font-semibold">
-          Transaction Items
+          Daftar Item Transaksi
         </h1>
       </template>
 
@@ -119,7 +119,7 @@
         <DataTable :value="transactionDetail.transaction_items" :loading="loading" tableStyle="min-width: 50rem">
           <template #empty>
             <span class="w-full text-center flex justify-center">
-              No items in this transaction.
+              Tidak ada item dalam transaksi ini.
             </span>
           </template>
           <Column field="no" header="NO" class="w-18">
@@ -127,17 +127,17 @@
               {{ slotProps.index + 1 }}
             </template>
           </Column>
-          <Column field="product_name_snapshot" header="Product Name">
+          <Column field="product_name_snapshot" header="Nama Produk">
             <template #body="slotProps">
               {{ slotProps.data.product_name_snapshot }}
             </template>
           </Column>
-          <Column field="price_snapshot" header="Price">
+          <Column field="price_snapshot" header="Harga">
             <template #body="slotProps">
               {{ getCurrency(slotProps.data.price_snapshot) }}
             </template>
           </Column>
-          <Column field="qty" header="Qty">
+          <Column field="qty" header="Jumlah">
             <template #body="slotProps">
               {{ slotProps.data.qty }}
             </template>
@@ -147,7 +147,7 @@
               {{ getCurrency(slotProps.data.subtotal) }}
             </template>
           </Column>
-          <Column field="customer_note" header="Note" class="min-w-48">
+          <Column field="customer_note" header="Catatan" class="min-w-48">
             <template #body="slotProps">
               {{ slotProps.data.customer_note || '-' }}
             </template>
@@ -158,7 +158,7 @@
           <div class="flex flex-col gap-2 justify-start">
             <div class="flex gap-4 items-center">
               <label class="flex-1 text-sm font-medium text-gray-500">
-                Total Qty :
+                Total Jumlah :
               </label>
               <div class="text-base">
                 {{ getProductTotalQuantity(transactionDetail.transaction_items) }}
@@ -166,7 +166,7 @@
             </div>
             <div class="flex gap-4 items-center">
               <label class="flex-1 text-sm font-medium text-gray-500">
-                Total Amount :
+                Total Pembayaran :
               </label>
               <div class="text-base">
                 {{ formatPrice(transactionDetail.total_amount) }}
@@ -174,7 +174,7 @@
             </div>
             <div v-if="transactionDetail.change_amount" class="flex gap-4 items-center">
               <label class="flex-1 text-sm font-medium text-gray-500">
-                Change Amount :
+                Kembalian :
               </label>
               <div class="text-base">
                 {{ formatPrice(transactionDetail.change_amount) }}
@@ -247,8 +247,8 @@ const fetchDetail = async () => {
   } catch (error) {
     showToast({
       type: 'error',
-      title: 'Failed to fetch data.',
-      message: getErrorMessage(error) || 'There was an error.',
+      title: 'Gagal memuat data.',
+      message: getErrorMessage(error) || 'Terjadi kesalahan.',
     });
   } finally {
     loading.value = false;
@@ -265,16 +265,16 @@ const cancelTransaction = async (id: string) => {
     if (success) {
       showToast({
         type: 'success',
-        title: 'Success',
-        message: 'Transaction has been cancelled and stock has been restored.'
+        title: 'Sukses',
+        message: 'Transaksi berhasil dibatalkan dan stok telah dikembalikan.'
       });
       fetchDetail();
     }
   } catch (error) {
     showToast({
       type: 'error',
-      title: 'Error.',
-      message: getErrorMessage(error) || 'There was an error.',
+      title: 'Gagal',
+      message: getErrorMessage(error) || 'Terjadi kesalahan.',
     });
   } finally {
     hideLoading();
@@ -283,10 +283,10 @@ const cancelTransaction = async (id: string) => {
 
 const onCancelTransaction = (transaction: any) => {
   showConfirm({
-    header: 'Cancel Transaction',
-    message: 'Are you sure you want to cancel this transaction? Stock will be restored.',
-    rejectLabel: 'No',
-    acceptLabel: 'Yes, Cancel',
+    header: 'Batalkan Transaksi',
+    message: 'Apakah Anda yakin ingin membatalkan transaksi ini? Stok produk akan dikembalikan.',
+    rejectLabel: 'Tidak',
+    acceptLabel: 'Ya, Batalkan',
     type: 'warn',
     accept: () => {
       cancelTransaction(transaction?.id);

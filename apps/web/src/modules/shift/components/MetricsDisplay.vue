@@ -1,7 +1,7 @@
 <template>
   <UiCard class="metrics-display">
     <div class="metrics-display__header">
-      <h3 class="metrics-display__title">Performance Metrics</h3>
+      <h3 class="metrics-display__title">Metrik Performa</h3>
     </div>
 
     <div class="metrics-display__content">
@@ -10,25 +10,25 @@
       </div>
 
       <div v-else-if="metrics.length === 0" class="metrics-display__empty">
-        <p>No metrics available</p>
+        <p>Belum ada data metrik</p>
       </div>
 
       <div v-else class="space-y-8">
         <!-- Summary Chart -->
         <div class="metrics-display__chart-container">
           <div class="chart-wrapper">
-            <h4 class="chart-title">Transactions & Revenue by Participant</h4>
+            <h4 class="chart-title">Transaksi & Pendapatan per Peserta</h4>
             <canvas ref="summaryChartCanvas"></canvas>
           </div>
         </div>
 
         <!-- Individual Metrics -->
         <div class="metrics-display__chart-container">
-          <h4 class="chart-title">Participant Details</h4>
+          <h4 class="chart-title">Detail Peserta</h4>
           <DataTable :value="metrics" tableStyle="min-width: 50rem">
             <template #empty>
               <span class="w-full text-center flex justify-center">
-                Metrics are empty.
+                Data metrik masih kosong.
               </span>
             </template>
             <Column field="no" header="NO" class="w-18">
@@ -36,32 +36,32 @@
                 {{ slotProps.index + 1 }}
               </template>
             </Column>
-            <Column field="user_name" header="Name" class="min-w-48">
+            <Column field="user_name" header="Nama" class="min-w-48">
               <template #body="slotProps">
                 {{ slotProps.data.user_name }}
               </template>
             </Column>
-            <Column field="transaction_count" header="Transaction">
+            <Column field="transaction_count" header="Transaksi">
               <template #body="slotProps">
                 {{ slotProps.data.transaction_count }}x
               </template>
             </Column>
-            <Column field="total_amount" header="Amount">
+            <Column field="total_amount" header="Total Pendapatan">
               <template #body="slotProps">
                 {{ formatCurrency(slotProps.data.total_amount) }}
               </template>
             </Column>
-            <Column field="average_transaction_amount" header="Average">
+            <Column field="average_transaction_amount" header="Rata-rata">
               <template #body="slotProps">
                 {{ formatCurrency(slotProps.data.average_transaction_amount) }}
               </template>
             </Column>
-            <Column field="participation_duration_minutes" header="Duration" class="min-w-32">
+            <Column field="participation_duration_minutes" header="Durasi" class="min-w-32">
               <template #body="slotProps">
                 {{ formatDuration(slotProps.data.participation_duration_minutes) }}
               </template>
             </Column>
-            <Column field="participant_added_at" header="Added" class="min-w-54">
+            <Column field="participant_added_at" header="Waktu Ditambahkan" class="min-w-54">
               <template #body="slotProps">
                 {{ formatDate(slotProps.data.participant_added_at) }}
               </template>
@@ -71,12 +71,12 @@
                 <div class="flex justify-start gap-2">
                   <Tag
                     v-if="showOwnerStatus && slotProps.data.is_owner"
-                    value="Shift Owner"
+                    value="Pemilik Shift"
                     severity="info"
                   />
                   <Tag
                     v-if="showRemovedStatus && slotProps.data.participant_removed_at"
-                    value="Removed"
+                    value="Dihapus"
                     severity="warning"
                   />
                 </div>
@@ -151,11 +151,12 @@ const formatCurrency = (amount: number) => {
   return new Intl.NumberFormat('id-ID', {
     style: 'currency',
     currency: 'IDR',
+    minimumFractionDigits: 0,
   }).format(amount);
 };
 
 const formatDate = (date: string) => {
-  return new Date(date).toLocaleString();
+  return new Date(date).toLocaleString('id-ID');
 };
 
 const initializeSummaryChart = () => {
@@ -180,7 +181,7 @@ const initializeSummaryChart = () => {
         labels,
         datasets: [
           {
-            label: 'Transactions',
+            label: 'Transaksi',
             data: transactionData,
             backgroundColor: 'rgba(59, 130, 246, 0.8)',
             borderColor: '#3B82F6',
@@ -188,7 +189,7 @@ const initializeSummaryChart = () => {
             yAxisID: 'y',
           },
           {
-            label: 'Revenue (IDR)',
+            label: 'Pendapatan (Rp)',
             data: revenueData,
             backgroundColor: 'rgba(16, 185, 129, 0.8)',
             borderColor: '#10B981',
@@ -269,7 +270,7 @@ const initializeSummaryChart = () => {
             position: 'left',
             title: {
               display: !isMobile,
-              text: 'Transactions',
+              text: 'Transaksi',
               font: {
                 size: 12,
               },
@@ -289,7 +290,7 @@ const initializeSummaryChart = () => {
             position: 'right',
             title: {
               display: !isMobile,
-              text: 'Revenue (IDR)',
+              text: 'Pendapatan (Rp)',
               font: {
                 size: 12,
               },
@@ -340,7 +341,7 @@ const loadMetrics = async () => {
       }
     }
     metrics.value = metricsData;
-    
+
     // Initialize chart after metrics are loaded
     setTimeout(() => {
       initializeSummaryChart();
@@ -348,8 +349,8 @@ const loadMetrics = async () => {
   } catch (error) {
     showToast({
       type: 'error',
-      title: 'Error',
-      message: getErrorMessage(error) || 'Failed to load metrics',
+      title: 'Gagal',
+      message: getErrorMessage(error) || 'Gagal memuat data metrik',
     });
   } finally {
     loading.value = false;

@@ -13,17 +13,17 @@ export default [
     name: PREFIX_ROUTE_NAME,
     component: () => import('@/modules/shift/pages/index.vue'),
     meta: {
-      title: 'Shifts',
+      title: 'Shift',
       layout: 'default',
       permission: PERMISSIONS,
       breadcrumbs: [
         {
-          label: 'Home',
+          label: 'Beranda',
           route: '/landing',
           isActive: false,
         },
         {
-          label: 'Shifts',
+          label: 'Shift',
           route: PREFIX_ROUTE_PATH,
           isActive: true,
         },
@@ -35,17 +35,17 @@ export default [
     name: `${PREFIX_ROUTE_NAME}-detail`,
     component: () => import('@/modules/shift/pages/detail.vue'),
     meta: {
-      title: 'Shifts',
+      title: 'Shift',
       layout: 'default',
       permission: PERMISSIONS,
       breadcrumbs: [
         {
-          label: 'Home',
+          label: 'Beranda',
           route: '/landing',
           isActive: false,
         },
         {
-          label: 'Shifts',
+          label: 'Shift',
           route: PREFIX_ROUTE_PATH,
           isActive: true,
         },

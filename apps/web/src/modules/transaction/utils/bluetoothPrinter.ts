@@ -43,7 +43,7 @@ export const disconnectPrinter = async (): Promise<void> => {
 
 export const connectPrinter = async (): Promise<string> => {
   if (!isBluetoothSupported()) {
-    throw new Error('Bluetooth is not supported in this browser.');
+    throw new Error('Bluetooth tidak didukung pada peramban ini.');
   }
 
   try {
@@ -54,7 +54,7 @@ export const connectPrinter = async (): Promise<string> => {
     });
 
     if (!device) {
-      throw new Error('No device selected');
+      throw new Error('Tidak ada perangkat yang dipilih');
     }
 
     activeDevice = device;
@@ -109,7 +109,7 @@ export const connectPrinter = async (): Promise<string> => {
     }
 
     if (!charFound) {
-      throw new Error('Could not find a writeable characteristic on the device');
+      throw new Error('Karakteristik write tidak ditemukan pada perangkat');
     }
 
     activeCharacteristic = charFound;
@@ -139,7 +139,7 @@ export const reconnectDevice = async (device: any): Promise<string> => {
   try {
     activeDevice = device;
     const server = await device.gatt.connect();
-    
+
     // Find service & characteristic
     let charFound: any = null;
     for (const serviceUuid of PRINTER_SERVICES) {
@@ -159,7 +159,7 @@ export const reconnectDevice = async (device: any): Promise<string> => {
     }
 
     if (!charFound) {
-      throw new Error('Write characteristic not found');
+      throw new Error('Karakteristik write tidak ditemukan');
     }
 
     activeCharacteristic = charFound;
@@ -173,7 +173,7 @@ export const reconnectDevice = async (device: any): Promise<string> => {
 // Writer helper that sends bytes in chunks to prevent printer buffer overflows
 const writeDataInChunks = async (data: Uint8Array): Promise<void> => {
   if (!activeCharacteristic) {
-    throw new Error('Printer is not connected.');
+    throw new Error('Printer tidak terhubung.');
   }
 
   const CHUNK_SIZE = 20; // 20 bytes is standard MTU limit for BLE
@@ -309,15 +309,15 @@ export const printTestPage = async (): Promise<void> => {
   encoder.bold(true);
   encoder.line('WISATA POS');
   encoder.bold(false);
-  encoder.line('Bluetooth Printer Test');
+  encoder.line('Uji Printer Bluetooth');
   encoder.line('--------------------------------');
   encoder.alignLeft();
-  encoder.line('Status: Connected');
-  encoder.line(`Date: ${new Date().toLocaleString()}`);
+  encoder.line('Status: Terhubung');
+  encoder.line(`Tanggal: ${new Date().toLocaleString('id-ID')}`);
   encoder.line('--------------------------------');
   encoder.alignCenter();
   encoder.bold(true);
-  encoder.line('SUCCESS!');
+  encoder.line('BERHASIL!');
   encoder.bold(false);
   encoder.lineFeed(4); // spacing
 
@@ -328,9 +328,9 @@ export const printTestPage = async (): Promise<void> => {
 export const printReceipt = async (transaction: ReceiptData, paperSize: '58mm' | '80mm' = '58mm'): Promise<void> => {
   const columns = paperSize === '80mm' ? 48 : 32;
   const encoder = new ESCPOSEncoder();
-  
+
   encoder.initialize();
-  
+
   // Header
   encoder.alignCenter();
   encoder.bold(true);
@@ -339,65 +339,65 @@ export const printReceipt = async (transaction: ReceiptData, paperSize: '58mm' |
   if (transaction.outlets?.location) {
     encoder.line(transaction.outlets.location);
   }
-  encoder.line(`Receipt #${transaction.id?.slice(0, 8).toUpperCase()}`);
+  encoder.line(`Struk #${transaction.id?.slice(0, 8).toUpperCase()}`);
   encoder.line('-'.repeat(columns));
-  
+
   // Transaction Info
   encoder.alignLeft();
-  encoder.line(formatRow('Date:', formatDate(transaction.created_at), columns));
-  encoder.line(formatRow('Time:', formatTime(transaction.created_at), columns));
+  encoder.line(formatRow('Tanggal:', formatDate(transaction.created_at), columns));
+  encoder.line(formatRow('Waktu:', formatTime(transaction.created_at), columns));
   if (transaction.users?.name) {
-    encoder.line(formatRow('Cashier:', transaction.users.name, columns));
+    encoder.line(formatRow('Kasir:', transaction.users.name, columns));
   }
-  encoder.line(formatRow('Payment:', transaction.payment_method.toUpperCase(), columns));
+  encoder.line(formatRow('Pembayaran:', transaction.payment_method.toUpperCase(), columns));
   encoder.line('-'.repeat(columns));
-  
+
   // Items Header
   if (columns === 48) {
     encoder.line(formatRow('Item', 'Total', columns));
     encoder.line('-'.repeat(columns));
   }
-  
+
   // Items List
   const items = transaction.transaction_items || [];
   for (const item of items) {
     // Print item name
     encoder.line(item.product_name_snapshot);
-    
+
     // Print qty x price and item total
     const leftText = `  ${item.qty}x ${formatCurrency(item.price_snapshot)}`;
     const rightText = formatCurrency(item.subtotal);
     encoder.line(formatRow(leftText, rightText, columns));
   }
   encoder.line('-'.repeat(columns));
-  
+
   // Totals
   encoder.bold(true);
-  encoder.line(formatRow('Total Amount:', formatCurrency(transaction.total_amount), columns));
+  encoder.line(formatRow('Total Pembayaran:', formatCurrency(transaction.total_amount), columns));
   encoder.bold(false);
-  
+
   if (transaction.payment_method === 'cash') {
     if (transaction.cash_received !== null && transaction.cash_received !== undefined) {
-      encoder.line(formatRow('Cash Paid:', formatCurrency(transaction.cash_received), columns));
+      encoder.line(formatRow('Uang Tunai Diterima:', formatCurrency(transaction.cash_received), columns));
     }
     if (transaction.change_amount !== null && transaction.change_amount !== undefined) {
-      encoder.line(formatRow('Change:', formatCurrency(transaction.change_amount), columns));
+      encoder.line(formatRow('Kembalian:', formatCurrency(transaction.change_amount), columns));
     }
   }
-  
+
   if (transaction.is_offline) {
     encoder.line(formatRow('Mode:', 'OFFLINE', columns));
   }
   if (transaction.is_cancelled) {
     encoder.bold(true);
-    encoder.line(formatRow('Status:', 'CANCELLED', columns));
+    encoder.line(formatRow('Status:', 'DIBATALKAN', columns));
     encoder.bold(false);
   }
   encoder.line('-'.repeat(columns));
-  
+
   // Footer
   encoder.alignCenter();
-  encoder.line('Thank you for your purchase!');
+  encoder.line('Terima kasih atas kunjungan Anda!');
   if (transaction.outlets?.name) {
     encoder.line(transaction.outlets.name);
   }

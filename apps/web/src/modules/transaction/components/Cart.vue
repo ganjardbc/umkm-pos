@@ -14,14 +14,14 @@
       }"
     >
       <h1 class="text-lg font-semibold">
-        Cart ({{ posStore.cartItemCount }})
+        Keranjang ({{ posStore.cartItemCount }})
       </h1>
       <div class="flex gap-4">
         <Button
           severity="danger"
           variant="outlined"
           icon="pi pi-trash"
-          label="Clear All"
+          label="Kosongkan"
           size="small"
           :disabled="posStore.cartItems.length === 0"
           @click="onClearCart"
@@ -38,14 +38,14 @@
     </div>
 
     <Divider class="m-0!" />
-    
+
     <div class="pos-cart__section pos-cart__section-item">
       <div
         v-if="posStore.cartItems.length === 0"
         class="h-full flex flex-col items-center justify-center"
       >
         <i class="pi pi-shopping-cart mb-4" style="font-size: 24px;" />
-        <p class="text-sm text-gray-500">Cart is empty</p>
+        <p class="text-sm text-gray-500">Keranjang masih kosong</p>
       </div>
       
       <div
@@ -143,14 +143,14 @@
       }"
     >
       <div class="pos-cart__section space-y-2">
-        <UiFormGroup label="Table" variant="vertical">
+        <UiFormGroup label="Meja" variant="vertical">
           <div class="flex gap-2">
             <Dropdown
               v-model="transactionForm.table_id"
               :options="tableOptions"
               option-label="label"
               option-value="id"
-              placeholder="No table selected"
+              placeholder="Pilih meja"
               class="w-full"
               :loading="isLoadingTables"
               :disabled="!transactionForm.outlet_id || tableOptions.length === 0"
@@ -161,7 +161,7 @@
               severity="secondary"
               variant="outlined"
               icon="pi pi-times"
-              aria-label="Clear table"
+              aria-label="Hapus meja"
               @click="transactionForm.table_id = ''"
             />
           </div>
@@ -169,7 +169,7 @@
             v-if="!isLoadingTables && transactionForm.outlet_id && tableOptions.length === 0"
             class="text-xs text-gray-400"
           >
-            No active tables configured for this outlet.
+            Tidak ada meja aktif untuk outlet ini.
           </p>
         </UiFormGroup>
         <div class="flex items-center justify-between">
@@ -181,7 +181,7 @@
           </span>
         </div>
         <Button
-          label="Continue Payment"
+          label="Lanjut ke Pembayaran"
           size="medium"
           fluid
           :disabled="isCanCheckout"
@@ -208,11 +208,11 @@
           </div>
           <div class="flex-1 space-y-1">
             <div class="text-sm text-gray-400">
-              Outlet Cart
+              Keranjang Outlet
             </div>
             <div class="flex items-center">
               <span class="text-base font-bold">
-                {{ posStore.cartItemCount || 0 }} Items
+                {{ posStore.cartItemCount || 0 }} Item
               </span>
               <Divider layout="vertical" />
               <span
@@ -344,17 +344,17 @@ const decrementQuantity = (productId: string) => {
 
 const onClearCart = () => {
   showConfirm({
-    header: 'Clear Cart',
-    message: 'Are you sure you want to clear the cart?',
-    rejectLabel: 'Cancel',
-    acceptLabel: 'Clear',
+    header: 'Kosongkan Keranjang',
+    message: 'Apakah Anda yakin ingin mengosongkan keranjang?',
+    rejectLabel: 'Batal',
+    acceptLabel: 'Kosongkan',
     type: 'warn',
     accept: () => {
       posStore.clearCart();
       showToast({
         type: 'success',
-        title: 'Cart cleared',
-        message: 'All items removed from cart',
+        title: 'Keranjang Dikosongkan',
+        message: 'Semua item telah dihapus dari keranjang',
       });
     },
   });
@@ -378,31 +378,31 @@ const openPaymentModal = () => {
 
 const onCheckout = async () => {
   if (isCheckingOut.value) return;
-  
+
   // Validate form
   if (!transactionForm.value.outlet_id) {
     showToast({
       type: 'error',
-      title: 'Validation Error',
-      message: 'Please select an outlet',
+      title: 'Validasi Gagal',
+      message: 'Silakan pilih outlet terlebih dahulu',
     });
     return;
   }
-  
+
   if (!transactionForm.value.shift_id) {
     showToast({
       type: 'error',
-      title: 'Validation Error',
-      message: 'Please select a shift',
+      title: 'Validasi Gagal',
+      message: 'Silakan pilih shift terlebih dahulu',
     });
     return;
   }
-  
+
   if (!transactionForm.value.payment_method) {
     showToast({
       type: 'error',
-      title: 'Validation Error',
-      message: 'Please select a payment method',
+      title: 'Validasi Gagal',
+      message: 'Silakan pilih metode pembayaran',
     });
     return;
   }
@@ -410,16 +410,16 @@ const onCheckout = async () => {
   if (hasInsufficientCash.value) {
     showToast({
       type: 'error',
-      title: 'Validation Error',
-      message: 'Cash received is less than total amount',
+      title: 'Validasi Gagal',
+      message: 'Jumlah uang tunai yang diterima kurang dari total pembayaran',
     });
     return;
   }
-  
+
   try {
     isCheckingOut.value = true;
     show();
-    
+
     // Prepare transaction payload
     const payload: any = {
       outlet_id: transactionForm.value.outlet_id,
@@ -435,20 +435,20 @@ const onCheckout = async () => {
         qty: item.quantity
       }))
     };
-    
+
     const response = await postTransaction(payload);
-    
+
     if (response.data) {
       showToast({
         type: 'success',
-        title: 'Transaction Complete',
-        message: 'Transaction has been processed successfully',
+        title: 'Transaksi Berhasil',
+        message: 'Transaksi telah berhasil diproses',
       });
-      
+
       posStore.clearCart();
       openCloseCart();
       showPaymentModal.value = false;
-      
+
       // Emit event to parent to handle form clearing
       emit('checkout-success');
       cashPaidAmount.value = 0;
@@ -457,8 +457,8 @@ const onCheckout = async () => {
     console.error('Checkout error:', error);
     showToast({
       type: 'error',
-      title: 'Checkout Failed',
-      message: error.response?.data?.message || 'Failed to process transaction',
+      title: 'Transaksi Gagal',
+      message: error.response?.data?.message || 'Gagal memproses transaksi',
     });
   } finally {
     isCheckingOut.value = false;

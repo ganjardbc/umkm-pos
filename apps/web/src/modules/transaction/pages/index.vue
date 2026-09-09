@@ -29,7 +29,7 @@
             :options="orderStatusFilters"
             option-label="label"
             option-value="value"
-            placeholder="Order Status"
+            placeholder="Status Pesanan"
             class="w-full"
             @change="applyFilters"
           />
@@ -39,12 +39,12 @@
 
     <UiLoading
       v-if="loading"
-      message="Loading notifications..."
+      message="Memuat transaksi..."
     />
 
     <div v-else-if="transactions.length === 0" class="flex flex-col items-center justify-center py-16 text-gray-400">
       <i class="pi pi-inbox mb-3 text-4xl" />
-      <p class="text-sm">Transactions are empty.</p>
+      <p class="text-sm">Belum ada transaksi.</p>
     </div>
 
     <div v-else class="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
@@ -64,7 +64,7 @@
           </div>
           <div class="flex shrink-0 gap-1">
             <Tag
-              :value="trx.is_cancelled ? 'Cancelled' : 'Active'"
+              :value="trx.is_cancelled ? 'Dibatalkan' : 'Aktif'"
               :severity="trx.is_cancelled ? 'danger' : 'info'"
               class="capitalize text-xs!"
             />
@@ -80,7 +80,7 @@
         <Divider class="my-0!" />
 
         <div class="grid grid-cols-2 gap-y-2 text-xs">
-          <span class="text-slate-400">Source</span>
+          <span class="text-slate-400">Sumber</span>
           <span class="text-right">
             <Tag
               :value="trx.order_source === 'customer_catalog' ? 'CC' : 'POS'"
@@ -99,13 +99,13 @@
             />
           </span>
 
-          <span class="text-slate-400">Payment</span>
+          <span class="text-slate-400">Pembayaran</span>
           <span class="text-right capitalize text-slate-700 dark:text-slate-300">{{ trx.payment_method }}</span>
 
-          <span class="text-slate-400">Items</span>
+          <span class="text-slate-400">Item</span>
           <span class="text-right text-slate-700 dark:text-slate-300">{{ trx.transaction_items?.length || 0 }}x</span>
 
-          <span class="text-slate-400">Date</span>
+          <span class="text-slate-400">Tanggal</span>
           <span class="text-right text-slate-700 dark:text-slate-300">{{ formatDateTime(trx.created_at) }}</span>
         </div>
 
@@ -208,12 +208,12 @@ const isCanCancel = computed(() => isHasPermission(CANCEL));
 const isCanUpdateStatus = computed(() => isHasPermission(UPDATE_STATUS));
 
 const listOfCancelFilters = [
-  { label: 'All Status', value: null },
-  { label: 'Active', value: false },
-  { label: 'Cancelled', value: true },
+  { label: 'Semua Status', value: null },
+  { label: 'Aktif', value: false },
+  { label: 'Dibatalkan', value: true },
 ];
 const orderStatusFilters = [
-  { label: 'All Orders', value: null },
+  { label: 'Semua Pesanan', value: null },
   { label: 'Menunggu', value: 'menunggu_konfirmasi' },
   { label: 'Diterima', value: 'diterima' },
   { label: 'Diproses', value: 'diproses' },
@@ -257,8 +257,8 @@ const fetchTransaction = async () => {
     console.log(error);
     showToast({
         type: 'error',
-        title: 'Error.',
-        message: getErrorMessage(error) || 'There was an error.',
+        title: 'Gagal',
+        message: getErrorMessage(error) || 'Terjadi kesalahan saat memuat transaksi.',
     });
   } finally {
     loading.value = false;
@@ -326,15 +326,15 @@ const confirmPayment = async () => {
     showPaymentModal.value = false;
     showToast({
       type: 'success',
-      title: 'Success',
-      message: 'Payment completed successfully.',
+      title: 'Sukses',
+      message: 'Pembayaran berhasil diproses.',
     });
     fetchTransaction();
   } catch (error) {
     showToast({
       type: 'error',
-      title: 'Error.',
-      message: getErrorMessage(error) || 'Failed to process payment.',
+      title: 'Gagal',
+      message: getErrorMessage(error) || 'Gagal memproses pembayaran.',
     });
   } finally {
     hideLoading();
@@ -351,16 +351,16 @@ const cancelTransaction = async (id: string) => {
     if (success) {
       showToast({
         type: 'success',
-        title: 'Success',
-        message: 'Transaction has been cancelled and stock has been restored.'
+        title: 'Sukses',
+        message: 'Transaksi berhasil dibatalkan dan stok telah dikembalikan.'
       });
       fetchTransaction();
     }
   } catch (error) {
     showToast({
       type: 'error',
-      title: 'Error.',
-      message: getErrorMessage(error) || 'There was an error.',
+      title: 'Gagal',
+      message: getErrorMessage(error) || 'Terjadi kesalahan.',
     });
   } finally {
     hideLoading();
@@ -369,10 +369,10 @@ const cancelTransaction = async (id: string) => {
 
 const onCancelTransaction = (transaction: any) => {
   showConfirm({
-    header: 'Cancel Transaction',
-    message: 'Are you sure you want to cancel this transaction? Stock will be restored.',
-    rejectLabel: 'No',
-    acceptLabel: 'Yes, Cancel',
+    header: 'Batalkan Transaksi',
+    message: 'Apakah Anda yakin ingin membatalkan transaksi ini? Stok produk akan dikembalikan.',
+    rejectLabel: 'Tidak',
+    acceptLabel: 'Ya, Batalkan',
     type: 'warn',
     accept: () => {
       cancelTransaction(transaction?.id);
@@ -392,8 +392,8 @@ const advanceStatus = async (transaction: any) => {
   } catch (error) {
     showToast({
       type: 'error',
-      title: 'Failed to update status.',
-      message: getErrorMessage(error) || 'There was an error.',
+      title: 'Gagal memperbarui status.',
+      message: getErrorMessage(error) || 'Terjadi kesalahan.',
     });
   }
 };

@@ -6,7 +6,7 @@
       'w-full': true,
       'max-w-4xl': true,
     }"
-    header="Continue Payment"
+    header="Lanjut ke Pembayaran"
   >
     <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
       <button
@@ -29,18 +29,18 @@
 
     <div class="space-y-4 min-h-86">
       <div v-if="!isPaymentMethodCash" class="flex items-center justify-between p-3 bg-gray-100 dark:bg-dark! rounded-lg">
-        <span class="text-sm text-gray-700 dark:text-gray-300">Total Payment</span>
+        <span class="text-sm text-gray-700 dark:text-gray-300">Total Pembayaran</span>
         <span class="text-base font-semibold text-primary dark:text-primary-400">{{ getCurrency(totalAmount) }}</span>
       </div>
 
       <div v-if="isPaymentMethodCash" class="w-full grid md:grid-cols-[1fr_260px] gap-5">
         <div class="flex-1 space-y-4">
           <div class="flex items-center justify-between p-3 bg-gray-100 dark:bg-dark! rounded-lg">
-            <span class="text-sm text-gray-700 dark:text-gray-300">Total Payment</span>
+            <span class="text-sm text-gray-700 dark:text-gray-300">Total Pembayaran</span>
             <span class="text-base font-semibold text-primary dark:text-primary-400">{{ getCurrency(totalAmount) }}</span>
           </div>
 
-          <UiFormGroup label="Cash Received" variant="vertical">
+          <UiFormGroup label="Uang Tunai Diterima" variant="vertical">
             <InputNumber
               v-model="cashAmount"
               mode="currency"
@@ -48,7 +48,7 @@
               locale="id-ID"
               :min="0"
               fluid
-              placeholder="Input cash amount"
+              placeholder="Masukkan nominal uang tunai"
             />
             <div class="flex flex-wrap gap-2">
               <Button
@@ -67,7 +67,7 @@
 
           <div class="p-3 bg-gray-100 dark:bg-dark! rounded-lg">
             <div class="flex items-center justify-between text-sm">
-              <span class="font-semibold text-gray-700 dark:text-gray-300">Change</span>
+              <span class="font-semibold text-gray-700 dark:text-gray-300">Kembalian</span>
               <span class="font-semibold text-emerald-600 dark:text-emerald-400">{{ getCurrency(changeAmount) }}</span>
             </div>
           </div>
@@ -98,9 +98,9 @@
         </div>
       </div>
 
-      <UiFormGroup label="Order Type" variant="vertical">
+      <UiFormGroup label="Tipe Pesanan" variant="vertical">
         <div class="flex items-center justify-between">
-          <label class="text-sm text-gray-700 dark:text-gray-300">Is Offline Order?</label>
+          <label class="text-sm text-gray-700 dark:text-gray-300">Pesanan Offline?</label>
         <InputSwitch
           v-model="is_offline"
           :binary="true"
@@ -109,26 +109,26 @@
       </UiFormGroup>
 
       <div v-if="!isPaymentMethodCash" class="rounded-lg border border-gray-200 dark:border-gray-700 p-3 text-sm text-gray-600 dark:text-gray-300">
-        <span v-if="payment_method === 'debit'">Proceed with debit card confirmation at cashier terminal.</span>
-        <span v-else-if="payment_method === 'credit'">Proceed with credit card confirmation and signature if required.</span>
-        <span v-else-if="payment_method === 'e-wallet'">Ask customer to complete e-wallet payment from their app.</span>
-        <span v-else-if="payment_method === 'qris'">Display QRIS code to customer and confirm incoming payment.</span>
+        <span v-if="payment_method === 'debit'">Lakukan konfirmasi kartu debit di mesin EDC kasir.</span>
+        <span v-else-if="payment_method === 'credit'">Lakukan konfirmasi kartu kredit dan tanda tangan jika diperlukan.</span>
+        <span v-else-if="payment_method === 'e-wallet'">Minta pelanggan menyelesaikan pembayaran e-wallet dari aplikasinya.</span>
+        <span v-else-if="payment_method === 'qris'">Tampilkan QR code QRIS kepada pelanggan dan konfirmasi pembayaran masuk.</span>
       </div>
     </div>
 
     <Divider class="mb-0!" />
-    
+
     <template #footer>
       <div class="w-full flex gap-4">
         <Button
-          label="Back"
+          label="Kembali"
           severity="secondary"
           variant="outlined"
           class="w-full"
           @click="visibility = false"
         />
         <Button
-          label="Checkout"
+          label="Bayar Sekarang"
           class="w-full"
           :disabled="isCashInsufficient"
           @click="onConfirm"
@@ -159,10 +159,10 @@ const emit = defineEmits<{
 }>();
 
 const paymentMethods = ref([
-  { label: 'Cash', value: 'cash', description: 'Pay with cash amount' },
-  { label: 'Debit Card', value: 'debit', description: 'Use EDC debit terminal' },
-  { label: 'E-Wallet', value: 'e-wallet', description: 'Customer pays via e-wallet app' },
-  { label: 'QRIS', value: 'qris', description: 'Scan and pay using QRIS' },
+  { label: 'Tunai', value: 'cash', description: 'Bayar dengan uang tunai' },
+  { label: 'Kartu Debit', value: 'debit', description: 'Gunakan mesin EDC debit' },
+  { label: 'E-Wallet', value: 'e-wallet', description: 'Pelanggan membayar melalui aplikasi e-wallet' },
+  { label: 'QRIS', value: 'qris', description: 'Pindai dan bayar menggunakan QRIS' },
 ]);
 
 const cashBills = [1000, 2000, 5000, 10000, 20000, 50000, 100000];
@@ -182,10 +182,10 @@ const onConfirm = () => {
   if (isCashInsufficient.value) return;
 
   showConfirm({
-    header: 'Confirm Payment',
-    message: 'Are you sure you want to proceed with this payment?',
-    rejectLabel: 'Cancel',
-    acceptLabel: 'Confirm',
+    header: 'Konfirmasi Pembayaran',
+    message: 'Apakah Anda yakin ingin memproses pembayaran ini?',
+    rejectLabel: 'Batal',
+    acceptLabel: 'Konfirmasi',
     type: 'info',
     accept: () => {
       emit('confirm');

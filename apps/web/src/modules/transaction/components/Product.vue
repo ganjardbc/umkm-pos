@@ -13,7 +13,7 @@
         class="pos-product__categories"
       >
         <Tag
-          value="All Categories"
+          value="Semua Kategori"
           :severity="!form.category_id ? 'success' : 'secondary'"
           :outlined="!!form.category_id"
           class="cursor-pointer px-4! py-2!"
@@ -35,7 +35,7 @@
       v-if="!loading && products && products.length === 0"
     >
       <span class="w-full text-center flex justify-center">
-        Products are empty.
+        Produk tidak ditemukan.
       </span>
     </div>
 
@@ -72,7 +72,7 @@
           <Tag
             v-if="product.stock_qty <= product.min_stock"
             severity="warn"
-            value="Low Stock"
+            value="Stok Menipis"
             class="absolute top-0 right-0 text-xs!"
           />
 
@@ -99,7 +99,7 @@
 
     <UiLoading
       v-if="loading"
-      message="Loading products..."
+      message="Memuat produk..."
     />
 
     <UiPagination
@@ -167,8 +167,8 @@ const fetchProduct = async () => {
     console.log(error);
     showToast({
       type: 'error',
-      title: 'Error.',
-      message: getErrorMessage(error) || 'There was an error.',
+      title: 'Gagal',
+      message: getErrorMessage(error) || 'Terjadi kesalahan saat memuat produk.',
     });
   } finally {
     loading.value = false;
@@ -222,8 +222,8 @@ const addProductToCart = (product: any) => {
   if (!props.isUserInShift) {
     showToast({
       type: 'warn',
-      title: 'No active shift',
-      message: 'Please open a shift to add products to the cart.',
+      title: 'Shift Belum Aktif',
+      message: 'Silakan buka shift terlebih dahulu untuk menambahkan produk ke keranjang.',
     });
     return;
   }
@@ -233,8 +233,8 @@ const addProductToCart = (product: any) => {
   } else {
     showToast({
       type: 'warn',
-      title: 'Out of stock',
-      message: `${product.name} is out of stock`,
+      title: 'Stok Habis',
+      message: `Stok ${product.name} habis`,
     });
   }
 };

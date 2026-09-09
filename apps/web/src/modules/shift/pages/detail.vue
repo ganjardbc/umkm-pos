@@ -8,7 +8,7 @@
         @click="onBack"
       />
       <h1 class="text-lg font-semibold">
-        Shift Detail
+        Detail Shift
       </h1>
     </div>
 

@@ -7,25 +7,25 @@
     <div class="text-center mb-6 pb-4 border-b-2 border-dashed border-gray-300">
       <h2 class="text-lg font-bold text-gray-900">{{ transaction?.outlets?.name }}</h2>
       <p class="text-xs text-gray-400 mt-1">{{ transaction?.outlets?.location }}</p>
-      <p class="text-xs text-gray-500 mt-2">Receipt #{{ transaction?.id?.slice(0, 8).toUpperCase() }}</p>
+      <p class="text-xs text-gray-500 mt-2">Struk #{{ transaction?.id?.slice(0, 8).toUpperCase() }}</p>
     </div>
 
     <!-- Transaction Info -->
     <div class="text-xs text-gray-700 mb-4 space-y-1">
       <div class="flex justify-between">
-        <span>Date:</span>
+        <span>Tanggal:</span>
         <span>{{ formatDate(transaction?.created_at) }}</span>
       </div>
       <div class="flex justify-between">
-        <span>Time:</span>
+        <span>Waktu:</span>
         <span>{{ formatTime(transaction?.created_at) }}</span>
       </div>
       <div class="flex justify-between">
-        <span>Cashier:</span>
+        <span>Kasir:</span>
         <span>{{ transaction?.users?.name }}</span>
       </div>
       <div class="flex justify-between">
-        <span>Payment:</span>
+        <span>Pembayaran:</span>
         <span class="capitalize">{{ transaction?.payment_method }}</span>
       </div>
     </div>
@@ -35,7 +35,7 @@
       <div class="text-xs font-semibold text-gray-900 mb-2 grid grid-cols-12 gap-1">
         <div class="col-span-6">Item</div>
         <div class="col-span-2 text-right">Qty</div>
-        <div class="col-span-2 text-right">Price</div>
+        <div class="col-span-2 text-right">Harga</div>
         <div class="col-span-2 text-right">Total</div>
       </div>
       <div
@@ -53,21 +53,21 @@
     <!-- Total -->
     <div class="mb-4 space-y-2">
       <div class="flex justify-between text-sm font-bold text-gray-900">
-        <span>Total Amount:</span>
+        <span>Total Pembayaran:</span>
         <span>{{ formatCurrency(transaction?.total_amount) }}</span>
       </div>
       <div
         v-if="transaction?.payment_method === 'cash' && transaction?.cash_received !== null && transaction?.cash_received !== undefined"
         class="flex justify-between text-xs text-gray-700"
       >
-        <span>Cash Received:</span>
+        <span>Uang Tunai Diterima:</span>
         <span>{{ formatCurrency(transaction?.cash_received) }}</span>
       </div>
       <div
         v-if="transaction?.payment_method === 'cash' && transaction?.change_amount !== null && transaction?.change_amount !== undefined"
         class="flex justify-between text-xs text-gray-700"
       >
-        <span>Change:</span>
+        <span>Kembalian:</span>
         <span>{{ formatCurrency(transaction?.change_amount) }}</span>
       </div>
       <div v-if="transaction?.is_offline" class="flex justify-between text-xs text-orange-600 font-semibold">
@@ -76,13 +76,13 @@
       </div>
       <div v-if="transaction?.is_cancelled" class="flex justify-between text-xs text-red-600 font-semibold">
         <span>Status:</span>
-        <span>CANCELLED</span>
+        <span>DIBATALKAN</span>
       </div>
     </div>
 
     <!-- Footer -->
     <div class="text-center pt-4 border-t-2 border-dashed border-gray-300">
-      <p class="text-xs text-gray-400">Thank you for your purchase!</p>
+      <p class="text-xs text-gray-400">Terima kasih atas kunjungan Anda!</p>
       <p class="text-xs text-gray-500 mt-2">{{ transaction?.outlets?.name }}</p>
     </div>
   </div>

@@ -11,12 +11,12 @@
 
     <UiLoading
       v-if="loading"
-      message="Loading shifts..."
+      message="Memuat riwayat shift..."
     />
 
     <div v-else-if="shifts.length === 0" class="flex flex-col items-center justify-center py-16 text-gray-400">
       <i class="pi pi-inbox mb-3 text-4xl" />
-      <p class="text-sm">Shifts are empty.</p>
+      <p class="text-sm">Riwayat shift masih kosong.</p>
     </div>
 
     <div v-else class="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
@@ -36,7 +36,7 @@
           </div>
           <div class="flex shrink-0 gap-1">
             <Tag
-              :value="shift.status"
+              :value="shift.status === 'open' ? 'Buka' : 'Tutup'"
               :severity="getStatusSeverity(shift.status)"
               class="capitalize text-xs!"
             />
@@ -49,13 +49,13 @@
           <span class="text-slate-400">Outlet</span>
           <span class="text-right text-slate-700 dark:text-slate-300">{{ shift.outlet?.name || '-' }}</span>
 
-          <span class="text-slate-400">Date</span>
+          <span class="text-slate-400">Tanggal</span>
           <span class="text-right text-slate-700 dark:text-slate-300">{{ formatDate(shift.start_time) }}</span>
 
-          <span class="text-slate-400">Time</span>
+          <span class="text-slate-400">Waktu</span>
           <span class="text-right text-slate-700 dark:text-slate-300">{{ formatRangeTime(shift.start_time, shift.end_time) }}</span>
 
-          <span class="text-slate-400">Duration</span>
+          <span class="text-slate-400">Durasi</span>
           <span class="text-right text-slate-700 dark:text-slate-300">{{ getDuration(shift.start_time, shift.end_time) }}</span>
         </div>
 
@@ -133,8 +133,8 @@ const fetchShift = async () => {
     console.log(error);
     showToast({
         type: 'error',
-        title: 'Error.',
-        message: getErrorMessage(error) || 'There was an error.',
+        title: 'Gagal',
+        message: getErrorMessage(error) || 'Terjadi kesalahan saat memuat riwayat shift.',
     });
   } finally {
     loading.value = false;
