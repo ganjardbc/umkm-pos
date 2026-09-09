@@ -10,16 +10,16 @@ export default [
     name: PREFIX_ROUTE_NAME,
     component: () => import('@/modules/notification/pages/index.vue'),
     meta: {
-      title: 'Notification',
+      title: 'Notifikasi',
       layout: 'default',
       breadcrumbs: [
         {
-          label: 'Home',
+          label: 'Beranda',
           route: '/landing',
           isActive: false,
         },
         {
-          label: 'Notification',
+          label: 'Notifikasi',
           route: PREFIX_ROUTE_PATH,
           isActive: true,
         },

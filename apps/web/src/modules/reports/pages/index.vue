@@ -8,7 +8,7 @@
       date-format="yy-mm-dd"
       show-button-bar
       :manual-input="false"
-      placeholder="Select date range"
+      placeholder="Pilih rentang tanggal"
       showIcon
       class="w-full"
     />
@@ -33,8 +33,8 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
       <!-- Sales Summary Card -->
       <ReportCard
-        title="Sales Summary"
-        description="Total revenue, transactions, and average order value"
+        title="Ringkasan Penjualan"
+        description="Total pendapatan, transaksi, dan rata-rata nilai pesanan"
         :loading="summaryLoading"
         :error="summaryError"
         @download="downloadSummary"
@@ -42,8 +42,8 @@
 
       <!-- Daily Reports Card -->
       <ReportCard
-        title="Daily Reports"
-        description="Daily sales trends and transaction data"
+        title="Laporan Harian"
+        description="Tren penjualan harian dan data transaksi"
         :loading="dailyLoading"
         :error="dailyError"
         @download="downloadDaily"
@@ -51,8 +51,8 @@
 
       <!-- Top Products Card -->
       <ReportCard
-        title="Top Products"
-        description="Best-selling products by revenue (Top 10)"
+        title="Produk Terlaris"
+        description="Produk terlaris berdasarkan pendapatan (10 Teratas)"
         :loading="productsLoading"
         :error="productsError"
         @download="downloadTopProducts"
@@ -60,8 +60,8 @@
 
       <!-- Outlet Comparison Card -->
       <ReportCard
-        title="Outlet Comparison"
-        description="Revenue and transaction count per outlet"
+        title="Perbandingan Outlet"
+        description="Pendapatan dan jumlah transaksi per outlet"
         :loading="outletsLoading"
         :error="outletsError"
         @download="downloadOutletComparison"
@@ -69,8 +69,8 @@
 
       <!-- Transaction Report Card -->
       <ReportCard
-        title="Transaction Report"
-        description="Detailed transaction history with payment methods and status"
+        title="Laporan Transaksi"
+        description="Riwayat transaksi detail dengan metode pembayaran dan status"
         :loading="transactionsLoading"
         :error="transactionsError"
         @download="downloadTransactions"
@@ -141,24 +141,24 @@ const validateDateRange = (): boolean => {
   dateRangeError.value = null;
 
   if (!dateRange.value || dateRange.value.length !== 2) {
-    dateRangeError.value = 'Please select both start and end dates';
+    dateRangeError.value = 'Pilih tanggal mulai dan tanggal selesai';
     return false;
   }
 
   const [start, end] = dateRange.value;
 
   if (!start || !end) {
-    dateRangeError.value = 'Please select both start and end dates';
+    dateRangeError.value = 'Pilih tanggal mulai dan tanggal selesai';
     return false;
   }
 
   if (start > end) {
-    dateRangeError.value = 'Start date must be before or equal to end date';
+    dateRangeError.value = 'Tanggal mulai harus sebelum atau sama dengan tanggal selesai';
     return false;
   }
 
   if (end > new Date()) {
-    dateRangeError.value = 'End date cannot be in the future';
+    dateRangeError.value = 'Tanggal selesai tidak boleh di masa depan';
     return false;
   }
 
@@ -212,7 +212,7 @@ const downloadSummary = async () => {
     const timestamp = new Date().toISOString().split('T')[0];
     downloadFile(blob, `Sales_Summary_${timestamp}.xlsx`);
   } catch (error) {
-    summaryError.value = error instanceof Error ? error.message : 'Download failed';
+    summaryError.value = error instanceof Error ? error.message : 'Gagal mengunduh';
   } finally {
     summaryLoading.value = false;
   }
@@ -228,7 +228,7 @@ const downloadDaily = async () => {
     const timestamp = new Date().toISOString().split('T')[0];
     downloadFile(blob, `Daily_Reports_${timestamp}.xlsx`);
   } catch (error) {
-    dailyError.value = error instanceof Error ? error.message : 'Download failed';
+    dailyError.value = error instanceof Error ? error.message : 'Gagal mengunduh';
   } finally {
     dailyLoading.value = false;
   }
@@ -244,7 +244,7 @@ const downloadTopProducts = async () => {
     const timestamp = new Date().toISOString().split('T')[0];
     downloadFile(blob, `Top_Products_${timestamp}.xlsx`);
   } catch (error) {
-    productsError.value = error instanceof Error ? error.message : 'Download failed';
+    productsError.value = error instanceof Error ? error.message : 'Gagal mengunduh';
   } finally {
     productsLoading.value = false;
   }
@@ -260,7 +260,7 @@ const downloadOutletComparison = async () => {
     const timestamp = new Date().toISOString().split('T')[0];
     downloadFile(blob, `Outlet_Comparison_${timestamp}.xlsx`);
   } catch (error) {
-    outletsError.value = error instanceof Error ? error.message : 'Download failed';
+    outletsError.value = error instanceof Error ? error.message : 'Gagal mengunduh';
   } finally {
     outletsLoading.value = false;
   }
@@ -276,7 +276,7 @@ const downloadTransactions = async () => {
     const timestamp = new Date().toISOString().split('T')[0];
     downloadFile(blob, `Transaction_Report_${timestamp}.csv`);
   } catch (error) {
-    transactionsError.value = error instanceof Error ? error.message : 'Download failed';
+    transactionsError.value = error instanceof Error ? error.message : 'Gagal mengunduh';
   } finally {
     transactionsLoading.value = false;
   }

@@ -1,17 +1,17 @@
 <template>
   <div class="space-y-4">
     <div class="flex justify-between items-center">
-      <h1 class="text-xl font-semibold">Notifications</h1>
-      <Button label="Mark all as read" size="small" @click="handleMarkAll" :disabled="!unreadCount" />
+      <h1 class="text-xl font-semibold">Notifikasi</h1>
+      <Button label="Tandai semua telah dibaca" size="small" @click="handleMarkAll" :disabled="!unreadCount" />
     </div>
 
     <UiLoading
       v-if="loading"
-      message="Loading notifications..."
+      message="Memuat notifikasi..."
     />
     <div v-else-if="error" class="text-sm text-red-500">{{ error }}</div>
     <div v-else-if="!notifications.length" class="w-full flex flex-col justify-center items-center" style="height: calc(100vh - 220px);">
-      <UiEmptyState icon="pi pi-bell-slash" title="There is no notifications" description="You don't have new notifications for now." />
+      <UiEmptyState icon="pi pi-bell-slash" title="Tidak ada notifikasi" description="Anda tidak memiliki notifikasi baru saat ini." />
     </div>
 
     <div v-else class="space-y-3">
@@ -21,7 +21,7 @@
             <p class="font-medium">{{ item.title }}</p>
             <p class="text-sm text-gray-600">{{ item.message }}</p>
           </div>
-          <Button v-if="!item.is_read" label="Mark read" size="small" variant="text" @click="markAsRead(item.id)" />
+          <Button v-if="!item.is_read" label="Tandai dibaca" size="small" variant="text" @click="markAsRead(item.id)" />
         </div>
       </div>
     </div>
@@ -47,7 +47,7 @@ const loadNotifications = async () => {
     notifications.value = response?.data?.data || [];
     unreadCount.value = response?.data?.meta?.unreadCount || 0;
   } catch {
-    error.value = 'Failed to load notifications.';
+    error.value = 'Gagal memuat notifikasi.';
   } finally {
     loading.value = false;
   }
