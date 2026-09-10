@@ -19,10 +19,10 @@ import { OutletsService } from './outlets.service';
 import { CreateOutletDto } from './dto/create-outlet.dto';
 import { UpdateOutletDto } from './dto/update-outlet.dto';
 import { SetOutletImageDto } from './dto/set-outlet-image.dto';
+import { OutletsQueryDto } from './dto/outlets-query.dto';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { RequirePermission } from '../common/decorators/require-permission.decorator';
 import { PermissionGuard } from '../common/guards/permission.guard';
-import { PaginationDto } from '../common/dto/pagination.dto';
 
 @ApiTags('Outlets')
 @ApiBearerAuth()
@@ -53,9 +53,9 @@ export class OutletsController {
   @ApiResponse({ status: 200, description: 'Return all outlets (paginated)' })
   findAll(
     @CurrentUser('merchant_id') merchantId: string,
-    @Query() pagination: PaginationDto,
+    @Query() query: OutletsQueryDto,
   ) {
-    return this.outletsService.findAll(merchantId, pagination);
+    return this.outletsService.findAll(merchantId, query);
   }
 
   @Get(':id')

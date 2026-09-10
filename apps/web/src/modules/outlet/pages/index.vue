@@ -25,7 +25,7 @@
     />
 
     <div
-      v-else-if="filteredOutlets.length === 0"
+      v-else-if="outlets.length === 0"
       class="flex flex-col items-center justify-center py-16 text-gray-400"
     >
       <i class="pi pi-inbox mb-3 text-4xl" />
@@ -34,7 +34,7 @@
 
     <div v-else class="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
       <UiCard
-        v-for="(outlet, index) in filteredOutlets"
+        v-for="(outlet, index) in outlets"
         :key="outlet.id"
         class="relative overflow-hidden"
       >
@@ -130,7 +130,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, computed } from 'vue';
+import { onMounted, onUnmounted, ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { getNoTable, getErrorMessage, formatDateTime } from '@/helpers/utils.ts';
 import { getListOutlet, deleteOutlet } from '@/modules/outlet/services/api.ts';
@@ -167,6 +167,7 @@ const fetchOutlet = async () => {
     const payload = {
       page: pagination.value.page,
       limit: pagination.value.rows,
+      ...(form.value.search && { search: form.value.search }),
     };
     const response = await getListOutlet(payload);
     const { data, meta } = response?.data?.data || {};
@@ -254,24 +255,21 @@ const form = ref({
   search: '',
 });
 
-const filteredOutlets = computed(() => {
-  if (!form.value.search) return outlets.value;
-  const keyword = form.value.search.toLowerCase().trim();
-  return outlets.value.filter((outlet: any) => {
-    return (
-      outlet.name?.toLowerCase().includes(keyword) ||
-      outlet.location?.toLowerCase().includes(keyword) ||
-      outlet.merchants?.name?.toLowerCase().includes(keyword)
-    );
-  });
-});
-
+let searchDebounceTimer: ReturnType<typeof setTimeout>;
 const search = () => {
-  // Client-side search filters the current page or search query
+  clearTimeout(searchDebounceTimer);
+  searchDebounceTimer = setTimeout(() => {
+    pagination.value.page = 1;
+    fetchOutlet();
+  }, 300);
 };
 
 onMounted(() => {
   fetchOutlet();
+});
+
+onUnmounted(() => {
+  clearTimeout(searchDebounceTimer);
 });
 </script>
 
