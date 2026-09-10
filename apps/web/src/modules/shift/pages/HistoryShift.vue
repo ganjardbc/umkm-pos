@@ -123,6 +123,7 @@ const fetchShift = async () => {
       outlet_id: outlet?.id,
       page: pagination.value.page,
       limit: pagination.value.rows,
+      search: form.value.search ? form.value.search.trim() : undefined,
     }
     const response = await getListShift(payload);
     const { data, meta } = response?.data?.data || {};
@@ -152,8 +153,13 @@ const form = ref({
   search: '',
 });
 
+let searchDebounceTimer: ReturnType<typeof setTimeout>;
 const search = () => {
-  console.log(form.value);
+  clearTimeout(searchDebounceTimer);
+  searchDebounceTimer = setTimeout(() => {
+    pagination.value.page = 1;
+    fetchShift();
+  }, 300);
 };
 
 const getStatusSeverity = (status: string) => {

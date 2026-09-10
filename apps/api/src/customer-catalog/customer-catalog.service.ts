@@ -226,11 +226,12 @@ export class CustomerCatalogService {
     });
 
     if (activeOrder) {
-      const updatedOrder = await this.transactionsService.addItemsToCatalogOrder(
-        activeOrder.id,
-        dto.items,
-        session.merchant_id,
-      );
+      const updatedOrder =
+        await this.transactionsService.addItemsToCatalogOrder(
+          activeOrder.id,
+          dto.items,
+          session.merchant_id,
+        );
 
       await this.notificationsService.notifyOutletUsers(dto.outlet_id, {
         title: 'Tambahan Pesanan',
