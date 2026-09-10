@@ -205,7 +205,7 @@
 import { type ReceiptData } from '../utils/receiptGenerator';
 import { onMounted, ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { getNoTable, getErrorMessage, getCurrency, formatDateTime } from '@/helpers/utils.ts';
+import { getNoTable, getErrorMessage, getCurrency, formatDateTime, useDebounce } from '@/helpers/utils.ts';
 import { getListTransaction, patchTransactionStatus, patchTransactionPay, postCancelTransaction } from '@/modules/transaction/services/api.ts';
 import { showToast, showConfirm } from '@/helpers/toast.ts';
 import { showLoading, hideLoading } from '@/helpers/loading.ts';
@@ -270,6 +270,7 @@ const fetchTransaction = async () => {
       limit: pagination.value.rows,
       is_cancelled: filter.value.is_cancelled,
       order_status: filter.value.order_status,
+      search: form.value.search ? form.value.search.trim() : undefined,
     }
     const response = await getListTransaction(payload);
     const { data, meta } = response?.data?.data || {};
@@ -444,9 +445,10 @@ const form = ref({
   search: '',
 });
 
-const search = () => {
-  console.log(form.value);
-};
+const search = useDebounce(() => {
+  pagination.value.page = 1;
+  fetchTransaction();
+}, 300);
 
 onMounted(() => {
   fetchTransaction();

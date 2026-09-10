@@ -393,6 +393,51 @@ describe('TransactionsService', () => {
           service.findAll(merchantId, userId, 'outlet-2'),
         ).rejects.toThrow(ForbiddenException);
       });
+
+      it('should include search OR condition when search parameter is provided', async () => {
+        mockPrisma.user_roles.findMany.mockResolvedValue([
+          {
+            user_id: userId,
+            outlet_id: 'outlet-1',
+            roles: { name: 'owner' },
+          },
+        ]);
+        mockPrisma.outlets.findMany.mockResolvedValue([{ id: 'outlet-1' }]);
+        mockPrisma.$transaction.mockResolvedValue([[], 0]);
+
+        await service.findAll(
+          merchantId,
+          userId,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          'TRX-123',
+        );
+
+        expect(mockPrisma.transactions.findMany).toHaveBeenCalledWith(
+          expect.objectContaining({
+            where: expect.objectContaining({
+              OR: [
+                { id: { contains: 'TRX-123' } },
+                { customer_name_snapshot: { contains: 'TRX-123' } },
+              ],
+            }),
+          }),
+        );
+        expect(mockPrisma.transactions.count).toHaveBeenCalledWith(
+          expect.objectContaining({
+            where: expect.objectContaining({
+              OR: [
+                { id: { contains: 'TRX-123' } },
+                { customer_name_snapshot: { contains: 'TRX-123' } },
+              ],
+            }),
+          }),
+        );
+      });
     });
 
     describe('findOne', () => {

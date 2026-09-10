@@ -8,6 +8,14 @@ import { PaginationDto } from '../../common/dto/pagination.dto';
  */
 export class FindAllTransactionsDto extends PaginationDto {
   @ApiPropertyOptional({
+    description: 'Search query for transaction ID or customer name',
+    example: 'TRX-123',
+  })
+  @IsOptional()
+  @IsString()
+  search?: string;
+
+  @ApiPropertyOptional({
     description: 'Filter by outlet ID',
     example: '550e8400-e29b-41d4-a716-446655440021',
   })

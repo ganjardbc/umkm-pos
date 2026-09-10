@@ -82,6 +82,7 @@ export class TransactionsController {
       query.order_status,
       query.order_source,
       query.table_id,
+      query.search,
     );
   }
 
