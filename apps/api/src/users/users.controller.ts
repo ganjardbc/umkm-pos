@@ -19,10 +19,10 @@ import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { SetUserAvatarDto } from './dto/set-user-avatar.dto';
+import { UsersQueryDto } from './dto/users-query.dto';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { RequirePermission } from '../common/decorators/require-permission.decorator';
 import { PermissionGuard } from '../common/guards/permission.guard';
-import { PaginationDto } from '../common/dto/pagination.dto';
 
 @ApiTags('Users')
 @ApiBearerAuth()
@@ -55,9 +55,9 @@ export class UsersController {
   })
   findAll(
     @CurrentUser('merchant_id') merchantId: string,
-    @Query() pagination: PaginationDto,
+    @Query() query: UsersQueryDto,
   ) {
-    return this.usersService.findAll(merchantId, pagination);
+    return this.usersService.findAll(merchantId, query);
   }
 
   @Get(':id')

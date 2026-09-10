@@ -119,7 +119,7 @@
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { getErrorMessage, formatDateTime } from '@/helpers/utils.ts';
+import { getErrorMessage, formatDateTime, useDebounce } from '@/helpers/utils.ts';
 import { getListUser, deactivateUser } from '@/modules/user/services/api.ts';
 import { showToast, showConfirm } from '@/helpers/toast.ts';
 import { showLoading, hideLoading } from '@/helpers/loading.ts';
@@ -154,6 +154,7 @@ const fetchUser = async () => {
     const payload = {
       page: pagination.value.page,
       limit: pagination.value.rows,
+      search: form.value.search || undefined,
     }
     const response = await getListUser(payload);
     const { data, meta } = response?.data?.data || {};
@@ -247,9 +248,10 @@ const form = ref({
   search: '',
 });
 
-const search = () => {
-  console.log(form.value);
-};
+const search = useDebounce(() => {
+  pagination.value.page = 1;
+  fetchUser();
+}, 400);
 
 onMounted(() => {
   fetchUser();
