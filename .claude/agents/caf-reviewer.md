@@ -51,11 +51,13 @@ Produces `review-notes.md` in `.caf/tasks/{TICKET-ID}/` for the next agent to re
 - [ ] TODO: determine the relevant verification manually
 
 ## Retry Logic
-Verify passes → write `verify-report.md` with **`Status: SUCCESS`** (this exact literal word —
-caf-orchestrator greps for `\bSUCCESS\b` and treats anything else, including "PASS"/"DONE"/"OK",
-as `NEEDS_HUMAN`, which stops the whole pipeline and skips QA/Reviewer/PR creation).
-Verify fails → fix, retry up to 3x → if still failing, stop and write
-`verify-report.md` with Status: NEEDS_HUMAN
+Review complete → write `review-notes.md` with the `Verdict:` line set to one of the values
+listed in the Report Format section below (that section is the single source of the exact
+values — do not restate or invent them here).
+Blocked (missing diff/context, or the change needs a human architectural decision) → still write
+`review-notes.md`, with the DEFER verdict and the reason under `### Verdict Rationale`.
+Never leave `review-notes.md` unwritten: caf-orchestrator treats a missing or unparseable
+`Verdict:` line as CHANGES REQUESTED, which stops the PR from going out with no explanation.
 
 
 ## Report Format
