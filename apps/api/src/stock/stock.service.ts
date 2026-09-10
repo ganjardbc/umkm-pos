@@ -74,13 +74,14 @@ export class StockService {
 
   /**
    * List all stock_logs for a merchant (via product.merchant_id).
-   * Optionally filter by product_id.
+   * Optionally filter by product_id, outlet_id, and search.
    */
   async findLogs(
     merchantId: string,
     productId?: string,
     outletId?: string,
     pagination: PaginationDto = new PaginationDto(),
+    search?: string,
   ) {
     // If filtering by product, verify it belongs to this merchant first
     if (productId) {
@@ -107,6 +108,12 @@ export class StockService {
       merchant_id: merchantId,
       ...(productId ? { product_id: productId } : {}),
       ...(outletId ? { outlet_id: outletId } : {}),
+      ...(search && {
+        OR: [
+          { products: { name: { contains: search } } },
+          { reason: { contains: search } },
+        ],
+      }),
     };
 
     const [data, total] = await this.prisma.$transaction([

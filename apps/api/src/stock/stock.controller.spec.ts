@@ -57,6 +57,33 @@ describe('StockController', () => {
       'product-1',
       'outlet-1',
       expect.objectContaining({ page: 1, limit: 10 }),
+      undefined,
+    );
+  });
+
+  it('should pass search filter to findLogs', async () => {
+    const merchantId = 'merchant-1';
+    const query = {
+      search: 'kopi',
+      page: 1,
+      limit: 10,
+    };
+    const response = {
+      data: [],
+      meta: { total: 0, page: 1, limit: 10, totalPages: 0 },
+    };
+
+    mockStockService.findLogs.mockResolvedValue(response);
+
+    const result = await controller.findLogs(merchantId, query as any);
+
+    expect(result).toEqual(response);
+    expect(mockStockService.findLogs).toHaveBeenCalledWith(
+      merchantId,
+      undefined,
+      undefined,
+      expect.objectContaining({ page: 1, limit: 10 }),
+      'kopi',
     );
   });
 

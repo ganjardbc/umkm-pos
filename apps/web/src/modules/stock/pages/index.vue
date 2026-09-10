@@ -94,13 +94,14 @@ const fetchStock = async () => {
       page: pagination.value.page,
       limit: pagination.value.rows,
       outlet_id: getOutlet()?.id,
+      ...(form.value.search?.trim() && { search: form.value.search.trim() }),
     }
     const response = await getListStock(payload);
     const { data, meta } = response?.data?.data || {};
 
-    stocks.value = data;
-    pagination.value.totalRecords = meta?.total;
-    pagination.value.pageCount = meta?.totalPages;
+    stocks.value = data || [];
+    pagination.value.totalRecords = meta?.total || 0;
+    pagination.value.pageCount = meta?.totalPages || 0;
   } catch (error) {
     console.log(error);
     showToast({
@@ -123,8 +124,13 @@ const form = ref({
   search: '',
 });
 
+let searchDebounceTimer: ReturnType<typeof setTimeout>;
 const search = () => {
-  console.log(form.value);
+  clearTimeout(searchDebounceTimer);
+  searchDebounceTimer = setTimeout(() => {
+    pagination.value.page = 1;
+    fetchStock();
+  }, 300);
 };
 
 onMounted(() => {
