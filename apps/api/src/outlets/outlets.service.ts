@@ -8,6 +8,7 @@ import { PrismaService } from '../database/prisma.service';
 import { UploadsService } from '../uploads/uploads.service';
 import { CreateOutletDto } from './dto/create-outlet.dto';
 import { UpdateOutletDto } from './dto/update-outlet.dto';
+import { OutletsQueryDto } from './dto/outlets-query.dto';
 import { PaginationDto } from '../common/dto/pagination.dto';
 
 @Injectable()
@@ -27,10 +28,18 @@ export class OutletsService {
     };
   }
 
-  async findAll(merchantId: string, pagination: PaginationDto) {
-    const { page = 1, limit = 10 } = pagination;
-    const skip = pagination.skip;
-    const where = { merchant_id: merchantId };
+  async findAll(merchantId: string, query: OutletsQueryDto) {
+    const { page = 1, limit = 10, search } = query;
+    const skip = query.skip;
+    const where = {
+      merchant_id: merchantId,
+      ...(search && {
+        OR: [
+          { name: { contains: search } },
+          { location: { contains: search } },
+        ],
+      }),
+    };
 
     const [data, total] = await this.prisma.$transaction([
       this.prisma.outlets.findMany({
