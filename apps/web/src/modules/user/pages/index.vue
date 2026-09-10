@@ -154,13 +154,14 @@ const fetchUser = async () => {
     const payload = {
       page: pagination.value.page,
       limit: pagination.value.rows,
-    }
+      ...(form.value.search ? { search: form.value.search } : {}),
+    };
     const response = await getListUser(payload);
     const { data, meta } = response?.data?.data || {};
 
-    users.value = data;
-    pagination.value.totalRecords = meta?.total;
-    pagination.value.pageCount = meta?.totalPages;
+    users.value = data || [];
+    pagination.value.totalRecords = meta?.total || 0;
+    pagination.value.pageCount = meta?.totalPages || 0;
   } catch (error) {
     console.log(error);
     showToast({
@@ -247,8 +248,13 @@ const form = ref({
   search: '',
 });
 
+let searchDebounceTimer: ReturnType<typeof setTimeout>;
 const search = () => {
-  console.log(form.value);
+  clearTimeout(searchDebounceTimer);
+  searchDebounceTimer = setTimeout(() => {
+    pagination.value.page = 1;
+    fetchUser();
+  }, 300);
 };
 
 onMounted(() => {
