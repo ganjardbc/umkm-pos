@@ -157,6 +157,7 @@ const fetchProduct = async () => {
       page: pagination.value.page,
       limit: pagination.value.rows,
       outlet_id: getOutlet()?.id,
+      ...(form.value.search && { search: form.value.search }),
       ...(form.value.category_id && { category_id: form.value.category_id }),
     }
     const response = await getListProduct(payload);
@@ -187,8 +188,13 @@ const form = ref({
   category_id: null as string | null,
 });
 
+let searchDebounceTimer: ReturnType<typeof setTimeout>;
 const search = () => {
-  console.log(form.value);
+  clearTimeout(searchDebounceTimer);
+  searchDebounceTimer = setTimeout(() => {
+    pagination.value.page = 1;
+    fetchProduct();
+  }, 300);
 };
 
 // Categories
