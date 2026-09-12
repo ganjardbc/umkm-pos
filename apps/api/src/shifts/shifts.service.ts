@@ -20,6 +20,7 @@ export class ShiftsService {
     merchantId: string,
     outletId?: string,
     pagination: PaginationDto = new PaginationDto(),
+    search?: string,
   ) {
     // Validate outlet belongs to this merchant when outletId is provided
     if (outletId) {
@@ -39,9 +40,17 @@ export class ShiftsService {
 
     const { page = 1, limit = 10 } = pagination;
     const skip = pagination.skip;
-    const where = {
+    const where: Prisma.shiftsWhereInput = {
       outlet_id: outletId ? outletId : { in: outletIds },
     };
+
+    if (search) {
+      where.shift_owner = {
+        name: {
+          contains: search,
+        },
+      };
+    }
 
     const [data, total] = await this.prisma.$transaction([
       this.prisma.shifts.findMany({
@@ -469,6 +478,8 @@ export class ShiftsService {
       start_date?: Date;
       end_date?: Date;
       user_id?: string;
+      search?: string;
+      page?: number;
       limit?: number;
       offset?: number;
     } = {},
@@ -521,8 +532,18 @@ export class ShiftsService {
       where.shift_owner_id = filters.user_id;
     }
 
+    if (filters.search) {
+      where.shift_owner = {
+        name: {
+          contains: filters.search,
+        },
+      };
+    }
+
     const limit = filters.limit || 10;
     const offset = filters.offset || 0;
+    const page =
+      filters.page || (limit > 0 ? Math.floor(offset / limit) + 1 : 1);
 
     const [shifts, total] = await this.prisma.$transaction([
       this.prisma.shifts.findMany({
@@ -572,6 +593,7 @@ export class ShiftsService {
       total,
       limit,
       offset,
+      meta: PaginationDto.calculateMeta(total, page, limit),
     };
   }
 

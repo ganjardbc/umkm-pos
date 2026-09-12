@@ -1,4 +1,10 @@
-import { IsOptional, IsUUID, IsEnum, IsDateString } from 'class-validator';
+import {
+  IsOptional,
+  IsUUID,
+  IsEnum,
+  IsDateString,
+  IsString,
+} from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { PaginationDto } from '../../common/dto/pagination.dto';
 
@@ -43,4 +49,12 @@ export class QueryShiftsDto extends PaginationDto {
   @IsOptional()
   @IsUUID()
   user_id?: string;
+
+  @ApiPropertyOptional({
+    description: 'Search shifts by shift owner name',
+    example: 'Budi',
+  })
+  @IsOptional()
+  @IsString()
+  search?: string;
 }

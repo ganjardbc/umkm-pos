@@ -103,6 +103,8 @@ export class ShiftsController {
       start_date: query.start_date ? new Date(query.start_date) : undefined,
       end_date: query.end_date ? new Date(query.end_date) : undefined,
       user_id: query.user_id,
+      search: query.search,
+      page: query.page,
       limit: query.limit,
       offset: query.skip,
     };

@@ -253,6 +253,66 @@ describe('ShiftsService', () => {
     });
   });
 
+  describe('findAll', () => {
+    it('should find all shifts with merchant scoping and optional search', async () => {
+      const merchantId = 'merchant-1';
+      mockPrisma.outlets.findMany.mockResolvedValue([
+        { id: 'outlet-1' },
+        { id: 'outlet-2' },
+      ]);
+
+      const shiftsData = [
+        {
+          id: 'shift-1',
+          outlet_id: 'outlet-1',
+          shift_owner_id: 'user-1',
+          status: 'open',
+          start_time: new Date(),
+          end_time: null,
+          outlets: { id: 'outlet-1', name: 'Outlet 1', slug: 'outlet-1' },
+          shift_owner: { id: 'user-1', name: 'Budi', username: 'budi' },
+        },
+      ];
+
+      mockPrisma.$transaction.mockImplementation(async (callback) => {
+        if (Array.isArray(callback)) {
+          return Promise.all(callback);
+        }
+        return callback(mockPrisma);
+      });
+
+      mockPrisma.shifts.findMany.mockResolvedValue(shiftsData);
+      mockPrisma.shifts.count.mockResolvedValue(1);
+
+      const result = await service.findAll(
+        merchantId,
+        undefined,
+        undefined,
+        'Budi',
+      );
+
+      expect(result).toBeDefined();
+      expect(result.data).toHaveLength(1);
+      expect(result.meta).toEqual({
+        total: 1,
+        page: 1,
+        limit: 10,
+        totalPages: 1,
+      });
+      expect(mockPrisma.shifts.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            shift_owner: {
+              name: {
+                contains: 'Budi',
+              },
+            },
+          }),
+        }),
+      );
+    });
+  });
+
   describe('queryShifts', () => {
     it('should query shifts with filters and pagination', async () => {
       const merchantId = 'merchant-1';
@@ -296,6 +356,44 @@ describe('ShiftsService', () => {
       expect(result).toBeDefined();
       expect(result.data).toHaveLength(1);
       expect(result.total).toBe(1);
+      expect(result.meta).toEqual({
+        total: 1,
+        page: 1,
+        limit: 10,
+        totalPages: 1,
+      });
+    });
+
+    it('should apply search relation filter when search parameter is provided', async () => {
+      const merchantId = 'merchant-1';
+
+      mockPrisma.outlets.findMany.mockResolvedValue([{ id: 'outlet-1' }]);
+
+      mockPrisma.$transaction.mockImplementation(async (callback) => {
+        if (Array.isArray(callback)) {
+          return Promise.all(callback);
+        }
+        return callback(mockPrisma);
+      });
+
+      mockPrisma.shifts.findMany.mockResolvedValue([]);
+      mockPrisma.shifts.count.mockResolvedValue(0);
+
+      await service.queryShifts(merchantId, {
+        search: 'Budi',
+      });
+
+      expect(mockPrisma.shifts.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            shift_owner: {
+              name: {
+                contains: 'Budi',
+              },
+            },
+          }),
+        }),
+      );
     });
 
     it('should throw NotFoundException if outlet filter is invalid', async () => {
