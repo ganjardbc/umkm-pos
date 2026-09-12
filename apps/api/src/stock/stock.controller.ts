@@ -32,7 +32,7 @@ export class StockController {
     @CurrentUser('merchant_id') merchantId: string,
     @Query() query: StockLogsQueryDto,
   ) {
-    const { product_id, outlet_id, page, limit } = query;
+    const { product_id, outlet_id, page, limit, search } = query;
 
     // Create pagination object from query params
     const pagination = Object.assign(new StockLogsQueryDto(), { page, limit });
@@ -42,6 +42,7 @@ export class StockController {
       product_id,
       outlet_id,
       pagination,
+      search,
     );
   }
 

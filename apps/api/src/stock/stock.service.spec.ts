@@ -43,6 +43,98 @@ describe('StockService', () => {
     jest.clearAllMocks();
   });
 
+  describe('findLogs', () => {
+    const merchantId = 'merchant-1';
+
+    it('should return paginated movements without filters', async () => {
+      const movements = [
+        {
+          id: 'movement-1',
+          merchant_id: merchantId,
+          outlet_id: 'outlet-1',
+          product_id: 'product-1',
+          change_qty: 5,
+          reason: 'restock',
+        },
+      ];
+      mockPrisma.$transaction.mockResolvedValue([movements, 1]);
+
+      const result = await service.findLogs(merchantId);
+
+      expect(mockPrisma.inventory_movements.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: {
+            merchant_id: merchantId,
+          },
+          skip: 0,
+          take: 10,
+        }),
+      );
+      expect(mockPrisma.inventory_movements.count).toHaveBeenCalledWith({
+        where: {
+          merchant_id: merchantId,
+        },
+      });
+      expect(result.data).toEqual(movements);
+      expect(result.meta.total).toBe(1);
+    });
+
+    it('should filter by search on product name and reason', async () => {
+      const movements = [
+        {
+          id: 'movement-1',
+          merchant_id: merchantId,
+          reason: 'kopi adjustment',
+          products: { name: 'Kopi Susu' },
+        },
+      ];
+      mockPrisma.$transaction.mockResolvedValue([movements, 1]);
+
+      const result = await service.findLogs(
+        merchantId,
+        undefined,
+        undefined,
+        { page: 1, limit: 10, skip: 0 } as any,
+        'kopi',
+      );
+
+      const expectedWhere = {
+        merchant_id: merchantId,
+        OR: [
+          { products: { name: { contains: 'kopi' } } },
+          { reason: { contains: 'kopi' } },
+        ],
+      };
+
+      expect(mockPrisma.inventory_movements.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expectedWhere,
+        }),
+      );
+      expect(mockPrisma.inventory_movements.count).toHaveBeenCalledWith({
+        where: expectedWhere,
+      });
+      expect(result.data).toEqual(movements);
+    });
+
+    it('should validate product belongs to merchant when productId provided', async () => {
+      mockPrisma.products.findFirst.mockResolvedValue(null);
+
+      await expect(
+        service.findLogs(merchantId, 'non-existent-product'),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('should validate outlet belongs to merchant when outletId provided', async () => {
+      mockPrisma.products.findFirst.mockResolvedValue({ id: 'product-1' });
+      mockPrisma.outlets.findFirst.mockResolvedValue(null);
+
+      await expect(
+        service.findLogs(merchantId, 'product-1', 'non-existent-outlet'),
+      ).rejects.toThrow(NotFoundException);
+    });
+  });
+
   describe('adjust', () => {
     const merchantId = 'merchant-1';
     const userId = 'user-1';
