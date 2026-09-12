@@ -21,6 +21,7 @@ import { UpdateRoleDto } from './dto/update-role.dto';
 import { CreatePermissionDto } from './dto/create-permission.dto';
 import { AssignPermissionDto } from './dto/assign-permission.dto';
 import { AssignRoleDto } from './dto/assign-role.dto';
+import { RolesQueryDto } from './dto/roles-query.dto';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { RequirePermission } from '../common/decorators/require-permission.decorator';
 import { ScopeByOutlet } from '../common/decorators/scope-by-outlet.decorator';
@@ -52,8 +53,8 @@ export class RbacController {
   // @RequirePermission('role.read')
   @ApiOperation({ summary: 'List all roles with their permissions' })
   @ApiResponse({ status: 200, description: 'Return all roles (paginated)' })
-  findAllRoles(@Query() pagination: PaginationDto) {
-    return this.rbacService.findAllRoles(pagination);
+  findAllRoles(@Query() query: RolesQueryDto) {
+    return this.rbacService.findAllRoles(query);
   }
 
   @Get('roles/:id')

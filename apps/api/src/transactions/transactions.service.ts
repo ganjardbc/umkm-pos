@@ -583,7 +583,6 @@ export class TransactionsService {
     });
   }
 
-
   private async prepareTransactionPayload(
     dto: Partial<CreateTransactionDto> & {
       outlet_id: string;
