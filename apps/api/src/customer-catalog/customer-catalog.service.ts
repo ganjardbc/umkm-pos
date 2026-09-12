@@ -233,11 +233,16 @@ export class CustomerCatalogService {
           session.merchant_id,
         );
 
-      await this.notificationsService.notifyOutletUsers(dto.outlet_id, {
-        title: 'Tambahan Pesanan',
-        message: `Ada tambahan pesanan dari ${session.customer_name} (Meja ${updatedOrder?.store_tables?.code ?? '-'})`,
-        type: 'order_item_added',
-      });
+      await this.notificationsService.notifyOutletUsers(
+        dto.outlet_id,
+        session.merchant_id,
+        {
+          title: 'Tambahan Pesanan',
+          message: `Ada tambahan pesanan dari ${session.customer_name} (Meja ${updatedOrder?.store_tables?.code ?? '-'})`,
+          type: 'order_item_added',
+        },
+        'transaction.read',
+      );
 
       return updatedOrder;
     }
