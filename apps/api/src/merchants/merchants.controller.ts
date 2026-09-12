@@ -19,10 +19,10 @@ import { MerchantsService } from './merchants.service';
 import { CreateMerchantDto } from './dto/create-merchant.dto';
 import { UpdateMerchantDto } from './dto/update-merchant.dto';
 import { SetMerchantImageDto } from './dto/set-merchant-image.dto';
+import { MerchantsQueryDto } from './dto/merchants-query.dto';
 import { RequirePermission } from '../common/decorators/require-permission.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { PermissionGuard } from '../common/guards/permission.guard';
-import { PaginationDto } from '../common/dto/pagination.dto';
 
 @ApiTags('Merchants')
 @ApiBearerAuth()
@@ -45,10 +45,10 @@ export class MerchantsController {
   @ApiOperation({ summary: 'Get all merchants' })
   @ApiResponse({ status: 200, description: 'Return all merchants (paginated)' })
   findAll(
-    @Query() pagination: PaginationDto,
+    @Query() query: MerchantsQueryDto,
     @CurrentUser('merchant_id') merchantId: string,
   ) {
-    return this.merchantsService.findAll(pagination, merchantId);
+    return this.merchantsService.findAll(query, merchantId);
   }
 
   @Get(':id')

@@ -9,6 +9,7 @@ import { PrismaService } from '../database/prisma.service';
 import { UploadsService } from '../uploads/uploads.service';
 import { CreateMerchantDto } from './dto/create-merchant.dto';
 import { UpdateMerchantDto } from './dto/update-merchant.dto';
+import { MerchantsQueryDto } from './dto/merchants-query.dto';
 import { PaginationDto } from '../common/dto/pagination.dto';
 
 // Admin merchant slug - users from this merchant can see all merchants
@@ -63,14 +64,17 @@ export class MerchantsService {
     }
   }
 
-  async findAll(pagination: PaginationDto, userMerchantId: string) {
-    const { page = 1, limit = 10 } = pagination;
-    const skip = pagination.skip;
+  async findAll(query: MerchantsQueryDto, userMerchantId: string) {
+    const { page = 1, limit = 10, search } = query;
+    const skip = query.skip;
 
     // const isAdmin = await this.isAdminUser(userMerchantId);
 
-    // Build where clause based on user type
-    const where = { id: userMerchantId };
+    // Build where clause based on user type and search filter
+    const where = {
+      id: userMerchantId,
+      ...(search ? { name: { contains: search } } : {}),
+    };
 
     const [data, total] = await this.prisma.$transaction([
       this.prisma.merchants.findMany({
