@@ -80,51 +80,41 @@
                 </h2>
               </template>
 
-              <DataTable :value="roles" :loading="loadingRoles">
-                <template #empty>
-                  <span class="w-full text-center flex justify-center">
-                    Belum ada role.
-                  </span>
-                </template>
-                <Column field="no" header="NO" class="w-18">
-                  <template #body="slotProps">
-                    {{ getNoTable(slotProps.index, rolePagination.page, rolePagination.rows) }}
-                  </template>
-                </Column>
-                <Column field="name" header="Nama">
-                  <template #body="slotProps">
-                    {{ slotProps.data.name }}
-                  </template>
-                </Column>
-                <Column field="description" header="Deskripsi">
-                  <template #body="slotProps">
-                    {{ slotProps.data.description }}
-                  </template>
-                </Column>
-                <Column field="role_permissions" header="Hak Akses">
-                  <template #body="slotProps">
-                    {{ slotProps.data.role_permissions?.length }}
-                  </template>
-                </Column>
-                <Column field="action" header="#" class="w-[152px]">
-                  <template #body="slotProps">
-                    <div
-                      v-if="slotProps.data.name !== 'admin'"
-                      class="flex gap-2"
-                    >
-                      <Button
-                        :severity="isRoleSelected(slotProps.data) ? 'default' : 'secondary'"
-                        :variant="isRoleSelected(slotProps.data) ? 'soft' : 'outlined'"
-                        :label="isRoleSelected(slotProps.data) ? 'Batal Pilih' : 'Pilih'"
-                        :icon="isRoleSelected(slotProps.data) ? 'pi pi-check' : 'pi pi-plus'"
-                        size="small"
-                        class="w-[120px]"
-                        @click="onSelectRole(slotProps.data)"
-                      />
+              <div class="p-4">
+                <div v-if="loadingRoles" class="flex justify-center py-8">
+                  <i class="pi pi-spin pi-spinner text-2xl text-gray-400"></i>
+                </div>
+                <div v-else-if="!roles.length" class="w-full text-center flex justify-center py-8 text-gray-500">
+                  Belum ada role.
+                </div>
+                <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <UiCard
+                    v-for="role in roles"
+                    :key="role.id"
+                    class="rounded-xl border border-gray-200 dark:border-dark! dark:bg-dark! p-3 flex flex-col gap-2"
+                  >
+                    <div class="flex items-center justify-between">
+                      <h3 class="font-semibold text-base">{{ role.name }}</h3>
+                      <Tag :value="role.name" />
                     </div>
-                  </template>
-                </Column>
-              </DataTable>
+                    <p class="text-sm text-gray-500">{{ role.description }}</p>
+                    <div class="flex items-center justify-between text-sm text-gray-500">
+                      <span>Hak Akses</span>
+                      <span>{{ role.role_permissions?.length || '0' }}</span>
+                    </div>
+                    <Button
+                      v-if="role.name !== 'admin'"
+                      :severity="isRoleSelected(role) ? 'default' : 'secondary'"
+                      :variant="isRoleSelected(role) ? 'soft' : 'outlined'"
+                      :label="isRoleSelected(role) ? 'Batal Pilih' : 'Pilih'"
+                      :icon="isRoleSelected(role) ? 'pi pi-check' : 'pi pi-plus'"
+                      size="small"
+                      fluid
+                      @click="onSelectRole(role)"
+                    />
+                  </UiCard>
+                </div>
+              </div>
 
               <UiPagination
                 v-model="rolePagination"
