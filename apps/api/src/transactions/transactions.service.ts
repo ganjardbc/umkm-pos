@@ -44,6 +44,7 @@ export class TransactionsService {
     orderStatus?: string,
     orderSource?: string,
     tableId?: string,
+    search?: string,
   ) {
     const allowedOutletIds = await this.getAllowedOutletIds(userId, merchantId);
 
@@ -61,6 +62,12 @@ export class TransactionsService {
       ...(orderStatus && { order_status: orderStatus }),
       ...(orderSource && { order_source: orderSource }),
       ...(tableId && { table_id: tableId }),
+      ...(search && {
+        OR: [
+          { id: { contains: search } },
+          { customer_name_snapshot: { contains: search } },
+        ],
+      }),
     };
 
     const [data, total] = await this.prisma.$transaction([
