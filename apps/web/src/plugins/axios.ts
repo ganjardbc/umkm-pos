@@ -1,6 +1,6 @@
 import axios from "axios";
 
-import { getToken, removeAuth, isLogin } from '@/helpers/auth.ts';
+import { getToken, getOutlet, removeAuth, isLogin } from '@/helpers/auth.ts';
 import { PREFIX_ROUTE_PATH } from '@/modules/auth/services/constants.ts';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
@@ -19,6 +19,12 @@ api.interceptors.request.use(
 
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    const outlet = getOutlet();
+
+    if (outlet?.id) {
+      config.headers['X-Outlet-Id'] = outlet.id;
     }
 
     // You can modify the request config here if needed

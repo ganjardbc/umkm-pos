@@ -22,9 +22,20 @@ async function bootstrap() {
     .map((origin) => origin.trim())
     .filter(Boolean);
 
+  // This is an explicit allow-list (the `cors` package will reject preflight
+  // requests for any header not listed here). Any new custom request header
+  // added on the frontend (apps/web, apps/landing) MUST be added here too,
+  // or its requests will fail CORS preflight on any deployment where the
+  // frontend and API are on different origins.
   app.enableCors({
     origin: corsOrigins.length > 0 ? corsOrigins : true,
     credentials: true,
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'X-Outlet-Id',
+      'X-Customer-Session-Token',
+    ],
   });
 
   // Set global prefix

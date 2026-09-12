@@ -1177,6 +1177,7 @@ async function main() {
   const notificationsData = [
     {
       user_id: adminUser.id,
+      merchant_id: adminMerchant.id,
       outlet_id: adminOutlet.id,
       title: 'Welcome to UMKM POS',
       message: 'Your admin account is ready to manage outlets and users.',
@@ -1185,6 +1186,7 @@ async function main() {
     },
     {
       user_id: ownerUser.id,
+      merchant_id: merchant.id,
       outlet_id: mainOutlet.id,
       title: 'Stock alert',
       message: 'Arabica Beans stock is running low. Please restock soon.',
@@ -1193,6 +1195,7 @@ async function main() {
     },
     {
       user_id: storeManagerUser.id,
+      merchant_id: merchant.id,
       outlet_id: mainOutlet.id,
       title: 'Shift reminder',
       message: 'Please review and close yesterday shift report.',
@@ -1201,6 +1204,7 @@ async function main() {
     },
     {
       user_id: cashierUser.id,
+      merchant_id: merchant.id,
       outlet_id: secondOutlet.id,
       title: 'New order support',
       message: 'A pending order requires confirmation at the cashier.',

@@ -55,6 +55,7 @@ src/
 - `merchant_id` derived from auth header — never trust client input
 - All queries must scope by `merchant_id`
 - Slugs unique per merchant (not global)
+- Active outlet reaches the API via the optional `X-Outlet-Id` request header (not the JWT), validated by `OutletHeaderGuard` before use — see Common Module below. Treat it as untrusted client input on every request.
 
 ## Domain Rules
 
@@ -74,6 +75,7 @@ src/
 | `PermissionGuard` | Permission-based access |
 | `@ScopeByOutlet(fieldPath)` | Validate outlet ownership via guard, scoped to caller's merchant |
 | `ScopeByOutletGuard`        | Guard untuk enforce @ScopeByOutlet metadata |
+| `OutletHeaderGuard`         | Reads optional `X-Outlet-Id` request header, validates it (exists, belongs to caller's `merchant_id`, caller has a `user_roles` row for it) and sets `request.user.outlet_id` so `@CurrentUser('outlet_id')` becomes live. Absent header = no outlet filter; invalid header = `403 ForbiddenException('Invalid outlet context')`, never a 500. Currently registered only on `NotificationsController` — opt in per-controller via `@UseGuards(...)`, not global. |
 | `TransformInterceptor` | Wrap responses in `{success, data}` |
 | `ValidationPipe` | DTO validation + transform |
 | `HttpExceptionFilter` | Standardize error responses |

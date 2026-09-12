@@ -14,6 +14,7 @@ import {
 } from '@nestjs/swagger';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { RequirePermission } from '../common/decorators/require-permission.decorator';
+import { OutletHeaderGuard } from '../common/guards/outlet-header.guard';
 import { PermissionGuard } from '../common/guards/permission.guard';
 import { ListNotificationsDto } from './dto/list-notifications.dto';
 import { NotificationsService } from './notifications.service';
@@ -21,7 +22,7 @@ import { NotificationsService } from './notifications.service';
 @ApiTags('Notifications')
 @ApiBearerAuth()
 @Controller('notification')
-@UseGuards(PermissionGuard)
+@UseGuards(PermissionGuard, OutletHeaderGuard)
 export class NotificationsController {
   constructor(private readonly notificationsService: NotificationsService) {}
 
@@ -34,10 +35,16 @@ export class NotificationsController {
   })
   findAll(
     @CurrentUser('id') userId: string,
+    @CurrentUser('merchant_id') merchantId: string,
     @CurrentUser('outlet_id') outletId: string,
     @Query() query: ListNotificationsDto,
   ) {
-    return this.notificationsService.findAll(userId, outletId, query);
+    return this.notificationsService.findAll(
+      userId,
+      merchantId,
+      outletId,
+      query,
+    );
   }
 
   @Get(':id')
@@ -46,9 +53,10 @@ export class NotificationsController {
   findOne(
     @Param('id') id: string,
     @CurrentUser('id') userId: string,
+    @CurrentUser('merchant_id') merchantId: string,
     @CurrentUser('outlet_id') outletId: string,
   ) {
-    return this.notificationsService.findOne(id, userId, outletId);
+    return this.notificationsService.findOne(id, userId, merchantId, outletId);
   }
 
   @Patch(':id/read')
@@ -57,9 +65,15 @@ export class NotificationsController {
   markAsRead(
     @Param('id') id: string,
     @CurrentUser('id') userId: string,
+    @CurrentUser('merchant_id') merchantId: string,
     @CurrentUser('outlet_id') outletId: string,
   ) {
-    return this.notificationsService.markAsRead(id, userId, outletId);
+    return this.notificationsService.markAsRead(
+      id,
+      userId,
+      merchantId,
+      outletId,
+    );
   }
 
   @Patch('read-all')
@@ -67,8 +81,13 @@ export class NotificationsController {
   @ApiOperation({ summary: 'Mark all notifications as read' })
   markAllAsRead(
     @CurrentUser('id') userId: string,
+    @CurrentUser('merchant_id') merchantId: string,
     @CurrentUser('outlet_id') outletId: string,
   ) {
-    return this.notificationsService.markAllAsRead(userId, outletId);
+    return this.notificationsService.markAllAsRead(
+      userId,
+      merchantId,
+      outletId,
+    );
   }
 }
