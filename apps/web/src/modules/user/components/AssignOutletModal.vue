@@ -29,40 +29,39 @@
                 </h2>
               </template>
 
-              <DataTable :value="outlets" :loading="loadingOutlets">
-                <template #empty>
-                  <span class="w-full text-center flex justify-center">
-                    Belum ada outlet.
-                  </span>
-                </template>
-                <Column field="no" header="NO" class="w-18">
-                  <template #body="slotProps">
-                    {{ getNoTable(slotProps.index, outletPagination.page, outletPagination.rows) }}
-                  </template>
-                </Column>
-                <Column field="name" header="Nama"></Column>
-                <Column field="location" header="Lokasi"></Column>
-                <Column field="merchants" header="Merchant">
-                  <template #body="slotProps">
-                    {{ slotProps.data.merchants.name }}
-                  </template>
-                </Column>
-                <Column field="action" header="#" class="w-[152px]">
-                  <template #body="slotProps">
-                    <div class="flex gap-2">
-                      <Button
-                        :severity="isOutletSelected(slotProps.data) ? 'default' : 'secondary'"
-                        :variant="isOutletSelected(slotProps.data) ? 'soft' : 'outlined'"
-                        :label="isOutletSelected(slotProps.data) ? 'Batal Pilih' : 'Pilih'"
-                        :icon="isOutletSelected(slotProps.data) ? 'pi pi-check' : 'pi pi-plus'"
-                        size="small"
-                        class="w-[120px]"
-                        @click="onSelectOutlet(slotProps.data)"
-                      />
+              <div class="p-4">
+                <div v-if="loadingOutlets" class="flex justify-center py-8">
+                  <i class="pi pi-spin pi-spinner text-2xl text-gray-400"></i>
+                </div>
+                <div v-else-if="!outlets.length" class="w-full text-center flex justify-center py-8 text-gray-500">
+                  Belum ada outlet.
+                </div>
+                <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <UiCard
+                    v-for="outlet in outlets"
+                    :key="outlet.id"
+                    class="rounded-xl border border-gray-200 dark:border-dark! dark:bg-dark! p-3 flex flex-col gap-2"
+                  >
+                    <div class="flex items-center justify-between">
+                      <h3 class="font-semibold text-base">{{ outlet.name }}</h3>
+                      <Tag :value="outlet.merchants.name" />
                     </div>
-                  </template>
-                </Column>
-              </DataTable>
+                    <div class="flex items-center justify-between text-sm text-gray-500">
+                      <span>Lokasi</span>
+                      <span>{{ outlet.location }}</span>
+                    </div>
+                    <Button
+                      :severity="isOutletSelected(outlet) ? 'default' : 'secondary'"
+                      :variant="isOutletSelected(outlet) ? 'soft' : 'outlined'"
+                      :label="isOutletSelected(outlet) ? 'Batal Pilih' : 'Pilih'"
+                      :icon="isOutletSelected(outlet) ? 'pi pi-check' : 'pi pi-plus'"
+                      size="small"
+                      fluid
+                      @click="onSelectOutlet(outlet)"
+                    />
+                  </UiCard>
+                </div>
+              </div>
 
               <UiPagination
                 v-model="outletPagination"
@@ -240,7 +239,7 @@
 </template>
 <script lang="ts" setup>
 import { ref, onMounted, computed, watch } from 'vue';
-import { getNoTable, getErrorMessage } from '@/helpers/utils.ts';
+import { getErrorMessage } from '@/helpers/utils.ts';
 import { showToast } from '@/helpers/toast.ts';
 import { getListOutlet } from '@/modules/outlet/services/api.ts';
 import { getListRole } from '@/modules/role/services/api.ts';
