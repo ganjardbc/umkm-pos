@@ -6,6 +6,13 @@ on:
   pull_request:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   prepare:
     runs-on: ubuntu-latest
@@ -77,20 +84,8 @@ jobs:
           node-version: 22
           cache: pnpm
 
-      - name: Get pnpm store path
-        id: pnpm-store
-        run: echo "path=$(pnpm store path --silent)" >> "$GITHUB_OUTPUT"
-
-      - name: Cache pnpm store
-        uses: actions/cache@v4
-        with:
-          path: ${{ steps.pnpm-store.outputs.path }}
-          key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-
-
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile=false
+        run: pnpm install --frozen-lockfile
 
       - name: Build shared-types (impact dependency)
         run: pnpm --filter @umkm-pos/shared-types build
@@ -99,19 +94,13 @@ jobs:
         run: pnpm --filter umkm-pos-api exec prisma generate
 
       - name: Lint API
-        run: pnpm --filter umkm-pos-api lint
+        run: pnpm --filter umkm-pos-api lint:ci
 
       - name: Test API
         run: pnpm --filter umkm-pos-api test
 
       - name: Build API
         run: pnpm --filter umkm-pos-api build
-
-      - name: Cache API build artifacts
-        uses: actions/cache@v4
-        with:
-          path: apps/api/dist
-          key: ${{ runner.os }}-api-dist-${{ github.sha }}
 
   deploy-api:
     name: Deploy API to VPS
@@ -138,7 +127,7 @@ jobs:
             
             echo "[INFO] Fetching latest changes from Git..."
             git fetch --all
-            git reset --hard origin/main
+            git reset --hard origin/${{ github.ref_name }}
             
             echo "[INFO] Executing deployment script..."
             ./apps/api/deploy.sh --mode docker --skip-tests
@@ -162,6 +151,6 @@ jobs:
             echo "| global/root | ${{ needs.prepare.outputs.global }} | full CI | Triggers api |"
             echo ""
             echo "### Job results"
-            echo "- api job: ${{ needs.api.result || 'skipped' }}"
-            echo "- deploy-api job: ${{ needs.deploy-api.result || 'skipped' }}"
+            echo "- api job: ${{ needs.api.result }}"
+            echo "- deploy-api job: ${{ needs.deploy-api.result }}"
           } >> "$GITHUB_STEP_SUMMARY"
