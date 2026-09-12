@@ -20,7 +20,7 @@ services:
       - PORT=3000
       - NODE_ENV=production
       - DATABASE_URL=mysql://root:rootpassword@umkm-pos-db:3306/db_umkm_pos
-      - JWT_SECRET=supersecret2026
+      - JWT_SECRET=${JWT_SECRET}
       - JWT_EXPIRES_IN=7d
       - API_PREFIX=api
       - API_VERSION=v1
