@@ -8,6 +8,7 @@ import { PrismaService } from '../database/prisma.service';
 import { UploadsService } from '../uploads/uploads.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UsersQueryDto } from './dto/users-query.dto';
 import * as bcrypt from 'bcrypt';
 import { PaginationDto } from '../common/dto/pagination.dto';
 
@@ -33,10 +34,19 @@ export class UsersService {
    * List all users for the current merchant.
    * Never returns password_hash.
    */
-  async findAll(merchantId: string, pagination: PaginationDto) {
-    const { page = 1, limit = 10 } = pagination;
-    const skip = pagination.skip;
-    const where = { merchant_id: merchantId };
+  async findAll(merchantId: string, query: UsersQueryDto) {
+    const { page = 1, limit = 10, search } = query;
+    const skip = query.skip;
+    const where = {
+      merchant_id: merchantId,
+      ...(search && {
+        OR: [
+          { name: { contains: search } },
+          { email: { contains: search } },
+          { username: { contains: search } },
+        ],
+      }),
+    };
 
     const [users, total] = await this.prisma.$transaction([
       this.prisma.users.findMany({
