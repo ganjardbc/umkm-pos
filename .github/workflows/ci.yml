@@ -15,24 +15,35 @@ concurrency:
 
 jobs:
   prepare:
+    name: Detect Changed Apps
     runs-on: ubuntu-latest
     outputs:
       api: ${{ steps.decide.outputs.api }}
       api_changed: ${{ steps.filter.outputs.api }}
       reason_api: ${{ steps.decide.outputs.reason_api }}
+      web: ${{ steps.decide.outputs.web }}
+      web_changed: ${{ steps.filter.outputs.web }}
+      reason_web: ${{ steps.decide.outputs.reason_web }}
+      landing: ${{ steps.decide.outputs.landing }}
+      landing_changed: ${{ steps.filter.outputs.landing }}
+      reason_landing: ${{ steps.decide.outputs.reason_landing }}
       global: ${{ steps.filter.outputs.global }}
       shared: ${{ steps.filter.outputs.shared }}
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Detect changed paths
+      - name: Filter changed paths per app
         id: filter
         uses: dorny/paths-filter@v3
         with:
           filters: |
             api:
               - 'apps/api/**'
+            web:
+              - 'apps/web/**'
+            landing:
+              - 'apps/landing/**'
             shared:
               - 'packages/shared-types/**'
             global:
@@ -41,15 +52,23 @@ jobs:
               - 'package.json'
               - '.github/workflows/**'
 
-      - name: Decide impacted pipelines
+      - name: Decide which pipelines run
         id: decide
         run: |
           API=false
           REASON_API="No matching changes"
+          WEB=false
+          REASON_WEB="No matching changes"
+          LANDING=false
+          REASON_LANDING="No matching changes"
 
           if [[ "${{ steps.filter.outputs.global }}" == 'true' ]]; then
             API=true
             REASON_API="Global/root CI files changed"
+            WEB=true
+            REASON_WEB="Global/root CI files changed"
+            LANDING=true
+            REASON_LANDING="Global/root CI files changed"
           else
             if [[ "${{ steps.filter.outputs.api }}" == 'true' ]]; then
               API=true
@@ -59,20 +78,37 @@ jobs:
             if [[ "${{ steps.filter.outputs.shared }}" == 'true' ]]; then
               API=true
               REASON_API="packages/shared-types changed"
+              WEB=true
+              REASON_WEB="packages/shared-types changed"
+            fi
+
+            if [[ "${{ steps.filter.outputs.web }}" == 'true' ]]; then
+              WEB=true
+              REASON_WEB="apps/web changed"
+            fi
+
+            if [[ "${{ steps.filter.outputs.landing }}" == 'true' ]]; then
+              LANDING=true
+              REASON_LANDING="apps/landing changed"
             fi
           fi
 
           {
             echo "api=$API"
             echo "reason_api=$REASON_API"
+            echo "web=$WEB"
+            echo "reason_web=$REASON_WEB"
+            echo "landing=$LANDING"
+            echo "reason_landing=$REASON_LANDING"
           } >> "$GITHUB_OUTPUT"
 
-  api:
+  build-api:
+    name: API — Lint, Test & Build
     runs-on: ubuntu-latest
     needs: prepare
     if: needs.prepare.outputs.api == 'true'
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Setup pnpm
@@ -87,31 +123,86 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build shared-types (impact dependency)
+      - name: Build shared-types package
         run: pnpm --filter @umkm-pos/shared-types build
 
-      - name: Generate Prisma Client
+      - name: Generate Prisma client
         run: pnpm --filter umkm-pos-api exec prisma generate
 
-      - name: Lint API
+      - name: Run lint
         run: pnpm --filter umkm-pos-api lint:ci
 
-      - name: Test API
+      - name: Run unit tests
         run: pnpm --filter umkm-pos-api test
 
       - name: Build API
         run: pnpm --filter umkm-pos-api build
 
+  build-web:
+    name: Web — Build
+    runs-on: ubuntu-latest
+    needs: prepare
+    if: needs.prepare.outputs.web == 'true'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build shared-types package
+        run: pnpm --filter @umkm-pos/shared-types build
+
+      # NOTE: apps/web has no lint/test script today — build (vue-tsc -b && vite build)
+      # is the only gate available and it does include typechecking.
+      - name: Build web app
+        run: pnpm --filter umkm-pos-app build
+
+  build-landing:
+    name: Landing — Build
+    runs-on: ubuntu-latest
+    needs: prepare
+    if: needs.prepare.outputs.landing == 'true'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # NOTE: apps/landing has no lint/test script today — build (vue-tsc -b && vite build)
+      # is the only gate available and it does include typechecking.
+      - name: Build landing app
+        run: pnpm --filter @umkm-pos/landing build
+
   deploy-api:
     name: Deploy API to VPS
     runs-on: ubuntu-latest
-    needs: [prepare, api]
+    needs: [prepare, build-api]
     if: |
       github.event_name == 'push' &&
       (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') &&
       needs.prepare.outputs.api == 'true'
     steps:
-      - name: Checkout Repository
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Deploy via SSH
@@ -124,22 +215,89 @@ jobs:
           script: |
             echo "=== SSH Session Started ==="
             cd ${{ secrets.DEPLOY_PATH || '$HOME/devbox/workspace/umkm-pos' }}
-            
+
             echo "[INFO] Fetching latest changes from Git..."
             git fetch --all
             git reset --hard origin/${{ github.ref_name }}
-            
+
             echo "[INFO] Executing deployment script..."
             ./apps/api/deploy.sh --mode docker --skip-tests
-            
+
+            echo "=== SSH Session Completed ==="
+
+  deploy-web:
+    name: Deploy Web to VPS
+    runs-on: ubuntu-latest
+    needs: [prepare, build-web]
+    if: |
+      github.event_name == 'push' &&
+      (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') &&
+      needs.prepare.outputs.web == 'true'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          port: ${{ secrets.DEPLOY_PORT || 22 }}
+          script: |
+            echo "=== SSH Session Started ==="
+            cd ${{ secrets.DEPLOY_PATH || '$HOME/devbox/workspace/umkm-pos' }}
+
+            echo "[INFO] Fetching latest changes from Git..."
+            git fetch --all
+            git reset --hard origin/${{ github.ref_name }}
+
+            echo "[INFO] Rebuilding and recreating umkm-pos-web container..."
+            docker compose build --no-cache umkm-pos-web
+            docker compose up -d --force-recreate --no-deps umkm-pos-web
+
+            echo "=== SSH Session Completed ==="
+
+  deploy-landing:
+    name: Deploy Landing to VPS
+    runs-on: ubuntu-latest
+    needs: [prepare, build-landing]
+    if: |
+      github.event_name == 'push' &&
+      (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') &&
+      needs.prepare.outputs.landing == 'true'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          port: ${{ secrets.DEPLOY_PORT || 22 }}
+          script: |
+            echo "=== SSH Session Started ==="
+            cd ${{ secrets.DEPLOY_PATH || '$HOME/devbox/workspace/umkm-pos' }}
+
+            echo "[INFO] Fetching latest changes from Git..."
+            git fetch --all
+            git reset --hard origin/${{ github.ref_name }}
+
+            echo "[INFO] Rebuilding and recreating umkm-pos-landing container..."
+            docker compose build --no-cache umkm-pos-landing
+            docker compose up -d --force-recreate --no-deps umkm-pos-landing
+
             echo "=== SSH Session Completed ==="
 
   summary:
+    name: CI Summary
     runs-on: ubuntu-latest
-    needs: [prepare, api, deploy-api]
+    needs: [prepare, build-api, build-web, build-landing, deploy-api, deploy-web, deploy-landing]
     if: always()
     steps:
-      - name: CI selective execution summary
+      - name: Publish summary
         run: |
           {
             echo "## CI Selective Execution Summary"
@@ -147,10 +305,16 @@ jobs:
             echo "| Area | Changed | Executed | Reason |"
             echo "|------|---------|----------|--------|"
             echo "| api | ${{ needs.prepare.outputs.api_changed }} | ${{ needs.prepare.outputs.api }} | ${{ needs.prepare.outputs.reason_api }} |"
-            echo "| shared-types | ${{ needs.prepare.outputs.shared }} | n/a (impact rule) | Triggers api |"
-            echo "| global/root | ${{ needs.prepare.outputs.global }} | full CI | Triggers api |"
+            echo "| web | ${{ needs.prepare.outputs.web_changed }} | ${{ needs.prepare.outputs.web }} | ${{ needs.prepare.outputs.reason_web }} |"
+            echo "| landing | ${{ needs.prepare.outputs.landing_changed }} | ${{ needs.prepare.outputs.landing }} | ${{ needs.prepare.outputs.reason_landing }} |"
+            echo "| shared-types | ${{ needs.prepare.outputs.shared }} | n/a (impact rule) | Triggers api + web |"
+            echo "| global/root | ${{ needs.prepare.outputs.global }} | full CI | Triggers api + web + landing |"
             echo ""
             echo "### Job results"
-            echo "- api job: ${{ needs.api.result }}"
+            echo "- api job: ${{ needs.build-api.result }}"
+            echo "- web job: ${{ needs.build-web.result }}"
+            echo "- landing job: ${{ needs.build-landing.result }}"
             echo "- deploy-api job: ${{ needs.deploy-api.result }}"
+            echo "- deploy-web job: ${{ needs.deploy-web.result }}"
+            echo "- deploy-landing job: ${{ needs.deploy-landing.result }}"
           } >> "$GITHUB_STEP_SUMMARY"
