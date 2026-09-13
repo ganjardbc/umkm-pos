@@ -280,7 +280,9 @@ Paths allowed into the commit (ONLY these, not the entire working tree):
 - `caf-frontend`: `apps/landing/`
 - `caf-frontend`: `apps/web/`
 - `caf-backend`: `apps/api/`
+- `caf-backend`: `apps/realtime/`
 - `caf-backend`: `packages/eslint-config/`
+- `caf-backend`: `packages/shared-events/`
 - `caf-backend`: `packages/shared-types/`
 - `caf-backend`: `packages/shared-utils/`
 - `caf-documentation`: `README.md`

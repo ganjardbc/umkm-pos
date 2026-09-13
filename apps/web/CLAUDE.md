@@ -57,6 +57,7 @@ src/modules/[feature]/
 - **Base URL:** `VITE_API_BASE_URL` env variable
 - **Token format:** Bearer token stored in `APP_BEARER`
 - **Auto-attach:** Request interceptor adds `Authorization: Bearer <token>`
+- **Outlet context:** Request interceptor also adds `X-Outlet-Id: <getOutlet().id>` when an active outlet is set (`APP_ACTIVE_OUTLET`); the header is omitted entirely when there is no active outlet. The API validates this header server-side (exists, belongs to caller's merchant, caller has a role there) — never assume it widens access, it only narrows or is rejected with 403.
 - **401 behavior:** Auto-logout + redirect to auth route
 
 ## Module Development

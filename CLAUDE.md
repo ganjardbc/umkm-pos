@@ -76,7 +76,7 @@ Stock at `products.stock_qty` is the live count; `stock_logs` + `inventory_movem
 1. Frontend POSTs to `POST /api/v1/auth/login`
 2. API returns JWT + user/merchant/outlet/permissions payload
 3. Frontend stores in localStorage under keys: `APP_TOKEN`, `APP_USER`, `APP_MERCHANT`, `APP_ACTIVE_OUTLET`, `APP_ACTIVE_ROLE`, `APP_ACTIVE_PERMISSIONS`, `APP_LIST_OUTLET`
-4. Axios interceptor attaches `Authorization: Bearer <token>` to all requests
+4. Axios interceptor attaches `Authorization: Bearer <token>` to all requests, plus `X-Outlet-Id: <APP_ACTIVE_OUTLET id>` when an active outlet is set (omitted otherwise). The API treats this header as untrusted client input: it validates the outlet exists, belongs to the caller's `merchant_id`, and the caller holds a `user_roles` row for it, rejecting with 403 otherwise. This is how active-outlet context reaches the API without putting `outlet_id` in the JWT (which would force a re-login on every outlet switch).
 5. On 401, interceptor shows a confirm dialog then calls `removeAuth()` and redirects to login
 6. Route guards check `meta.permission[]` against `isHasPermission()` before navigation
 
