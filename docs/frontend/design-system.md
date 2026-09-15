@@ -14,7 +14,7 @@ Tailwind CSS v4 — utility-first CSS
 PrimeVue theme dikonfigurasi di:
 
 ```txt
-apps/web/src/core/initiate.ts
+apps/merchant/src/core/initiate.ts
 ```
 
 Dark mode: `darkMode: 'selector'` (Tailwind v4 config).
@@ -32,7 +32,7 @@ public    — full-width, no sidebar, untuk customer self-order
 Layout component berada di:
 
 ```txt
-apps/web/src/layouts/
+apps/merchant/src/layouts/
 ```
 
 ---

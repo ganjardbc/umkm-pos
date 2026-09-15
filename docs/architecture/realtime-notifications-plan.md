@@ -1,14 +1,14 @@
 # Realtime Notifications — Design Plan
 
 Status: proposal (not implemented)
-Scope: new workspace app + event contracts package + API emitters + `apps/web` client
+Scope: new workspace app + event contracts package + API emitters + `apps/merchant` client
 Audience: engineers working on `umkm-pos`
 
 ---
 
 ## 1. Naming: `apps/webhook` is the wrong name for this
 
-What you described — "realtime notifications for `apps/web`" — is **server → browser push**. That is a WebSocket/SSE gateway, not a webhook. A webhook is the opposite direction: *we* POST to a *third party's* URL (Moka, accounting SaaS, WhatsApp gateway, merchant's own system).
+What you described — "realtime notifications for `apps/merchant`" — is **server → browser push**. That is a WebSocket/SSE gateway, not a webhook. A webhook is the opposite direction: *we* POST to a *third party's* URL (Moka, accounting SaaS, WhatsApp gateway, merchant's own system).
 
 Both are worth building, but they are different services with different failure modes (push = live, ephemeral, fan-out; webhook = durable, retried, signed). Proposal:
 
@@ -28,8 +28,8 @@ Rest of this doc calls the new service `apps/realtime`.
 - `apps/api/src/notifications/` — CRUD over the `notifications` table. Read/mark-read only. No realtime.
 - `notifications` table (`schema.prisma:87`) — one row **per recipient user**: `user_id`, `merchant_id` (added in P0, see below), nullable `outlet_id`, `title`, `message`, `type`, `is_read`. Still no structured payload, no ref to the source entity — those remain P1+/P3 work (§6).
 - Only **one** producer in the whole codebase: `NotificationsService.notifyOutletUsers()`, called from `customer-catalog.service.ts:236` (customer places an order). Every other domain event (payment, cancel, shift close, low stock, role change) emits nothing.
-- `apps/web/src/components/UiSidebarNotification.vue` — polls `GET /api/v1/notification` every **30s** just to read `meta.unreadCount`. The popover renders a hardcoded empty state; the list is never shown.
-- `apps/web/src/modules/notification/` — module scaffold exists (store, api, page) but is thin.
+- `apps/merchant/src/components/UiSidebarNotification.vue` — polls `GET /api/v1/notification` every **30s** just to read `meta.unreadCount`. The popover renders a hardcoded empty state; the list is never shown.
+- `apps/merchant/src/modules/notification/` — module scaffold exists (store, api, page) but is thin.
 
 ### Three bugs — fixed in P0 (`CAF-LOCAL-notif-scoping-fix`)
 
@@ -61,7 +61,7 @@ These were fixed before layering realtime on top — otherwise realtime would ju
        │     /internal/events (shared secret)             │     (poller, 2s)
        ▼                                                  ▼
 ┌──────────────────────┐   3. fan-out to rooms
-│   apps/realtime      │─────────────────────────► apps/web (Socket.IO client)
+│   apps/realtime      │─────────────────────────► apps/merchant (Socket.IO client)
 │  Socket.IO gateway   │
 │  + ACL resolver      │─────────────────────────► apps/webhook (P4)
 └──────────────────────┘
@@ -248,7 +248,7 @@ apps/realtime/
 
 ---
 
-## 8. `apps/web` integration
+## 8. `apps/merchant` integration
 
 New `src/plugins/realtime.ts` + `src/composables/useRealtime.ts`:
 
@@ -326,7 +326,7 @@ The realtime gateway is the real cost, and it's small. A Node process holding id
 |---|---|---|
 | **P0** | Fix the 3 scoping bugs (§2). Add `merchant_id` to `notifications`, backfill. Add `outlet_id` to the JWT/`CurrentUser` or send an `X-Outlet-Id` header validated against `user_roles`. | Realtime on a broken ACL just leaks faster. |
 | **P1** | `packages/shared-events` (envelope + event key union + payload types) + `event_outbox` + `EventBusService` in `apps/api`. Emit `order.created`, `order.status_changed`, `transaction.paid` only. | Proves the contract with the highest-value events, no new service yet. |
-| **P2** | `apps/realtime` (HTTP ingest, in-memory rooms) + `useRealtime()` in `apps/web`. Kill the poll. | First visible win: live kitchen/order board. No new infra. |
+| **P2** | `apps/realtime` (HTTP ingest, in-memory rooms) + `useRealtime()` in `apps/merchant`. Kill the poll. | First visible win: live kitchen/order board. No new infra. |
 | **P3** | Remaining event catalog (§5), notification center UI, `severity`, preferences. | Breadth, once the pipe is proven. |
 | **P4** | `apps/webhook`: `merchant_webhooks` table, HMAC-SHA256 `X-Signature`, exponential retry, delivery log, replay endpoint. | External integrations — different reliability contract, ship separately. |
 

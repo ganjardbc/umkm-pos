@@ -3,7 +3,7 @@
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 > For app-specific details, read the nested CLAUDE.md files first:
-> - `apps/web/CLAUDE.md` — Vue 3 frontend patterns, auth helpers, module conventions
+> - `apps/merchant/CLAUDE.md` — Vue 3 frontend patterns, auth helpers, module conventions
 > - `apps/api/CLAUDE.md` — NestJS backend layers, domain rules, API conventions
 
 ## Monorepo Commands
@@ -21,7 +21,7 @@ pnpm typecheck     # TypeScript check across all workspaces
 Target a single workspace:
 
 ```bash
-pnpm --filter umkm-pos-app <script>     # Frontend (apps/web)
+pnpm --filter @umkm-pos/merchant <script>     # Frontend (apps/merchant)
 pnpm --filter umkm-pos-api <script>     # Backend (apps/api)
 pnpm --filter @umkm-pos/shared-types build
 ```
@@ -32,7 +32,7 @@ The `README.md` also uses `pnpm dev:web` / `pnpm dev:api` as aliases — these a
 
 ```
 umkm-pos/
-├── apps/web/          # Vue 3 + Vite + PrimeVue frontend
+├── apps/merchant/          # Vue 3 + Vite + PrimeVue frontend
 ├── apps/api/          # NestJS + Prisma + MySQL backend
 ├── apps/landing/      # Marketing landing page
 ├── packages/
@@ -96,7 +96,7 @@ Import in either app as `@umkm-pos/shared-types`. Always rebuild the package aft
 
 ## Environment Setup
 
-**Frontend** (`apps/web/.env`):
+**Frontend** (`apps/merchant/.env`):
 ```env
 VITE_APP_VERSION=1.0.0
 VITE_API_BASE_URL=http://localhost:3000

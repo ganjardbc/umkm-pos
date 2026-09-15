@@ -45,7 +45,7 @@ services:
   umkm-pos-web:
     build:
       context: .
-      dockerfile: apps/web/Dockerfile
+      dockerfile: apps/merchant/Dockerfile
       args:
         VITE_API_BASE_URL: https://api.insell.id
     container_name: umkm-pos-web

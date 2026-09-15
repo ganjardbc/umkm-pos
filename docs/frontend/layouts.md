@@ -97,7 +97,7 @@ Tidak ada sidebar, tidak ada authentication header.
 ## Layout Files
 
 ```txt
-apps/web/src/layouts/
+apps/merchant/src/layouts/
   DefaultLayout.vue   — dashboard layout
   AuthLayout.vue      — auth layout
   PublicLayout.vue    — public layout

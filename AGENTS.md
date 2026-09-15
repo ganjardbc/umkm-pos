@@ -348,7 +348,7 @@ apps/api/prisma/schema.prisma
 Frontend berada di:
 
 ```txt
-apps/web
+apps/merchant
 ```
 
 Framework:
@@ -365,7 +365,7 @@ Tailwind CSS v4
 Ikuti:
 
 ```txt
-apps/web/AGENTS.md
+apps/merchant/AGENTS.md
 ```
 
 ---

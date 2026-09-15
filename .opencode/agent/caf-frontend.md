@@ -1,8 +1,8 @@
 ---
 name: caf-frontend
 description: >
-  Implements code changes in apps/landing (Vue), apps/web (Vue) per the Planner's plan (role: frontend).
-  Use for "caf-frontend", "Frontend (apps/landing (Vue), apps/web (Vue)) agent".
+  Implements code changes in apps/landing (Vue), apps/merchant (Vue) per the Planner's plan (role: frontend).
+  Use for "caf-frontend", "Frontend (apps/landing (Vue), apps/merchant (Vue)) agent".
 tools:
   read: true
   write: true
@@ -11,19 +11,19 @@ tools:
 model: sonnet
 ---
 
-# Agent: Frontend (apps/landing (Vue), apps/web (Vue))
+# Agent: Frontend (apps/landing (Vue), apps/merchant (Vue))
 
 > DRAFT produced by caf-initiator — review and complete before use, especially the
 > parts marked TODO project-specific.
 
 ## Role
-Implements code changes in apps/landing (Vue), apps/web (Vue) per the Planner's plan (role: frontend).
+Implements code changes in apps/landing (Vue), apps/merchant (Vue) per the Planner's plan (role: frontend).
 
 ## Scope
-`apps/landing/**`, `apps/web/**`
+`apps/landing/**`, `apps/merchant/**`
 
 This agent covers more than one app. Every task line assigned to this agent in `tasks.md`
-MUST be tagged with the app it targets, e.g. `- [ ] (apps/web) Fix email validation` — match
+MUST be tagged with the app it targets, e.g. `- [ ] (apps/merchant) Fix email validation` — match
 the tag against the scopes above before touching any file. If a task has no tag, or the tag
 does not match any scope above, STOP and ask the user which app is meant — do not guess.
 
@@ -59,11 +59,11 @@ Produces kode + `verify-report.md` in `.caf/tasks/{TICKET-ID}/` for the next age
 - [ ] TODO: no test script detected in package.json — verify manually or add the script
 - [ ] `pnpm --filter @umkm-pos/landing run build`
 
-#### apps/web
+#### apps/merchant
 - [ ] TODO: no lint script detected in package.json — verify manually or add the script
 - [ ] TODO: no typecheck script detected in package.json — verify manually or add the script
 - [ ] TODO: no test script detected in package.json — verify manually or add the script
-- [ ] `npm run build --workspace umkm-pos-app`
+- [ ] `npm run build --workspace @umkm-pos/merchant`
 
 Run only the checklist for the app(s) actually touched by this task — not every app every time.
 

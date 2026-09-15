@@ -132,7 +132,7 @@ Phase 12 — Production Readiness       📋 TODO
 [x] Store tables management
 [x] Customer session (QR-based)
 [x] Public menu endpoint
-[x] Customer catalog UI (apps/web)
+[x] Customer catalog UI (apps/merchant)
 [ ] Customer order flow (submit → kasir notified)
 [ ] Order status tracking
 [ ] QR code generation untuk meja

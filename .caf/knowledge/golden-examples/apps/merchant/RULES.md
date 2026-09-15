@@ -1,4 +1,4 @@
-# Golden Examples — RULES.md (umkm-pos-app)
+# Golden Examples — RULES.md (@umkm-pos/merchant)
 
 > **DRAFT — wajib direview.** File ini digenerate otomatis oleh `caf-initiator` sebagai
 > pendamping wajib golden example di folder ini (lihat CAF.md Layer 1). Isi Do/Don't di bawah
@@ -12,10 +12,10 @@ konteks, lalu buka file aslinya di path yang tercantum.
 
 | Path | Pattern | Alasan (Do/Don't) |
 |---|---|---|
-| `apps/web/src/modules/reports/services/api.ts` | Service/Business Logic | TODO |
-| `apps/web/src/components/UiSearch.vue` | Component | TODO |
-| `apps/web/src/composables/useFileUpload.ts` | Composable/Hook | TODO |
-| `apps/web/src/modules/customer-catalog/stores/actions.ts` | Store/State | TODO |
+| `apps/merchant/src/modules/reports/services/api.ts` | Service/Business Logic | TODO |
+| `apps/merchant/src/components/UiSearch.vue` | Component | TODO |
+| `apps/merchant/src/composables/useFileUpload.ts` | Composable/Hook | TODO |
+| `apps/merchant/src/modules/customer-catalog/stores/actions.ts` | Store/State | TODO |
 
 ## Kenapa File di Folder Ini Jadi Contoh Baik
 

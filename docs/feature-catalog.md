@@ -7,7 +7,7 @@ Status: `TODO` = hasil generate belum diverifikasi manusia · `OK` = sudah diver
 `⚠️ stale` = tidak ditemukan lagi di kode.
 
 Semua endpoint memakai prefix global `/api/v1`. Route frontend tanpa keterangan app
-berasal dari `apps/web`.
+berasal dari `apps/merchant`.
 
 | Fitur | Module | Endpoint | Route frontend | Status |
 | --- | --- | --- | --- | --- |
@@ -31,7 +31,7 @@ berasal dari `apps/web`.
 | RBAC — assignment user-role | `rbac` | `POST /rbac/user-roles`, `DELETE /rbac/user-roles`, `GET /rbac/users/:userId/roles` | `/user/create`, `/user/:id/edit` | TODO |
 | Notifikasi | `notifications` | `GET /notification`, `GET /notification/:id`, `PATCH /notification/:id/read`, `PATCH /notification/read-all` | `/notification` | TODO |
 | Pengaturan akun & situs | `settings` | `GET /settings/profile`, `PUT /settings/profile`, `PUT /settings/password`, `POST /settings/email/verify`, `PUT /settings/email`, `POST /settings/account/deactivate`, `GET /settings/site`, `PUT /settings/site` | `/settings`, `/settings/edit-profile`, `/settings/change-password`, `/settings/change-email`, `/settings/site-settings`, `/settings/deactivate-account` | TODO |
-| Upload berkas & gambar | `uploads` | `POST /uploads`, `GET /uploads/:id`, `GET /uploads/:id/signed-url`, `DELETE /uploads/:id` | Lintas modul via `apps/web/src/services/uploads.ts` — form produk, user, merchant, outlet, settings | TODO |
+| Upload berkas & gambar | `uploads` | `POST /uploads`, `GET /uploads/:id`, `GET /uploads/:id/signed-url`, `DELETE /uploads/:id` | Lintas modul via `apps/merchant/src/services/uploads.ts` — form produk, user, merchant, outlet, settings | TODO |
 | Katalog pelanggan (self-order) | `customer-catalog` | `POST /customer-sessions/start`, `GET /catalog/session/me`, `GET /catalog/session/status`, `GET /catalog/shift-status`, `GET /catalog/categories`, `GET /catalog/products`, `GET /catalog/tables`, `POST /catalog/orders`, `GET /catalog/orders/:id` | `/menu/:outletId`, `/menu/:outletId/home`, `/menu/:outletId/browse`, `/menu/:outletId/cart`, `/menu/:outletId/order` | TODO |
 | Health check root | `app` | `GET /` | (backend-only) | TODO |
 | Landing page | — | (no backend, kecuali `POST /auth/register` dari `apps/landing`) | `/landing` (web); `apps/landing` single-page tanpa router | TODO |

@@ -1,13 +1,13 @@
 # Shared Types Guidelines (`@umkm-pos/shared-types`)
 
-Package ini adalah sumber tunggal kontrak type antara frontend (`apps/web`) dan backend (`apps/api`).
+Package ini adalah sumber tunggal kontrak type antara frontend (`apps/merchant`) dan backend (`apps/api`).
 
 ## What goes into shared-types
 
 Masukkan type ke package ini jika type tersebut:
 
 - merepresentasikan kontrak request/response API publik,
-- dipakai lintas workspace (`apps/web` dan `apps/api`),
+- dipakai lintas workspace (`apps/merchant` dan `apps/api`),
 - murni type-level (interface/type alias), tanpa logic runtime.
 
 Contoh:

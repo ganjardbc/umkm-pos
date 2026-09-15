@@ -1,4 +1,4 @@
-# Golden Examples — RULES.md (umkm-pos-app)
+# Golden Examples — RULES.md (@umkm-pos/merchant)
 
 > **DRAFT — wajib direview.** File ini digenerate otomatis oleh `caf-initiator` sebagai
 > pendamping wajib golden example di folder ini (lihat CAF.md Layer 1). Isi Do/Don't di bawah

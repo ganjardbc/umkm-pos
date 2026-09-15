@@ -7,10 +7,10 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/ ./apps/
 COPY packages/ ./packages/
 RUN pnpm install --frozen-lockfile
-RUN pnpm --filter umkm-pos-app build
+RUN pnpm --filter @umkm-pos/merchant build
 
 FROM nginx:1.27-alpine
-COPY --from=builder /app/apps/web/dist /usr/share/nginx/html
+COPY --from=builder /app/apps/merchant/dist /usr/share/nginx/html
 COPY infra/nginx/spa.conf /etc/nginx/conf.d/default.conf
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]

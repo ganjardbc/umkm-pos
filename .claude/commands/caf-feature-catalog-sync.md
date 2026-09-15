@@ -48,7 +48,7 @@ Kalau kosong, scan seluruh repo.
 4. Kumpulkan route frontend dari file router — **per app**, jangan digabung:
    - Kalau monorepo punya lebih dari satu frontend app (cek workspace config atau
      apps/*/package.json), scan router tiap app secara terpisah dan simpan asal
-     app-nya (mis. `apps/web` vs `apps/landing`).
+     app-nya (mis. `apps/merchant` vs `apps/landing`).
    - Kalau ada beberapa frontend app, JANGAN asumsikan sembarang satu adalah
      konsumer utama API. Coba cocokkan tiap controller ke SEMUA frontend app,
      bukan berhenti begitu ketemu match pertama.

@@ -20,7 +20,7 @@ class-validator + class-transformer — DTO validation
 Swagger/OpenAPI — API documentation
 ```
 
-## Frontend (apps/web)
+## Frontend (apps/merchant)
 
 ```txt
 Vue 3        — UI framework

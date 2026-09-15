@@ -41,7 +41,7 @@ jobs:
             api:
               - 'apps/api/**'
             web:
-              - 'apps/web/**'
+              - 'apps/merchant/**'
             landing:
               - 'apps/landing/**'
             shared:
@@ -84,7 +84,7 @@ jobs:
 
             if [[ "${{ steps.filter.outputs.web }}" == 'true' ]]; then
               WEB=true
-              REASON_WEB="apps/web changed"
+              REASON_WEB="apps/merchant changed"
             fi
 
             if [[ "${{ steps.filter.outputs.landing }}" == 'true' ]]; then
@@ -162,10 +162,10 @@ jobs:
       - name: Build shared-types package
         run: pnpm --filter @umkm-pos/shared-types build
 
-      # NOTE: apps/web has no lint/test script today — build (vue-tsc -b && vite build)
+      # NOTE: apps/merchant has no lint/test script today — build (vue-tsc -b && vite build)
       # is the only gate available and it does include typechecking.
       - name: Build web app
-        run: pnpm --filter umkm-pos-app build
+        run: pnpm --filter @umkm-pos/merchant build
 
   build-landing:
     name: Landing — Build

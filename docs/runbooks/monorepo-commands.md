@@ -30,7 +30,7 @@ Workflow CI (`.github/workflows/ci.yml`) menggunakan path filter untuk menentuka
 
 ### Impact matrix
 
-- `apps/web/**` → jalankan pipeline **web** (`build` web + build shared-types).
+- `apps/merchant/**` → jalankan pipeline **web** (`build` web + build shared-types).
 - `apps/api/**` → jalankan pipeline **api** (`lint`, `test`, `build` api + build shared-types).
 - `packages/shared-types/**` → jalankan **web + api**.
 - `pnpm-lock.yaml`, `pnpm-workspace.yaml`, root `package.json`, `.github/workflows/**` → jalankan **full CI** (web + api).
@@ -44,7 +44,7 @@ Workflow CI (`.github/workflows/ci.yml`) menggunakan path filter untuk menentuka
 
 ### Verifikasi cepat skenario PR
 
-1. Ubah file di `apps/web/**` → hanya `web` + `summary` yang run.
+1. Ubah file di `apps/merchant/**` → hanya `web` + `summary` yang run.
 2. Ubah file di `apps/api/**` → hanya `api` + `summary` yang run.
 3. Ubah file di `packages/shared-types/**` → `web` dan `api` run.
 4. Ubah lockfile/workflow/root package → `web` dan `api` run (full CI).
