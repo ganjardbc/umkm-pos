@@ -52,27 +52,6 @@
           @navigate="isMobile ? handleOpenSidebar() : null"
         />
       </div>
-
-      <!-- Footer -->
-      <div class="default-layout__sidebar-footer" :class="{ 'default-layout__sidebar-footer--small': isSmallSidebar, 'default-layout__sidebar-footer--full': !isSmallSidebar }">
-        <Button
-          v-if="ENABLE_DARKMODE_TOGGLE"
-          severity="secondary"
-          variant="outlined"
-          size="medium"
-          :icon="isDark ? 'pi pi-sun' : 'pi pi-moon'"
-          @click="toggleDarkMode"
-        />
-        <router-link :to="PRP_PROFILE">
-          <Button
-            severity="secondary"
-            variant="outlined"
-            size="medium"
-            icon="pi pi-user"
-            @click="isMobile ? handleOpenSidebar() : null"
-          />
-        </router-link>
-      </div>
     </div>
 
     <!-- Body -->
@@ -171,12 +150,9 @@ import { useDarkMode } from '@/composables/useDarkMode.ts';
 import { storeToRefs } from 'pinia';
 import { useAuthStore } from '@/modules/auth/stores/index.ts';
 import { PREFIX_ROUTE_PATH as PRP_DASHBOARD } from '@/modules/dashboard/services/constants.ts';
-import { PREFIX_ROUTE_PATH as PRP_PROFILE } from '@/modules/profile/services/constants.ts';
 
 import UiSidebarMenu from '@/components/UiSidebarMenu.vue';
 import UiSidebarProfile from '@/components/UiSidebarProfile.vue';
-
-const ENABLE_DARKMODE_TOGGLE = false;
 
 const route = useRoute();
 const router = useRouter();
@@ -190,7 +166,7 @@ const home = computed(() => ({
 }));
 
 // Dark mode
-const { isDark, toggleDarkMode, initializeTheme } = useDarkMode();
+const { initializeTheme } = useDarkMode();
 
 // Device type
 const authStore = useAuthStore();
@@ -242,7 +218,7 @@ onMounted(() => {
 
 /* Sidebar */
 .default-layout__sidebar {
-  @apply top-0 h-dvh border-r border-gray-200 flex flex-col justify-between transition-all duration-100 bg-white;
+  @apply top-0 h-dvh shrink-0 border-r border-gray-200 flex flex-col transition-all duration-100 bg-white;
 }
 
 .default-layout__sidebar--dark {
@@ -270,7 +246,7 @@ onMounted(() => {
 }
 
 .default-layout__sidebar-header {
-  @apply w-full min-h-14 flex items-center px-2;
+  @apply w-full h-14 shrink-0 flex items-center px-2 border-b border-gray-200 dark:border-dark;
 }
 
 .default-layout__sidebar-header--mobile {
@@ -290,19 +266,7 @@ onMounted(() => {
 }
 
 .default-layout__sidebar-content {
-  @apply p-2 h-full flex flex-col gap-4 overflow-y-auto;
-}
-
-.default-layout__sidebar-footer {
-  @apply flex justify-center gap-2 px-2 py-3;
-}
-
-.default-layout__sidebar-footer--small {
-  @apply flex-col items-center;
-}
-
-.default-layout__sidebar-footer--full {
-  @apply flex-row;
+  @apply p-2 flex-1 min-h-0 flex flex-col gap-4 overflow-y-auto;
 }
 
 /* Body */
