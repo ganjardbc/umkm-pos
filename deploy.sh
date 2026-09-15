@@ -12,10 +12,10 @@ err() { printf '%b[ERR]%b   %s\n' "$RED" "$NC" "$*" >&2; }
 trap 'err "Deployment failed at line $LINENO. Existing containers were not intentionally stopped before this failure."' ERR
 
 usage() {
-  printf 'Usage: %s [all|api|web|landing] [--no-cache]\n' "$0"
+  printf 'Usage: %s [all|api|merchant|landing] [--no-cache]\n' "$0"
   printf '\nDeploy one application or all applications. Default: all\n'
   printf '  api       Build and deploy umkm-pos-api (also ensures database is running)\n'
-  printf '  web       Build and deploy umkm-pos-web\n'
+  printf '  merchant  Build and deploy umkm-pos-merchant (alias: web)\n'
   printf '  landing   Build and deploy umkm-pos-landing\n'
   printf '  all       Build and deploy all three applications\n'
   printf '  --no-cache  Build without Docker cache\n'
@@ -26,7 +26,8 @@ TARGET=all
 NO_CACHE=()
 for arg in "$@"; do
   case "$arg" in
-    all|api|web|landing) TARGET="$arg" ;;
+    all|api|merchant|landing) TARGET="$arg" ;;
+    web) TARGET=merchant ;;
     --no-cache) NO_CACHE+=(--no-cache) ;;
     -h|--help) usage; exit 0 ;;
     *) err "Unknown argument: $arg"; usage; exit 2 ;;
@@ -39,9 +40,9 @@ docker compose config -q || { err 'docker-compose.yml is invalid'; exit 1; }
 
 case "$TARGET" in
   api) SERVICES=(umkm-pos-api); CONTAINERS=(umkm-pos-api); DEPENDS=(umkm-pos-db) ;;
-  web) SERVICES=(umkm-pos-web); CONTAINERS=(umkm-pos-web); DEPENDS=() ;;
+  merchant) SERVICES=(umkm-pos-merchant); CONTAINERS=(umkm-pos-merchant); DEPENDS=() ;;
   landing) SERVICES=(umkm-pos-landing); CONTAINERS=(umkm-pos-landing); DEPENDS=() ;;
-  all) SERVICES=(umkm-pos-api umkm-pos-web umkm-pos-landing); CONTAINERS=(umkm-pos-api umkm-pos-web umkm-pos-landing); DEPENDS=(umkm-pos-db) ;;
+  all) SERVICES=(umkm-pos-api umkm-pos-merchant umkm-pos-landing); CONTAINERS=(umkm-pos-api umkm-pos-merchant umkm-pos-landing); DEPENDS=(umkm-pos-db) ;;
 esac
 
 info "Target: $TARGET"
@@ -92,6 +93,6 @@ if [[ "$TARGET" == api || "$TARGET" == all ]]; then
 fi
 
 printf '\n%bDeployment successful%b\n' "$GREEN" "$NC"
-docker ps --filter "name=^/\(umkm-pos-api\|umkm-pos-web\|umkm-pos-landing\)$" --format '  {{.Names}} | {{.Status}}'
+docker ps --filter "name=^/\(umkm-pos-api\|umkm-pos-merchant\|umkm-pos-landing\)$" --format '  {{.Names}} | {{.Status}}'
 warn 'S3 warning, if present, only affects file uploads.'
 rm -f /tmp/umkm-pos-api-check

@@ -42,13 +42,13 @@ services:
       - devbox_devnet
     restart: always
 
-  umkm-pos-web:
+  umkm-pos-merchant:
     build:
       context: .
       dockerfile: apps/merchant/Dockerfile
       args:
         VITE_API_BASE_URL: https://api.insell.id
-    container_name: umkm-pos-web
+    container_name: umkm-pos-merchant
     expose:
       - "80"
     networks:
