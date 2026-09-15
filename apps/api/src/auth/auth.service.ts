@@ -2,6 +2,7 @@ import {
   Injectable,
   UnauthorizedException,
   ConflictException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../database/prisma.service';
@@ -9,6 +10,7 @@ import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import * as bcrypt from 'bcrypt';
 import { UploadsService } from '../uploads/uploads.service';
+import { isPlatformAdminMerchant } from '../common/constants/admin.constants';
 
 /**
  * Auth Service
@@ -95,6 +97,21 @@ export class AuthService {
       },
       rbac,
     };
+  }
+
+  /**
+   * Admin login (apps/admin)
+   * Same credential check as login, but only platform admins (users of the
+   * admin merchant) receive a token.
+   */
+  async loginAdmin(dto: LoginDto) {
+    const result = await this.login(dto);
+
+    if (!isPlatformAdminMerchant(result.user.merchant?.slug)) {
+      throw new ForbiddenException('Admin access only');
+    }
+
+    return result;
   }
 
   /**

@@ -37,7 +37,8 @@ src/
 ├── shifts/        # Cashier shift tracking
 ├── stock/         # Stock logs + adjustments
 ├── reports/       # Aggregates + dashboard
-├── rbac/          # Roles + permissions
+├── rbac/          # Roles + permissions (tenant read + user-role assignment)
+├── admin/         # Platform-admin endpoints (/admin/*) for apps/admin
 ├── sync/          # Offline sync endpoints
 ├── database/      # Prisma service
 ├── common/        # Guards, pipes, interceptors
@@ -73,6 +74,7 @@ src/
 | `@Public()` | Skip auth for endpoint |
 | `JwtAuthGuard` | Global JWT protection |
 | `PermissionGuard` | Permission-based access |
+| `AdminGuard` | Platform-admin only: `request.user.merchant.slug === ADMIN_MERCHANT_SLUG` (`common/constants/admin.constants.ts`). Required on every `/admin/*` controller, which is the only place allowed to skip `merchant_id` scoping. |
 | `@ScopeByOutlet(fieldPath)` | Validate outlet ownership via guard, scoped to caller's merchant |
 | `ScopeByOutletGuard`        | Guard untuk enforce @ScopeByOutlet metadata |
 | `OutletHeaderGuard`         | Reads optional `X-Outlet-Id` request header, validates it (exists, belongs to caller's `merchant_id`, caller has a `user_roles` row for it) and sets `request.user.outlet_id` so `@CurrentUser('outlet_id')` becomes live. Absent header = no outlet filter; invalid header = `403 ForbiddenException('Invalid outlet context')`, never a 500. Currently registered only on `NotificationsController` — opt in per-controller via `@UseGuards(...)`, not global. |
