@@ -83,7 +83,7 @@
             :key="item.id"
             role="button"
             tabindex="0"
-            class="overflow-hidden cursor-pointer p-3! gap-0! shadow-none! border! border-slate-200! dark:border-white/10! transition-colors hover:bg-slate-50! dark:hover:bg-white/5! focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--p-primary-color)"
+            class="shrink-0 overflow-hidden cursor-pointer p-3! gap-0! shadow-none! border! border-slate-200! dark:border-white/10! transition-colors hover:bg-slate-50! dark:hover:bg-white/5! focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--p-primary-color)"
             @click="onItemClick(item)"
             @keydown.enter.prevent="onItemClick(item)"
             @keydown.space.prevent="onItemClick(item)"
@@ -159,6 +159,7 @@ import {
 import {
   NOTIFICATION_UPDATED_EVENT,
   PREFIX_ROUTE_PATH as NOTIFICATION_ROUTE_PATH,
+  getNotificationTarget,
   getNotificationToneClass,
   getNotificationType,
 } from '@/modules/notification/services/constants.ts';
@@ -217,7 +218,7 @@ const onItemClick = async (item: any) => {
     }
   }
   opNotificationMenu.value.hide();
-  router.push(getNotificationType(item.type).route || NOTIFICATION_ROUTE_PATH);
+  router.push(getNotificationTarget(item)?.path ?? NOTIFICATION_ROUTE_PATH);
 };
 
 const handleMarkAll = async () => {

@@ -123,7 +123,7 @@
           </div>
         </div>
 
-        <template v-if="getNotificationType(item.type).route || (!item.is_read && isCanUpdate)">
+        <template v-if="getNotificationTarget(item) || (!item.is_read && isCanUpdate)">
           <Divider class="my-0!" />
 
           <div class="flex items-center justify-between gap-2">
@@ -142,8 +142,8 @@
                 @click="markAsRead(item)"
               />
               <Button
-                v-if="getNotificationType(item.type).route"
-                label="Lihat"
+                v-if="getNotificationTarget(item)"
+                :label="getNotificationTarget(item)?.isDetail ? 'Lihat Detail' : 'Lihat'"
                 icon="pi pi-arrow-right"
                 iconPos="right"
                 size="small"
@@ -181,6 +181,7 @@ import {
 } from '@/modules/notification/services/api.ts';
 import {
   NOTIFICATION_UPDATED_EVENT,
+  getNotificationTarget,
   getNotificationToneClass,
   getNotificationType,
 } from '@/modules/notification/services/constants.ts';
@@ -290,7 +291,7 @@ const handleMarkAll = async () => {
 };
 
 const openRelated = async (item: any) => {
-  const route = getNotificationType(item.type).route;
+  const target = getNotificationTarget(item);
   if (!item.is_read && isCanUpdate.value) {
     try {
       await markAsRead(item);
@@ -298,7 +299,7 @@ const openRelated = async (item: any) => {
       // Navigation should not be blocked by a failed read receipt.
     }
   }
-  if (route) router.push(route);
+  if (target) router.push(target.path);
 };
 
 onMounted(() => {
