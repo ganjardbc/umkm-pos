@@ -1,28 +1,12 @@
-# Template Module
+# Merchants Module
 
-This module demonstrates a modular approach to managing state in a Vue 3 + Pinia application using external files for state, getters, and actions.
+Lets a tenant view and edit **their own** merchant. Opened from the "Merchant" item in the profile popover (`UiSidebarProfile`).
 
-## Structure
+| Route | Page | Permission |
+|---|---|---|
+| `/merchants` | `pages/detail.vue` | `merchants.read` |
+| `/merchants/edit` | `pages/edit.vue` | `merchants.update` |
 
-```
-stores/
-  index.ts        # Main Pinia store configuration
-  state.ts        # State definition
-  getters.ts      # Getters definition
-  actions.ts      # Actions definition
-```
+The merchant id comes from the logged-in session (`getMerchant()`), not the URL. The API (`GET`/`PATCH /api/v1/merchants/:id`) rejects any merchant other than the caller's own.
 
-## Usage
-
-1. **Define State**
-   - Add your state properties in `state.ts` as a function returning an object.
-2. **Define Getters**
-   - Add your getter functions in `getters.ts` as an object.
-3. **Define Actions**
-   - Add your action functions in `actions.ts` as an object.
-4. **Configure Store**
-   - The main store in `index.ts` imports and uses these external definitions.
-
-## Notes
-- This pattern helps keep your store logic organized and maintainable.
-- You can extend this template for other modules in your application.
+Listing, creating, and deleting merchants lives in `apps/admin`.

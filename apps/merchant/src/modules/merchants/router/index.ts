@@ -4,15 +4,16 @@ import {
 } from '@/modules/merchants/services/constants.ts';
 import {
   READ,
-  CREATE,
   UPDATE,
 } from '@/modules/merchants/services/rbac.ts';
 
+// Tenants only view and edit their own merchant (taken from the logged-in
+// session), so routes carry no :id. Listing/creating merchants is apps/admin.
 export default [
   {
     path: PREFIX_ROUTE_PATH,
-    name: PREFIX_ROUTE_NAME,
-    component: () => import('@/modules/merchants/pages/index.vue'),
+    name: `${PREFIX_ROUTE_NAME}-detail`,
+    component: () => import('@/modules/merchants/pages/detail.vue'),
     meta: {
       title: 'Merchant',
       layout: 'default',
@@ -32,34 +33,7 @@ export default [
     }
   },
   {
-    path: `${PREFIX_ROUTE_PATH}/create`,
-    name: `${PREFIX_ROUTE_NAME}-create`,
-    component: () => import('@/modules/merchants/pages/create.vue'),
-    meta: {
-      title: 'Tambah Merchant',
-      layout: 'default',
-      permission: [CREATE],
-      breadcrumbs: [
-        {
-          label: 'Beranda',
-          route: '/landing',
-          isActive: false,
-        },
-        {
-          label: 'Merchant',
-          route: PREFIX_ROUTE_PATH,
-          isActive: false,
-        },
-        {
-          label: 'Tambah Merchant',
-          route: `${PREFIX_ROUTE_PATH}/create`,
-          isActive: true,
-        },
-      ]
-    }
-  },
-  {
-    path: `${PREFIX_ROUTE_PATH}/edit/:id`,
+    path: `${PREFIX_ROUTE_PATH}/edit`,
     name: `${PREFIX_ROUTE_NAME}-edit`,
     component: () => import('@/modules/merchants/pages/edit.vue'),
     meta: {
@@ -79,35 +53,7 @@ export default [
         },
         {
           label: 'Edit Merchant',
-          route: `${PREFIX_ROUTE_PATH}/:id/edit`,
-          isActive: true,
-        },
-      ]
-    }
-  },
-
-  {
-    path: `${PREFIX_ROUTE_PATH}/detail/:id`,
-    name: `${PREFIX_ROUTE_NAME}-detail`,
-    component: () => import('@/modules/merchants/pages/detail.vue'),
-    meta: {
-      title: 'Detail Merchant',
-      layout: 'default',
-      permission: [READ],
-      breadcrumbs: [
-        {
-          label: 'Beranda',
-          route: '/landing',
-          isActive: false,
-        },
-        {
-          label: 'Merchant',
-          route: PREFIX_ROUTE_PATH,
-          isActive: false,
-        },
-        {
-          label: 'Detail Merchant',
-          route: `${PREFIX_ROUTE_PATH}/:id/view`,
+          route: `${PREFIX_ROUTE_PATH}/edit`,
           isActive: true,
         },
       ]

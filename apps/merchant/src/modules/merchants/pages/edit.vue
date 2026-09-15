@@ -90,21 +90,23 @@
 <script setup lang="ts">
 import type { FormEdit } from '@/modules/merchants/services/types.ts';
 import { ref, computed, onMounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRouter } from 'vue-router';
 import { z } from 'zod';
 import { zodResolver } from '@primevue/forms/resolvers/zod';
 import { getErrorMessage } from '@/helpers/utils.ts';
 import { showToast } from '@/helpers/toast.ts';
 import { showLoading, hideLoading } from '@/helpers/loading.ts';
+import { getMerchant } from '@/helpers/auth.ts';
 import { putMerchants, getDetailMerchants } from '@/modules/merchants/services/api.ts';
 import { setMerchantImage, removeMerchantImage } from '@/services/uploads';
 import { useFileUpload } from '@/composables/useFileUpload';
 import UiCard from '@/components/UiCard.vue';
 import UiFormGroup from '@/components/UiFormGroup.vue';
 
-const route = useRoute();
 const router = useRouter();
-const merchantID = computed(() => route.params.id as string);
+
+// The logged-in user's own merchant; the API rejects any other merchant id.
+const merchantID = computed(() => getMerchant()?.id as string);
 
 const isLoaded = ref(false);
 const hasExistingLogo = ref(false);
@@ -150,6 +152,11 @@ const onFormSubmit = async (event: any) => {
         } else if (hasExistingLogo.value && !imagePreview.value) {
           await removeMerchantImage(merchantID.value);
         }
+        showToast({
+          type: 'success',
+          title: 'Berhasil',
+          message: 'Merchant berhasil diperbarui.',
+        });
         router.back();
       }
     } catch (error) {
