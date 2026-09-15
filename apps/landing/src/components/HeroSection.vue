@@ -46,11 +46,17 @@
 
     <div class="bg-cream dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800">
       <div class="max-w-6xl mx-auto px-6 md:px-12 py-8">
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-12">
-          <div v-for="(stat, i) in stats" :key="i" class="text-center">
-            <p class="text-2xl md:text-3xl font-bold text-primary">{{ stat.value }}</p>
-            <p class="text-xs md:text-sm text-gray-500 dark:text-gray-400 mt-1">{{ stat.label }}</p>
-          </div>
+        <p class="text-xs md:text-sm uppercase tracking-wider text-center text-gray-500 dark:text-gray-400 mb-4">
+          {{ t.hero.cocokUntuk }}
+        </p>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
+          <p
+            v-for="(segment, i) in t.hero.segments"
+            :key="i"
+            class="text-center text-base md:text-lg font-semibold text-primary"
+          >
+            {{ segment }}
+          </p>
         </div>
       </div>
     </div>
@@ -58,21 +64,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
 import banner from '/banner.png'
 
 const baseUrl = import.meta.env.VITE_WEB_BASE_URL || 'http://localhost:5173'
 const loginUrl = baseUrl
 const registerUrl = `${baseUrl}/register`
 
-const props = defineProps<{
+defineProps<{
   t: any
 }>()
-
-const stats = computed(() => [
-  { value: '10rb+', label: props.t.hero.stats.pengguna },
-  { value: '500rb+', label: props.t.hero.stats.transaksi },
-  { value: '5rb+', label: props.t.hero.stats.outlet },
-  { value: '5+', label: props.t.hero.stats.tahun },
-])
 </script>

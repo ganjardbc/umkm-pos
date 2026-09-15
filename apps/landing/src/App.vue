@@ -8,7 +8,7 @@
         <nav class="hidden md:flex items-center gap-6">
           <a href="#features" class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">{{ t.nav.fitur }}</a>
           <a href="#pricing" class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">{{ t.nav.harga }}</a>
-          <a href="#testimonials" class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">{{ t.nav.testimoni }}</a>
+          <a href="#how-it-works" class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">{{ t.nav.caraKerja }}</a>
         </nav>
         <div class="flex items-center gap-3">
           <button
@@ -30,8 +30,8 @@
     <main>
       <HeroSection :t="t" />
       <FeaturesSection :t="t" />
+      <HowItWorksSection :t="t" />
       <PricingSection :t="t" />
-      <TestimonialsSection :t="t" />
       <CustomerRegisterSection :t="t" />
       <FooterSection :t="t" />
     </main>
@@ -45,7 +45,7 @@ import { useTheme } from '@/composables/useTheme'
 import HeroSection from '@/components/HeroSection.vue'
 import FeaturesSection from '@/components/FeaturesSection.vue'
 import PricingSection from '@/components/PricingSection.vue'
-import TestimonialsSection from '@/components/TestimonialsSection.vue'
+import HowItWorksSection from '@/components/HowItWorksSection.vue'
 import CustomerRegisterSection from '@/components/CustomerRegisterSection.vue'
 import FooterSection from '@/components/FooterSection.vue'
 

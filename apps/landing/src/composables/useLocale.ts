@@ -8,8 +8,7 @@ type Translations = typeof id
 const STORAGE_KEY = 'locale'
 
 const stored = localStorage.getItem(STORAGE_KEY) as Locale | null
-const prefersIndonesian = navigator.language?.startsWith('id')
-const current = ref<Locale>(stored || (prefersIndonesian ? 'id' : 'en'))
+const current = ref<Locale>(stored === 'en' ? 'en' : 'id')
 
 const translations: Record<Locale, Translations> = { id, en }
 

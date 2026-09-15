@@ -1,13 +1,13 @@
 <template>
   <section id="pricing" class="py-20 px-4 bg-cream dark:bg-gray-900">
-    <div class="max-w-6xl mx-auto">
+    <div class="max-w-4xl mx-auto">
       <h2 class="text-3xl md:text-4xl font-bold text-center text-gray-900 dark:text-white mb-2">
         {{ t.pricing.title }}
       </h2>
       <p class="text-gray-500 dark:text-gray-400 text-center mb-12 max-w-xl mx-auto">
         {{ t.pricing.subtitle }}
       </p>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div
           v-for="(plan, index) in t.pricing.plans"
           :key="index"
@@ -17,7 +17,7 @@
             : 'border-gray-200 dark:border-gray-700 hover:shadow-lg'"
         >
           <div v-if="plan.featured" class="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-primary text-white text-sm rounded-full font-medium">
-            Populer
+            {{ t.pricing.badge }}
           </div>
           <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">{{ plan.name }}</h3>
           <div class="mb-6">
