@@ -2,7 +2,7 @@
 
 Repository ini menggunakan struktur monorepo yang scalable:
 
-- `apps/web` — frontend Vue + Vite.
+- `apps/merchant` — frontend Vue + Vite.
 - `apps/api` — backend NestJS + Prisma.
 - `packages/shared-types` — shared TypeScript types antar app.
 - `packages/shared-utils` — stub utilitas bersama.
@@ -37,7 +37,7 @@ pnpm format       # Jalankan format di workspace yang punya script format
 ## Menjalankan command per workspace
 
 ```bash
-pnpm --filter umkm-pos-app <script>
+pnpm --filter @umkm-pos/merchant <script>
 pnpm --filter umkm-pos-api <script>
 pnpm --filter @umkm-pos/shared-types <script>
 ```

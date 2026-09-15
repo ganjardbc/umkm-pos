@@ -1,5 +1,5 @@
 {
-  "name": "umkm-pos-app",
+  "name": "@umkm-pos/merchant",
   "private": true,
   "version": "0.0.0",
   "type": "module",

@@ -274,7 +274,7 @@ can't easily be undone once it happens.
 Paths allowed into the commit (ONLY these, not the entire working tree):
 
 - `.caf/tasks/{TICKET-ID}/` (artifact)
-- `caf-frontend`: `apps/web/`
+- `caf-frontend`: `apps/merchant/`
 - `caf-frontend`: `apps/landing/`
 - `caf-backend`: `apps/api/`
 - `caf-backend`: `apps/realtime/`

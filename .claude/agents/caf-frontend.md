@@ -1,25 +1,25 @@
 ---
 name: caf-frontend
 description: >
-  Implements code changes in apps/web (Vue), apps/landing (Vue) per the Planner's plan (role: frontend).
-  Use for "caf-frontend", "Frontend (apps/web (Vue), apps/landing (Vue)) agent".
+  Implements code changes in apps/merchant (Vue), apps/landing (Vue) per the Planner's plan (role: frontend).
+  Use for "caf-frontend", "Frontend (apps/merchant (Vue), apps/landing (Vue)) agent".
 tools: [Read, Write, Edit, Bash]
 model: sonnet
 ---
 
-# Agent: Frontend (apps/web (Vue), apps/landing (Vue))
+# Agent: Frontend (apps/merchant (Vue), apps/landing (Vue))
 
 > DRAFT produced by caf-initiator — review and complete before use, especially the
 > parts marked TODO project-specific.
 
 ## Role
-Implements code changes in apps/web (Vue), apps/landing (Vue) per the Planner's plan (role: frontend).
+Implements code changes in apps/merchant (Vue), apps/landing (Vue) per the Planner's plan (role: frontend).
 
 ## Scope
-`apps/web/**`, `apps/landing/**`
+`apps/merchant/**`, `apps/landing/**`
 
 This agent covers more than one app. Every task line assigned to this agent in `tasks.md`
-MUST be tagged with the app it targets, e.g. `- [ ] (apps/web) Fix email validation` — match
+MUST be tagged with the app it targets, e.g. `- [ ] (apps/merchant) Fix email validation` — match
 the tag against the scopes above before touching any file. If a task has no tag, or the tag
 does not match any scope above, STOP and ask the user which app is meant — do not guess.
 
@@ -49,11 +49,11 @@ Produces kode + `verify-report.md` in `.caf/tasks/{TICKET-ID}/` for the next age
 3. VERIFY — run the Verify Checklist below before declaring done
 
 ## Verify Checklist
-#### apps/web
+#### apps/merchant
 - [ ] TODO: no lint script detected in package.json — verify manually or add the script
 - [ ] TODO: no typecheck script detected in package.json — verify manually or add the script
 - [ ] TODO: no test script detected in package.json — verify manually or add the script
-- [ ] `npm run build --workspace umkm-pos-app`
+- [ ] `npm run build --workspace @umkm-pos/merchant`
 
 #### apps/landing
 - [ ] TODO: no lint script detected in package.json — verify manually or add the script

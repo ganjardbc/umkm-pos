@@ -1,10 +1,10 @@
-# ADR-006: Framework: apps/web
+# ADR-006: Framework: apps/merchant
 
 ## Status
 Proposed <!-- TODO: ubah ke Accepted/Deprecated/Superseded setelah direview -->
 
 ## Context
-App "umkm-pos-app" (apps/web) memakai Vue.
+App "@umkm-pos/merchant" (apps/merchant) memakai Vue.
 
 TODO: jelaskan konteks/masalah yang mendorong keputusan ini diambil.
 

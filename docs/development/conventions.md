@@ -42,7 +42,7 @@ Apps:
 
 ```txt
 umkm-pos-api     (apps/api)
-umkm-pos-app     (apps/web)
+@umkm-pos/merchant     (apps/merchant)
 @umkm-pos/landing (apps/landing)
 ```
 
@@ -58,7 +58,7 @@ umkm-pos-app     (apps/web)
   "lint": "turbo lint",
   "format": "turbo format",
   "typecheck": "turbo typecheck",
-  "dev:web": "pnpm --filter umkm-pos-app dev",
+  "dev:web": "pnpm --filter @umkm-pos/merchant dev",
   "dev:api": "pnpm --filter umkm-pos-api start:dev"
 }
 ```
@@ -164,7 +164,7 @@ modules/module-name/
 Scaffold modul baru dengan:
 
 ```bash
-# Dari apps/web/
+# Dari apps/merchant/
 npx hygen module new
 ```
 

@@ -8,7 +8,7 @@ I've created a comprehensive specification for the UMKM-POS App based on the exi
 
 ## 📁 Specification Files
 
-### 1. `.kiro/specs/apps/web/requirements.md`
+### 1. `.kiro/specs/apps/merchant/requirements.md`
 **Comprehensive Requirements Document**
 
 Contains:
@@ -28,7 +28,7 @@ Contains:
 7. Reports & Analytics (3 user stories)
 8. Offline Sync (4 user stories)
 
-### 2. `.kiro/specs/apps/web/SPEC_OVERVIEW.md`
+### 2. `.kiro/specs/apps/merchant/SPEC_OVERVIEW.md`
 **High-Level Specification Overview**
 
 Contains:

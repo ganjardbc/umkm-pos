@@ -21,9 +21,9 @@ jobs:
       api: ${{ steps.decide.outputs.api }}
       api_changed: ${{ steps.filter.outputs.api }}
       reason_api: ${{ steps.decide.outputs.reason_api }}
-      web: ${{ steps.decide.outputs.web }}
-      web_changed: ${{ steps.filter.outputs.web }}
-      reason_web: ${{ steps.decide.outputs.reason_web }}
+      merchant: ${{ steps.decide.outputs.merchant }}
+      merchant_changed: ${{ steps.filter.outputs.merchant }}
+      reason_merchant: ${{ steps.decide.outputs.reason_merchant }}
       landing: ${{ steps.decide.outputs.landing }}
       landing_changed: ${{ steps.filter.outputs.landing }}
       reason_landing: ${{ steps.decide.outputs.reason_landing }}
@@ -40,8 +40,8 @@ jobs:
           filters: |
             api:
               - 'apps/api/**'
-            web:
-              - 'apps/web/**'
+            merchant:
+              - 'apps/merchant/**'
             landing:
               - 'apps/landing/**'
             shared:
@@ -57,16 +57,16 @@ jobs:
         run: |
           API=false
           REASON_API="No matching changes"
-          WEB=false
-          REASON_WEB="No matching changes"
+          MERCHANT=false
+          REASON_MERCHANT="No matching changes"
           LANDING=false
           REASON_LANDING="No matching changes"
 
           if [[ "${{ steps.filter.outputs.global }}" == 'true' ]]; then
             API=true
             REASON_API="Global/root CI files changed"
-            WEB=true
-            REASON_WEB="Global/root CI files changed"
+            MERCHANT=true
+            REASON_MERCHANT="Global/root CI files changed"
             LANDING=true
             REASON_LANDING="Global/root CI files changed"
           else
@@ -78,13 +78,13 @@ jobs:
             if [[ "${{ steps.filter.outputs.shared }}" == 'true' ]]; then
               API=true
               REASON_API="packages/shared-types changed"
-              WEB=true
-              REASON_WEB="packages/shared-types changed"
+              MERCHANT=true
+              REASON_MERCHANT="packages/shared-types changed"
             fi
 
-            if [[ "${{ steps.filter.outputs.web }}" == 'true' ]]; then
-              WEB=true
-              REASON_WEB="apps/web changed"
+            if [[ "${{ steps.filter.outputs.merchant }}" == 'true' ]]; then
+              MERCHANT=true
+              REASON_MERCHANT="apps/merchant changed"
             fi
 
             if [[ "${{ steps.filter.outputs.landing }}" == 'true' ]]; then
@@ -96,8 +96,8 @@ jobs:
           {
             echo "api=$API"
             echo "reason_api=$REASON_API"
-            echo "web=$WEB"
-            echo "reason_web=$REASON_WEB"
+            echo "merchant=$MERCHANT"
+            echo "reason_merchant=$REASON_MERCHANT"
             echo "landing=$LANDING"
             echo "reason_landing=$REASON_LANDING"
           } >> "$GITHUB_OUTPUT"
@@ -138,11 +138,11 @@ jobs:
       - name: Build API
         run: pnpm --filter umkm-pos-api build
 
-  build-web:
-    name: Web — Build
+  build-merchant:
+    name: Merchant — Build
     runs-on: ubuntu-latest
     needs: prepare
-    if: needs.prepare.outputs.web == 'true'
+    if: needs.prepare.outputs.merchant == 'true'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -162,10 +162,10 @@ jobs:
       - name: Build shared-types package
         run: pnpm --filter @umkm-pos/shared-types build
 
-      # NOTE: apps/web has no lint/test script today — build (vue-tsc -b && vite build)
+      # NOTE: apps/merchant has no lint/test script today — build (vue-tsc -b && vite build)
       # is the only gate available and it does include typechecking.
-      - name: Build web app
-        run: pnpm --filter umkm-pos-app build
+      - name: Build merchant app
+        run: pnpm --filter @umkm-pos/merchant build
 
   build-landing:
     name: Landing — Build
@@ -225,14 +225,14 @@ jobs:
 
             echo "=== SSH Session Completed ==="
 
-  deploy-web:
-    name: Deploy Web to VPS
+  deploy-merchant:
+    name: Deploy Merchant to VPS
     runs-on: ubuntu-latest
-    needs: [prepare, build-web]
+    needs: [prepare, build-merchant]
     if: |
       github.event_name == 'push' &&
       (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') &&
-      needs.prepare.outputs.web == 'true'
+      needs.prepare.outputs.merchant == 'true'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -252,9 +252,12 @@ jobs:
             git fetch --all
             git reset --hard origin/${{ github.ref_name }}
 
-            echo "[INFO] Rebuilding and recreating umkm-pos-web container..."
-            docker compose build --no-cache umkm-pos-web
-            docker compose up -d --force-recreate --no-deps umkm-pos-web
+            echo "[INFO] Rebuilding and recreating umkm-pos-merchant container..."
+            docker compose build --no-cache umkm-pos-merchant
+            docker compose up -d --force-recreate --no-deps umkm-pos-merchant
+
+            # Service was renamed from umkm-pos-web; remove the orphaned container if still present.
+            docker rm -f umkm-pos-web 2>/dev/null || true
 
             echo "=== SSH Session Completed ==="
 
@@ -294,7 +297,7 @@ jobs:
   summary:
     name: CI Summary
     runs-on: ubuntu-latest
-    needs: [prepare, build-api, build-web, build-landing, deploy-api, deploy-web, deploy-landing]
+    needs: [prepare, build-api, build-merchant, build-landing, deploy-api, deploy-merchant, deploy-landing]
     if: always()
     steps:
       - name: Publish summary
@@ -305,16 +308,16 @@ jobs:
             echo "| Area | Changed | Executed | Reason |"
             echo "|------|---------|----------|--------|"
             echo "| api | ${{ needs.prepare.outputs.api_changed }} | ${{ needs.prepare.outputs.api }} | ${{ needs.prepare.outputs.reason_api }} |"
-            echo "| web | ${{ needs.prepare.outputs.web_changed }} | ${{ needs.prepare.outputs.web }} | ${{ needs.prepare.outputs.reason_web }} |"
+            echo "| merchant | ${{ needs.prepare.outputs.merchant_changed }} | ${{ needs.prepare.outputs.merchant }} | ${{ needs.prepare.outputs.reason_merchant }} |"
             echo "| landing | ${{ needs.prepare.outputs.landing_changed }} | ${{ needs.prepare.outputs.landing }} | ${{ needs.prepare.outputs.reason_landing }} |"
-            echo "| shared-types | ${{ needs.prepare.outputs.shared }} | n/a (impact rule) | Triggers api + web |"
-            echo "| global/root | ${{ needs.prepare.outputs.global }} | full CI | Triggers api + web + landing |"
+            echo "| shared-types | ${{ needs.prepare.outputs.shared }} | n/a (impact rule) | Triggers api + merchant |"
+            echo "| global/root | ${{ needs.prepare.outputs.global }} | full CI | Triggers api + merchant + landing |"
             echo ""
             echo "### Job results"
             echo "- api job: ${{ needs.build-api.result }}"
-            echo "- web job: ${{ needs.build-web.result }}"
+            echo "- merchant job: ${{ needs.build-merchant.result }}"
             echo "- landing job: ${{ needs.build-landing.result }}"
             echo "- deploy-api job: ${{ needs.deploy-api.result }}"
-            echo "- deploy-web job: ${{ needs.deploy-web.result }}"
+            echo "- deploy-merchant job: ${{ needs.deploy-merchant.result }}"
             echo "- deploy-landing job: ${{ needs.deploy-landing.result }}"
           } >> "$GITHUB_STEP_SUMMARY"

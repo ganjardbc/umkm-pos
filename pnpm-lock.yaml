@@ -209,7 +209,7 @@ importers:
         specifier: ^3.2.8
         version: 3.2.9(typescript@6.0.3)
 
-  apps/web:
+  apps/merchant:
     dependencies:
       '@primeuix/themes':
         specifier: ^1.2.3

@@ -27,7 +27,7 @@
 
 ---
 
-## Frontend Modules (apps/web/src/modules/)
+## Frontend Modules (apps/merchant/src/modules/)
 
 | Module | Path | Description |
 |--------|------|-------------|

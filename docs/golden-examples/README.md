@@ -29,9 +29,9 @@ Sebelum menulis kode, baca file yang relevan di folder ini sebagai contoh pola y
 
 | File | Asal | Yang Ditunjukkan |
 |---|---|---|
-| [frontend/page.vue](frontend/page.vue) | `apps/web/src/modules/product-categories/pages/detail.vue` | Composition API + direct service call + RBAC gating + error handling |
-| [frontend/composable.ts](frontend/composable.ts) | `apps/web/src/modules/shift/composables/useShift.ts` | Singleton reactive state, computed guards, async action wrappers ⚠️ pola struktur saja |
-| [frontend/api.ts](frontend/api.ts) | `apps/web/src/modules/notification/services/api.ts` | Named exports, `@/plugins/axios`, signature konsisten |
+| [frontend/page.vue](frontend/page.vue) | `apps/merchant/src/modules/product-categories/pages/detail.vue` | Composition API + direct service call + RBAC gating + error handling |
+| [frontend/composable.ts](frontend/composable.ts) | `apps/merchant/src/modules/shift/composables/useShift.ts` | Singleton reactive state, computed guards, async action wrappers ⚠️ pola struktur saja |
+| [frontend/api.ts](frontend/api.ts) | `apps/merchant/src/modules/notification/services/api.ts` | Named exports, `@/plugins/axios`, signature konsisten |
 
 ### Aturan Kunci Frontend
 

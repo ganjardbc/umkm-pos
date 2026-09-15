@@ -142,7 +142,7 @@ Location: `.caf/audits/<DATE>/audit-report-{scope-slug}.md`
 - `<DATE>`: today's date, format YYYY-MM-DD (folder per date, same
   convention as the `auditor.md` agent)
 - `{scope-slug}`: derived from the given argument, simplified to
-  lowercase-kebab-case (e.g. "apps/web/src/modules/auth" becomes
+  lowercase-kebab-case (e.g. "apps/merchant/src/modules/auth" becomes
   "auth-module"; "all modules" becomes "full-scan")
 
 The filename is deliberately NOT plain `audit-report.md` — that name is reserved for
