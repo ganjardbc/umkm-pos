@@ -11,9 +11,7 @@ import { CreateMerchantDto } from './dto/create-merchant.dto';
 import { UpdateMerchantDto } from './dto/update-merchant.dto';
 import { MerchantsQueryDto } from './dto/merchants-query.dto';
 import { PaginationDto } from '../common/dto/pagination.dto';
-
-// Admin merchant slug - users from this merchant can see all merchants
-const ADMIN_MERCHANT_SLUG = 'merchant-admin';
+import { isPlatformAdminMerchant } from '../common/constants/admin.constants';
 
 @Injectable()
 export class MerchantsService {
@@ -41,7 +39,7 @@ export class MerchantsService {
       where: { id: merchantId },
       select: { slug: true },
     });
-    return merchant?.slug === ADMIN_MERCHANT_SLUG;
+    return isPlatformAdminMerchant(merchant?.slug);
   }
 
   /**

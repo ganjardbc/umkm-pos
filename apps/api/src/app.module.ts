@@ -22,6 +22,7 @@ import { UploadsModule } from './uploads/uploads.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { StoreTablesModule } from './store-tables/store-tables.module';
 import { CustomerCatalogModule } from './customer-catalog/customer-catalog.module';
+import { AdminModule } from './admin/admin.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 
 @Module({
@@ -49,6 +50,7 @@ import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
     NotificationsModule,
     StoreTablesModule,
     CustomerCatalogModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [
