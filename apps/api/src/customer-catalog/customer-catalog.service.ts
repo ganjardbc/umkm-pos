@@ -247,7 +247,7 @@ export class CustomerCatalogService {
       return updatedOrder;
     }
 
-    return this.transactionsService.createCatalogOrder(
+    const newOrder = await this.transactionsService.createCatalogOrder(
       {
         ...dto,
         shift_id: shift.id,
@@ -257,6 +257,19 @@ export class CustomerCatalogService {
       },
       session.merchant_id,
     );
+
+    await this.notificationsService.notifyOutletUsers(
+      dto.outlet_id,
+      session.merchant_id,
+      {
+        title: 'Pesanan Baru',
+        message: `Pesanan baru dari ${session.customer_name} (Meja ${newOrder?.store_tables?.code ?? '-'})`,
+        type: 'order_created',
+      },
+      'transaction.read',
+    );
+
+    return newOrder;
   }
 
   async getOrder(sessionToken: string, id: string) {
