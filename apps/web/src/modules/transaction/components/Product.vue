@@ -260,6 +260,7 @@ onMounted(() => {
 </script>
 <style>
 @import "tailwindcss";
+@import '@/assets/styles/themes.css';
 
 .pos-product {
   @apply w-full space-y-4;

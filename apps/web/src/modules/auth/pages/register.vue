@@ -479,6 +479,7 @@ const submitRegistration = async () => {
 </script>
 <style>
 @import 'tailwindcss';
+@import '@/assets/styles/themes.css';
 
 .register-page {
   @apply relative w-150 flex flex-col items-center h-screen md:h-auto overflow-y-auto py-8! px-2! rounded-none! md:rounded-lg!;

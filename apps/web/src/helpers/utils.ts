@@ -1,4 +1,8 @@
 import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+import 'dayjs/locale/id';
+
+dayjs.extend(relativeTime);
 
 const FORMAT_TIME = 'HH:mm';
 const FORMAT_DATE = 'DD/MM/YYYY';
@@ -30,6 +34,14 @@ export const formatRangeDate = (startDate: string, endDate: string) => {
 
 export const formatDateTime = (date: string) => {
   return isDateValid(date) ? dayjs(date).format(FORMAT_DATE_TIME) : '-';
+}
+
+export const formatRelativeTime = (date: string) => {
+  if (!isDateValid(date)) return '-';
+  const value = dayjs(date);
+  // Guard against small clock skew between client and server: a timestamp
+  // slightly in the future should still read as "just now", not "in x minutes".
+  return value.isAfter(dayjs()) ? 'baru saja' : value.locale('id').fromNow();
 }
 
 export const formatRangeDateTime = (startDate: string, endDate: string) => {
