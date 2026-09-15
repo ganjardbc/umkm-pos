@@ -4,6 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 > For app-specific details, read the nested CLAUDE.md files first:
 > - `apps/merchant/CLAUDE.md` — Vue 3 frontend patterns, auth helpers, module conventions
+> - `apps/admin/CLAUDE.md` — Platform-admin console (same stack as merchant, `/admin/*` endpoints)
 > - `apps/api/CLAUDE.md` — NestJS backend layers, domain rules, API conventions
 
 ## Monorepo Commands
@@ -22,6 +23,7 @@ Target a single workspace:
 
 ```bash
 pnpm --filter @umkm-pos/merchant <script>     # Frontend (apps/merchant)
+pnpm --filter @umkm-pos/admin <script>     # Admin console (apps/admin)
 pnpm --filter umkm-pos-api <script>     # Backend (apps/api)
 pnpm --filter @umkm-pos/shared-types build
 ```
@@ -33,6 +35,7 @@ The `README.md` also uses `pnpm dev:web` / `pnpm dev:api` as aliases — these a
 ```
 umkm-pos/
 ├── apps/merchant/          # Vue 3 + Vite + PrimeVue frontend
+├── apps/admin/        # Platform-admin console (same stack as merchant)
 ├── apps/api/          # NestJS + Prisma + MySQL backend
 ├── apps/landing/      # Marketing landing page
 ├── packages/

@@ -1,0 +1,534 @@
+/* ============================================
+   PRIMARY COLOR UTILITIES
+   ============================================ */
+
+/* Background Utility */
+@utility bg-primary {
+  background-color: var(--primary-color);
+}
+@utility bg-primary-25 {
+  background-color: var(--primary-25);
+}
+@utility bg-primary-50 {
+  background-color: var(--primary-50);
+}
+@utility bg-primary-100 {
+  background-color: var(--primary-100);
+}
+@utility bg-primary-200 {
+  background-color: var(--primary-200);
+}
+@utility bg-primary-300 {
+  background-color: var(--primary-300);
+}
+@utility bg-primary-400 {
+  background-color: var(--primary-400);
+}
+@utility bg-primary-500 {
+  background-color: var(--primary-500);
+}
+@utility bg-primary-600 {
+  background-color: var(--primary-600);
+}
+@utility bg-primary-700 {
+  background-color: var(--primary-700);
+}
+@utility bg-primary-800 {
+  background-color: var(--primary-800);
+}
+@utility bg-primary-900 {
+  background-color: var(--primary-900);
+}
+
+/* Text Utility */
+@utility text-primary {
+  color: var(--primary-color);
+}
+@utility text-primary-25 {
+  color: var(--primary-25);
+}
+@utility text-primary-50 {
+  color: var(--primary-50);
+}
+@utility text-primary-100 {
+  color: var(--primary-100);
+}
+@utility text-primary-200 {
+  color: var(--primary-200);
+}
+@utility text-primary-300 {
+  color: var(--primary-300);
+}
+@utility text-primary-400 {
+  color: var(--primary-400);
+}
+@utility text-primary-500 {
+  color: var(--primary-500);
+}
+@utility text-primary-600 {
+  color: var(--primary-600);
+}
+@utility text-primary-700 {
+  color: var(--primary-700);
+}
+@utility text-primary-800 {
+  color: var(--primary-800);
+}
+@utility text-primary-900 {
+  color: var(--primary-900);
+}
+
+/* Border Utility */
+@utility border-primary {
+  border-color: var(--primary-color);
+}
+@utility border-primary-25 {
+  border-color: var(--primary-25);  
+}
+@utility border-primary-50 {
+  border-color: var(--primary-50);  
+}
+@utility border-primary-100 {
+  border-color: var(--primary-100);  
+}
+@utility border-primary-200 {
+  border-color: var(--primary-200);  
+}
+@utility border-primary-300 {
+  border-color: var(--primary-300);  
+}
+@utility border-primary-400 {
+  border-color: var(--primary-400);  
+}
+@utility border-primary-500 {
+  border-color: var(--primary-500);  
+}
+@utility border-primary-600 {
+  border-color: var(--primary-600);  
+}
+@utility border-primary-700 {
+  border-color: var(--primary-700);  
+}
+@utility border-primary-800 {
+  border-color: var(--primary-800);  
+}
+@utility border-primary-900 {
+  border-color: var(--primary-900);  
+}
+
+/* Gradient Background Utility */
+@utility bg-gradient-primary {
+  background-image: linear-gradient(to right, var(--primary-900), var(--primary-500));
+}
+@utility bg-gradiend-primary-reverse {
+  background-image: linear-gradient(to right, var(--primary-500), var(--primary-900));
+}
+
+
+/* ============================================
+   SECONDARY COLOR UTILITIES
+   ============================================ */
+
+/* Background Utility */
+@utility bg-secondary {
+  background-color: var(--secondary-color);
+}
+@utility bg-secondary-25 {
+  background-color: var(--secondary-25);
+}
+@utility bg-secondary-50 {
+  background-color: var(--secondary-50);
+}
+@utility bg-secondary-100 {
+  background-color: var(--secondary-100);
+}
+@utility bg-secondary-200 {
+  background-color: var(--secondary-200);
+}
+@utility bg-secondary-300 {
+  background-color: var(--secondary-300);
+}
+@utility bg-secondary-400 {
+  background-color: var(--secondary-400);
+}
+@utility bg-secondary-500 {
+  background-color: var(--secondary-500);
+}
+@utility bg-secondary-600 {
+  background-color: var(--secondary-600);
+}
+@utility bg-secondary-700 {
+  background-color: var(--secondary-700);
+}
+@utility bg-secondary-800 {
+  background-color: var(--secondary-800);
+}
+@utility bg-secondary-900 {
+  background-color: var(--secondary-900);
+}
+
+/* Text Utility */
+@utility text-secondary {
+  color: var(--secondary-color);
+}
+@utility text-secondary-25 {
+  color: var(--secondary-25);
+}
+@utility text-secondary-50 {
+  color: var(--secondary-50);
+}
+@utility text-secondary-100 {
+  color: var(--secondary-100);
+}
+@utility text-secondary-200 {
+  color: var(--secondary-200);
+}
+@utility text-secondary-300 {
+  color: var(--secondary-300);
+}
+@utility text-secondary-400 {
+  color: var(--secondary-400);
+}
+@utility text-secondary-500 {
+  color: var(--secondary-500);
+}
+@utility text-secondary-600 {
+  color: var(--secondary-600);
+}
+@utility text-secondary-700 {
+  color: var(--secondary-700);
+}
+@utility text-secondary-800 {
+  color: var(--secondary-800);
+}
+@utility text-secondary-900 {
+  color: var(--secondary-900);
+}
+
+/* Border Utility */
+@utility border-secondary {
+  border-color: var(--secondary-color);
+}
+@utility border-secondary-25 {
+  border-color: var(--secondary-25);
+}
+@utility border-secondary-50 {
+  border-color: var(--secondary-50);
+}
+@utility border-secondary-100 {
+  border-color: var(--secondary-100);
+}
+@utility border-secondary-200 {
+  border-color: var(--secondary-200);
+}
+@utility border-secondary-300 {
+  border-color: var(--secondary-300);
+}
+@utility border-secondary-400 {
+  border-color: var(--secondary-400);
+}
+@utility border-secondary-500 {
+  border-color: var(--secondary-500);
+}
+@utility border-secondary-600 {
+  border-color: var(--secondary-600);
+}
+@utility border-secondary-700 {
+  border-color: var(--secondary-700);
+}
+@utility border-secondary-800 {
+  border-color: var(--secondary-800);
+}
+@utility border-secondary-900 {
+  border-color: var(--secondary-900);
+}
+
+/* Gradient Background Utility */
+@utility bg-gradient-secondary {
+  background-image: linear-gradient(to right, var(--secondary-900), var(--secondary-500));
+}
+@utility bg-gradient-secondary-reverse {
+  background-image: linear-gradient(to right, var(--secondary-500), var(--secondary-900));
+}
+
+/* ============================================
+   ACCENT COLOR UTILITIES
+   ============================================ */
+
+/* Background Utility */
+@utility bg-accent {
+  background-color: var(--accent-color);
+}
+@utility bg-accent-25 {
+  background-color: var(--accent-25);
+}
+@utility bg-accent-50 {
+  background-color: var(--accent-50);
+}
+@utility bg-accent-100 {
+  background-color: var(--accent-100);
+}
+@utility bg-accent-200 {
+  background-color: var(--accent-200);
+}
+@utility bg-accent-300 {
+  background-color: var(--accent-300);
+}
+@utility bg-accent-400 {
+  background-color: var(--accent-400);
+}
+@utility bg-accent-500 {
+  background-color: var(--accent-500);
+}
+@utility bg-accent-600 {
+  background-color: var(--accent-600);
+}
+@utility bg-accent-700 {
+  background-color: var(--accent-700);
+}
+@utility bg-accent-800 {
+  background-color: var(--accent-800);
+}
+@utility bg-accent-900 {
+  background-color: var(--accent-900);
+}
+
+/* Text Utility */
+@utility text-accent {
+  color: var(--accent-color);
+}
+@utility text-accent-25 {
+  color: var(--accent-25);
+}
+@utility text-accent-50 {
+  color: var(--accent-50);
+}
+@utility text-accent-100 {
+  color: var(--accent-100);
+}
+@utility text-accent-200 {
+  color: var(--accent-200);
+}
+@utility text-accent-300 {
+  color: var(--accent-300);
+}
+@utility text-accent-400 {
+  color: var(--accent-400);
+}
+@utility text-accent-500 {
+  color: var(--accent-500);
+}
+@utility text-accent-600 {
+  color: var(--accent-600);
+}
+@utility text-accent-700 {
+  color: var(--accent-700);
+}
+@utility text-accent-800 {
+  color: var(--accent-800);
+}
+@utility text-accent-900 {
+  color: var(--accent-900);
+}
+
+/* Border Utility */
+@utility border-accent {
+  border-color: var(--accent-color);
+}
+@utility border-accent-25 {
+  border-color: var(--accent-25);
+}
+@utility border-accent-50 {
+  border-color: var(--accent-50);
+}
+@utility border-accent-100 {
+  border-color: var(--accent-100);
+}
+@utility border-accent-200 {
+  border-color: var(--accent-200);
+}
+@utility border-accent-300 {
+  border-color: var(--accent-300);
+}
+@utility border-accent-400 {
+  border-color: var(--accent-400);
+}
+@utility border-accent-500 {
+  border-color: var(--accent-500);
+}
+@utility border-accent-600 {
+  border-color: var(--accent-600);
+}
+@utility border-accent-700 {
+  border-color: var(--accent-700);
+}
+@utility border-accent-800 {
+  border-color: var(--accent-800);
+}
+@utility border-accent-900 {
+  border-color: var(--accent-900);
+}
+
+/* Gradient Background Utility */
+@utility bg-gradient-accent {
+  background-image: linear-gradient(to right, var(--accent-900), var(--accent-500));
+}
+@utility bg-gradient-accent-reverse {
+  background-image: linear-gradient(to right, var(--accent-500), var(--accent-900));
+}
+
+/* ============================================
+   TERTIARY COLOR UTILITIES
+   ============================================ */
+
+/* Background Utility */
+@utility bg-tertiary {
+  background-color: var(--tertiary-color);
+}
+@utility bg-tertiary-25 {
+  background-color: var(--tertiary-25);
+}
+@utility bg-tertiary-50 {
+  background-color: var(--tertiary-50);
+}
+@utility bg-tertiary-100 {
+  background-color: var(--tertiary-100);
+}
+@utility bg-tertiary-200 {
+  background-color: var(--tertiary-200);
+}
+@utility bg-tertiary-300 {
+  background-color: var(--tertiary-300);
+}
+@utility bg-tertiary-400 {
+  background-color: var(--tertiary-400);
+}
+@utility bg-tertiary-500 {
+  background-color: var(--tertiary-500);
+}
+@utility bg-tertiary-600 {
+  background-color: var(--tertiary-600);
+}
+@utility bg-tertiary-700 {
+  background-color: var(--tertiary-700);
+}
+@utility bg-tertiary-800 {
+  background-color: var(--tertiary-800);
+}
+@utility bg-tertiary-900 {
+  background-color: var(--tertiary-900);
+}
+
+/* Text Utility */
+@utility text-tertiary {
+  color: var(--tertiary-color);
+}
+@utility text-tertiary-25 {
+  color: var(--tertiary-25);
+}
+@utility text-tertiary-50 {
+  color: var(--tertiary-50);
+}
+@utility text-tertiary-100 {
+  color: var(--tertiary-100);
+}
+@utility text-tertiary-200 {
+  color: var(--tertiary-200);
+}
+@utility text-tertiary-300 {
+  color: var(--tertiary-300);
+}
+@utility text-tertiary-400 {
+  color: var(--tertiary-400);
+}
+@utility text-tertiary-500 {
+  color: var(--tertiary-500);
+}
+@utility text-tertiary-600 {
+  color: var(--tertiary-600);
+}
+@utility text-tertiary-700 {
+  color: var(--tertiary-700);
+}
+@utility text-tertiary-800 {
+  color: var(--tertiary-800);
+}
+@utility text-tertiary-900 {
+  color: var(--tertiary-900);
+}
+
+/* Border Utility */
+@utility border-tertiary {
+  border-color: var(--tertiary-color);
+}
+@utility border-tertiary-25 {
+  border-color: var(--tertiary-25);
+}
+@utility border-tertiary-50 {
+  border-color: var(--tertiary-50);
+}
+@utility border-tertiary-100 {
+  border-color: var(--tertiary-100);
+}
+@utility border-tertiary-200 {
+  border-color: var(--tertiary-200);
+}
+@utility border-tertiary-300 {
+  border-color: var(--tertiary-300);
+}
+@utility border-tertiary-400 {
+  border-color: var(--tertiary-400);
+}
+@utility border-tertiary-500 {
+  border-color: var(--tertiary-500);
+}
+@utility border-tertiary-600 {
+  border-color: var(--tertiary-600);
+}
+@utility border-tertiary-700 {
+  border-color: var(--tertiary-700);
+}
+@utility border-tertiary-800 {
+  border-color: var(--tertiary-800);
+}
+@utility border-tertiary-900 {
+  border-color: var(--tertiary-900);
+}
+
+/* Gradient Background Utility */
+@utility bg-gradient-tertiary {
+  background-image: linear-gradient(to right, var(--tertiary-900), var(--tertiary-500));
+}
+@utility bg-gradient-tertiary-reverse {
+  background-image: linear-gradient(to right, var(--tertiary-500), var(--tertiary-900));
+}
+
+/* ============================================
+   DARK MODE COLOR UTILITIES
+   ============================================ */
+
+/* Dark Default */
+@utility bg-dark {
+  background-color: var(--dark-default);
+}
+
+@utility text-dark {
+  color: var(--dark-default);
+}
+
+@utility border-dark {
+  border: var(--dark-default);
+}
+
+/* Dark Default */
+@utility bg-dark-secondary {
+  background-color: var(--dark-secondary);
+}
+
+@utility text-dark-secondary {
+  color: var(--dark-secondary);
+}
+
+@utility border-dark-secondary {
+  border: var(--dark-secondary);
+}
