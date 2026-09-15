@@ -57,6 +57,17 @@
               class="justify-start! items-center!"
             />
           </router-link>
+          <router-link v-if="isCanReadMerchant" :to="PRP_MERCHANT" class="block">
+            <Button
+              severity="secondary"
+              variant="text"
+              icon="pi pi-shop"
+              size="small"
+              label="Merchant"
+              fluid
+              class="justify-start! items-center!"
+            />
+          </router-link>
           <router-link :to="PRP_SETTINGS" class="block">
             <Button
               severity="secondary"
@@ -86,14 +97,18 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import { useRouter } from 'vue-router';
-import { removeAuth } from '@/helpers/auth.ts';
+import { removeAuth, isHasPermission } from '@/helpers/auth.ts';
 import { showConfirm, showToast } from "@/helpers/toast.ts";
 import { getPersonalInformation } from '@/helpers/auth.ts';
 import { getUploadSignedUrl } from '@/services/uploads';
 import { useShift } from '@/modules/shift/composables/useShift.ts';
 import { PREFIX_ROUTE_PATH as PRP_AUTH } from '@/modules/auth/services/constants.ts';
 import { PREFIX_ROUTE_PATH as PRP_PROFILE } from '@/modules/profile/services/constants.ts';
+import { PREFIX_ROUTE_PATH as PRP_MERCHANT } from '@/modules/merchants/services/constants.ts';
+import { READ as MERCHANT_READ } from '@/modules/merchants/services/rbac.ts';
 import { PREFIX_ROUTE_PATH as PRP_SETTINGS } from '@/modules/settings/services/constants.ts';
+
+const isCanReadMerchant = computed(() => isHasPermission(MERCHANT_READ));
 
 defineProps({
   isCollapsed: {
