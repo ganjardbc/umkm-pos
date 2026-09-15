@@ -120,7 +120,14 @@ export class NotificationsService {
   async notifyOutletUsers(
     outletId: string,
     merchantId: string,
-    payload: { title: string; message: string; type?: string },
+    payload: {
+      title: string;
+      message: string;
+      type?: string;
+      // Entity this notification points at, so clients can open its detail page.
+      refType?: string;
+      refId?: string;
+    },
     requiredPermission?: string,
   ) {
     await this.assertOutletBelongsToMerchant(outletId, merchantId);
@@ -152,6 +159,9 @@ export class NotificationsService {
         title: payload.title,
         message: payload.message,
         type: payload.type ?? 'general',
+        ...(payload.refType && payload.refId
+          ? { ref_type: payload.refType, ref_id: payload.refId }
+          : {}),
       })),
     });
   }

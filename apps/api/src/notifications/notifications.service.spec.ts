@@ -170,6 +170,38 @@ describe('NotificationsService', () => {
       });
     });
 
+    it('with refType/refId → stores the entity reference on each row', async () => {
+      prisma.outlets.findFirst.mockResolvedValue({
+        id: 'outlet-1',
+        merchant_id: 'merchant-1',
+      });
+      prisma.user_roles.findMany.mockResolvedValue([
+        { user_id: 'user-1' },
+        { user_id: 'user-2' },
+      ]);
+
+      await service.notifyOutletUsers('outlet-1', 'merchant-1', {
+        title: 't',
+        message: 'm',
+        type: 'order_created',
+        refType: 'transaction',
+        refId: 'trx-1',
+      });
+
+      expect(prisma.notifications.createMany).toHaveBeenCalledWith({
+        data: ['user-1', 'user-2'].map((user_id) => ({
+          user_id,
+          outlet_id: 'outlet-1',
+          merchant_id: 'merchant-1',
+          title: 't',
+          message: 'm',
+          type: 'order_created',
+          ref_type: 'transaction',
+          ref_id: 'trx-1',
+        })),
+      });
+    });
+
     it('omitted requiredPermission → preserves old "all users at outlet" behaviour', async () => {
       prisma.outlets.findFirst.mockResolvedValue({
         id: 'outlet-1',

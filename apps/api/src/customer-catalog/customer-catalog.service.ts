@@ -240,6 +240,8 @@ export class CustomerCatalogService {
           title: 'Tambahan Pesanan',
           message: `Ada tambahan pesanan dari ${session.customer_name} (Meja ${updatedOrder?.store_tables?.code ?? '-'})`,
           type: 'order_item_added',
+          refType: 'transaction',
+          refId: activeOrder.id,
         },
         'transaction.read',
       );
@@ -265,6 +267,8 @@ export class CustomerCatalogService {
         title: 'Pesanan Baru',
         message: `Pesanan baru dari ${session.customer_name} (Meja ${newOrder?.store_tables?.code ?? '-'})`,
         type: 'order_created',
+        refType: 'transaction',
+        refId: newOrder?.id,
       },
       'transaction.read',
     );
