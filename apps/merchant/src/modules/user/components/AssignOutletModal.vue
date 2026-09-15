@@ -242,7 +242,7 @@ import { ref, onMounted, computed, watch } from 'vue';
 import { getErrorMessage } from '@/helpers/utils.ts';
 import { showToast } from '@/helpers/toast.ts';
 import { getListOutlet } from '@/modules/outlet/services/api.ts';
-import { getListRole } from '@/modules/role/services/api.ts';
+import { getListRole } from '@/modules/user/services/api.ts';
 import UiCard from '@/components/UiCard.vue';
 import UiPagination from '@/components/UiPagination.vue';
 

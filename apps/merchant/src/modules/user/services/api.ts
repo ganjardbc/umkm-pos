@@ -38,6 +38,14 @@ export const deactivateUser = async (id: string | number, options: any = {}) => 
   );
 };
 
+// Roles are managed in apps/admin; tenants only read them to assign users.
+export const getListRole = async (data: any, options: any = {}) => {
+  return await api.get(
+    '/api/v1/rbac/roles',
+    { params: data, ...(options || {}) },
+  );
+};
+
 export const getUserRole = async (id: string | number, options: any = {}) => {
   return await api.get(
     `/api/v1/rbac/users/${id}/roles`,
