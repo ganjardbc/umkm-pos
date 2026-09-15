@@ -12,6 +12,112 @@ importers:
         specifier: ^2.4.0
         version: 2.9.16
 
+  apps/admin:
+    dependencies:
+      '@primeuix/themes':
+        specifier: ^1.2.3
+        version: 1.2.5
+      '@primevue/forms':
+        specifier: ^4.3.7
+        version: 4.5.5(vue@3.5.34(typescript@5.8.3))
+      '@tailwindcss/vite':
+        specifier: ^4.1.12
+        version: 4.3.0(vite@8.0.13(@types/node@24.12.4)(esbuild@0.27.7)(jiti@2.7.0)(terser@5.47.1))
+      '@umkm-pos/shared-types':
+        specifier: workspace:*
+        version: link:../../packages/shared-types
+      axios:
+        specifier: ^1.11.0
+        version: 1.16.1
+      chart.js:
+        specifier: ^4.5.0
+        version: 4.5.1
+      html2canvas:
+        specifier: ^1.4.1
+        version: 1.4.1
+      pinia:
+        specifier: ^3.0.3
+        version: 3.0.4(typescript@5.8.3)(vue@3.5.34(typescript@5.8.3))
+      pinia-plugin-persistedstate:
+        specifier: ^4.0.0
+        version: 4.7.1(pinia@3.0.4(typescript@5.8.3)(vue@3.5.34(typescript@5.8.3)))
+      primeicons:
+        specifier: ^7.0.0
+        version: 7.0.0
+      primevue:
+        specifier: ^4.3.7
+        version: 4.5.5(vue@3.5.34(typescript@5.8.3))
+      qrcode:
+        specifier: ^1.5.4
+        version: 1.5.4
+      tailwindcss:
+        specifier: ^4.1.12
+        version: 4.3.0
+      tailwindcss-primeui:
+        specifier: ^0.6.1
+        version: 0.6.1(tailwindcss@4.3.0)
+      vue:
+        specifier: ^3.5.18
+        version: 3.5.34(typescript@5.8.3)
+      vue-router:
+        specifier: ^4.5.1
+        version: 4.6.4(vue@3.5.34(typescript@5.8.3))
+      xlsx:
+        specifier: ^0.18.5
+        version: 0.18.5
+      zod:
+        specifier: ^4.1.3
+        version: 4.4.3
+    devDependencies:
+      '@primevue/auto-import-resolver':
+        specifier: ^4.3.7
+        version: 4.5.5
+      '@types/axios':
+        specifier: ^0.9.36
+        version: 0.9.36
+      '@types/node':
+        specifier: ^24.3.0
+        version: 24.12.4
+      '@vitejs/plugin-vue':
+        specifier: ^6.0.1
+        version: 6.0.6(vite@8.0.13(@types/node@24.12.4)(esbuild@0.27.7)(jiti@2.7.0)(terser@5.47.1))(vue@3.5.34(typescript@5.8.3))
+      '@vue/tsconfig':
+        specifier: ^0.7.0
+        version: 0.7.0(typescript@5.8.3)(vue@3.5.34(typescript@5.8.3))
+      autoprefixer:
+        specifier: ^10.4.21
+        version: 10.5.0(postcss@8.5.14)
+      dayjs:
+        specifier: ^1.11.18
+        version: 1.11.20
+      hygen:
+        specifier: ^6.2.11
+        version: 6.2.11
+      playwright:
+        specifier: ^1.58.2
+        version: 1.60.0
+      postcss:
+        specifier: ^8.5.6
+        version: 8.5.14
+      postcss-load-config:
+        specifier: ^6.0.1
+        version: 6.0.1(jiti@2.7.0)(postcss@8.5.14)
+      ts-node:
+        specifier: ^10.9.2
+        version: 10.9.2(@types/node@24.12.4)(typescript@5.8.3)
+      typescript:
+        specifier: ~5.8.3
+        version: 5.8.3
+      unplugin-vue-components:
+        specifier: ^29.0.0
+        version: 29.2.0(@babel/parser@7.29.3)(vue@3.5.34(typescript@5.8.3))
+      vite:
+        specifier: ^8.0.13
+        version: 8.0.13(@types/node@24.12.4)(esbuild@0.27.7)(jiti@2.7.0)(terser@5.47.1)
+      vue-tsc:
+        specifier: ^3.0.5
+        version: 3.2.9(typescript@5.8.3)
+
   apps/api:
     dependencies:
       '@aws-sdk/client-s3':
@@ -6867,7 +6973,7 @@ snapshots:
 
   '@types/bcrypt@6.0.0':
     dependencies:
-      '@types/node': 22.19.19
+      '@types/node': 24.12.4
 
   '@types/body-parser@1.19.6':
     dependencies:

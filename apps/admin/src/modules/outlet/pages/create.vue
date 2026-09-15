@@ -1,0 +1,248 @@
+<template>
+  <UiCard class="max-w-2xl mx-auto">
+    <template #header>
+      <h1 class="text-xl font-semibold">
+        Tambah Outlet
+      </h1>
+    </template>
+
+    <Form
+      v-slot="$form"
+      :resolver="resolver"
+      :initialValues="initialValues"
+      @submit="onFormSubmit"
+      class="flex flex-col gap-4 w-full"
+    >
+      <div class="w-full space-y-4">
+        <UiFormGroup label="Merchant" variant="vertical">
+          <Select
+            name="merchant_id"
+            :options="merchantOptions"
+            optionLabel="name"
+            optionValue="id"
+            placeholder="Pilih merchant"
+            filter
+            fluid
+            :loading="loadingMerchants"
+          />
+          <Message
+            v-if="$form.merchant_id?.invalid"
+            severity="error"
+            size="small"
+            variant="simple"
+          >
+            {{ $form.merchant_id.error?.message }}
+          </Message>
+        </UiFormGroup>
+        <UiFormGroup label="Nama" variant="vertical">
+          <InputText
+            name="name"
+            type="text"
+            placeholder=""
+            fluid
+            @update:modelValue="(value: any) => onNameChange(value, $form)"
+          />
+          <Message
+            v-if="$form.name?.invalid"
+            severity="error"
+            size="small"
+            variant="simple"
+          >
+            {{ $form.name.error?.message }}
+          </Message>
+        </UiFormGroup>
+        <UiFormGroup label="Slug" variant="vertical">
+          <InputText
+            name="slug"
+            type="text"
+            placeholder=""
+            fluid
+            readonly
+            disabled
+          />
+          <Message
+            v-if="$form.slug?.invalid"
+            severity="error"
+            size="small"
+            variant="simple"
+          >
+            {{ $form.slug.error?.message }}
+          </Message>
+        </UiFormGroup>
+        <UiFormGroup label="Lokasi" variant="vertical">
+          <Textarea
+            name="location"
+            placeholder=""
+            fluid
+          />
+          <Message
+            v-if="$form.location?.invalid"
+            severity="error"
+            size="small"
+            variant="simple"
+          >
+            {{ $form.location.error?.message }}
+          </Message>
+        </UiFormGroup>
+        <UiFormGroup label="Kode Rahasia Pelanggan" variant="vertical">
+          <InputText
+            name="guest_session_secret"
+            type="text"
+            placeholder="DEMO123"
+            fluid
+          />
+        </UiFormGroup>
+        <UiFileUpload
+          :previewUrl="imagePreview"
+          @select="onUploadImage"
+          @remove="onRemoveImage"
+        />
+        <UiFormGroup label="Status Aktif" variant="vertical">
+          <div class="flex items-center gap-2">
+            <Checkbox
+              name="is_active"
+              binary
+            />
+            <label class="text-sm text-gray-700">Outlet aktif</label>
+          </div>
+          <Message
+            v-if="$form.is_active?.invalid"
+            severity="error"
+            size="small"
+            variant="simple"
+          >
+            {{ $form.is_active.error?.message }}
+          </Message>
+        </UiFormGroup>
+      </div>
+
+      <div class="w-full flex justify-end gap-4">
+        <Button
+          severity="secondary"
+          label="Batal"
+          size="medium"
+          class="w-full md:w-[128px]"
+          @click="onCancel"
+        />
+        <Button
+          type="submit"
+          label="Simpan"
+          size="medium"
+          class="w-full md:w-[128px]"
+          :loading="isSubmitting"
+        />
+      </div>
+    </Form>
+  </UiCard>
+</template>
+<script setup lang="ts">
+import type { FormCreate } from '@/modules/outlet/services/types.ts';
+import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import { z } from 'zod';
+import { zodResolver } from '@primevue/forms/resolvers/zod';
+import { getErrorMessage } from '@/helpers/utils.ts';
+import { showToast } from '@/helpers/toast.ts';
+import { showLoading, hideLoading } from '@/helpers/loading.ts';
+import { postOutlet } from '@/modules/outlet/services/api.ts';
+import { useMerchantOptions } from '@/modules/merchants/helpers/composables.ts';
+import { setOutletImage } from '@/services/uploads';
+import { useFileUpload } from '@/composables/useFileUpload';
+import UiCard from '@/components/UiCard.vue';
+import UiFormGroup from '@/components/UiFormGroup.vue';
+
+const router = useRouter();
+
+const isSubmitting = ref(false);
+
+const {
+  selectedUploadId,
+  imagePreview,
+  onUploadImage,
+  onRemoveImage,
+} = useFileUpload();
+
+const {
+  merchantOptions,
+  loadingMerchants,
+  fetchMerchantOptions,
+} = useMerchantOptions();
+
+const initialValues = ref<FormCreate & { merchant_id: string }>({
+  merchant_id: '',
+  slug: '',
+  name: '',
+  location: '',
+  guest_session_secret: '',
+  logo: '',
+  is_active: true
+});
+
+const resolver = ref(zodResolver(
+  z.object({
+    merchant_id: z.string().min(1, { message: 'Merchant wajib dipilih.' }),
+    slug: z.string().min(1, { message: 'Slug wajib diisi.' }),
+    name: z.string().min(1, { message: 'Nama wajib diisi.' }),
+    location: z.string().min(1, { message: 'Lokasi wajib diisi.' }),
+    guest_session_secret: z.string().optional(),
+    is_active: z.boolean()
+  })
+));
+
+const onFormSubmit = async (event: any) => {
+  const { valid, values } = event as { valid: boolean; values: any };
+  if (valid) {
+    isSubmitting.value = true;
+    try {
+      showLoading();
+
+      const payload = {
+        merchant_id: values?.merchant_id,
+        slug: values?.slug,
+        name: values?.name,
+        location: values?.location,
+        guest_session_secret: values?.guest_session_secret,
+        logo: values?.logo,
+        is_active: values?.is_active,
+      };
+      const response = await postOutlet(payload);
+      const { success, data } = response?.data || {};
+
+      if (success) {
+        if (selectedUploadId.value) {
+          await setOutletImage(data?.id, selectedUploadId.value);
+        }
+        router.back();
+      }
+    } catch (error) {
+      showToast({
+        type: 'error',
+        title: 'Gagal Menambah Outlet.',
+        message: getErrorMessage(error) || 'Terjadi kesalahan.',
+      });
+    } finally {
+      hideLoading();
+      isSubmitting.value = false;
+    }
+  }
+};
+
+const onNameChange = (name: string, form: any) => {
+  const slug = name
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-');
+
+  form.slug.value = slug;
+};
+
+const onCancel = () => {
+  router.back();
+}
+
+onMounted(() => {
+  fetchMerchantOptions();
+});
+</script>

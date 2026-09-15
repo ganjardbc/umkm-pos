@@ -24,7 +24,7 @@ services:
       - JWT_EXPIRES_IN=7d
       - API_PREFIX=api
       - API_VERSION=v1
-      - CORS_ORIGIN=https://app.insell.id,https://www.app.insell.id,https://www.insell.id,https://insell.id,http://localhost:3000
+      - CORS_ORIGIN=https://app.insell.id,https://www.app.insell.id,https://www.insell.id,https://insell.id,https://admin.insell.id,http://localhost:3000
     depends_on:
       - umkm-pos-db
     networks:
@@ -49,6 +49,19 @@ services:
       args:
         VITE_API_BASE_URL: https://api.insell.id
     container_name: umkm-pos-merchant
+    expose:
+      - "80"
+    networks:
+      - devbox_devnet
+    restart: always
+
+  umkm-pos-admin:
+    build:
+      context: .
+      dockerfile: apps/admin/Dockerfile
+      args:
+        VITE_API_BASE_URL: https://api.insell.id
+    container_name: umkm-pos-admin
     expose:
       - "80"
     networks:
