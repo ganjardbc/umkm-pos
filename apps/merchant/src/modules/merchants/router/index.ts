@@ -15,7 +15,7 @@ export default [
     name: `${PREFIX_ROUTE_NAME}-detail`,
     component: () => import('@/modules/merchants/pages/detail.vue'),
     meta: {
-      title: 'Detail Merchant',
+      title: 'Merchant',
       layout: 'default',
       permission: [READ],
       breadcrumbs: [
