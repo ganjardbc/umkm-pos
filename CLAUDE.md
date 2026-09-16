@@ -39,6 +39,7 @@ umkm-pos/
 ├── apps/api/          # NestJS + Prisma + MySQL backend
 ├── apps/landing/      # Marketing landing page
 ├── packages/
+│   ├── ui/            # @umkm-pos/ui — shared Vue components + design tokens
 │   ├── shared-types/  # @umkm-pos/shared-types — auth, user, product types
 │   ├── shared-utils/  # @umkm-pos/shared-utils
 │   └── eslint-config/ # Shared ESLint config
@@ -96,6 +97,26 @@ Permissions are **codes** (e.g. `"product.create"`), not role names. Role-based 
 - `common/pagination.ts` — paginated response wrapper
 
 Import in either app as `@umkm-pos/shared-types`. Always rebuild the package after changing types (`pnpm --filter @umkm-pos/shared-types build`).
+
+`@umkm-pos/ui` is the shared frontend library consumed by `apps/merchant` and `apps/admin`:
+- `styles/` — `global.css` (Tailwind entry), `themes.css`, the `variables-*.css` palettes
+- `components/` — presentational `Ui*` components
+- `layouts/` — `UiAppShell` (sidebar + header + breadcrumb chrome) and `UiAuthLayout`
+- `composables/` — `useDarkMode`, `useFileUpload`, `useGlobal{Toast,Confirm,Loading}`
+- `helpers/` — `utils`, `toast`, `loading`, `download`, `excel-export`
+- `auth/` — localStorage keys and readers (`setSession`, `clearSession`, `createHasPermission`)
+- `http/` — `createApiClient()` plus the `setApiClient()`/`getApiClient()` registry
+- `services/` — generic upload endpoints, `themeService`
+
+It is **source-only** (no build step). Both apps alias it in `vite.config.ts` and `tsconfig*.json`, and list its `components/` dir in `unplugin-vue-components` so the components stay auto-imported and typed.
+
+`apps/landing` deliberately does **not** consume it: it is a static marketing page with its own brand palette and no PrimeVue/vue-router.
+
+Rules when touching it:
+- A component any app needs belongs here, and it must not import `@/…`. App state comes in as props — `UiSidebarMenu` takes `menus` + `hasPermission`, `UiSidebarProfile` takes `loginPath`/`profilePath`/`links`.
+- Package services never import an app's axios instance. Each app calls `setApiClient()` at startup (first import in `src/main.ts`); package code calls `getApiClient()` lazily.
+- What a login response *means* is app-specific. The package owns storage (`setSession`/`clearSession`); each app's `src/helpers/auth.ts` owns `setAuth()` and its permission defaults.
+- Tailwind v4 scans sources relative to the stylesheet that declares them. Each app's `src/assets/styles/app.css` carries the `@source` for its own `src/`; the package's `global.css` carries the one for its components. New source roots need a new `@source`, or their classes are silently dropped from the bundle.
 
 ## Environment Setup
 
