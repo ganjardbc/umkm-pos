@@ -19,7 +19,7 @@
 
 <script setup lang="ts">
 import type { PropType } from 'vue';
-import { getSummaryPage } from '@/helpers/utils.ts';
+import { getSummaryPage } from '../helpers/utils';
 
 type Pagination = {
   page: number;

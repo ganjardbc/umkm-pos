@@ -15,7 +15,7 @@
   </Dialog>
 </template>
 <script lang="ts" setup>
-import { useGlobalLoading } from '@/composables/useGlobalLoading';
+import { useGlobalLoading } from '../composables/useGlobalLoading';
 
 const { isLoading } = useGlobalLoading();
 </script>

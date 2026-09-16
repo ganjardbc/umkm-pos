@@ -1,4 +1,4 @@
-import { useGlobalLoading } from '@/composables/useGlobalLoading';
+import { useGlobalLoading } from '../composables/useGlobalLoading';
 
 const { show, hide } = useGlobalLoading();
 export const showLoading = show;

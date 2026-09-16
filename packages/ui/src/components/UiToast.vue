@@ -5,7 +5,7 @@
 <script setup lang="ts">
 import { watch } from 'vue';
 import { useToast } from 'primevue/usetoast';
-import { useGlobalToast } from '@/composables/useGlobalToast';
+import { useGlobalToast } from '../composables/useGlobalToast';
 
 const toast = useToast();
 const { toastQueue } = useGlobalToast();

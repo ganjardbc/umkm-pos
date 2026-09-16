@@ -4,7 +4,7 @@
       class="ui-sidebar-profile__toggle ui-sidebar-profile__toggle--dark"
       @click="openProfileMenu"
     >
-      <OverlayBadge :severity="isUserInShift ? 'success' : 'danger'">
+      <OverlayBadge v-if="badgeSeverity" :severity="badgeSeverity">
         <Avatar
           :image="avatarUrl || undefined"
           :label="avatarUrl ? undefined : personalInfo?.user?.name?.charAt(0)"
@@ -13,6 +13,14 @@
           class="ui-sidebar-profile__avatar"
         />
       </OverlayBadge>
+      <Avatar
+        v-else
+        :image="avatarUrl || undefined"
+        :label="avatarUrl ? undefined : personalInfo?.user?.name?.charAt(0)"
+        size="small"
+        shape="circle"
+        class="ui-sidebar-profile__avatar"
+      />
     </div>
     <Popover
       ref="opProfileMenu"
@@ -39,42 +47,26 @@
             </div>
           </div>
           <Tag
-            :severity="isUserInShift ? 'success' : 'secondary'"
-            :value="isUserInShift ? 'In Shift' : 'Not Shift'"
+            v-if="statusTag"
+            :severity="statusTag.severity"
+            :value="statusTag.value"
             class="text-xs! font-medium!"
           />
         </div>
         <Divider />
         <div class="space-y-2">
-          <router-link :to="PRP_PROFILE" class="block">
+          <router-link
+            v-for="link in allLinks"
+            :key="link.to"
+            :to="link.to"
+            class="block"
+          >
             <Button
               severity="secondary"
               variant="text"
-              icon="pi pi-user"
+              :icon="link.icon"
               size="small"
-              label="Profil"
-              fluid
-              class="justify-start! items-center!"
-            />
-          </router-link>
-          <router-link v-if="isCanReadMerchant" :to="PRP_MERCHANT" class="block">
-            <Button
-              severity="secondary"
-              variant="text"
-              icon="pi pi-shop"
-              size="small"
-              label="Merchant"
-              fluid
-              class="justify-start! items-center!"
-            />
-          </router-link>
-          <router-link :to="PRP_SETTINGS" class="block">
-            <Button
-              severity="secondary"
-              variant="text"
-              icon="pi pi-cog"
-              size="small"
-              label="Pengaturan"
+              :label="link.label"
               fluid
               class="justify-start! items-center!"
             />
@@ -95,34 +87,58 @@
   </div>
 </template>
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { removeAuth, isHasPermission } from '@/helpers/auth.ts';
-import { showConfirm, showToast } from "@/helpers/toast.ts";
-import { getPersonalInformation } from '@/helpers/auth.ts';
-import { getUploadSignedUrl } from '@/services/uploads';
-import { useShift } from '@/modules/shift/composables/useShift.ts';
-import { PREFIX_ROUTE_PATH as PRP_AUTH } from '@/modules/auth/services/constants.ts';
-import { PREFIX_ROUTE_PATH as PRP_PROFILE } from '@/modules/profile/services/constants.ts';
-import { PREFIX_ROUTE_PATH as PRP_MERCHANT } from '@/modules/merchants/services/constants.ts';
-import { READ as MERCHANT_READ } from '@/modules/merchants/services/rbac.ts';
-import { PREFIX_ROUTE_PATH as PRP_SETTINGS } from '@/modules/settings/services/constants.ts';
 
-const isCanReadMerchant = computed(() => isHasPermission(MERCHANT_READ));
+import { clearSession, getMerchant, getPermissions, getRole, getUser } from '../auth';
+import { showConfirm, showToast } from '../helpers/toast';
+import { getUploadSignedUrl } from '../services/uploads';
 
-defineProps({
-  isCollapsed: {
-    type: Boolean,
-    default: false,
+interface ProfileLink {
+  label: string;
+  icon: string;
+  to: string;
+}
+
+const props = withDefaults(
+  defineProps<{
+    /** Route to send the user to after logging out. */
+    loginPath: string;
+    /** Route of the app's own profile page; rendered as the first menu link. */
+    profilePath: string;
+    isCollapsed?: boolean;
+    /** When set, the avatar is wrapped in an OverlayBadge of this severity. */
+    badgeSeverity?: string | null;
+    /** Optional status pill next to the user's name. */
+    statusTag?: { severity: string; value: string } | null;
+    /** Extra links rendered after "Profil". */
+    links?: ProfileLink[];
+  }>(),
+  {
+    isCollapsed: false,
+    badgeSeverity: null,
+    statusTag: null,
+    links: () => [],
   },
-});
+);
+
+defineEmits<{ navigate: [] }>();
 
 const router = useRouter();
-const personalInfo = computed(() => getPersonalInformation());
-const avatarUrl = ref<string | null>(personalInfo.value?.user?.avatar || null);
 
-// Computed for Shift
-const { isUserInShift } = useShift();
+const personalInfo = computed(() => ({
+  user: getUser(),
+  role: getRole(),
+  merchant: getMerchant(),
+  permissions: getPermissions(),
+}));
+
+const allLinks = computed<ProfileLink[]>(() => [
+  { label: 'Profil', icon: 'pi pi-user', to: props.profilePath },
+  ...props.links,
+]);
+
+const avatarUrl = ref<string | null>(personalInfo.value?.user?.avatar || null);
 
 const handleLogout = () => {
   showConfirm({
@@ -131,21 +147,21 @@ const handleLogout = () => {
     acceptLabel: 'Ok, Lanjutkan',
     type: 'warn',
     accept: () => {
-      removeAuth();
+      clearSession();
 
       showToast({
         type: 'success',
         title: 'Logout Succesfully',
       });
-      router.push(PRP_AUTH);
-    }
+      router.push(props.loginPath);
+    },
   });
-}
+};
 
 const opProfileMenu = ref();
 const openProfileMenu = (event: MouseEvent) => {
   opProfileMenu.value.toggle(event);
-}
+};
 
 const hydrateAvatarUrl = async () => {
   try {
@@ -165,7 +181,7 @@ onMounted(() => {
 </script>
 <style>
 @import 'tailwindcss';
-@import '@/assets/styles/themes.css';
+@import '../styles/themes.css';
 
 .ui-sidebar-profile {
   @apply relative;

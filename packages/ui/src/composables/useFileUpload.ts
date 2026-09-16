@@ -1,7 +1,7 @@
 import { ref } from 'vue'
-import { postUpload, getUploadSignedUrl } from '@/services/uploads'
-import { showLoading, hideLoading } from '@/helpers/loading'
-import { showToast } from '@/helpers/toast'
+import { postUpload, getUploadSignedUrl } from '../services/uploads'
+import { showLoading, hideLoading } from '../helpers/loading'
+import { showToast } from '../helpers/toast'
 
 export function useFileUpload() {
   const selectedUploadId = ref<string | null>(null)

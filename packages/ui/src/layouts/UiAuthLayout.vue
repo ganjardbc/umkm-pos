@@ -18,7 +18,7 @@
 import { onMounted } from 'vue';
 import Button from 'primevue/button';
 
-import { useDarkMode } from '@/composables/useDarkMode.ts';
+import { useDarkMode } from '../composables/useDarkMode';
 
 const ENABLE_DARKMODE_TOGGLE = false;
 
@@ -31,7 +31,7 @@ onMounted(() => {
 </script>
 <style scoped>
 @import "tailwindcss";
-@import '@/assets/styles/themes.css';
+@import '../styles/themes.css';
 
 .auth-layout {
   @apply relative w-full h-dvh flex items-center justify-center bg-primary;

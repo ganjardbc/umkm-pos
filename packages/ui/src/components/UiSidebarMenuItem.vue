@@ -76,7 +76,7 @@ const emit = defineEmits(['navigate']);
 
 <style scoped>
 @import "tailwindcss";
-@import "@/assets/styles/themes.css";
+@import "../styles/themes.css";
 
 .sidebar-menu-item {
   @apply flex items-center gap-2 rounded-lg px-4 py-3 cursor-pointer transition-colors duration-200 border-l-3 border-transparent;

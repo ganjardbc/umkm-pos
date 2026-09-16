@@ -24,6 +24,17 @@ export interface ThemeState {
   lastChanged: number;
 }
 
+// Resolve theme stylesheets through the bundler so the URLs stay valid after a
+// production build (they used to be hardcoded `/src/...` dev-server paths).
+const themeCssUrls = import.meta.glob<string>('../styles/variables*.css', {
+  query: '?url',
+  import: 'default',
+  eager: true,
+});
+
+const themeCssUrl = (fileName: string): string =>
+  themeCssUrls[`../styles/${fileName}`] ?? '';
+
 const STORAGE_KEY = 'umkm-pos-theme';
 const DARK_MODE_KEY = 'umkm-pos-dark-mode';
 const THEME_HISTORY_KEY = 'umkm-pos-theme-history';
@@ -32,7 +43,7 @@ export const THEMES: Record<ThemeName, ThemeConfig> = {
   default: {
     name: 'default',
     label: 'Blue (Default)',
-    cssFile: '/src/assets/styles/variables.css',
+    cssFile: themeCssUrl('variables.css'),
     description: 'Cool blue tones - default theme',
     colors: {
       primary: '#09637E',
@@ -44,7 +55,7 @@ export const THEMES: Record<ThemeName, ThemeConfig> = {
   blue: {
     name: 'blue',
     label: 'Deep Blue',
-    cssFile: '/src/assets/styles/variables-blue.css',
+    cssFile: themeCssUrl('variables-blue.css'),
     description: 'Deep blue professional theme',
     colors: {
       primary: '#0F2854',
@@ -56,7 +67,7 @@ export const THEMES: Record<ThemeName, ThemeConfig> = {
   green: {
     name: 'green',
     label: 'Natural Green',
-    cssFile: '/src/assets/styles/variables-green.css',
+    cssFile: themeCssUrl('variables-green.css'),
     description: 'Natural green earthy tones',
     colors: {
       primary: '#3D8D7A',
@@ -68,7 +79,7 @@ export const THEMES: Record<ThemeName, ThemeConfig> = {
   red: {
     name: 'red',
     label: 'Warm Red',
-    cssFile: '/src/assets/styles/variables-red.css',
+    cssFile: themeCssUrl('variables-red.css'),
     description: 'Warm earthy red tones',
     colors: {
       primary: '#952323',

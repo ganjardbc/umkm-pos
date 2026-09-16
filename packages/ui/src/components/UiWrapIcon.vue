@@ -7,8 +7,8 @@
     <i :class="icon" />
   </div>
 </template>
-<script setup>
-import { computed, defineProps } from 'vue';
+<script setup lang="ts">
+import { computed } from 'vue';
 
 const props = defineProps({
   icon: {

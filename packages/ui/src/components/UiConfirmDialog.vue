@@ -39,7 +39,7 @@
 <script lang="ts" setup>
 import { watch } from 'vue';
 import { useConfirm } from 'primevue/useconfirm';
-import { useGlobalConfirm } from '@/composables/useGlobalConfirm';
+import { useGlobalConfirm } from '../composables/useGlobalConfirm';
 
 const confirm = useConfirm();
 const { confirmQueue } = useGlobalConfirm();

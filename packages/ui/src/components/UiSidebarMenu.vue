@@ -28,8 +28,6 @@
 <script lang="ts" setup>
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
-import { isHasPermission } from '@/helpers/auth.ts';
-import menus from '@/services/menus.ts';
 import MenuItem from './UiSidebarMenuItem.vue';
 import SubmenuContainer from './UiSidebarSubmenuContainer.vue';
 
@@ -42,21 +40,25 @@ interface SidebarItem {
   menus?: SidebarItem[];
 }
 
-defineProps({
-  isCollapsed: {
-    type: Boolean,
-    default: false,
-  },
-});
+// The menu tree and the permission check are app-specific, so they come in as
+// props rather than being imported from an app module.
+const props = withDefaults(
+  defineProps<{
+    menus: SidebarItem[];
+    hasPermission: (permission: string) => boolean;
+    isCollapsed?: boolean;
+  }>(),
+  { isCollapsed: false },
+);
+
+defineEmits<{ navigate: [] }>();
 
 const route = useRoute();
 
-const sidebars = computed(() => menus as SidebarItem[]);
-
 const filteredSidebars = computed(() =>
-  sidebars.value.filter(
+  props.menus.filter(
     (item) =>
-      item.permissions.some((permission) => isHasPermission(permission)) &&
+      item.permissions.some((permission) => props.hasPermission(permission)) &&
       item.featureFlag
   )
 );

@@ -8,7 +8,7 @@
       variant="outlined"
       class="w-[100px]"
       size="medium"
-      @click="$refs.op.toggle($event)"
+      @click="op?.toggle($event)"
     >
       <i class="pi pi-filter" />
       Filter
@@ -32,17 +32,26 @@
         variant="text"
         size="small"
         class="w-[90px]"
-        @click="$emit('reset')"
+        @click="emit('reset')"
       />
       <Button
         label="Apply"
         severity="primary"
         size="small"
         class="w-[90px]"
-        @click="$emit('apply')"
+        @click="emit('apply')"
       />
     </div>
   </Popover>
 </template>
-<script setup>
+<script setup lang="ts">
+import { ref } from 'vue';
+
+// Popover instance; typed structurally so the package stays dependency-light.
+const op = ref<{ toggle: (event: Event) => void } | null>(null);
+
+const emit = defineEmits<{
+  reset: [];
+  apply: [];
+}>();
 </script>
