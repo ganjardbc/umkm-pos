@@ -320,12 +320,12 @@ import { z } from 'zod';
 import defaultLogo from '@/assets/insell-logo.png';
 
 import { setAuth } from '@/helpers/auth.ts';
-import { getErrorMessage } from '@/helpers/utils.ts';
-import { showToast } from '@/helpers/toast.ts';
+import { getErrorMessage } from '@umkm-pos/ui/helpers/utils';
+import { showToast } from '@umkm-pos/ui/helpers/toast';
 import { postRegister } from '@/modules/auth/services/api.ts';
 
-import UiFormGroup from '@/components/UiFormGroup.vue';
-import UiCard from '@/components/UiCard.vue';
+import UiFormGroup from '@umkm-pos/ui/components/UiFormGroup.vue';
+import UiCard from '@umkm-pos/ui/components/UiCard.vue';
 
 import { PREFIX_ROUTE_PATH as PRP_LANDING } from '@/modules/landing/services/constants';
 
@@ -479,7 +479,7 @@ const submitRegistration = async () => {
 </script>
 <style>
 @import 'tailwindcss';
-@import '@/assets/styles/themes.css';
+@import '@umkm-pos/ui/styles/themes.css';
 
 .register-page {
   @apply relative w-150 flex flex-col items-center h-screen md:h-auto overflow-y-auto py-8! px-2! rounded-none! md:rounded-lg!;

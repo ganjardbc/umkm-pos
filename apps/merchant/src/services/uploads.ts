@@ -1,20 +1,8 @@
 import api from '@/plugins/axios'
 
-export const postUpload = async (file: File, options: any = {}) => {
-  const formData = new FormData()
-  formData.append('file', file)
-  return await api.post('/api/v1/uploads', formData, {
-    ...(options || {}),
-    headers: {
-      'Content-Type': undefined,
-      ...((options && options.headers) || {}),
-    },
-  })
-}
-
-export const getUploadSignedUrl = async (id: string, options: any = {}) => {
-  return await api.get(`/api/v1/uploads/${id}/signed-url`, { ...(options || {}) })
-}
+// Generic upload endpoints are shared; the attach/detach endpoints below are
+// merchant-scoped and stay here.
+export { postUpload, getUploadSignedUrl } from '@umkm-pos/ui/services/uploads'
 
 export const setProductImage = async (id: string, upload_id: string, options: any = {}) => {
   return await api.patch(`/api/v1/products/${id}/image`, { upload_id }, { ...(options || {}) })

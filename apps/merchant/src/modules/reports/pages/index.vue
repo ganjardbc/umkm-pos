@@ -91,7 +91,7 @@ import {
   exportOutletComparison,
   exportTransactionsCsv,
 } from '@/modules/reports/services/api.ts';
-import { downloadFile } from '@/helpers/download.ts';
+import { downloadFile } from '@umkm-pos/ui/helpers/download';
 import { getOutlet } from '@/helpers/auth.ts';
 
 const outlet = getOutlet();

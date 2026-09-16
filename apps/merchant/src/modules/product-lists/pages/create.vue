@@ -219,15 +219,15 @@ import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { z } from 'zod';
 import { zodResolver } from '@primevue/forms/resolvers/zod';
-import { getErrorMessage } from '@/helpers/utils.ts';
-import { showToast } from '@/helpers/toast.ts';
-import { showLoading, hideLoading } from '@/helpers/loading.ts';
+import { getErrorMessage } from '@umkm-pos/ui/helpers/utils';
+import { showToast } from '@umkm-pos/ui/helpers/toast';
+import { showLoading, hideLoading } from '@umkm-pos/ui/helpers/loading';
 import { getOutlet } from '@/helpers/auth.ts';
 import { postProduct, setProductImage } from '@/modules/product-lists/services/api';
 import { getActiveCategories } from '@/modules/product-categories/services/api';
-import { useFileUpload } from '@/composables/useFileUpload';
-import UiCard from '@/components/UiCard.vue';
-import UiFormGroup from '@/components/UiFormGroup.vue';
+import { useFileUpload } from '@umkm-pos/ui/composables/useFileUpload';
+import UiCard from '@umkm-pos/ui/components/UiCard.vue';
+import UiFormGroup from '@umkm-pos/ui/components/UiFormGroup.vue';
 
 const router = useRouter();
 

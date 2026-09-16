@@ -146,14 +146,14 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { getErrorMessage, formatDateTime } from '@/helpers/utils.ts';
-import { showToast, showConfirm } from '@/helpers/toast.ts';
-import { showLoading, hideLoading } from '@/helpers/loading.ts';
+import { getErrorMessage, formatDateTime } from '@umkm-pos/ui/helpers/utils';
+import { showToast, showConfirm } from '@umkm-pos/ui/helpers/toast';
+import { showLoading, hideLoading } from '@umkm-pos/ui/helpers/loading';
 import { isHasPermission } from '@/helpers/auth.ts';
 import { getDetailUser, getUserRole, assignRoleToUser, revokeRoleFromUser } from '@/modules/user/services/api.ts';
 import { PREFIX_ROUTE_NAME } from '@/modules/user/services/constants.ts';
 import { UPDATE } from '@/modules/user/services/rbac.ts';
-import UiCard from '@/components/UiCard.vue';
+import UiCard from '@umkm-pos/ui/components/UiCard.vue';
 import AssignOutletModal from '@/modules/user/components/AssignOutletModal.vue';
 
 const route = useRoute();

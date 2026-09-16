@@ -26,10 +26,10 @@
 
 <script setup lang="ts">
 import { reactive, computed, watch } from 'vue';
-import { getErrorMessage } from '@/helpers/utils.ts';
-import { showToast } from '@/helpers/toast.ts';
+import { getErrorMessage } from '@umkm-pos/ui/helpers/utils';
+import { showToast } from '@umkm-pos/ui/helpers/toast';
 import { patchOutletTable, postOutletTable } from '@/modules/outlet/services/api.ts';
-import UiFormGroup from '@/components/UiFormGroup.vue';
+import UiFormGroup from '@umkm-pos/ui/components/UiFormGroup.vue';
 
 const props = defineProps<{
   outletId: string;

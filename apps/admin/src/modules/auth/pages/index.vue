@@ -84,12 +84,12 @@ import { z } from 'zod';
 import defaultLogo from '@/assets/insell-logo.png';
 
 import { setAuth } from '@/helpers/auth.ts';
-import { getErrorMessage } from '@/helpers/utils.ts';
-import { showToast } from '@/helpers/toast.ts';
+import { getErrorMessage } from '@umkm-pos/ui/helpers/utils';
+import { showToast } from '@umkm-pos/ui/helpers/toast';
 import { postLogin } from '@/modules/auth/services/api.ts';
 
-import UiFormGroup from '@/components/UiFormGroup.vue';
-import UiCard from '@/components/UiCard.vue';
+import UiFormGroup from '@umkm-pos/ui/components/UiFormGroup.vue';
+import UiCard from '@umkm-pos/ui/components/UiCard.vue';
 
 import { PREFIX_ROUTE_PATH as PRP_DASHBOARD } from '@/modules/dashboard/services/constants';
 
@@ -145,7 +145,7 @@ const onFormSubmit = async ({ valid, values }: { valid: boolean; values: any }) 
 </script>
 <style scoped>
 @import 'tailwindcss';
-@import '@/assets/styles/themes.css';
+@import '@umkm-pos/ui/styles/themes.css';
 
 .login-page {
   @apply relative w-100 flex flex-col items-center justify-center m-4 py-8;

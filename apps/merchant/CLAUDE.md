@@ -42,7 +42,10 @@ src/modules/[feature]/
 - Routes auto-registered via `import.meta.glob` in `global-routes.ts`
 - Permission guards on routes via `meta.permission` array
 - Auth tokens in localStorage (keys defined in `src/helpers/auth.ts`)
-- Global components auto-registered from `src/components/Ui*.vue`
+- Shared UI (components, composables, helpers, layouts, auth storage, HTTP client) lives in `@umkm-pos/ui`; only app-specific code stays in `src/`
+- `src/components/` is auto-registered *and* `@umkm-pos/ui/components/` is auto-imported via `unplugin-vue-components`
+- `src/helpers/auth.ts` is a thin layer over `@umkm-pos/ui/auth`: it owns this app's `setAuth()` and permission defaults, and re-exports the shared readers
+- `src/plugins/axios.ts` builds the client with `createApiClient()` and registers it via `setApiClient()` so package services can use it
 - Toast service available via `PrimeVue/toastservice`
 
 ## Authentication & Permissions

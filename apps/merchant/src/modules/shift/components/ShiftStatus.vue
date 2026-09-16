@@ -127,10 +127,10 @@
 <script setup lang="ts">
 import { onMounted, watch } from 'vue';
 import { useShift } from '@/modules/shift/composables/useShift.ts';
-import { formatDateTime, formatRangeTime } from '@/helpers/utils.ts';
-import { showConfirm, showToast } from '@/helpers/toast.ts';
-import { getErrorMessage } from '@/helpers/utils.ts';
-import { useGlobalLoading } from '@/composables/useGlobalLoading.ts';
+import { formatDateTime, formatRangeTime } from '@umkm-pos/ui/helpers/utils';
+import { showConfirm, showToast } from '@umkm-pos/ui/helpers/toast';
+import { getErrorMessage } from '@umkm-pos/ui/helpers/utils';
+import { useGlobalLoading } from '@umkm-pos/ui/composables/useGlobalLoading.ts';
 import * as shiftApi from '@/modules/shift/services/api.ts';
 
 const ShiftStatus = {
@@ -258,7 +258,7 @@ watch(
 
 <style scoped>
 @import "tailwindcss";
-@import "@/assets/styles/themes.css";
+@import "@umkm-pos/ui/styles/themes.css";
 
 .pos-shift-status {
   @apply w-full p-4 rounded-lg border transition-colors duration-200 space-y-4;

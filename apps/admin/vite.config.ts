@@ -14,6 +14,7 @@ export default defineConfig({
     vue(),
     tailwindcss(),
     Components({
+      dirs: ['src/components', '../../packages/ui/src/components'],
       resolvers: [
         PrimeVueResolver()
       ]
@@ -22,6 +23,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, 'src'),
+      '@umkm-pos/ui': path.resolve(__dirname, '../../packages/ui/src'),
     },
   },
   // apps/merchant uses Vite's default 5173.

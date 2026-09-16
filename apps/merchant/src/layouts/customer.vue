@@ -81,8 +81,8 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { getErrorMessage } from '@/helpers/utils.ts';
-import { showToast } from '@/helpers/toast.ts';
+import { getErrorMessage } from '@umkm-pos/ui/helpers/utils';
+import { showToast } from '@umkm-pos/ui/helpers/toast';
 import { useCatalogStore } from '@/modules/customer-catalog/stores/index.ts';
 import CustomerCartFooter from '@/modules/customer-catalog/components/CustomerCartFooter.vue';
 
@@ -184,7 +184,7 @@ onBeforeUnmount(() => {
 
 <style scoped>
 @import "tailwindcss";
-@import '@/assets/styles/themes.css';
+@import '@umkm-pos/ui/styles/themes.css';
 
 .customer-layout {
   @apply relative min-h-dvh w-full bg-white text-slate-900 dark:text-slate-50;

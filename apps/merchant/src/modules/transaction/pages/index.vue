@@ -132,7 +132,7 @@
             variant="outlined"
             icon="pi pi-ellipsis-h"
             size="small"
-            :disabled="!isCanUpdateStatus || trx.order_status === 'selesai'"
+            :disabled="!isCanUpdateStatus || trx.is_cancelled || trx.order_status === 'selesai'"
             @click="advanceStatus(trx)"
           />
 
@@ -205,16 +205,16 @@
 import { type ReceiptData } from '../utils/receiptGenerator';
 import { onMounted, ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { getNoTable, getErrorMessage, getCurrency, formatDateTime, useDebounce } from '@/helpers/utils.ts';
+import { getNoTable, getErrorMessage, getCurrency, formatDateTime, useDebounce } from '@umkm-pos/ui/helpers/utils';
 import { getListTransaction, patchTransactionStatus, patchTransactionPay, postCancelTransaction } from '@/modules/transaction/services/api.ts';
-import { showToast, showConfirm } from '@/helpers/toast.ts';
-import { showLoading, hideLoading } from '@/helpers/loading.ts';
+import { showToast, showConfirm } from '@umkm-pos/ui/helpers/toast';
+import { showLoading, hideLoading } from '@umkm-pos/ui/helpers/loading';
 import { getOutlet } from '@/helpers/auth.ts';
 import { isHasPermission } from '@/helpers/auth.ts';
-import UiCard from '@/components/UiCard.vue';
-import UiSearch from '@/components/UiSearch.vue';
-import UiPagination from '@/components/UiPagination.vue';
-import UiLoading from '@/components/UiLoading.vue';
+import UiCard from '@umkm-pos/ui/components/UiCard.vue';
+import UiSearch from '@umkm-pos/ui/components/UiSearch.vue';
+import UiPagination from '@umkm-pos/ui/components/UiPagination.vue';
+import UiLoading from '@umkm-pos/ui/components/UiLoading.vue';
 import ReceiptModal from '@/modules/transaction/components/ReceiptModal.vue';
 import PaymentModal from '@/modules/transaction/components/PaymentModal.vue';
 import { READ, PRINT, CREATE, CANCEL, UPDATE_STATUS } from '@/modules/transaction/services/rbac.ts';

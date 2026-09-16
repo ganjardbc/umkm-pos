@@ -35,7 +35,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { getCurrency } from '@/helpers/utils.ts';
+import { getCurrency } from '@umkm-pos/ui/helpers/utils';
 
 const props = defineProps<{
   items: any[];

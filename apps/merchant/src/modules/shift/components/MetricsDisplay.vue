@@ -81,11 +81,11 @@
 import { ref, onMounted, watch, onBeforeUnmount } from 'vue';
 import { Chart, registerables } from 'chart.js';
 import { getParticipantMetrics } from '@/modules/shift/services/api';
-import { showToast } from '@/helpers/toast';
-import { getErrorMessage, formatDuration } from '@/helpers/utils';
+import { showToast } from '@umkm-pos/ui/helpers/toast';
+import { getErrorMessage, formatDuration } from '@umkm-pos/ui/helpers/utils';
 import Tag from 'primevue/tag';
 import ProgressSpinner from 'primevue/progressspinner';
-import UiCard from '@/components/UiCard.vue';
+import UiCard from '@umkm-pos/ui/components/UiCard.vue';
 
 // Register Chart.js components
 Chart.register(...registerables);
@@ -368,7 +368,7 @@ onBeforeUnmount(() => {
 
 <style scoped>
 @import "tailwindcss";
-@import "@/assets/styles/themes.css";
+@import "@umkm-pos/ui/styles/themes.css";
 
 .metrics-display__title {
   @apply text-lg font-semibold text-gray-900 dark:text-white;

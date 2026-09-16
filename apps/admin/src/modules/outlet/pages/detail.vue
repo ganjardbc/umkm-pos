@@ -90,13 +90,13 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { getErrorMessage, formatDateTime } from '@/helpers/utils.ts';
-import { showToast } from '@/helpers/toast.ts';
+import { getErrorMessage, formatDateTime } from '@umkm-pos/ui/helpers/utils';
+import { showToast } from '@umkm-pos/ui/helpers/toast';
 import { isHasPermission } from '@/helpers/auth.ts';
 import { getDetailOutlet } from '@/modules/outlet/services/api.ts';
 import { PREFIX_ROUTE_NAME } from '@/modules/outlet/services/constants.ts';
 import { UPDATE } from '@/modules/outlet/services/rbac.ts';
-import UiCard from '@/components/UiCard.vue';
+import UiCard from '@umkm-pos/ui/components/UiCard.vue';
 
 const route = useRoute();
 const router = useRouter();

@@ -1,0 +1,25 @@
+@import "tailwindcss";
+@import "tailwindcss-primeui";
+@import "primeicons/primeicons.css";
+@import './variables-orange.css';
+@import './variables-dark.css';
+@import './themes.css';
+
+/* Tailwind v4 auto-detects class sources relative to the stylesheet that owns
+   them, so this package declares its own source root explicitly. Apps that
+   import this file declare their own `@source` for their `src/`. */
+@source "../";
+
+html {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+#layout-footer {
+  display: none;
+}
+
+#layout-footer:not(:empty) {
+  display: block;
+}

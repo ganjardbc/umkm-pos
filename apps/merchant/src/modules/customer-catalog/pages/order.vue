@@ -101,9 +101,9 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import UiCard from '@/components/UiCard.vue';
-import { formatDateTime, getCurrency, getErrorMessage } from '@/helpers/utils.ts';
-import { showToast } from '@/helpers/toast.ts';
+import UiCard from '@umkm-pos/ui/components/UiCard.vue';
+import { formatDateTime, getCurrency, getErrorMessage } from '@umkm-pos/ui/helpers/utils';
+import { showToast } from '@umkm-pos/ui/helpers/toast';
 import { useCatalogStore } from '../stores/index.ts';
 import { getCatalogOrder } from '../services/api.ts';
 import { getCustomerCatalogStatusLabel } from '../services/status-labels.ts';

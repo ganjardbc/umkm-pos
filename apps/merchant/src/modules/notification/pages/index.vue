@@ -168,12 +168,12 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import UiEmptyState from '@/components/UiEmptyState.vue';
-import UiLoading from '@/components/UiLoading.vue';
-import UiPagination from '@/components/UiPagination.vue';
-import UiCard from '@/components/UiCard.vue';
+import UiEmptyState from '@umkm-pos/ui/components/UiEmptyState.vue';
+import UiLoading from '@umkm-pos/ui/components/UiLoading.vue';
+import UiPagination from '@umkm-pos/ui/components/UiPagination.vue';
+import UiCard from '@umkm-pos/ui/components/UiCard.vue';
 import { getListOutlet, isHasPermission } from '@/helpers/auth.ts';
-import { formatDateTime, formatRelativeTime } from '@/helpers/utils.ts';
+import { formatDateTime, formatRelativeTime } from '@umkm-pos/ui/helpers/utils';
 import {
   getListNotification,
   markAllNotificationAsRead,

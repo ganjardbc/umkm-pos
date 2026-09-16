@@ -86,15 +86,15 @@
 import type { DashboardStats } from '@/modules/dashboard/services/types.ts';
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { getErrorMessage, formatDateTime } from '@/helpers/utils.ts';
-import { showToast } from '@/helpers/toast.ts';
+import { getErrorMessage, formatDateTime } from '@umkm-pos/ui/helpers/utils';
+import { showToast } from '@umkm-pos/ui/helpers/toast';
 import { getDashboardStats } from '@/modules/dashboard/services/api.ts';
 import {
   PREFIX_ROUTE_PATH as PRP_MERCHANTS,
   PREFIX_ROUTE_NAME as PRN_MERCHANTS,
 } from '@/modules/merchants/services/constants.ts';
-import UiCard from '@/components/UiCard.vue';
-import UiLoading from '@/components/UiLoading.vue';
+import UiCard from '@umkm-pos/ui/components/UiCard.vue';
+import UiLoading from '@umkm-pos/ui/components/UiLoading.vue';
 
 const router = useRouter();
 

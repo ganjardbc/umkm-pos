@@ -14,15 +14,13 @@
           <div class="space-y-2">
             <h1 class="text-xl font-semibold">{{ profile?.name }}</h1>
           </div>
-          <OverlayBadge :severity="profile?.is_active ? 'success' : 'danger'">
-            <Avatar
-              :image="profile?.avatar"
-              :label="profile?.avatar ? undefined : profile?.name?.charAt(0)"
-              size="xlarge"
-              shape="circle"
-              class="profile-avatar"
-            />
-          </OverlayBadge>
+          <Avatar
+            :image="profile?.avatar"
+            :label="profile?.avatar ? undefined : profile?.name?.charAt(0)"
+            size="xlarge"
+            shape="circle"
+            class="profile-avatar"
+          />
         </div>
 
         <Divider />
@@ -76,9 +74,9 @@ import { useRouter } from 'vue-router';
 import { removeAuth } from '@/helpers/auth.ts';
 import { PREFIX_ROUTE_PATH as PRP_AUTH } from '@/modules/auth/services/constants.ts';
 import { getDetailprofile } from '@/modules/profile/services/api.ts';
-import { getErrorMessage, formatDateTime } from '@/helpers/utils.ts';
-import { showConfirm, showToast } from '@/helpers/toast.ts';
-import UiCard from '@/components/UiCard.vue';
+import { getErrorMessage, formatDateTime } from '@umkm-pos/ui/helpers/utils';
+import { showConfirm, showToast } from '@umkm-pos/ui/helpers/toast';
+import UiCard from '@umkm-pos/ui/components/UiCard.vue';
 
 const router = useRouter();
 

@@ -1,6 +1,6 @@
 import { ref } from 'vue';
-import { getErrorMessage } from '@/helpers/utils.ts';
-import { showToast } from '@/helpers/toast.ts';
+import { getErrorMessage } from '@umkm-pos/ui/helpers/utils';
+import { showToast } from '@umkm-pos/ui/helpers/toast';
 import { getListMerchants } from '@/modules/merchants/services/api.ts';
 
 export interface MerchantOption {

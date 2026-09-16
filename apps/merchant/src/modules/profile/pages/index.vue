@@ -86,9 +86,9 @@ import { removeAuth } from '@/helpers/auth.ts';
 import { PREFIX_ROUTE_PATH as PRP_AUTH } from '@/modules/auth/services/constants.ts';
 import { PREFIX_ROUTE_PATH as PRP_SETTINGS } from '@/modules/settings/services/constants.ts';
 import { getDetailprofile } from '@/modules/profile/services/api.ts';
-import { getErrorMessage, formatDateTime } from '@/helpers/utils.ts';
-import { showConfirm, showToast } from '@/helpers/toast.ts';
-import UiCard from '@/components/UiCard.vue';
+import { getErrorMessage, formatDateTime } from '@umkm-pos/ui/helpers/utils';
+import { showConfirm, showToast } from '@umkm-pos/ui/helpers/toast';
+import UiCard from '@umkm-pos/ui/components/UiCard.vue';
 
 const router = useRouter();
 

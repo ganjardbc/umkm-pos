@@ -59,9 +59,9 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { type Participant, useShift } from '@/modules/shift/composables/useShift';
-import { showConfirm, showToast } from '@/helpers/toast';
-import { getErrorMessage } from '@/helpers/utils';
-import UiCard from '@/components/UiCard.vue';
+import { showConfirm, showToast } from '@umkm-pos/ui/helpers/toast';
+import { getErrorMessage } from '@umkm-pos/ui/helpers/utils';
+import UiCard from '@umkm-pos/ui/components/UiCard.vue';
 import Button from 'primevue/button';
 import Dropdown from 'primevue/dropdown';
 import InputSwitch from 'primevue/inputswitch';
@@ -150,7 +150,7 @@ const handleConfirmHandoff = () => {
 
 <style scoped>
 @import "tailwindcss";
-@import "@/assets/styles/themes.css";
+@import "@umkm-pos/ui/styles/themes.css";
 
 .shift-handoff {
   @apply bg-white dark:bg-dark-secondary rounded-lg p-4 border border-gray-200 dark:border-dark;

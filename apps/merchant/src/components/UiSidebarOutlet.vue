@@ -83,7 +83,7 @@ import { useConfirm } from 'primevue/useconfirm';
 import { storeToRefs } from 'pinia';
 import { useAuthStore } from '@/modules/auth/stores/index.ts';
 import { removeAuth } from '@/helpers/auth.ts';
-import { showToast } from '@/helpers/toast.ts';
+import { showToast } from '@umkm-pos/ui/helpers/toast';
 import { getMerchant, getListOutlet, getOutlet, setOutlet } from '@/helpers/auth.ts';
 import { getUploadSignedUrl } from '@/services/uploads';
 
@@ -169,7 +169,7 @@ onMounted(() => {
 </script>
 <style>
 @import 'tailwindcss';
-@import '@/assets/styles/themes.css';
+@import '@umkm-pos/ui/styles/themes.css';
 
 .ui-sidebar-outlet {
   @apply relative;

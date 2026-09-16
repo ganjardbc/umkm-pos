@@ -68,13 +68,13 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { getErrorMessage, formatDateTime } from '@/helpers/utils.ts';
-import { showToast } from '@/helpers/toast.ts';
+import { getErrorMessage, formatDateTime } from '@umkm-pos/ui/helpers/utils';
+import { showToast } from '@umkm-pos/ui/helpers/toast';
 import { getMerchant, isHasPermission } from '@/helpers/auth.ts';
 import { getDetailMerchants } from '@/modules/merchants/services/api.ts';
 import { PREFIX_ROUTE_NAME } from '@/modules/merchants/services/constants.ts';
 import { UPDATE } from '@/modules/merchants/services/rbac.ts';
-import UiCard from '@/components/UiCard.vue';
+import UiCard from '@umkm-pos/ui/components/UiCard.vue';
 
 const router = useRouter();
 

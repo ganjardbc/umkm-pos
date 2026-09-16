@@ -1,62 +1,26 @@
-import axios from "axios";
+import { createApiClient, setApiClient } from '@umkm-pos/ui/http';
 
-import { getToken, getOutlet, removeAuth, isLogin } from '@/helpers/auth.ts';
+import { getOutlet } from '@/helpers/auth.ts';
 import { PREFIX_ROUTE_PATH } from '@/modules/auth/services/constants.ts';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
-
-const api = axios.create({
-	baseURL: API_BASE_URL,
-	headers: {
-		"Content-Type": "application/json",
-	},
-});
-
-// Add a request interceptor with token
-api.interceptors.request.use(
-  (config) => {
-    const token = getToken();
-
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-
+const api = createApiClient({
+  baseURL: import.meta.env.VITE_API_BASE_URL || '',
+  loginPath: PREFIX_ROUTE_PATH,
+  // The API treats X-Outlet-Id as untrusted input and re-validates it; this is
+  // how active-outlet context reaches the API without living in the JWT.
+  onRequest: (config) => {
     const outlet = getOutlet();
 
     if (outlet?.id) {
       config.headers['X-Outlet-Id'] = outlet.id;
     }
 
-    // You can modify the request config here if needed
     return config;
   },
-  (error) => {
-    // Handle request error
-    return Promise.reject(error);
-  }
-);
+});
 
-// Add a response interceptor when got 403 error
-// and throw to the page login
-api.interceptors.response.use(
-  (response) => {
-    // Any status code that lie within the range of 2xx cause this function to trigger
-    // Do something with response data
-    return response;
-  },
-  (error) => {
-    // Any status codes that falls outside the range of 2xx cause this function to trigger
-    // Do something with response error
-    if (error.response && error.response.status === 401 && isLogin()) {
-      const confirm = window.confirm("Session has expired. Please log in again.");
-      if (confirm) {
-        removeAuth();
-        window.location.href = PREFIX_ROUTE_PATH;
-      }
-    }
-    return Promise.reject(error);
-  }
-);
+// Let package-level services (uploads, …) reuse this instance.
+setApiClient(api);
 
 export const get = async (url: string, config = {}) => {
 	return api.get(url, config);

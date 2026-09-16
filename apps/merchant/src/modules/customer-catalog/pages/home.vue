@@ -88,8 +88,8 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import UiCard from '@/components/UiCard.vue';
-import { formatDateTime, getCurrency } from '@/helpers/utils.ts';
+import UiCard from '@umkm-pos/ui/components/UiCard.vue';
+import { formatDateTime, getCurrency } from '@umkm-pos/ui/helpers/utils';
 import { useCatalogStore } from '../stores/index.ts';
 import { getCustomerCatalogStatusLabel } from '../services/status-labels.ts';
 

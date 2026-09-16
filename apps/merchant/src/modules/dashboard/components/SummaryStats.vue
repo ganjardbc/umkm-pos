@@ -67,7 +67,7 @@
 </template>
 
 <script setup lang="ts">
-import UiCard from '@/components/UiCard.vue';
+import UiCard from '@umkm-pos/ui/components/UiCard.vue';
 
 interface Props {
   salesToday: number;

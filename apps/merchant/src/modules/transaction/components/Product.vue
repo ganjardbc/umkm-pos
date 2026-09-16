@@ -115,15 +115,15 @@
 import { onMounted, ref, computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useAuthStore } from '@/modules/auth/stores/index.ts';
-import { getErrorMessage, getCurrency } from '@/helpers/utils.ts';
+import { getErrorMessage, getCurrency } from '@umkm-pos/ui/helpers/utils';
 import { getOutlet } from '@/helpers/auth.ts';
 import { getListProduct } from '@/modules/product-lists/services/api';
-import { showToast } from '@/helpers/toast.ts';
+import { showToast } from '@umkm-pos/ui/helpers/toast';
 import { usePosStore } from '@/modules/transaction/stores-pos';
-import UiSearch from '@/components/UiSearch.vue';
-import UiPagination from '@/components/UiPagination.vue';
-import UiCard from '@/components/UiCard.vue';
-import UiLoading from '@/components/UiLoading.vue';
+import UiSearch from '@umkm-pos/ui/components/UiSearch.vue';
+import UiPagination from '@umkm-pos/ui/components/UiPagination.vue';
+import UiCard from '@umkm-pos/ui/components/UiCard.vue';
+import UiLoading from '@umkm-pos/ui/components/UiLoading.vue';
 import { getActiveCategories } from '@/modules/product-categories/services/api';
 
 const posStore = usePosStore();
@@ -260,7 +260,7 @@ onMounted(() => {
 </script>
 <style>
 @import "tailwindcss";
-@import '@/assets/styles/themes.css';
+@import '@umkm-pos/ui/styles/themes.css';
 
 .pos-product {
   @apply w-full space-y-4;

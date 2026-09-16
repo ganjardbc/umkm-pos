@@ -14,16 +14,16 @@ import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 
 import DefaultLayout from '@/layouts/default.vue';
-import AuthLayout from '@/layouts/auth.vue';
+import AuthLayout from '@umkm-pos/ui/layouts/UiAuthLayout.vue';
 import CustomerLayout from '@/layouts/customer.vue';
 
-import UiToast from '@/components/UiToast.vue';
-import UiConfirmDialog from '@/components/UiConfirmDialog.vue';
-import UiGlobalLoading from '@/components/UiGlobalLoading.vue';
+import UiToast from '@umkm-pos/ui/components/UiToast.vue';
+import UiConfirmDialog from '@umkm-pos/ui/components/UiConfirmDialog.vue';
+import UiGlobalLoading from '@umkm-pos/ui/components/UiGlobalLoading.vue';
 
 import { useAuthStore } from '@/modules/auth/stores/index.ts';
 
-import { useDarkMode } from '@/composables/useDarkMode.ts';
+import { useDarkMode } from '@umkm-pos/ui/composables/useDarkMode.ts';
 
 // Dark mode - initialize on app load
 const { initializeTheme } = useDarkMode();

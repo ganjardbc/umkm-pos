@@ -140,9 +140,9 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { getCurrency } from '@/helpers/utils.ts';
-import { showConfirm } from '@/helpers/toast.ts';
-import UiFormGroup from '@/components/UiFormGroup.vue';
+import { getCurrency } from '@umkm-pos/ui/helpers/utils';
+import { showConfirm } from '@umkm-pos/ui/helpers/toast';
+import UiFormGroup from '@umkm-pos/ui/components/UiFormGroup.vue';
 
 const visibility = defineModel<boolean>('visibility', { required: true });
 
