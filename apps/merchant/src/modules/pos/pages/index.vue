@@ -1,5 +1,17 @@
 <template>
+  <UiLoading
+    v-if="!isShiftLoaded"
+    message="Memuat shift..."
+  />
+
+  <!-- No Active Shift -->
+  <OpenShift
+    v-else-if="!isShiftOpen"
+    @shift-opened="fetchOutletShift"
+  />
+
   <div
+    v-else
     class="pos"
     :class="{
       'pos--mobile': !isWeb,
@@ -31,7 +43,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRoute, useRouter } from 'vue-router';
 import { getOutlet } from '@/helpers/auth.ts';
@@ -42,6 +54,8 @@ import { usePosStore } from '@/modules/transaction/stores-pos';
 import ShiftStatus from '@/modules/transaction/components/ShiftStatus.vue';
 import PosCart from '@/modules/transaction/components/Cart.vue';
 import PosProduct from '@/modules/transaction/components/Product.vue';
+import OpenShift from '@/modules/transaction/components/OpenShift.vue';
+import UiLoading from '@umkm-pos/ui/components/UiLoading.vue';
 
 const outlet = getOutlet();
 const posStore = usePosStore();
@@ -65,7 +79,11 @@ const {
   isShiftUserCanManage,
   currentShift,
   fetchShift,
+  fetchShiftParticipants,
 } = useShift();
+
+const isShiftLoaded = ref(false);
+const isShiftOpen = computed(() => currentShift.status === 'open');
 
 // Task 26: Clear form - reset all state to defaults
 const clearForm = () => {
@@ -78,9 +96,12 @@ const fetchOutletShift = async () => {
     const shiftData = response?.data?.data || {};
     if (shiftData?.id) {
       await fetchShift({ shiftId: shiftData.id });
+      await fetchShiftParticipants({ shiftId: shiftData.id });
     }
   } catch (error) {
     console.error('Failed to fetch outlet shift:', error);
+  } finally {
+    isShiftLoaded.value = true;
   }
 };
 
