@@ -23,15 +23,13 @@
               />
             </router-link>
           </div>
-          <OverlayBadge :severity="profile?.is_active ? 'success' : 'danger'">
-            <Avatar
-              :image="profile?.avatar"
-              :label="profile?.avatar ? undefined : profile?.name?.charAt(0)"
-              size="xlarge"
-              shape="circle"
-              class="profile-avatar"
-            />
-          </OverlayBadge>
+          <Avatar
+            :image="profile?.avatar"
+            :label="profile?.avatar ? undefined : profile?.name?.charAt(0)"
+            size="xlarge"
+            shape="circle"
+            class="profile-avatar"
+          />
         </div>
 
         <Divider />
