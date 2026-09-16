@@ -22,21 +22,19 @@
         <StepPanels>
           <!-- Outlets -->
           <StepPanel :value="1">
-            <UiCard class="p-0! gap-0! overflow-hidden!">
-              <template #header>
-                <h2 class="text-lg font-semibold pt-4 px-4">
-                  Outlet
-                </h2>
-              </template>
+            <div class="w-full space-y-4">
+              <h2 class="text-lg font-semibold">
+                Outlet
+              </h2>
 
-              <div class="p-4">
+              <div class="w-full">
                 <div v-if="loadingOutlets" class="flex justify-center py-8">
                   <i class="pi pi-spin pi-spinner text-2xl text-gray-400"></i>
                 </div>
                 <div v-else-if="!outlets.length" class="w-full text-center flex justify-center py-8 text-gray-500">
                   Belum ada outlet.
                 </div>
-                <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <UiCard
                     v-for="outlet in outlets"
                     :key="outlet.id"
@@ -67,26 +65,24 @@
                 v-model="outletPagination"
                 @page="onOutletPageChange"
               />
-            </UiCard>
+            </div>
           </StepPanel>
 
           <!-- Roles -->
           <StepPanel :value="2">
-            <UiCard class="p-0! gap-0! overflow-hidden!">
-              <template #header>
-                <h2 class="text-lg font-semibold pt-4 px-4">
-                  Role
-                </h2>
-              </template>
+            <div class="w-full space-y-4">
+              <h2 class="text-lg font-semibold">
+                Role
+              </h2>
 
-              <div class="p-4">
+              <div class="w-full">
                 <div v-if="loadingRoles" class="flex justify-center py-8">
                   <i class="pi pi-spin pi-spinner text-2xl text-gray-400"></i>
                 </div>
                 <div v-else-if="!roles.length" class="w-full text-center flex justify-center py-8 text-gray-500">
                   Belum ada role.
                 </div>
-                <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <UiCard
                     v-for="role in roles"
                     :key="role.id"
@@ -119,7 +115,7 @@
                 v-model="rolePagination"
                 @page="onRolePageChange"
               />
-            </UiCard>
+            </div>
           </StepPanel>
 
           <!-- Preview -->
