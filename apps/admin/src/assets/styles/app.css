@@ -1,0 +1,5 @@
+@import '@umkm-pos/ui/styles/global.css';
+
+/* The shared stylesheet lives in packages/ui, so Tailwind would otherwise never
+   scan this app's templates. Point it at our own src/. */
+@source "../../";

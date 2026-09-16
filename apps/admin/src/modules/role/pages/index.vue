@@ -113,17 +113,17 @@
 import type { RoleDetail } from '@/modules/role/services/types.ts';
 import { onMounted, ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { getNoTable, getErrorMessage, formatDateTime, useDebounce } from '@/helpers/utils.ts';
+import { getNoTable, getErrorMessage, formatDateTime, useDebounce } from '@umkm-pos/ui/helpers/utils';
 import { getListRole, deleteRole } from '@/modules/role/services/api.ts';
-import { showToast, showConfirm } from '@/helpers/toast.ts';
+import { showToast, showConfirm } from '@umkm-pos/ui/helpers/toast';
 import { isHasPermission } from '@/helpers/auth.ts';
-import { showLoading, hideLoading } from '@/helpers/loading.ts';
+import { showLoading, hideLoading } from '@umkm-pos/ui/helpers/loading';
 import { PREFIX_ROUTE_NAME } from '@/modules/role/services/constants.ts';
 import { CREATE, UPDATE, DELETE } from '@/modules/role/services/rbac.ts';
-import UiCard from '@/components/UiCard.vue';
-import UiSearch from '@/components/UiSearch.vue';
-import UiPagination from '@/components/UiPagination.vue';
-import UiLoading from '@/components/UiLoading.vue';
+import UiCard from '@umkm-pos/ui/components/UiCard.vue';
+import UiSearch from '@umkm-pos/ui/components/UiSearch.vue';
+import UiPagination from '@umkm-pos/ui/components/UiPagination.vue';
+import UiLoading from '@umkm-pos/ui/components/UiLoading.vue';
 
 const router = useRouter();
 

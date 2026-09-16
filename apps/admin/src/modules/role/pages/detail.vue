@@ -111,15 +111,15 @@
 import type { RoleDetail } from '@/modules/role/services/types.ts';
 import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { getNoTable, getErrorMessage, formatDateTime } from '@/helpers/utils.ts';
-import { showToast } from '@/helpers/toast.ts';
+import { getNoTable, getErrorMessage, formatDateTime } from '@umkm-pos/ui/helpers/utils';
+import { showToast } from '@umkm-pos/ui/helpers/toast';
 import { isHasPermission } from '@/helpers/auth.ts';
 import { getDetailRole, assignPermission, deletePermission } from '@/modules/role/services/api.ts';
 import { getListPermission } from '@/modules/permission/services/api.ts';
 import { PREFIX_ROUTE_NAME } from '@/modules/role/services/constants.ts';
 import { UPDATE } from '@/modules/role/services/rbac.ts';
-import UiCard from '@/components/UiCard.vue';
-import UiPagination from '@/components/UiPagination.vue';
+import UiCard from '@umkm-pos/ui/components/UiCard.vue';
+import UiPagination from '@umkm-pos/ui/components/UiPagination.vue';
 
 const route = useRoute();
 const router = useRouter();

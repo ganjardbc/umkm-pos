@@ -1,2 +1,2 @@
 // global styles
-import '../assets/styles/global.css';
+import '../assets/styles/app.css';

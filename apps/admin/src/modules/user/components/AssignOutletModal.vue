@@ -235,12 +235,12 @@
 </template>
 <script lang="ts" setup>
 import { ref, onMounted, computed, watch } from 'vue';
-import { getErrorMessage } from '@/helpers/utils.ts';
-import { showToast } from '@/helpers/toast.ts';
+import { getErrorMessage } from '@umkm-pos/ui/helpers/utils';
+import { showToast } from '@umkm-pos/ui/helpers/toast';
 import { getListOutlet } from '@/modules/outlet/services/api.ts';
 import { getListRole } from '@/modules/role/services/api.ts';
-import UiCard from '@/components/UiCard.vue';
-import UiPagination from '@/components/UiPagination.vue';
+import UiCard from '@umkm-pos/ui/components/UiCard.vue';
+import UiPagination from '@umkm-pos/ui/components/UiPagination.vue';
 
 const props = defineProps<{
   // Only outlets of the user's merchant can be assigned.
