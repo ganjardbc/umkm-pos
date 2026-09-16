@@ -1,0 +1,29 @@
+<!-- @dsCard group="Components" viewport="700x320" name="Alert, Toast & Tooltip" -->
+<!DOCTYPE html><html><head>
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>body{margin:0;background:var(--surface-page);padding:16px;box-sizing:border-box;font-family:var(--font-body)}
+.stack{display:flex;flex-direction:column;gap:10px;margin-bottom:16px}
+.row{display:flex;gap:16px;align-items:center}</style>
+</head><body>
+<div id="root"></div>
+<script>
+const { Alert, Toast, Tooltip, Button } = window.Insell;
+const e = React.createElement;
+function Demo(){
+  return e('div', null,
+    e('div', {className:'stack'},
+      e(Alert, {tone:'warning', title:'Stok hampir habis'}, '5 produk memiliki stok di bawah batas minimum.'),
+      e(Alert, {tone:'success'}, 'Data outlet berhasil disinkronkan.')
+    ),
+    e('div', {className:'row'},
+      e(Toast, {tone:'success', message:'Transaksi berhasil disimpan'}),
+      e(Tooltip, {label:'Hapus produk'}, e(Button, {variant:'ghost', size:'sm'}, '🗑'))
+    )
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(e(Demo));
+</script>
+</body></html>

@@ -1,0 +1,22 @@
+<!-- @dsCard group="Components" viewport="700x140" name="Breadcrumb & Pagination" -->
+<!DOCTYPE html><html><head>
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>body{margin:0;background:var(--surface-page);padding:16px;box-sizing:border-box;display:flex;flex-direction:column;gap:20px}</style>
+</head><body>
+<div id="root"></div>
+<script>
+const { Breadcrumb, Pagination } = window.Insell;
+const e = React.createElement;
+function Demo(){
+  const [page, setPage] = React.useState(2);
+  return e('div', {style:{display:'flex',flexDirection:'column',gap:20}},
+    e(Breadcrumb, {items:['Stok','Kategori','Minuman']}),
+    e(Pagination, {page, totalPages:6, onChange:setPage})
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(e(Demo));
+</script>
+</body></html>

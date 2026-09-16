@@ -1,0 +1,16 @@
+<!-- @dsCard group="Layout" viewport="700x220" subtitle="12-col, 1200px max container, 5 breakpoints" name="Grid & breakpoints" -->
+<!DOCTYPE html><html><head><link rel="stylesheet" href="../styles.css"><style>
+body{margin:0;background:var(--surface-page);padding:14px;box-sizing:border-box;font-family:var(--font-body)}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:6px;height:70px;margin-bottom:10px}
+.grid div{background:var(--color-primary-100);border:1px solid var(--color-primary-300);border-radius:3px}
+table{width:100%;font:var(--text-caption);border-collapse:collapse;color:var(--text-secondary)}
+td{padding:3px 6px;border-bottom:1px solid var(--border-subtle)}
+td:first-child{font-family:var(--font-mono);color:var(--text-primary)}
+</style></head><body>
+<div class="grid">
+<div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
+</div>
+<table>
+<tr><td>sm</td><td>640px</td></tr><tr><td>md</td><td>768px</td></tr><tr><td>lg</td><td>1024px</td></tr><tr><td>xl</td><td>1280px</td></tr><tr><td>container</td><td>1200px max, 24px gutter</td></tr>
+</table>
+</body></html>

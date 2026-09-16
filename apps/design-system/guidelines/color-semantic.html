@@ -1,0 +1,16 @@
+<!-- @dsCard group="Colors" viewport="700x180" subtitle="Success / warning / error / info — same L/C family as primary" name="Semantic colors" -->
+<!DOCTYPE html><html><head><link rel="stylesheet" href="../styles.css"><style>
+body{margin:0;font-family:var(--font-body);background:var(--surface-page);padding:14px;box-sizing:border-box}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.card{border-radius:var(--radius-md);overflow:hidden;border:1px solid var(--border-subtle)}
+.top{height:56px;display:flex;align-items:center;justify-content:center;color:#fff;font:var(--text-heading-sm)}
+.bg{height:40px;display:flex;align-items:center;justify-content:center;font:var(--text-caption)}
+.name{padding:6px 0 0;text-align:center;font:var(--text-caption);color:var(--text-secondary)}
+</style></head><body>
+<div class="grid">
+<div><div class="card"><div class="top" style="background:var(--color-success)">Aa</div><div class="bg" style="background:var(--color-success-bg);color:var(--color-success-dark)">bg</div></div><div class="name">Success</div></div>
+<div><div class="card"><div class="top" style="background:var(--color-warning)">Aa</div><div class="bg" style="background:var(--color-warning-bg);color:var(--color-warning-dark)">bg</div></div><div class="name">Warning</div></div>
+<div><div class="card"><div class="top" style="background:var(--color-error)">Aa</div><div class="bg" style="background:var(--color-error-bg);color:var(--color-error-dark)">bg</div></div><div class="name">Error</div></div>
+<div><div class="card"><div class="top" style="background:var(--color-info)">Aa</div><div class="bg" style="background:var(--color-info-bg);color:var(--color-info-dark)">bg</div></div><div class="name">Info</div></div>
+</div>
+</body></html>

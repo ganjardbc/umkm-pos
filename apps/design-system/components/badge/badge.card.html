@@ -1,0 +1,26 @@
+<!-- @dsCard group="Components" viewport="700x120" name="Badge / Tag" -->
+<!DOCTYPE html><html><head>
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>body{margin:0;background:var(--surface-page);padding:16px;box-sizing:border-box;font-family:var(--font-body)}
+.row{display:flex;gap:8px;flex-wrap:wrap}</style>
+</head><body>
+<div id="root"></div>
+<script>
+const { Badge } = window.Insell;
+const e = React.createElement;
+function Demo(){
+  return e('div', {className:'row'},
+    e(Badge, {tone:'neutral'}, 'Draft'),
+    e(Badge, {tone:'brand'}, 'Baru'),
+    e(Badge, {tone:'success', dot:true}, 'Lunas'),
+    e(Badge, {tone:'warning', dot:true}, 'Stok menipis'),
+    e(Badge, {tone:'error', dot:true}, 'Gagal'),
+    e(Badge, {tone:'info'}, 'Info')
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(e(Demo));
+</script>
+</body></html>

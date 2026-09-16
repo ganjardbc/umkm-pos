@@ -1,0 +1,16 @@
+<!-- @dsCard group="Motion" viewport="700x160" subtitle="150–220ms standard, spring reserved for confirmations" name="Duration & easing" -->
+<!DOCTYPE html><html><head><link rel="stylesheet" href="../styles.css"><style>
+body{margin:0;background:var(--surface-page);padding:16px;box-sizing:border-box;font-family:var(--font-body)}
+.row{display:flex;align-items:center;gap:14px;margin-bottom:10px}
+.dot{width:14px;height:14px;border-radius:50%;background:var(--color-primary-500)}
+.track{position:relative;flex:1;height:2px;background:var(--border-default)}
+.lbl{width:220px;font:var(--text-caption);color:var(--text-secondary);font-family:var(--font-mono)}
+@keyframes go{from{left:0}to{left:calc(100% - 14px)}}
+.a1 .dot{position:relative;animation:go 150ms var(--ease-standard) infinite alternate}
+.a2 .dot{position:relative;animation:go 220ms var(--ease-out) infinite alternate}
+.a3 .dot{position:relative;animation:go 480ms var(--ease-spring) infinite alternate}
+</style></head><body>
+<div class="row a1"><span class="lbl">fast 150ms · standard</span><div class="track"><div class="dot"></div></div></div>
+<div class="row a2"><span class="lbl">base 220ms · ease-out</span><div class="track"><div class="dot"></div></div></div>
+<div class="row a3"><span class="lbl">slower 480ms · spring</span><div class="track"><div class="dot"></div></div></div>
+</body></html>

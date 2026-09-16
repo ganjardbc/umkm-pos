@@ -1,0 +1,19 @@
+<!-- @dsCard group="Components" viewport="500x90" name="Tabs" -->
+<!DOCTYPE html><html><head>
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>body{margin:0;background:var(--surface-page);padding:16px;box-sizing:border-box}</style>
+</head><body>
+<div id="root"></div>
+<script>
+const { Tabs } = window.Insell;
+const e = React.createElement;
+function Demo(){
+  const [tab, setTab] = React.useState('harian');
+  return e(Tabs, {tabs:[{id:'harian',label:'Harian'},{id:'bulanan',label:'Bulanan'},{id:'tahunan',label:'Tahunan'}], activeId:tab, onChange:setTab});
+}
+ReactDOM.createRoot(document.getElementById('root')).render(e(Demo));
+</script>
+</body></html>

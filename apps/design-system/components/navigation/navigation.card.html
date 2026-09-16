@@ -1,0 +1,29 @@
+<!-- @dsCard group="Components" viewport="900x360" name="Navbar & Sidebar" -->
+<!DOCTYPE html><html><head>
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>body{margin:0;background:var(--color-neutral-50);font-family:var(--font-body)}
+.wrap{display:flex;flex-direction:column;gap:12px;padding:12px;box-sizing:border-box}
+.sbwrap{display:flex;height:260px;border:1px solid var(--border-subtle);border-radius:var(--radius-md);overflow:hidden}</style>
+</head><body>
+<div id="root"></div>
+<script>
+const { Navbar, Sidebar, Button } = window.Insell;
+const e = React.createElement;
+function Demo(){
+  const [active, setActive] = React.useState('kasir');
+  const sections = [{title:'Utama', items:[{id:'kasir',label:'Kasir'},{id:'laporan',label:'Laporan'},{id:'stok',label:'Stok'}]},{title:'Pengaturan', items:[{id:'outlet',label:'Outlet'},{id:'akun',label:'Akun'}]}];
+  return e('div', {className:'wrap'},
+    e(Navbar, {links:['Produk','Harga','Tentang'], cta: e(Button, {size:'sm', variant:'secondary'}, 'Coba gratis')}),
+    e(Navbar, {links:['Produk','Harga','Tentang'], cta: e(Button, {size:'sm', variant:'primary'}, 'Coba gratis'), onGround:true}),
+    e('div', {className:'sbwrap'},
+      e(Sidebar, {sections, activeId:active, onSelect:setActive}),
+      e('div', {style:{flex:1,background:'var(--surface-canvas)'}})
+    )
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(e(Demo));
+</script>
+</body></html>

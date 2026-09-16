@@ -1,0 +1,21 @@
+<!-- @dsCard group="Components" viewport="400x180" name="Dropdown" -->
+<!DOCTYPE html><html><head>
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>body{margin:0;background:var(--surface-page);padding:40px;box-sizing:border-box}</style>
+</head><body>
+<div id="root"></div>
+<script>
+const { Dropdown, Button } = window.Insell;
+const e = React.createElement;
+function Demo(){
+  return e(Dropdown, {
+    trigger: e(Button, {variant:'secondary'}, 'Aksi ⌄'),
+    items: [{id:'edit',label:'Edit produk'},{id:'duplikat',label:'Duplikat'},{id:'hapus',label:'Hapus',danger:true}]
+  });
+}
+ReactDOM.createRoot(document.getElementById('root')).render(e(Demo));
+</script>
+</body></html>

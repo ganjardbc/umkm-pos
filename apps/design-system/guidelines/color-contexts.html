@@ -1,0 +1,15 @@
+<!-- @dsCard group="Colors" viewport="700x230" subtitle="Default / on-ground / dark — same tokens, three contexts" name="Contexts" -->
+<!DOCTYPE html><html><head><link rel="stylesheet" href="../styles.css"><style>
+body{margin:0;font-family:var(--font-body);padding:14px;box-sizing:border-box;background:var(--color-neutral-50)}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.ctx{border-radius:var(--radius-md);padding:16px;height:150px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-between}
+.ctx h4{margin:0;font:var(--text-heading-sm);color:var(--text-primary)}
+.ctx p{margin:0;font:var(--text-caption);color:var(--text-secondary)}
+.chip{align-self:flex-start;padding:4px 10px;border-radius:999px;font:var(--text-caption);background:var(--brand-solid);color:var(--text-on-brand)}
+</style></head><body>
+<div class="grid">
+<div class="ctx" style="background:var(--surface-canvas);border:1px solid var(--border-default)"><h4>Default</h4><p>Cream/white surfaces — product UI, dashboard</p><span class="chip">Aksi</span></div>
+<div class="ctx on-ground"><h4>On-ground</h4><p>Primary field — landing hero, carousel</p><span class="chip">Aksi</span></div>
+<div class="ctx dark"><h4>Dark</h4><p>Navy-derived — dashboard dark mode</p><span class="chip">Aksi</span></div>
+</div>
+</body></html>

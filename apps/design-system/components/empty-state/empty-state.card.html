@@ -1,0 +1,21 @@
+<!-- @dsCard group="Components" viewport="500x260" name="Empty state" -->
+<!DOCTYPE html><html><head>
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>body{margin:0;background:var(--surface-page)}</style>
+</head><body>
+<div id="root"></div>
+<script>
+const { EmptyState, Button } = window.Insell;
+const e = React.createElement;
+function Demo(){
+  return e(EmptyState, {
+    title:'Belum ada produk', description:'Tambahkan produk pertama untuk mulai berjualan.',
+    action: e(Button, {size:'sm'}, 'Tambah produk')
+  });
+}
+ReactDOM.createRoot(document.getElementById('root')).render(e(Demo));
+</script>
+</body></html>

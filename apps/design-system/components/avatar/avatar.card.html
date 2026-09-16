@@ -1,0 +1,22 @@
+<!-- @dsCard group="Components" viewport="400x120" name="Avatar" -->
+<!DOCTYPE html><html><head>
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>body{margin:0;background:var(--surface-page);padding:20px;box-sizing:border-box;display:flex;gap:12px;align-items:center}</style>
+</head><body>
+<div id="root"></div>
+<script>
+const { Avatar } = window.Insell;
+const e = React.createElement;
+function Demo(){
+  return e('div', {style:{display:'flex',gap:12,alignItems:'center'}},
+    e(Avatar, {name:'Sari Wulandari', size:'sm'}),
+    e(Avatar, {name:'Budi Santoso', size:'md'}),
+    e(Avatar, {name:'Dewi Kartika', size:'lg'})
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(e(Demo));
+</script>
+</body></html>

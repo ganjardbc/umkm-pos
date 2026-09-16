@@ -1,0 +1,22 @@
+<!-- @dsCard group="Components" viewport="700x220" name="Card" -->
+<!DOCTYPE html><html><head>
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>body{margin:0;background:var(--surface-page);padding:16px;box-sizing:border-box;font-family:var(--font-body)}</style>
+</head><body>
+<div id="root"></div>
+<script>
+const { Card, Button } = window.Insell;
+const e = React.createElement;
+function Demo(){
+  return e(Card, {
+    title:'Ringkasan outlet', subtitle:'Cabang Kemang',
+    actions: e(Button, {size:'sm', variant:'ghost'}, 'Lihat semua'),
+    footer: e('span', {style:{font:'var(--text-caption)',color:'var(--text-tertiary)'}}, 'Diperbarui 5 menit lalu')
+  }, e('p', {style:{margin:0,font:'var(--text-body-md)',color:'var(--text-secondary)'}}, 'Pendapatan hari ini Rp 2.140.000 dari 38 transaksi.'));
+}
+ReactDOM.createRoot(document.getElementById('root')).render(e(Demo));
+</script>
+</body></html>

@@ -1,0 +1,17 @@
+/* Shadows are tinted with navy, not pure black — keeps depth warm and
+   consistent with the brand's ink color rather than generic gray. */
+:root {
+  --shadow-color: 222 30% 20%;
+  --shadow-xs: 0 1px 2px hsl(var(--shadow-color) / 0.06);
+  --shadow-sm: 0 1px 3px hsl(var(--shadow-color) / 0.08), 0 1px 2px hsl(var(--shadow-color) / 0.05);
+  --shadow-md: 0 4px 10px hsl(var(--shadow-color) / 0.10), 0 2px 4px hsl(var(--shadow-color) / 0.06);
+  --shadow-lg: 0 12px 24px hsl(var(--shadow-color) / 0.12), 0 4px 8px hsl(var(--shadow-color) / 0.06);
+  --shadow-xl: 0 24px 48px hsl(var(--shadow-color) / 0.16), 0 8px 16px hsl(var(--shadow-color) / 0.08);
+  --shadow-brand: 0 8px 20px oklch(68.5% 0.1744 42.8 / 0.28);
+  --shadow-focus-ring: 0 0 0 3px var(--color-primary-100);
+  --shadow-focus-ring-dark: 0 0 0 3px color-mix(in oklab, var(--color-primary-500) 35%, transparent);
+}
+.dark {
+  --shadow-color: 222 40% 4%;
+  --shadow-focus-ring: 0 0 0 3px color-mix(in oklab, var(--color-primary-500) 35%, transparent);
+}

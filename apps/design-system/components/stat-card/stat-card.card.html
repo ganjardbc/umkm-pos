@@ -1,0 +1,23 @@
+<!-- @dsCard group="Components" viewport="700x180" name="Stat card" -->
+<!DOCTYPE html><html><head>
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>body{margin:0;background:var(--surface-sunken);padding:16px;box-sizing:border-box}
+.row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}</style>
+</head><body>
+<div id="root"></div>
+<script>
+const { StatCard } = window.Insell;
+const e = React.createElement;
+function Demo(){
+  return e('div', {className:'row'},
+    e(StatCard, {label:'Pendapatan hari ini', value:'Rp 2.140.000', delta:'+12% dari kemarin'}),
+    e(StatCard, {label:'Transaksi', value:'38', delta:'+5 dari kemarin'}),
+    e(StatCard, {label:'Stok kritis', value:'3 produk', delta:'-2 dari kemarin', deltaTone:'error'})
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(e(Demo));
+</script>
+</body></html>

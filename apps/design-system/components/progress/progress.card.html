@@ -1,0 +1,27 @@
+<!-- @dsCard group="Components" viewport="700x140" name="Progress & Spinner" -->
+<!DOCTYPE html><html><head>
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>body{margin:0;background:var(--surface-page);padding:20px;box-sizing:border-box;font-family:var(--font-body)}
+.stack{display:flex;flex-direction:column;gap:14px;max-width:340px}
+.row{display:flex;align-items:center;gap:16px;margin-top:16px}</style>
+</head><body>
+<div id="root"></div>
+<script>
+const { Progress, Spinner } = window.Insell;
+const e = React.createElement;
+function Demo(){
+  return e('div', null,
+    e('div', {className:'stack'},
+      e(Progress, {value:68}),
+      e(Progress, {value:24, tone:'warning'}),
+      e(Progress, {value:8, tone:'error'})
+    ),
+    e('div', {className:'row'}, e(Spinner,{size:18}), e(Spinner,{size:28}), e(Spinner,{size:36}))
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(e(Demo));
+</script>
+</body></html>

@@ -1,0 +1,32 @@
+<!-- @dsCard group="Components" viewport="700x220" name="Button" -->
+<!DOCTYPE html><html><head>
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>body{margin:0;background:var(--surface-page);padding:16px;box-sizing:border-box;font-family:var(--font-body)}
+.row{display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap}</style>
+</head><body>
+<div id="root"></div>
+<script>
+const { Button } = window.Insell;
+const e = React.createElement;
+function Demo(){
+  return e('div', null,
+    e('div', {className:'row'},
+      e(Button, {variant:'primary'}, 'Tambah transaksi'),
+      e(Button, {variant:'secondary'}, 'Batal'),
+      e(Button, {variant:'ghost'}, 'Lihat detail'),
+      e(Button, {variant:'danger'}, 'Hapus')
+    ),
+    e('div', {className:'row'},
+      e(Button, {size:'sm'}, 'Small'),
+      e(Button, {size:'md'}, 'Medium'),
+      e(Button, {size:'lg'}, 'Large'),
+      e(Button, {disabled:true}, 'Disabled')
+    )
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(e(Demo));
+</script>
+</body></html>

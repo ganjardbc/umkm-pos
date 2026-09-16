@@ -1,0 +1,158 @@
+<!DOCTYPE html><html><head>
+<meta charset="utf-8">
+<title>Insell Design System</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:var(--font-body);background:var(--color-neutral-50);color:var(--text-primary)}
+.shell{display:flex;min-height:100vh}
+.sidebar{width:250px;flex-shrink:0;background:var(--surface-page);border-right:1px solid var(--border-subtle);padding:24px 16px;position:sticky;top:0;height:100vh;overflow-y:auto}
+.brand{display:flex;align-items:center;gap:10px;padding:0 8px 20px;margin-bottom:12px;border-bottom:1px solid var(--border-subtle)}
+.brand img{height:30px}
+.brand span{font-family:var(--font-display);font-weight:800;font-size:18px;color:var(--color-neutral-800)}
+.navgroup{margin-bottom:18px}
+.navgroup h6{font:var(--text-overline);letter-spacing:var(--tracking-overline);color:var(--text-tertiary);margin:0 0 6px;padding:0 8px}
+.navgroup a{display:block;padding:7px 8px;border-radius:var(--radius-sm);color:var(--text-secondary);text-decoration:none;font:var(--text-body-sm)}
+.navgroup a:hover{background:var(--color-neutral-50);color:var(--text-primary)}
+.main{flex:1;padding:40px 48px;max-width:1200px}
+section{margin-bottom:64px}
+section h2{font-family:var(--font-display);font-weight:800;font-size:28px;letter-spacing:-0.01em;margin:0 0 4px;color:var(--color-neutral-800)}
+section .sub{font:var(--text-body-md);color:var(--text-secondary);margin:0 0 20px}
+.cards{display:flex;flex-wrap:wrap;gap:16px}
+.cardframe{border:1px solid var(--border-subtle);border-radius:var(--radius-md);overflow:hidden;background:#fff;box-shadow:var(--shadow-xs)}
+.cardframe .lbl{font:var(--text-caption);color:var(--text-tertiary);padding:8px 12px;border-bottom:1px solid var(--border-subtle);background:var(--surface-sunken)}
+iframe{border:none;display:block}
+.social-frame{width:280px;height:350px;overflow:hidden;position:relative}
+.social-frame iframe{width:1080px;height:1350px;transform:scale(0.2593);transform-origin:top left}
+header.intro{padding-bottom:8px}
+header.intro h1{font-family:var(--font-display);font-weight:800;font-size:40px;letter-spacing:-0.02em;margin:0 0 10px}
+header.intro p{font:var(--text-body-lg);color:var(--text-secondary);max-width:640px;margin:0}
+</style>
+</head><body>
+<div class="shell">
+  <nav class="sidebar">
+    <div class="brand"><img src="assets/logo/insell-icon.png" alt=""><span>Insell DS</span></div>
+    <div class="navgroup"><h6>Foundations</h6>
+      <a href="#colors">Colors</a><a href="#type">Typography</a><a href="#icons">Iconography</a>
+      <a href="#layout">Layout &amp; grid</a><a href="#elevation">Elevation</a><a href="#motion">Motion</a>
+      <a href="#imagery">Image treatment</a><a href="#logo">Logo usage</a><a href="#darkmode">Dark mode</a>
+    </div>
+    <div class="navgroup"><h6>Components</h6>
+      <a href="#c-button">Button</a><a href="#c-forms">Form controls</a><a href="#c-card">Card</a>
+      <a href="#c-badge">Badge / Tag</a><a href="#c-nav">Navbar &amp; Sidebar</a><a href="#c-tabs">Tabs</a>
+      <a href="#c-dropdown">Dropdown</a><a href="#c-modal">Modal</a><a href="#c-feedback">Alert / Toast / Tooltip</a>
+      <a href="#c-table">Table</a><a href="#c-stat">Stat card</a><a href="#c-progress">Progress / Spinner</a>
+      <a href="#c-wayfinding">Breadcrumb / Pagination</a><a href="#c-avatar">Avatar</a><a href="#c-empty">Empty state</a>
+    </div>
+    <div class="navgroup"><h6>Social</h6><a href="#social">Carousel canvas</a></div>
+  </nav>
+  <main class="main">
+    <header class="intro">
+      <h1>Insell Design System</h1>
+      <p>Foundations and components for insell.id — marketing site, social content, and the POS dashboard. Cream-based light surfaces, primary-field marketing contexts, and a navy-derived dark mode, all from one token set.</p>
+    </header>
+
+    <section id="colors"><h2>Colors</h2><p class="sub">Primary ramp (brand-fixed anchors), neutral ramp cream→navy, semantic accents, and the three usage contexts.</p>
+      <div class="cards">
+        <div class="cardframe"><iframe src="guidelines/color-primary.html" width="700" height="210"></iframe></div>
+        <div class="cardframe"><iframe src="guidelines/color-neutral.html" width="700" height="210"></iframe></div>
+        <div class="cardframe"><iframe src="guidelines/color-semantic.html" width="700" height="180"></iframe></div>
+        <div class="cardframe"><iframe src="guidelines/color-contexts.html" width="700" height="230"></iframe></div>
+      </div>
+    </section>
+
+    <section id="type"><h2>Typography</h2><p class="sub">Manrope for display/headings, Inter for body, UI, and tabular data.</p>
+      <div class="cards">
+        <div class="cardframe"><iframe src="guidelines/type-display.html" width="700" height="300"></iframe></div>
+        <div class="cardframe"><iframe src="guidelines/type-body.html" width="700" height="300"></iframe></div>
+      </div>
+    </section>
+
+    <section id="icons"><h2>Iconography</h2><p class="sub">Lucide (CDN substitution — flagged, no icon set was supplied).</p>
+      <div class="cards"><div class="cardframe"><iframe src="guidelines/icons.html" width="700" height="150"></iframe></div></div>
+    </section>
+
+    <section id="layout"><h2>Layout &amp; grid</h2><p class="sub">4px spacing base, radius scale, 12-col grid.</p>
+      <div class="cards">
+        <div class="cardframe"><iframe src="guidelines/spacing-scale.html" width="700" height="260"></iframe></div>
+        <div class="cardframe"><iframe src="guidelines/spacing-radius.html" width="700" height="160"></iframe></div>
+        <div class="cardframe"><iframe src="guidelines/layout-grid.html" width="700" height="220"></iframe></div>
+      </div>
+    </section>
+
+    <section id="elevation"><h2>Elevation</h2><p class="sub">Navy-tinted shadows, five steps plus a brand-tinted variant.</p>
+      <div class="cards"><div class="cardframe"><iframe src="guidelines/elevation-shadow.html" width="700" height="180"></iframe></div></div>
+    </section>
+
+    <section id="motion"><h2>Motion</h2><p class="sub">Fast, purposeful transitions; spring reserved for confirmations.</p>
+      <div class="cards"><div class="cardframe"><iframe src="guidelines/motion-easing.html" width="700" height="160"></iframe></div></div>
+    </section>
+
+    <section id="imagery"><h2>Image treatment</h2><p class="sub">Warm, natural product photography. Striped placeholders until real assets land.</p>
+      <div class="cards"><div class="cardframe"><iframe src="guidelines/imagery.html" width="700" height="220"></iframe></div></div>
+    </section>
+
+    <section id="logo"><h2>Logo usage</h2><p class="sub">Clear space, minimum size, on-ground knockout.</p>
+      <div class="cards"><div class="cardframe"><iframe src="guidelines/logo.html" width="700" height="260"></iframe></div></div>
+    </section>
+
+    <section id="darkmode"><h2>Dark mode</h2><p class="sub">Navy-derived surfaces and text — not generic gray.</p>
+      <div class="cards"><div class="cardframe"><iframe src="guidelines/dark-mode.html" width="700" height="220"></iframe></div></div>
+    </section>
+
+    <section id="c-button"><h2>Button</h2>
+      <div class="cards"><div class="cardframe"><iframe src="components/button/button.card.html" width="700" height="220"></iframe></div></div>
+    </section>
+    <section id="c-forms"><h2>Form controls</h2>
+      <div class="cards"><div class="cardframe"><iframe src="components/forms/forms.card.html" width="700" height="320"></iframe></div></div>
+    </section>
+    <section id="c-card"><h2>Card</h2>
+      <div class="cards"><div class="cardframe"><iframe src="components/card/card.card.html" width="700" height="220"></iframe></div></div>
+    </section>
+    <section id="c-badge"><h2>Badge / Tag</h2>
+      <div class="cards"><div class="cardframe"><iframe src="components/badge/badge.card.html" width="700" height="120"></iframe></div></div>
+    </section>
+    <section id="c-nav"><h2>Navbar &amp; Sidebar</h2>
+      <div class="cards"><div class="cardframe"><iframe src="components/navigation/navigation.card.html" width="900" height="360"></iframe></div></div>
+    </section>
+    <section id="c-tabs"><h2>Tabs</h2>
+      <div class="cards"><div class="cardframe"><iframe src="components/tabs/tabs.card.html" width="500" height="90"></iframe></div></div>
+    </section>
+    <section id="c-dropdown"><h2>Dropdown</h2>
+      <div class="cards"><div class="cardframe"><iframe src="components/dropdown/dropdown.card.html" width="400" height="180"></iframe></div></div>
+    </section>
+    <section id="c-modal"><h2>Modal</h2>
+      <div class="cards"><div class="cardframe"><iframe src="components/modal/modal.card.html" width="500" height="320"></iframe></div></div>
+    </section>
+    <section id="c-feedback"><h2>Alert / Toast / Tooltip</h2>
+      <div class="cards"><div class="cardframe"><iframe src="components/feedback/feedback.card.html" width="700" height="320"></iframe></div></div>
+    </section>
+    <section id="c-table"><h2>Table</h2>
+      <div class="cards"><div class="cardframe"><iframe src="components/table/table.card.html" width="700" height="300"></iframe></div></div>
+    </section>
+    <section id="c-stat"><h2>Stat card</h2>
+      <div class="cards"><div class="cardframe"><iframe src="components/stat-card/stat-card.card.html" width="700" height="180"></iframe></div></div>
+    </section>
+    <section id="c-progress"><h2>Progress / Spinner</h2>
+      <div class="cards"><div class="cardframe"><iframe src="components/progress/progress.card.html" width="700" height="140"></iframe></div></div>
+    </section>
+    <section id="c-wayfinding"><h2>Breadcrumb / Pagination</h2>
+      <div class="cards"><div class="cardframe"><iframe src="components/wayfinding/wayfinding.card.html" width="700" height="140"></iframe></div></div>
+    </section>
+    <section id="c-avatar"><h2>Avatar</h2>
+      <div class="cards"><div class="cardframe"><iframe src="components/avatar/avatar.card.html" width="400" height="120"></iframe></div></div>
+    </section>
+    <section id="c-empty"><h2>Empty state</h2>
+      <div class="cards"><div class="cardframe"><iframe src="components/empty-state/empty-state.card.html" width="500" height="260"></iframe></div></div>
+    </section>
+
+    <section id="social"><h2>Social carousel canvas</h2><p class="sub">1080×1350 Instagram/TikTok carousel slides — cover, detail, closing.</p>
+      <div class="cards">
+        <div class="social-frame"><iframe src="social/carousel-cover.html"></iframe></div>
+        <div class="social-frame"><iframe src="social/carousel-detail.html"></iframe></div>
+        <div class="social-frame"><iframe src="social/carousel-closing.html"></iframe></div>
+      </div>
+    </section>
+  </main>
+</div>
+</body></html>

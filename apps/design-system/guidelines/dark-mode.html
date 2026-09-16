@@ -1,0 +1,21 @@
+<!-- @dsCard group="Dark Mode" viewport="700x220" subtitle="Navy-derived surfaces + text, same tokens as light" name="Light vs dark" -->
+<!DOCTYPE html><html><head><link rel="stylesheet" href="../styles.css"><style>
+body{margin:0;background:var(--color-neutral-50);padding:14px;box-sizing:border-box;font-family:var(--font-body)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.panel{border-radius:var(--radius-md);padding:16px;height:170px;box-sizing:border-box}
+.card{background:var(--surface-card);border:1px solid var(--border-default);border-radius:var(--radius-sm);padding:12px;margin-top:10px}
+h4{margin:0;font:var(--text-heading-sm);color:var(--text-primary)}
+p{margin:4px 0 0;font:var(--text-caption);color:var(--text-secondary)}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--color-success);margin-right:6px}
+</style></head><body>
+<div class="grid">
+<div class="panel" style="background:var(--surface-canvas);border:1px solid var(--border-default)">
+<span style="font:var(--text-overline);color:var(--text-tertiary)">LIGHT</span>
+<div class="card"><h4><span class="dot"></span>Transaksi berhasil</h4><p>Rp 84.000 · 2 item</p></div>
+</div>
+<div class="panel dark">
+<span style="font:var(--text-overline);color:var(--text-tertiary)">DARK</span>
+<div class="card"><h4><span class="dot"></span>Transaksi berhasil</h4><p>Rp 84.000 · 2 item</p></div>
+</div>
+</div>
+</body></html>

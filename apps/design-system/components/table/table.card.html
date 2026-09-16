@@ -1,0 +1,24 @@
+<!-- @dsCard group="Components" viewport="700x300" name="Table" -->
+<!DOCTYPE html><html><head>
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>body{margin:0;background:var(--surface-page);padding:16px;box-sizing:border-box}</style>
+</head><body>
+<div id="root"></div>
+<script>
+const { Table, Badge } = window.Insell;
+const e = React.createElement;
+function Demo(){
+  const columns = [{key:'id',label:'Invoice'},{key:'outlet',label:'Outlet'},{key:'status',label:'Status'},{key:'total',label:'Total',align:'right',mono:true}];
+  const rows = [
+    {id:'INV-00231',outlet:'Kemang',status:e(Badge,{tone:'success',dot:true},'Lunas'),total:'Rp 84.000'},
+    {id:'INV-00230',outlet:'Senopati',status:e(Badge,{tone:'warning',dot:true},'Tertunda'),total:'Rp 152.000'},
+    {id:'INV-00229',outlet:'Kemang',status:e(Badge,{tone:'error',dot:true},'Gagal'),total:'Rp 46.500'},
+  ];
+  return e(Table, {columns, rows});
+}
+ReactDOM.createRoot(document.getElementById('root')).render(e(Demo));
+</script>
+</body></html>
