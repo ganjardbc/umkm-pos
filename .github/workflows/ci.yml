@@ -32,6 +32,7 @@ jobs:
       reason_landing: ${{ steps.decide.outputs.reason_landing }}
       global: ${{ steps.filter.outputs.global }}
       shared: ${{ steps.filter.outputs.shared }}
+      ui: ${{ steps.filter.outputs.ui }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -51,6 +52,8 @@ jobs:
               - 'apps/landing/**'
             shared:
               - 'packages/shared-types/**'
+            ui:
+              - 'packages/ui/**'
             global:
               - 'pnpm-lock.yaml'
               - 'pnpm-workspace.yaml'
@@ -91,6 +94,13 @@ jobs:
               REASON_MERCHANT="packages/shared-types changed"
               ADMIN=true
               REASON_ADMIN="packages/shared-types changed"
+            fi
+
+            if [[ "${{ steps.filter.outputs.ui }}" == 'true' ]]; then
+              MERCHANT=true
+              REASON_MERCHANT="packages/ui changed"
+              ADMIN=true
+              REASON_ADMIN="packages/ui changed"
             fi
 
             if [[ "${{ steps.filter.outputs.merchant }}" == 'true' ]]; then
@@ -392,6 +402,7 @@ jobs:
             echo "| admin | ${{ needs.prepare.outputs.admin_changed }} | ${{ needs.prepare.outputs.admin }} | ${{ needs.prepare.outputs.reason_admin }} |"
             echo "| landing | ${{ needs.prepare.outputs.landing_changed }} | ${{ needs.prepare.outputs.landing }} | ${{ needs.prepare.outputs.reason_landing }} |"
             echo "| shared-types | ${{ needs.prepare.outputs.shared }} | n/a (impact rule) | Triggers api + merchant + admin |"
+            echo "| ui | ${{ needs.prepare.outputs.ui }} | n/a (impact rule) | Triggers merchant + admin |"
             echo "| global/root | ${{ needs.prepare.outputs.global }} | full CI | Triggers api + merchant + admin + landing |"
             echo ""
             echo "### Job results"
