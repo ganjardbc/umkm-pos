@@ -53,6 +53,10 @@
             </div>
           </template>
 
+          <div>
+            isCanAddItems: {{ isCanAddItems }}
+          </div>
+
           <div
             v-if="!transactionDetail.transaction_items?.length"
             class="flex flex-col items-center justify-center gap-2 py-12 text-center text-gray-400"
@@ -65,7 +69,7 @@
             <UiCard
               v-for="(item, index) in transactionDetail.transaction_items"
               :key="item.id || index"
-              class="transaction-item-card dark:bg-dark!"
+              class="transaction-item-card bg-gray-50! dark:bg-dark!"
             >
               <div class="flex min-w-0 items-start gap-3">
                 <span class="transaction-item-card__number">{{ Number(index) + 1 }}</span>
@@ -267,9 +271,9 @@
 import { type ReceiptData } from '../utils/receiptGenerator';
 import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { getErrorMessage, getCurrency, formatDateTime, formatPrice } from '@/helpers/utils.ts';
-import { showToast, showConfirm } from '@/helpers/toast.ts';
-import { showLoading, hideLoading } from '@/helpers/loading.ts';
+import { getErrorMessage, getCurrency, formatDateTime, formatPrice } from '@umkm-pos/ui/helpers/utils';
+import { showToast, showConfirm } from '@umkm-pos/ui/helpers/toast';
+import { showLoading, hideLoading } from '@umkm-pos/ui/helpers/loading';
 import { isHasPermission } from '@/helpers/auth.ts';
 import {
   getDetailTransaction,
@@ -282,8 +286,8 @@ import { getOrderStatusLabel } from '@/modules/transaction/services/status-label
 import ReceiptModal from '@/modules/transaction/components/ReceiptModal.vue';
 import PaymentModal from '@/modules/transaction/components/PaymentModal.vue';
 
-import UiCard from '@/components/UiCard.vue';
-import UiLoading from '@/components/UiLoading.vue';
+import UiCard from '@umkm-pos/ui/components/UiCard.vue';
+import UiLoading from '@umkm-pos/ui/components/UiLoading.vue';
 import Tag from 'primevue/tag';
 import Button from 'primevue/button';
 
@@ -295,8 +299,14 @@ const transactionID = computed(() => route.params.id as string);
 const isCanPrint = computed(() => isHasPermission(PRINT));
 const isCanCancel = computed(() => isHasPermission(CANCEL));
 const isCanUpdateStatus = computed(() => isHasPermission(UPDATE_STATUS));
-const isCanAddItems = computed(() => transactionDetail.value?.payment_method === 'pending');
 const isCanPay = computed(() => isHasPermission(CREATE));
+// Items can only be added while the transaction is still open: not cancelled,
+// not yet paid (the total is settled at payment), and not yet completed.
+const isCanAddItems = computed(() => (
+  !transactionDetail.value?.is_cancelled &&
+  transactionDetail.value?.payment_method === 'pending' &&
+  transactionDetail.value?.order_status !== 'selesai'
+));
 
 const nextStatusMap: Record<string, string> = {
   menunggu_konfirmasi: 'diterima',
@@ -483,7 +493,7 @@ onMounted(() => {
 
 <style scoped>
 @import "tailwindcss";
-@import "@/assets/styles/themes.css";
+@import "@umkm-pos/ui/styles/themes.css";
 
 .transaction-detail {
   @apply w-full space-y-4;
@@ -534,7 +544,7 @@ onMounted(() => {
 }
 
 .transaction-item-card__metric {
-  @apply flex items-center justify-between gap-3 rounded-lg bg-gray-50 px-3 py-2 text-sm dark:bg-gray-900 sm:flex-col sm:items-start sm:gap-1;
+  @apply flex items-center justify-between gap-3 rounded-lg bg-gray-100 px-3 py-2 text-sm dark:bg-gray-900 sm:flex-col sm:items-start sm:gap-1;
 }
 
 .transaction-item-card__metric--total {

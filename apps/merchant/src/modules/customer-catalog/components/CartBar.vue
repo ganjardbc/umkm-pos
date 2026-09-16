@@ -83,7 +83,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { getCurrency } from '@/helpers/utils.ts';
+import { getCurrency } from '@umkm-pos/ui/helpers/utils';
 
 defineProps<{
   items: any[];

@@ -289,11 +289,11 @@ import { ref, computed, watch } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useAuthStore } from '@/modules/auth/stores/index.ts';
 import { usePosStore } from '@/modules/transaction/stores-pos';
-import { getCurrency } from '@/helpers/utils.ts';
-import { useGlobalLoading } from '@/composables/useGlobalLoading.ts';
-import { showConfirm, showToast } from '@/helpers/toast.ts';
+import { getCurrency } from '@umkm-pos/ui/helpers/utils';
+import { useGlobalLoading } from '@umkm-pos/ui/composables/useGlobalLoading.ts';
+import { showConfirm, showToast } from '@umkm-pos/ui/helpers/toast';
 import { getOutletTables, postTransaction, patchTransactionItems } from '@/modules/transaction/services/api.ts';
-import UiCard from '@/components/UiCard.vue';
+import UiCard from '@umkm-pos/ui/components/UiCard.vue';
 import PaymentModal from '@/modules/transaction/components/PaymentModal.vue';
 
 const props = defineProps({
@@ -642,7 +642,7 @@ watch(() => transactionForm.value.payment_method, (method: string) => {
 </script>
 <style>
 @import 'tailwindcss';
-@import '@/assets/styles/themes.css';
+@import '@umkm-pos/ui/styles/themes.css';
 
 .pos-cart {
   @apply w-full flex flex-col justify-between bg-white dark:bg-dark-secondary;

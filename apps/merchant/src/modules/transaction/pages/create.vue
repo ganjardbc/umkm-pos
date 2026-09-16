@@ -98,7 +98,7 @@ onMounted(() => {
 
 <style scoped>
 @import "tailwindcss";
-@import "@/assets/styles/themes.css";
+@import "@umkm-pos/ui/styles/themes.css";
 
 .transaction-create {
   @apply w-full h-full grid gap-4;

@@ -76,8 +76,8 @@
 </template>
 
 <script setup lang="ts">
-import UiCard from '@/components/UiCard.vue';
-import { formatDateTime, formatRangeTime } from '@/helpers/utils.ts';
+import UiCard from '@umkm-pos/ui/components/UiCard.vue';
+import { formatDateTime, formatRangeTime } from '@umkm-pos/ui/helpers/utils';
 
 defineProps({
   currentShift: {
@@ -89,5 +89,5 @@ defineProps({
 
 <style scoped>
 @import "tailwindcss";
-@import "@/assets/styles/themes.css";
+@import "@umkm-pos/ui/styles/themes.css";
 </style>

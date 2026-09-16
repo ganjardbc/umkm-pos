@@ -78,7 +78,7 @@ onMounted(() => {
 
 <style scoped>
 @import "tailwindcss";
-@import "@/assets/styles/themes.css";
+@import "@umkm-pos/ui/styles/themes.css";
 
 .pos-shift {
   @apply w-full space-y-4;

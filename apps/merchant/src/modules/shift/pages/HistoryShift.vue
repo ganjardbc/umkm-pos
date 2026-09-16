@@ -88,16 +88,16 @@
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { getNoTable, getErrorMessage, formatDate, formatRangeTime, getDuration } from '@/helpers/utils.ts';
+import { getNoTable, getErrorMessage, formatDate, formatRangeTime, getDuration } from '@umkm-pos/ui/helpers/utils';
 import { PREFIX_ROUTE_NAME } from '@/modules/shift/services/constants.ts';
 import { getListShift } from '@/modules/shift/services/api.ts';
-import { showToast } from '@/helpers/toast.ts';
+import { showToast } from '@umkm-pos/ui/helpers/toast';
 import { getOutlet, isHasPermission } from '@/helpers/auth.ts';
 import { READ } from '@/modules/shift/services/rbac.ts';
-import UiCard from '@/components/UiCard.vue';
-import UiSearch from '@/components/UiSearch.vue';
-import UiPagination from '@/components/UiPagination.vue';
-import UiLoading from '@/components/UiLoading.vue';
+import UiCard from '@umkm-pos/ui/components/UiCard.vue';
+import UiSearch from '@umkm-pos/ui/components/UiSearch.vue';
+import UiPagination from '@umkm-pos/ui/components/UiPagination.vue';
+import UiLoading from '@umkm-pos/ui/components/UiLoading.vue';
 
 const outlet = getOutlet();
 const router = useRouter();

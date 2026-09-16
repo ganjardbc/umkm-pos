@@ -91,7 +91,7 @@ onMounted(() => {
 
 <style scoped>
 @import "tailwindcss";
-@import "@/assets/styles/themes.css";
+@import "@umkm-pos/ui/styles/themes.css";
 
 .pos {
   @apply w-full h-full grid gap-4;

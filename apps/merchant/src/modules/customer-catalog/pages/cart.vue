@@ -154,9 +154,9 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import UiCard from '@/components/UiCard.vue';
-import { getCurrency, getErrorMessage } from '@/helpers/utils.ts';
-import { showConfirm, showToast } from '@/helpers/toast.ts';
+import UiCard from '@umkm-pos/ui/components/UiCard.vue';
+import { getCurrency, getErrorMessage } from '@umkm-pos/ui/helpers/utils';
+import { showConfirm, showToast } from '@umkm-pos/ui/helpers/toast';
 import { useCatalogStore } from '../stores/index.ts';
 import { getCatalogTables } from '../services/api.ts';
 

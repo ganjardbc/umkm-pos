@@ -149,8 +149,8 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { isHasPermission } from '@/helpers/auth.ts';
-import { formatDateTime, formatRelativeTime } from '@/helpers/utils.ts';
-import UiCard from '@/components/UiCard.vue';
+import { formatDateTime, formatRelativeTime } from '@umkm-pos/ui/helpers/utils';
+import UiCard from '@umkm-pos/ui/components/UiCard.vue';
 import {
   getListNotification,
   markAllNotificationAsRead,
@@ -249,7 +249,7 @@ onUnmounted(() => {
 </script>
 <style>
 @import 'tailwindcss';
-@import '@/assets/styles/themes.css';
+@import '@umkm-pos/ui/styles/themes.css';
 
 .ui-sidebar-notification {
   @apply relative;

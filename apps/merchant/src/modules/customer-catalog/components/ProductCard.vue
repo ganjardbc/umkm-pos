@@ -54,7 +54,7 @@
 </template>
 
 <script setup lang="ts">
-import { getCurrency } from '@/helpers/utils.ts';
+import { getCurrency } from '@umkm-pos/ui/helpers/utils';
 
 defineProps<{
   product: any;

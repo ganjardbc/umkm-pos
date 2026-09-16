@@ -34,12 +34,12 @@
 import { ref, watch, onMounted, onBeforeUnmount } from 'vue';
 import { Chart, registerables } from 'chart.js';
 import type { OutletComparisonItem } from '../types/reports';
-import UiCard from '@/components/UiCard.vue';
+import UiCard from '@umkm-pos/ui/components/UiCard.vue';
 import ChartLoadingState from './ChartLoadingState.vue';
 import ChartErrorState from './ChartErrorState.vue';
 import ChartEmptyState from './ChartEmptyState.vue';
 import { exportOutletComparison } from '@/modules/reports/services/api.ts';
-import { downloadFile } from '@/helpers/download.ts';
+import { downloadFile } from '@umkm-pos/ui/helpers/download';
 import { getOutlet } from '@/helpers/auth.ts';
 
 // Register Chart.js components

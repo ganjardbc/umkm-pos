@@ -31,7 +31,7 @@
 <script setup lang="ts">
 import MetricsDisplay from '@/modules/shift/components/MetricsDisplay.vue';
 import Information from '@/modules/shift/components/Information.vue';
-import { showLoading, hideLoading } from '@/helpers/loading.ts';
+import { showLoading, hideLoading } from '@umkm-pos/ui/helpers/loading';
 import { getDetailShift, getShiftParticipants } from '@/modules/shift/services/api';
 import { useRoute, useRouter } from 'vue-router';
 import { ref, computed, onMounted } from 'vue';

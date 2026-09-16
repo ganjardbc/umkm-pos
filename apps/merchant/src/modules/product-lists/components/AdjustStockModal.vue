@@ -123,9 +123,9 @@ import type { AdjustStock } from '@/modules/product-lists/services/types';
 import { computed, ref } from 'vue';
 import { z } from 'zod';
 import { zodResolver } from '@primevue/forms/resolvers/zod';
-import { showConfirm } from '@/helpers/toast.ts';
+import { showConfirm } from '@umkm-pos/ui/helpers/toast';
 import { getOutlet } from '@/helpers/auth.ts';
-import UiFormGroup from '@/components/UiFormGroup.vue';
+import UiFormGroup from '@umkm-pos/ui/components/UiFormGroup.vue';
 
 const emits = defineEmits(['submit', 'cancel']);
 

@@ -184,15 +184,15 @@
 import { ref, onMounted, computed } from 'vue';
 import { type Participant, useShift } from '@/modules/shift/composables/useShift.ts';
 import { getListUser } from '@/modules/user/services/api.ts';
-import { showConfirm, showToast } from '@/helpers/toast.ts';
-import { getErrorMessage } from '@/helpers/utils.ts';
+import { showConfirm, showToast } from '@umkm-pos/ui/helpers/toast';
+import { getErrorMessage } from '@umkm-pos/ui/helpers/utils';
 import Button from 'primevue/button';
 import Dialog from 'primevue/dialog';
 import Dropdown from 'primevue/dropdown';
 import InputSwitch from 'primevue/inputswitch';
 import Tag from 'primevue/tag';
 import Divider from 'primevue/divider';
-import UiCard from '@/components/UiCard.vue';
+import UiCard from '@umkm-pos/ui/components/UiCard.vue';
 
 interface User {
   id: string;
@@ -423,7 +423,7 @@ onMounted(() => {
 
 <style scoped>
 @import "tailwindcss";
-@import "@/assets/styles/themes.css";
+@import "@umkm-pos/ui/styles/themes.css";
 
 .participant-management__header {
   @apply flex items-center justify-between;

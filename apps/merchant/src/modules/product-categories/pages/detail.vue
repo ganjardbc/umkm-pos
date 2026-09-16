@@ -70,13 +70,13 @@
 <script lang="ts" setup>
 import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { getErrorMessage, formatDateTime } from '@/helpers/utils.ts';
-import { showToast } from '@/helpers/toast.ts';
+import { getErrorMessage, formatDateTime } from '@umkm-pos/ui/helpers/utils';
+import { showToast } from '@umkm-pos/ui/helpers/toast';
 import { isHasPermission } from '@/helpers/auth.ts';
 import { getDetailCategories } from '@/modules/product-categories/services/api';
 import { PREFIX_ROUTE_NAME } from '@/modules/product-categories/services/constants';
 import { UPDATE } from '@/modules/product-categories/services/rbac';
-import UiCard from '@/components/UiCard.vue';
+import UiCard from '@umkm-pos/ui/components/UiCard.vue';
 
 const route = useRoute();
 const router = useRouter();

@@ -33,7 +33,7 @@
 import { computed } from 'vue';
 import Button from 'primevue/button';
 import Message from 'primevue/message';
-import UiCard from '@/components/UiCard.vue';
+import UiCard from '@umkm-pos/ui/components/UiCard.vue';
 
 interface Props {
   title: string;

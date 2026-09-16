@@ -36,7 +36,7 @@
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { isHasPermission } from '@/helpers/auth.ts';
-import UiCard from '@/components/UiCard.vue';
+import UiCard from '@umkm-pos/ui/components/UiCard.vue';
 import { LIST_MENU } from '@/modules/settings/services/constants.ts';
 
 const router = useRouter();

@@ -38,9 +38,9 @@ import { reactive } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { startCustomerSession } from '../services/api.ts';
 import { setCustomerSession } from '@/helpers/customer-session.ts';
-import { getErrorMessage } from '@/helpers/utils.ts';
-import { showToast } from '@/helpers/toast.ts';
-import UiFormGroup from '@/components/UiFormGroup.vue';
+import { getErrorMessage } from '@umkm-pos/ui/helpers/utils';
+import { showToast } from '@umkm-pos/ui/helpers/toast';
+import UiFormGroup from '@umkm-pos/ui/components/UiFormGroup.vue';
 
 const route = useRoute();
 const router = useRouter();

@@ -54,8 +54,8 @@
 </template>
 
 <script lang="ts" setup>
-import UiCard from '@/components/UiCard.vue';
-import { formatDateTime } from '@/helpers/utils.ts';
+import UiCard from '@umkm-pos/ui/components/UiCard.vue';
+import { formatDateTime } from '@umkm-pos/ui/helpers/utils';
 
 interface IParticipant {
   user_id: string;
@@ -73,7 +73,7 @@ defineProps<{
 
 <style scoped>
 @import "tailwindcss";
-@import "@/assets/styles/themes.css";
+@import "@umkm-pos/ui/styles/themes.css";
 
 .participant-item {
   @apply flex items-center justify-between p-3 bg-gray-50 dark:bg-dark rounded-lg border border-gray-200 dark:border-dark;

@@ -149,7 +149,7 @@ import { ref, onMounted } from 'vue';
 import html2canvas from 'html2canvas';
 import ReceiptPreview from './ReceiptPreview.vue';
 import { generateReceiptHTML, type ReceiptData } from '../utils/receiptGenerator';
-import { showToast } from '@/helpers/toast';
+import { showToast } from '@umkm-pos/ui/helpers/toast';
 import {
   isBluetoothSupported,
   isPrinterConnected,

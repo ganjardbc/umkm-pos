@@ -47,9 +47,9 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
-import { getErrorMessage } from '@/helpers/utils.ts';
-import { showToast } from '@/helpers/toast.ts';
-import UiCard from '@/components/UiCard.vue';
+import { getErrorMessage } from '@umkm-pos/ui/helpers/utils';
+import { showToast } from '@umkm-pos/ui/helpers/toast';
+import UiCard from '@umkm-pos/ui/components/UiCard.vue';
 import ProductCard from '../components/ProductCard.vue';
 import { useCatalogStore } from '../stores/index.ts';
 import { getCatalogCategories, getCatalogProducts } from '../services/api.ts';

@@ -68,14 +68,14 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import { getNoTable, getErrorMessage, formatDateTime } from '@/helpers/utils.ts';
+import { getNoTable, getErrorMessage, formatDateTime } from '@umkm-pos/ui/helpers/utils';
 import { getOutlet } from '@/helpers/auth.ts';
 import { getListStock } from '@/modules/stock/services/api.ts';
-import { showToast } from '@/helpers/toast.ts';
-import UiCard from '@/components/UiCard.vue';
-import UiSearch from '@/components/UiSearch.vue';
-import UiPagination from '@/components/UiPagination.vue';
-import UiLoading from '@/components/UiLoading.vue';
+import { showToast } from '@umkm-pos/ui/helpers/toast';
+import UiCard from '@umkm-pos/ui/components/UiCard.vue';
+import UiSearch from '@umkm-pos/ui/components/UiSearch.vue';
+import UiPagination from '@umkm-pos/ui/components/UiPagination.vue';
+import UiLoading from '@umkm-pos/ui/components/UiLoading.vue';
 
 // Fetch Data
 const loading = ref(false);

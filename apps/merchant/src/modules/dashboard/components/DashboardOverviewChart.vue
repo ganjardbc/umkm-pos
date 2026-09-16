@@ -73,7 +73,7 @@
 import { ref, watch, onMounted, onBeforeUnmount } from 'vue';
 import { Chart, registerables } from 'chart.js';
 import type { DashboardResponse } from '../types/reports';
-import UiCard from '@/components/UiCard.vue';
+import UiCard from '@umkm-pos/ui/components/UiCard.vue';
 import ChartLoadingState from './ChartLoadingState.vue';
 import ChartErrorState from './ChartErrorState.vue';
 import ChartEmptyState from './ChartEmptyState.vue';

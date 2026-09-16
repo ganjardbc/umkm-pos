@@ -192,17 +192,17 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { getErrorMessage, getCurrency, formatDateTime, getNoTable } from '@/helpers/utils.ts';
-import { showToast } from '@/helpers/toast.ts';
-import { showLoading, hideLoading } from '@/helpers/loading.ts';
+import { getErrorMessage, getCurrency, formatDateTime, getNoTable } from '@umkm-pos/ui/helpers/utils';
+import { showToast } from '@umkm-pos/ui/helpers/toast';
+import { showLoading, hideLoading } from '@umkm-pos/ui/helpers/loading';
 import { isHasPermission } from '@/helpers/auth.ts';
 import { getDetailProduct, getProductStock, postAdjustStock } from '@/modules/product-lists/services/api';
 import { getOutlet } from '@/helpers/auth.ts';
 import { PREFIX_ROUTE_NAME } from '@/modules/product-lists/services/constants';
 import { UPDATE, ADJUST } from '@/modules/product-lists/services/rbac';
-import UiCard from '@/components/UiCard.vue';
-import UiSearch from '@/components/UiSearch.vue';
-import UiPagination from '@/components/UiPagination.vue';
+import UiCard from '@umkm-pos/ui/components/UiCard.vue';
+import UiSearch from '@umkm-pos/ui/components/UiSearch.vue';
+import UiPagination from '@umkm-pos/ui/components/UiPagination.vue';
 import AdjustStockModal from '@/modules/product-lists/components/AdjustStockModal.vue';
 import { isLowStock } from '@/modules/product-lists/helpers/stock';
 

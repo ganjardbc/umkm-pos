@@ -122,15 +122,15 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { getNoTable, getErrorMessage, formatDateTime } from '@/helpers/utils.ts';
+import { getNoTable, getErrorMessage, formatDateTime } from '@umkm-pos/ui/helpers/utils';
 import { getListCategories, deleteCategories } from '@/modules/product-categories/services/api';
-import { showToast, showConfirm } from '@/helpers/toast.ts';
-import { showLoading, hideLoading } from '@/helpers/loading.ts';
+import { showToast, showConfirm } from '@umkm-pos/ui/helpers/toast';
+import { showLoading, hideLoading } from '@umkm-pos/ui/helpers/loading';
 import { isHasPermission } from '@/helpers/auth.ts';
-import UiCard from '@/components/UiCard.vue';
-import UiSearch from '@/components/UiSearch.vue';
-import UiPagination from '@/components/UiPagination.vue';
-import UiLoading from '@/components/UiLoading.vue';
+import UiCard from '@umkm-pos/ui/components/UiCard.vue';
+import UiSearch from '@umkm-pos/ui/components/UiSearch.vue';
+import UiPagination from '@umkm-pos/ui/components/UiPagination.vue';
+import UiLoading from '@umkm-pos/ui/components/UiLoading.vue';
 import { PREFIX_ROUTE_NAME } from '@/modules/product-categories/services/constants';
 import { CREATE, UPDATE, DELETE } from '@/modules/product-categories/services/rbac';
 
