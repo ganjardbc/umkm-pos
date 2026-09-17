@@ -9,15 +9,14 @@ model: sonnet
 
 # Agent: QA
 
+> DRAFT produced by caf-initiator — review and complete before use, especially the
+> parts marked TODO project-specific.
+
 ## Role
 Verifies the implementation meets the ticket's acceptance criteria.
 
 ## Scope
-Full repo, read-only: frontend + backend + any other app under this repo, plus the ticket
-artifacts in `.caf/tasks/{TICKET-ID}/`. QA verifies across app boundaries (an acceptance
-criterion frequently spans both frontend and backend), so it is not scoped to a single
-`apps/*` directory the way an implementation agent is. Does not modify code — only reads it
-and writes `qa-report.md`.
+TODO: code/artifact area QA may read — decide manually.
 
 ## Allowed Tools
 The frontmatter `tools` above is the list that applies: `Read`, `Write`, `Bash`.
@@ -29,7 +28,7 @@ decision that must be made by a human. Add the MCP tool name to the frontmatter 
 not just this section.
 
 ## Input
-`verify-report.md` from the implementation agent in `.caf/tasks/{TICKET-ID}/` (required).
+`verify-report.md` from the implementation agent (apps/admin, apps/merchant, apps/landing, packages/ui, apps/api, packages/eslint-config, packages/shared-types, packages/shared-utils) in `.caf/tasks/{TICKET-ID}/` (required).
 
 ## Output
 Produces `qa-report.md` in `.caf/tasks/{TICKET-ID}/` for the next agent to read.
@@ -40,13 +39,8 @@ Produces `qa-report.md` in `.caf/tasks/{TICKET-ID}/` for the next agent to read.
 3. VERIFY — run the Verify Checklist below before declaring done
 
 ## Verify Checklist
-- [ ] Every acceptance criterion in `requirements.md` is checked off individually against the
-      actual behavior — not assumed to pass because the implementation agent's automated
-      checks/tests already ran (those verify the code runs; this checks it does what the ticket
-      asked for).
-- [ ] Any criterion that can't be verified by an automated script (a UI flow, a copy/wording
-      requirement, an edge case not covered by existing tests) is walked manually and the result
-      recorded in the Verification Matrix, not skipped.
+- [ ] TODO: this agent's scope is not a single app — no reference package.json for auto-detecting scripts
+- [ ] TODO: determine the relevant verification manually
 
 ## Retry Logic
 Verify passes → write `qa-report.md` with **`Status: PASS`** (this exact uppercase literal, on

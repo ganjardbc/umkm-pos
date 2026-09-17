@@ -28,7 +28,7 @@ decision that must be made by a human. Add the MCP tool name to the frontmatter 
 not just this section.
 
 ## Input
-`verify-report.md` from the implementation agent and `qa-report.md` from the QA Agent, both in
+`verify-report.md` from the implementation agent (apps/admin, apps/merchant, apps/landing, packages/ui, apps/api, packages/eslint-config, packages/shared-types, packages/shared-utils) and `qa-report.md` from the QA Agent, both in
 `.caf/tasks/{TICKET-ID}/` (required).
 
 Optional — when invoked from post-PR mode (`/caf-fix-review`, not the normal pre-PR pipeline
@@ -58,7 +58,6 @@ Blocked (missing diff/context, or the change needs a human architectural decisio
 `review-notes.md`, with the DEFER verdict and the reason under `### Verdict Rationale`.
 Never leave `review-notes.md` unwritten: caf-orchestrator treats a missing or unparseable
 `Verdict:` line as CHANGES REQUESTED, which stops the PR from going out with no explanation.
-
 
 ## Report Format
 Save the report to `.caf/tasks/<TICKET-ID>/review-notes.md`.
