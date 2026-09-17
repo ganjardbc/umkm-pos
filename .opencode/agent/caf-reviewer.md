@@ -31,7 +31,7 @@ decision that must be made by a human. Add the MCP tool name to the frontmatter 
 not just this section.
 
 ## Input
-`verify-report.md` from the implementation agent (apps/landing, apps/merchant, apps/api, packages/eslint-config, packages/shared-types, packages/shared-utils) and `qa-report.md` from the QA Agent, both in
+`verify-report.md` from the implementation agent (apps/admin, apps/merchant, apps/landing, packages/ui, apps/api, packages/eslint-config, packages/shared-types, packages/shared-utils) and `qa-report.md` from the QA Agent, both in
 `.caf/tasks/{TICKET-ID}/` (required).
 
 Optional — when invoked from post-PR mode (`/caf-fix-review`, not the normal pre-PR pipeline
@@ -54,5 +54,36 @@ Produces `review-notes.md` in `.caf/tasks/{TICKET-ID}/` for the next agent to re
 - [ ] TODO: determine the relevant verification manually
 
 ## Retry Logic
-Verify fails → fix, retry up to 3x → if still failing, stop and write
-`verify-report.md` with Status: NEEDS_HUMAN
+Review complete → write `review-notes.md` with the `Verdict:` line set to one of the values
+listed in the Report Format section below (that section is the single source of the exact
+values — do not restate or invent them here).
+Blocked (missing diff/context, or the change needs a human architectural decision) → still write
+`review-notes.md`, with the DEFER verdict and the reason under `### Verdict Rationale`.
+Never leave `review-notes.md` unwritten: caf-orchestrator treats a missing or unparseable
+`Verdict:` line as CHANGES REQUESTED, which stops the PR from going out with no explanation.
+
+## Report Format
+Save the report to `.caf/tasks/<TICKET-ID>/review-notes.md`.
+
+```
+## Review Notes — {TICKET-ID}
+Ticket: {TICKET-ID}
+Agent: caf-reviewer
+Verdict: APPROVE | CHANGES REQUESTED | DEFER
+
+### Security Audit
+{security findings, or "None" if none}
+
+### Qualitative Review
+{code quality notes}
+
+### Verdict Rationale
+{reasoning for the verdict above}
+
+### For Developer
+{notes for the developer, if relevant}
+```
+
+Verdict MUST be exactly one of the three values above (APPROVE / CHANGES REQUESTED / DEFER) —
+don't use other values (e.g. NEEDS_HUMAN is for the automated pipeline's retry cycle, not this
+Verdict line).

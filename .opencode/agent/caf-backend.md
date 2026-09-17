@@ -20,12 +20,10 @@ model: sonnet
 Implements code changes in apps/api (NestJS), packages/eslint-config, packages/shared-types, packages/shared-utils per the Planner's plan (role: backend).
 
 ## Scope
-`apps/api/**`, `apps/realtime/**`, `packages/eslint-config/**`, `packages/shared-events/**`, `packages/shared-types/**`, `packages/shared-utils/**`
-
-`apps/realtime/**` (the Socket.IO notification gateway) and `packages/shared-events/**` (the domain-event envelope) are part of the realtime-notifications plan in `docs/architecture/realtime-notifications-plan.md`. They are in scope here because they are NestJS/TypeScript on the same stack and conventions as `apps/api`. Neither exists on disk yet — a task tagged for one of them is a create-from-scratch task, not an edit.
+`apps/api/**`, `packages/eslint-config/**`, `packages/shared-types/**`, `packages/shared-utils/**`
 
 This agent covers more than one app. Every task line assigned to this agent in `tasks.md`
-MUST be tagged with the app it targets, e.g. `- [ ] (apps/merchant) Fix email validation` — match
+MUST be tagged with the app it targets, e.g. `- [ ] (apps/web) Fix email validation` — match
 the tag against the scopes above before touching any file. If a task has no tag, or the tag
 does not match any scope above, STOP and ask the user which app is meant — do not guess.
 
@@ -79,21 +77,11 @@ Produces kode + `verify-report.md` in `.caf/tasks/{TICKET-ID}/` for the next age
 - [ ] TODO: no test script detected in package.json — verify manually or add the script
 - [ ] TODO: no build script detected in package.json — verify manually or add the script
 
-#### apps/realtime
-- [ ] `pnpm --filter umkm-pos-realtime run lint`
-- [ ] `pnpm --filter umkm-pos-realtime run test`
-- [ ] `pnpm --filter umkm-pos-realtime run build`
-- [ ] Not yet created — when scaffolding this app, define these three scripts in its
-      `package.json` so this checklist becomes runnable.
-
-#### packages/shared-events
-- [ ] `pnpm --filter @umkm-pos/shared-events run typecheck`
-- [ ] `pnpm --filter @umkm-pos/shared-events run build`
-- [ ] Not yet created — mirror `packages/shared-types` for its `package.json`, `tsconfig`, and
-      build setup, per `docs/shared-types-guidelines.md`.
-
 Run only the checklist for the app(s) actually touched by this task — not every app every time.
 
 ## Retry Logic
+Verify passes → write `verify-report.md` with **`Status: SUCCESS`** (this exact literal word —
+caf-orchestrator greps for `\bSUCCESS\b` and treats anything else, including "PASS"/"DONE"/"OK",
+as `NEEDS_HUMAN`, which stops the whole pipeline and skips QA/Reviewer/PR creation).
 Verify fails → fix, retry up to 3x → if still failing, stop and write
 `verify-report.md` with Status: NEEDS_HUMAN

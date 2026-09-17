@@ -1,8 +1,8 @@
 ---
 name: caf-frontend
 description: >
-  Implements code changes in apps/landing (Vue), apps/merchant (Vue) per the Planner's plan (role: frontend).
-  Use for "caf-frontend", "Frontend (apps/landing (Vue), apps/merchant (Vue)) agent".
+  Implements code changes in apps/admin (Vue), apps/merchant (Vue), apps/landing (Vue), packages/ui (Vue) per the Planner's plan (role: frontend).
+  Use for "caf-frontend", "Frontend (apps/admin (Vue), apps/merchant (Vue), apps/landing (Vue), packages/ui (Vue)) agent".
 tools:
   read: true
   write: true
@@ -11,19 +11,19 @@ tools:
 model: sonnet
 ---
 
-# Agent: Frontend (apps/landing (Vue), apps/merchant (Vue))
+# Agent: Frontend (apps/admin (Vue), apps/merchant (Vue), apps/landing (Vue), packages/ui (Vue))
 
 > DRAFT produced by caf-initiator — review and complete before use, especially the
 > parts marked TODO project-specific.
 
 ## Role
-Implements code changes in apps/landing (Vue), apps/merchant (Vue) per the Planner's plan (role: frontend).
+Implements code changes in apps/admin (Vue), apps/merchant (Vue), apps/landing (Vue), packages/ui (Vue) per the Planner's plan (role: frontend).
 
 ## Scope
-`apps/landing/**`, `apps/merchant/**`
+`apps/admin/**`, `apps/merchant/**`, `apps/landing/**`, `packages/ui/**`
 
 This agent covers more than one app. Every task line assigned to this agent in `tasks.md`
-MUST be tagged with the app it targets, e.g. `- [ ] (apps/merchant) Fix email validation` — match
+MUST be tagged with the app it targets, e.g. `- [ ] (apps/web) Fix email validation` — match
 the tag against the scopes above before touching any file. If a task has no tag, or the tag
 does not match any scope above, STOP and ask the user which app is meant — do not guess.
 
@@ -53,20 +53,35 @@ Produces kode + `verify-report.md` in `.caf/tasks/{TICKET-ID}/` for the next age
 3. VERIFY — run the Verify Checklist below before declaring done
 
 ## Verify Checklist
+#### apps/admin
+- [ ] TODO: no lint script detected in package.json — verify manually or add the script
+- [ ] TODO: no typecheck script detected in package.json — verify manually or add the script
+- [ ] TODO: no test script detected in package.json — verify manually or add the script
+- [ ] `pnpm --filter @umkm-pos/admin run build`
+
+#### apps/merchant
+- [ ] TODO: no lint script detected in package.json — verify manually or add the script
+- [ ] TODO: no typecheck script detected in package.json — verify manually or add the script
+- [ ] TODO: no test script detected in package.json — verify manually or add the script
+- [ ] `pnpm --filter @umkm-pos/merchant run build`
+
 #### apps/landing
 - [ ] TODO: no lint script detected in package.json — verify manually or add the script
 - [ ] TODO: no typecheck script detected in package.json — verify manually or add the script
 - [ ] TODO: no test script detected in package.json — verify manually or add the script
 - [ ] `pnpm --filter @umkm-pos/landing run build`
 
-#### apps/merchant
+#### packages/ui
 - [ ] TODO: no lint script detected in package.json — verify manually or add the script
-- [ ] TODO: no typecheck script detected in package.json — verify manually or add the script
+- [ ] `pnpm --filter @umkm-pos/ui run typecheck`
 - [ ] TODO: no test script detected in package.json — verify manually or add the script
-- [ ] `npm run build --workspace @umkm-pos/merchant`
+- [ ] TODO: no build script detected in package.json — verify manually or add the script
 
 Run only the checklist for the app(s) actually touched by this task — not every app every time.
 
 ## Retry Logic
+Verify passes → write `verify-report.md` with **`Status: SUCCESS`** (this exact literal word —
+caf-orchestrator greps for `\bSUCCESS\b` and treats anything else, including "PASS"/"DONE"/"OK",
+as `NEEDS_HUMAN`, which stops the whole pipeline and skips QA/Reviewer/PR creation).
 Verify fails → fix, retry up to 3x → if still failing, stop and write
 `verify-report.md` with Status: NEEDS_HUMAN

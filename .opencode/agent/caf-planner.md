@@ -75,7 +75,7 @@ Before writing the `## Frontend Tasks` / `## Backend Tasks` sections in `tasks.m
 read `## Scope` in this project's `caf-frontend.md` / `caf-backend.md` (the agent that will
 receive that section):
 - Scope lists **more than one app** → every task line under that section MUST start with
-  the target app path in parentheses, e.g. `- [ ] (apps/merchant) Fix email validation`. An
+  the target app path in parentheses, e.g. `- [ ] (apps/web) Fix email validation`. An
   untagged line forces the implementation agent to stop and ask which app is meant instead
   of guessing — don't leave a line untagged when the scope has more than one app.
 - Scope lists exactly **one app** → do not add a tag, keep the plain `- [ ] ...` format
@@ -101,5 +101,8 @@ Produces `requirements.md`, `tasks.md` in `.caf/tasks/{TICKET-ID}/` for the next
 - [ ] TODO: determine the relevant verification manually
 
 ## Retry Logic
+Verify passes → write `verify-report.md` with **`Status: SUCCESS`** (this exact literal word —
+caf-orchestrator greps for `\bSUCCESS\b` and treats anything else, including "PASS"/"DONE"/"OK",
+as `NEEDS_HUMAN`, which stops the whole pipeline and skips QA/Reviewer/PR creation).
 Verify fails → fix, retry up to 3x → if still failing, stop and write
 `verify-report.md` with Status: NEEDS_HUMAN

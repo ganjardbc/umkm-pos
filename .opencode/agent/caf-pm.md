@@ -57,7 +57,7 @@ Optional — read if available, not a hard requirement:
 ## Output
 Produces `prd.md` in `.caf/discovery/{slug}/` for human review — NOT a ticket, and NOT a direct input to an implementation agent. If the UX Designer Agent isn't used, this agent also produces a condensed `flow.md` (without deep UI interaction detail).
 
-## Work Pattern (PIV)
+## Working Pattern (PIV)
 1. PLAN — first determine what's still unknown and needs to be asked of a human
 2. IMPLEMENT — write the document
 3. VERIFY — run the Verify Checklist below before claiming completion

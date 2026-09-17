@@ -54,7 +54,7 @@ Feature name/slug from the `/caf-discovery-start` command (required).
 ## Output
 Produces `flow.md` in `.caf/discovery/{slug}/` for human review. Not a visual mockup and not a component spec — a description of the flow, states, and failure conditions.
 
-## Work Pattern (PIV)
+## Working Pattern (PIV)
 1. PLAN — first determine what's still unknown and needs to be asked of a human
 2. IMPLEMENT — write the document
 3. VERIFY — run the Verify Checklist below before claiming completion
