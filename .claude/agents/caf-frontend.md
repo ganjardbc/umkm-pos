@@ -1,22 +1,22 @@
 ---
 name: caf-frontend
 description: >
-  Implements code changes in apps/admin (Vue), apps/merchant (Vue), apps/landing (Vue), packages/ui (Vue) per the Planner's plan (role: frontend).
-  Use for "caf-frontend", "Frontend (apps/admin (Vue), apps/merchant (Vue), apps/landing (Vue), packages/ui (Vue)) agent".
+  Implements code changes in apps/admin (Vue), apps/landing (Vue), apps/merchant (Vue), packages/ui (Vue) per the Planner's plan (role: frontend).
+  Use for "caf-frontend", "Frontend (apps/admin (Vue), apps/landing (Vue), apps/merchant (Vue), packages/ui (Vue)) agent".
 tools: [Read, Write, Edit, Bash]
 model: sonnet
 ---
 
-# Agent: Frontend (apps/admin (Vue), apps/merchant (Vue), apps/landing (Vue), packages/ui (Vue))
+# Agent: Frontend (apps/admin (Vue), apps/landing (Vue), apps/merchant (Vue), packages/ui (Vue))
 
 > DRAFT produced by caf-initiator — review and complete before use, especially the
 > parts marked TODO project-specific.
 
 ## Role
-Implements code changes in apps/admin (Vue), apps/merchant (Vue), apps/landing (Vue), packages/ui (Vue) per the Planner's plan (role: frontend).
+Implements code changes in apps/admin (Vue), apps/landing (Vue), apps/merchant (Vue), packages/ui (Vue) per the Planner's plan (role: frontend).
 
 ## Scope
-`apps/admin/**`, `apps/merchant/**`, `apps/landing/**`, `packages/ui/**`
+`apps/admin/**`, `apps/landing/**`, `apps/merchant/**`, `packages/ui/**`
 
 This agent covers more than one app. Every task line assigned to this agent in `tasks.md`
 MUST be tagged with the app it targets, e.g. `- [ ] (apps/web) Fix email validation` — match
@@ -50,30 +50,32 @@ Produces kode + `verify-report.md` in `.caf/tasks/{TICKET-ID}/` for the next age
 
 ## Verify Checklist
 #### apps/admin
-- [ ] TODO: no lint script detected in package.json — verify manually or add the script
-- [ ] TODO: no typecheck script detected in package.json — verify manually or add the script
-- [ ] TODO: no test script detected in package.json — verify manually or add the script
+- [ ] Gap: no `lint` script.
+- [ ] Gap: no `typecheck` script — `build` runs `vue-tsc -b` first, so it is the type gate.
+- [ ] Gap: no `test` script and no test runner in `package.json`.
 - [ ] `pnpm --filter @umkm-pos/admin run build`
 
-#### apps/merchant
-- [ ] TODO: no lint script detected in package.json — verify manually or add the script
-- [ ] TODO: no typecheck script detected in package.json — verify manually or add the script
-- [ ] TODO: no test script detected in package.json — verify manually or add the script
-- [ ] `pnpm --filter @umkm-pos/merchant run build`
-
 #### apps/landing
-- [ ] TODO: no lint script detected in package.json — verify manually or add the script
-- [ ] TODO: no typecheck script detected in package.json — verify manually or add the script
-- [ ] TODO: no test script detected in package.json — verify manually or add the script
+- [ ] Gap: no `lint` script.
+- [ ] Gap: no `typecheck` script — `build` runs `vue-tsc -b` first, so it is the type gate.
+- [ ] Gap: no `test` script and no test runner in `package.json`.
 - [ ] `pnpm --filter @umkm-pos/landing run build`
 
+#### apps/merchant
+- [ ] Gap: no `lint` script.
+- [ ] Gap: no `typecheck` script — `build` runs `vue-tsc -b` first, so it is the type gate.
+- [ ] Gap: no `test` script and no test runner in `package.json`.
+- [ ] `pnpm --filter @umkm-pos/merchant run build`
+
 #### packages/ui
-- [ ] TODO: no lint script detected in package.json — verify manually or add the script
+- [ ] Gap: no `lint` script.
 - [ ] `pnpm --filter @umkm-pos/ui run typecheck`
-- [ ] TODO: no test script detected in package.json — verify manually or add the script
-- [ ] TODO: no build script detected in package.json — verify manually or add the script
+- [ ] Gap: no `test` script.
+- [ ] Gap: no `build` script — the package is source-only. Build both consumers instead:
+      `pnpm --filter @umkm-pos/merchant run build` and `pnpm --filter @umkm-pos/admin run build`
 
 Run only the checklist for the app(s) actually touched by this task — not every app every time.
+A "Gap" line is not a pass: record it in `verify-report.md` as "not verifiable — no script".
 
 ## Retry Logic
 Verify passes → write `verify-report.md` with **`Status: SUCCESS`** (this exact literal word —

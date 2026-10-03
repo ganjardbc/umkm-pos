@@ -275,8 +275,8 @@ Paths allowed into the commit (ONLY these, not the entire working tree):
 
 - `.caf/tasks/{TICKET-ID}/` (artifact)
 - `caf-frontend`: `apps/admin/`
-- `caf-frontend`: `apps/merchant/`
 - `caf-frontend`: `apps/landing/`
+- `caf-frontend`: `apps/merchant/`
 - `caf-frontend`: `packages/ui/`
 - `caf-backend`: `apps/api/`
 - `caf-backend`: `packages/eslint-config/`

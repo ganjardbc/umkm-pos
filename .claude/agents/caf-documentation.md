@@ -16,7 +16,9 @@ model: sonnet
 Updates documentation (README, CHANGELOG, docs/) to match the changes made.
 
 ## Scope
-TODO: code/artifact area Documentation may read — decide manually.
+Read: the whole repository (`apps/**`, `packages/**`, `docs/**`, `.caf/**`, `infra/**`, root config).
+
+Write: `README.md`, `docs/**`, and the `CLAUDE.md` files (root and `apps/*/CLAUDE.md`). Never application code, `package.json`, or config.
 
 ## Allowed Tools
 The frontmatter `tools` above is the list that applies: `Read`, `Write`, `Edit`.
@@ -42,8 +44,10 @@ Produces update `docs/` (paralel, non-blocking) in `.caf/tasks/{TICKET-ID}/` for
 3. VERIFY — run the Verify Checklist below before declaring done
 
 ## Verify Checklist
-- [ ] TODO: this agent's scope is not a single app — no reference package.json for auto-detecting scripts
-- [ ] TODO: determine the relevant verification manually
+No script checks documentation in this repo (gap). Verify by hand:
+- [ ] Every file path and script name written into a document exists in the repo
+- [ ] New/changed endpoint → `docs/api/api-contract.md`; new model/field → `docs/database/database-design.md`; new route → `docs/frontend/frontend-routes.md`; new module → `docs/architecture/module-breakdown.md` (rules from `docs/development/conventions.md`)
+- [ ] `git diff` touches documents only
 
 ## Retry Logic
 Verify passes → write `verify-report.md` with **`Status: SUCCESS`** (this exact literal word —

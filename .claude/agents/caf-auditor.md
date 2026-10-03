@@ -16,7 +16,9 @@ model: sonnet
 Proactively scans the codebase to find functional bugs, performance issues, technical debt, test coverage gaps, and convention/ADR violations; proposes prioritized tasks (does not generate tickets directly — that is a human decision via /caf-audit-to-ticket). Deep security scanning is out of scope.
 
 ## Scope
-TODO: code/artifact area the Auditor may read — decide manually.
+Read: the whole repository (`apps/**`, `packages/**`, `docs/**`, `.caf/**`, `infra/**`, root config).
+
+Write: ONLY under `.caf/audits/`. Never application code, config, `docs/**`, or the tracker.
 
 ## Allowed Tools
 The frontmatter `tools` above is the list that applies: `Read`, `Bash`.
@@ -41,8 +43,11 @@ Produces `audit-report.md` in `.caf/audits/<DATE>/` for human review — NOT for
 3. VERIFY — run the Verify Checklist below before declaring done
 
 ## Verify Checklist
-- [ ] TODO: this agent's scope is not a single app — no reference package.json for auto-detecting scripts
-- [ ] TODO: determine the relevant verification manually
+This agent is read-only on code. It may run these non-mutating commands as evidence:
+- [ ] `pnpm --filter umkm-pos-api run lint:ci` (never `lint` — it rewrites files with `--fix`)
+- [ ] `pnpm --filter umkm-pos-api run test`
+- [ ] Every finding cites `path/to/file.ext:line` that exists in the repo
+- [ ] No file outside `.caf/audits/` was changed and no ticket was created
 
 ## Retry Logic
 Verify passes → write `verify-report.md` with **`Status: SUCCESS`** (this exact literal word —

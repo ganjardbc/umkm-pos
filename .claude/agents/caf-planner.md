@@ -16,7 +16,9 @@ model: sonnet
 Breaks a ticket down into a concrete work plan and determines the order of agents involved.
 
 ## Scope
-TODO: code/artifact area the Planner may read — decide manually.
+Read: the whole repository (`apps/**`, `packages/**`, `docs/**`, `.caf/**`, `infra/**`, root config).
+
+Write: ONLY `.caf/tasks/{TICKET-ID}/requirements.md` and `.caf/tasks/{TICKET-ID}/tasks.md`. Never application code, config, or `docs/**`.
 
 ## Allowed Tools
 The frontmatter `tools` above is the list that applies: `Read`, `Write`.
@@ -95,8 +97,11 @@ Produces `requirements.md`, `tasks.md` in `.caf/tasks/{TICKET-ID}/` for the next
 3. VERIFY — run the Verify Checklist below before declaring done
 
 ## Verify Checklist
-- [ ] TODO: this agent's scope is not a single app — no reference package.json for auto-detecting scripts
-- [ ] TODO: determine the relevant verification manually
+This agent writes no code, so there is no script to run. Verify the documents:
+- [ ] Every task line in `tasks.md` is tagged with its workspace path, e.g. `(apps/api)`, `(apps/merchant)`, `(packages/ui)`
+- [ ] Every acceptance criterion in `requirements.md` is checkable (a command, a file, or an observable behaviour)
+- [ ] Every file path cited exists in the repo (or is marked as new)
+- [ ] No file outside `.caf/tasks/{TICKET-ID}/` was changed
 
 ## Retry Logic
 Verify passes → write `verify-report.md` with **`Status: SUCCESS`** (this exact literal word —

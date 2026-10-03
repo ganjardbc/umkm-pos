@@ -28,7 +28,18 @@ pnpm --filter umkm-pos-api <script>     # Backend (apps/api)
 pnpm --filter @umkm-pos/shared-types build
 ```
 
-The `README.md` also uses `pnpm dev:web` / `pnpm dev:api` as aliases — these are workspace-level shortcuts, not defined at root.
+### Verification Commands
+
+Always scope to one workspace by package name. Gaps are real: do not invent a script.
+
+| Workspace | Lint | Typecheck | Test | Build |
+|---|---|---|---|---|
+| `umkm-pos-api` | `lint:ci` (`lint` auto-fixes) | — (use build) | `test` | `build` |
+| `@umkm-pos/merchant`, `@umkm-pos/admin`, `@umkm-pos/landing` | — | — (build runs `vue-tsc -b`) | — | `build` |
+| `@umkm-pos/ui` | — | `typecheck` | — | — (build both apps) |
+| `@umkm-pos/shared-types` | — | `typecheck` | — | `build` |
+
+`README.md` mentions `pnpm dev:web` / `pnpm dev:api`; neither is defined in the root `package.json`.
 
 ## Architecture Overview
 

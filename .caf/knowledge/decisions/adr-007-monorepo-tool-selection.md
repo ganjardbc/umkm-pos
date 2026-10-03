@@ -1,19 +1,20 @@
 # ADR-007: Monorepo tool selection
 
 ## Status
-Proposed <!-- TODO: change to Accepted/Deprecated/Superseded after review -->
+Superseded by ADR-008 (`adr-008-monorepo-tool-selection.md`) — diusulkan Claude pada 2026-10-03, belum dikonfirmasi tim.
+File ini draft duplikat dari generate sebelumnya; isinya sama dengan ADR-008.
 
 ## Context
 Detected Turborepo from a config file at the root.
 
-TODO: explain the context/problem that motivated this decision.
+Keputusan yang sama tercatat dua kali karena `caf-init` dijalankan lebih dari sekali. Supaya agent
+tidak membaca dua sumber, isi lengkap hanya dipelihara di ADR-008.
 
 ## Decision
-TODO: what the final decision is, and **why** (not just "what") — this section MUST be
-filled in by a human, this tool doesn't know the reasoning behind a decision already made.
+Lihat ADR-008. Tidak ada keputusan terpisah di file ini.
 
 ## Alternatives Considered
-TODO: other options considered and why they weren't chosen.
+Lihat ADR-008.
 
 ## Consequences
-TODO: the impact/trade-offs of this decision, including negative ones if any.
+File ini boleh dihapus setelah tim setuju — penghapusan adalah keputusan manusia, jadi belum dilakukan.

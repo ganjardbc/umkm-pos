@@ -98,11 +98,13 @@ Root structure:
 
 ```txt
 apps/
-  web/        — Vue 3 frontend (dashboard + POS)
+  merchant/   — Vue 3 frontend (dashboard + POS + customer self-order)
+  admin/      — Vue 3 platform-admin console (endpoint /api/v1/admin/*)
   api/        — NestJS backend
   landing/    — Vue 3 landing page (marketing)
 
 packages/
+  ui/            — @umkm-pos/ui, komponen + layout + style bersama merchant & admin (source-only)
   shared-types/
   shared-utils/
   eslint-config/
@@ -160,6 +162,115 @@ Jangan implementasikan fitur tersebut kecuali diminta eksplisit.
 
 ---
 
+# Concrete Rules
+
+Aturan yang terlihat di kode, dengan contoh benar dari file nyata.
+
+## 1. `merchant_id` dari JWT, diteruskan controller → service
+
+Benar — `apps/api/src/products/products.controller.ts`:
+
+```ts
+findAll(
+  @CurrentUser('merchant_id') merchantId: string,
+  @Query() query: ProductsQueryDto,
+) {
+  return this.productsService.findAll(merchantId, query);
+}
+```
+
+Salah:
+
+```ts
+findAll(@Query('merchant_id') merchantId: string) { ... } // tenant dari input client
+```
+
+## 2. Setiap query tenant memuat `merchant_id`
+
+Benar — `apps/api/src/store-tables/store-tables.service.ts`:
+
+```ts
+const table = await this.prisma.store_tables.findFirst({
+  where: { id, merchant_id: merchantId },
+});
+if (!table) throw new NotFoundException('Store table not found');
+```
+
+Salah:
+
+```ts
+const table = await this.prisma.store_tables.findUnique({ where: { id } }); // bocor lintas merchant
+```
+
+## 3. Permission pakai kode, bentuk tunggal
+
+Benar — `apps/api/src/products/products.controller.ts`:
+
+```ts
+@Post()
+@RequirePermission('product.create')
+```
+
+Salah:
+
+```ts
+@RequirePermission('products.write') // kode ini tidak ada di sistem
+```
+
+## 4. Query list: satu DTO yang extends `PaginationDto`
+
+Benar — `apps/api/src/stock/dto/stock-logs-query.dto.ts`:
+
+```ts
+export class StockLogsQueryDto extends PaginationDto {
+  @IsOptional()
+  @IsUUID()
+  product_id?: string;
+}
+```
+
+Salah:
+
+```ts
+findAll(@Query('product_id') productId: string, @Query() pagination: PaginationDto) // campur dua gaya
+```
+
+## 5. HTTP call frontend hanya di `services/api.ts`
+
+Benar — `apps/merchant/src/modules/notification/services/api.ts`:
+
+```ts
+import api from '@/plugins/axios.ts';
+
+export const getListNotification = async (params: any = {}, options: any = {}) => {
+  return await api.get('/api/v1/notification', { params, ...(options || {}) });
+};
+```
+
+Salah:
+
+```ts
+// di dalam component .vue
+const res = await axios.get('/api/notification'); // axios langsung, tanpa /v1
+```
+
+## 6. `packages/ui` tidak mengimpor milik app
+
+Benar — `packages/ui/src/services/uploads.ts`:
+
+```ts
+import { getApiClient } from '../http';
+return await getApiClient().post('/api/v1/uploads', formData, ...);
+```
+
+Salah:
+
+```ts
+import api from '@/plugins/axios'; // alias `@/` milik app, tidak ada di package
+```
+
+---
+
 # Backend Rules
 
 Backend berada di:
@@ -183,7 +294,7 @@ Ikuti:
 ```txt
 docs/backend/nestjs-guidelines.md
 docs/backend/prisma-guidelines.md
-apps/api/AGENTS.md
+apps/api/CLAUDE.md
 ```
 
 ---
@@ -260,7 +371,7 @@ Public route wajib memakai:
 Gunakan permission decorator:
 
 ```ts
-@RequirePermission('products.read')
+@RequirePermission('product.read')
 ```
 
 Permission format: `<resource>.<action>`
@@ -268,20 +379,17 @@ Permission format: `<resource>.<action>`
 Contoh:
 
 ```txt
-products.read
-products.write
-transactions.read
-transactions.write
-shifts.read
-shifts.write
-reports.read
-users.read
-users.write
-roles.read
-roles.write
-outlets.read
-outlets.write
+product.read      product.create     product.update    product.delete
+category.read     category.create
+transaction.read  transaction.create transaction.cancel
+shift.read        shift.create       shift.update
+stock.read        stock.adjust
+report.read
+user.read         role.assign        outlet.read
 ```
+
+Resource memakai bentuk tunggal. Pengecualian yang sudah ada di kode: `merchants.*` (jamak). Daftar lengkap:
+`grep -rhoE "RequirePermission\('[^']+'" apps/api/src | sort -u`.
 
 ---
 
@@ -365,7 +473,8 @@ Tailwind CSS v4
 Ikuti:
 
 ```txt
-apps/merchant/AGENTS.md
+apps/merchant/CLAUDE.md
+apps/admin/CLAUDE.md
 ```
 
 ---
@@ -384,7 +493,7 @@ modules/module-name/
     actions.ts
     index.ts
   services/
-    module.service.ts
+    api.ts
     constants.ts
     rbac.ts
   router/
@@ -413,7 +522,7 @@ Route meta wajib menggunakan:
 meta: {
   title: 'Page Title',
   layout: 'default',
-  permission: ['products.read'],
+  permission: [READ],   // dari services/rbac.ts modul, mis. 'category.read'
   breadcrumbs: [...],
 }
 ```
@@ -453,7 +562,7 @@ Business logic utama tetap di backend.
 API call frontend harus berada di:
 
 ```txt
-modules/module-name/services/module.service.ts
+modules/module-name/services/api.ts
 ```
 
 Gunakan shared HTTP client dari:
@@ -508,7 +617,7 @@ Prisma naming mengikuti DB column karena project ini DB-first (schema.prisma di-
 
 # API Rules
 
-Base path: `/api`
+Base path: `/api/v1` (`app.setGlobalPrefix('api/v1')` di `apps/api/src/main.ts`)
 
 Response format success:
 
@@ -524,8 +633,10 @@ Response format list:
 ```json
 {
   "success": true,
-  "data": [],
-  "meta": { "page": 1, "limit": 10, "total": 100, "total_pages": 10 }
+  "data": {
+    "data": [],
+    "meta": { "total": 100, "page": 1, "limit": 10, "totalPages": 10 }
+  }
 }
 ```
 
@@ -650,7 +761,7 @@ Before marking any task as DONE, read:
 
 # Custom Commands
 
-Four slash commands in `.claude/commands/`, split read-only vs write:
+Slash commands in `.claude/commands/` (13 files; the four below illustrate the read-only vs write split — see the folder for the rest):
 
 ```txt
 /caf-audit-scan [scope]        — READ-ONLY. Auditor Agent scan, writes findings to

@@ -16,7 +16,9 @@ model: sonnet
 Reviews the implementation diff for quality, consistency, and risk before merge.
 
 ## Scope
-TODO: code/artifact area the Reviewer may read — decide manually.
+Read: the whole repository (`apps/**`, `packages/**`, `docs/**`, `.caf/**`, `infra/**`, root config).
+
+Write: ONLY `.caf/tasks/{TICKET-ID}/review-notes.md`. The Reviewer never edits application code.
 
 ## Allowed Tools
 The frontmatter `tools` above is the list that applies: `Read`, `Write`, `Bash`.
@@ -28,7 +30,7 @@ decision that must be made by a human. Add the MCP tool name to the frontmatter 
 not just this section.
 
 ## Input
-`verify-report.md` from the implementation agent (apps/admin, apps/merchant, apps/landing, packages/ui, apps/api, packages/eslint-config, packages/shared-types, packages/shared-utils) and `qa-report.md` from the QA Agent, both in
+`verify-report.md` from the implementation agent (apps/admin, apps/landing, apps/merchant, packages/ui, apps/api, packages/eslint-config, packages/shared-types, packages/shared-utils) and `qa-report.md` from the QA Agent, both in
 `.caf/tasks/{TICKET-ID}/` (required).
 
 Optional — when invoked from post-PR mode (`/caf-fix-review`, not the normal pre-PR pipeline
@@ -47,8 +49,13 @@ Produces `review-notes.md` in `.caf/tasks/{TICKET-ID}/` for the next agent to re
 3. VERIFY — run the Verify Checklist below before declaring done
 
 ## Verify Checklist
-- [ ] TODO: this agent's scope is not a single app — no reference package.json for auto-detecting scripts
-- [ ] TODO: determine the relevant verification manually
+- [ ] The diff stays inside the workspace(s) named in `tasks.md`
+- [ ] Every Prisma query on tenant data filters by `merchant_id` taken from `@CurrentUser('merchant_id')`, never from body/query (`docs/decisions/adr-001-multi-tenant-data-scoping.md`)
+- [ ] Every new protected endpoint has `@RequirePermission('<code>')`; public ones are marked `@Public()`
+- [ ] Frontend HTTP calls live in `modules/<name>/services/api.ts`, not in components or stores
+- [ ] `packages/ui` code does not import `@/…`
+- [ ] The commands in `verify-report.md` exist in the touched workspace's `package.json`
+- [ ] No application code was changed by this agent
 
 ## Retry Logic
 Review complete → write `review-notes.md` with the `Verdict:` line set to one of the values
