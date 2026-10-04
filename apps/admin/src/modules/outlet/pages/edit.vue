@@ -160,10 +160,18 @@ const onFormSubmit = async (event: any) => {
       const { success } = response?.data || {};
 
       if (success) {
-        if (selectedUploadId.value) {
-          await setOutletImage(outletID.value, selectedUploadId.value);
-        } else if (hasExistingLogo.value && !imagePreview.value) {
-          await removeOutletImage(outletID.value);
+        try {
+          if (selectedUploadId.value) {
+            await setOutletImage(outletID.value, selectedUploadId.value);
+          } else if (hasExistingLogo.value && !imagePreview.value) {
+            await removeOutletImage(outletID.value);
+          }
+        } catch (imageError) {
+          showToast({
+            type: 'warn',
+            title: 'Peringatan',
+            message: 'Data outlet berhasil diperbarui, namun perubahan logo gagal.',
+          });
         }
         router.back();
       }

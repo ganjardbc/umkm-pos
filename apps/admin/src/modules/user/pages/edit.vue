@@ -141,10 +141,18 @@ const onFormSubmit = async (event: any) => {
       const { success } = response?.data || {};
 
       if (success) {
-        if (selectedUploadId.value) {
-          await setUserAvatar(userID.value, selectedUploadId.value);
-        } else if (hasExistingAvatar.value && !imagePreview.value) {
-          await removeUserAvatar(userID.value);
+        try {
+          if (selectedUploadId.value) {
+            await setUserAvatar(userID.value, selectedUploadId.value);
+          } else if (hasExistingAvatar.value && !imagePreview.value) {
+            await removeUserAvatar(userID.value);
+          }
+        } catch (avatarError) {
+          showToast({
+            type: 'warn',
+            title: 'Peringatan',
+            message: 'Data pengguna berhasil diperbarui, namun perubahan foto profil gagal.',
+          });
         }
         router.back();
       }

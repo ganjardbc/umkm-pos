@@ -164,7 +164,15 @@ const onFormSubmit = async (event: any) => {
 
       if (success) {
         if (selectedUploadId.value) {
-          await setMerchantImage(data?.id, selectedUploadId.value);
+          try {
+            await setMerchantImage(data?.id, selectedUploadId.value);
+          } catch (imageError) {
+            showToast({
+              type: 'warn',
+              title: 'Peringatan',
+              message: 'Merchant berhasil dibuat, namun logo gagal dipasang.',
+            });
+          }
         }
         router.back();
       }

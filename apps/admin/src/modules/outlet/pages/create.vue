@@ -210,7 +210,15 @@ const onFormSubmit = async (event: any) => {
 
       if (success) {
         if (selectedUploadId.value) {
-          await setOutletImage(data?.id, selectedUploadId.value);
+          try {
+            await setOutletImage(data?.id, selectedUploadId.value);
+          } catch (imageError) {
+            showToast({
+              type: 'warn',
+              title: 'Peringatan',
+              message: 'Outlet berhasil dibuat, namun logo gagal dipasang.',
+            });
+          }
         }
         router.back();
       }

@@ -213,7 +213,15 @@ const onFormSubmit = async (event: any) => {
 
       if (success) {
         if (selectedUploadId.value) {
-          await setUserAvatar(data?.id, selectedUploadId.value);
+          try {
+            await setUserAvatar(data?.id, selectedUploadId.value);
+          } catch (avatarError) {
+            showToast({
+              type: 'warn',
+              title: 'Peringatan',
+              message: 'Pengguna berhasil dibuat, namun foto profil gagal dipasang.',
+            });
+          }
         }
         router.back();
       }
