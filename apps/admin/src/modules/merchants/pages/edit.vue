@@ -145,10 +145,18 @@ const onFormSubmit = async (event: any) => {
       const { success } = response?.data || {};
 
       if (success) {
-        if (selectedUploadId.value) {
-          await setMerchantImage(merchantID.value, selectedUploadId.value);
-        } else if (hasExistingLogo.value && !imagePreview.value) {
-          await removeMerchantImage(merchantID.value);
+        try {
+          if (selectedUploadId.value) {
+            await setMerchantImage(merchantID.value, selectedUploadId.value);
+          } else if (hasExistingLogo.value && !imagePreview.value) {
+            await removeMerchantImage(merchantID.value);
+          }
+        } catch (imageError) {
+          showToast({
+            type: 'warn',
+            title: 'Peringatan',
+            message: 'Data merchant berhasil diperbarui, namun perubahan logo gagal.',
+          });
         }
         router.back();
       }
