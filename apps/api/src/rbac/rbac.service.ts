@@ -10,6 +10,7 @@ import { CreatePermissionDto } from './dto/create-permission.dto';
 import { AssignPermissionDto } from './dto/assign-permission.dto';
 import { AssignRoleDto } from './dto/assign-role.dto';
 import { RolesQueryDto } from './dto/roles-query.dto';
+import { PermissionsQueryDto } from './dto/permissions-query.dto';
 import { PaginationDto } from '../common/dto/pagination.dto';
 
 @Injectable()
@@ -136,17 +137,29 @@ export class RbacService {
     });
   }
 
-  async findAllPermissions(pagination: PaginationDto = new PaginationDto()) {
-    const { page = 1, limit = 10 } = pagination;
-    const skip = pagination.skip;
+  async findAllPermissions(
+    query: PermissionsQueryDto = new PermissionsQueryDto(),
+  ) {
+    const { page = 1, limit = 10, search } = query;
+    const skip = query.skip;
+
+    const where = search
+      ? {
+          OR: [
+            { code: { contains: search } },
+            { description: { contains: search } },
+          ],
+        }
+      : undefined;
 
     const [data, total] = await this.prisma.$transaction([
       this.prisma.permissions.findMany({
+        where,
         orderBy: { created_at: 'desc' },
         skip,
         take: limit,
       }),
-      this.prisma.permissions.count(),
+      this.prisma.permissions.count({ where }),
     ]);
 
     return { data, meta: PaginationDto.calculateMeta(total, page, limit) };
