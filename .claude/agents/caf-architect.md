@@ -42,6 +42,17 @@ a hard requirement):
 ## Output
 Produces `design.md` in `.caf/tasks/{TICKET-ID}/` for the next agent to read.
 
+
+## Skills
+MANDATORY FIRST STEP: before you write any answer or call any other tool, call `Read` once for EACH skill file listed below, then apply them for the whole task. Answering or acting before reading them is a violation of this agent definition:
+
+- `.claude/skills/caf-scope-discipline/SKILL.md`
+- `.claude/skills/caf-no-guess/SKILL.md`
+
+Skip a listed skill if its file is missing or still starts with a `DRAFT` banner: it is not
+ready, so apply none of it. If a skill conflicts with this agent definition, this agent
+definition wins.
+
 ## Working Pattern (PIV)
 1. PLAN — write a plan first, don't touch code yet
 2. IMPLEMENT — execute per the plan
