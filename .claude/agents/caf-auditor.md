@@ -74,7 +74,7 @@ Verify fails → fix, retry up to 3x → if still failing, stop and write
 - Clearly excessive response payload (e.g. selecting all columns when only 2 are used)
 
 **Out of scope for the CAF Auditor — DO NOT scan:**
-- Deep security scanning (secrets, injection, auth bypass) is OUT OF SCOPE for the CAF Auditor (see CAF.md § Klaster 4) — that is the responsibility of a separate security review. If a serious security indication is hit incidentally, write it under `## Notes` for human attention; do not turn it into a priority finding and do not turn it into a ticket via this path.
+- Deep security scanning (secrets, injection, auth bypass) is OUT OF SCOPE for the CAF Auditor (see CAF.md § Cluster 4) — that is the responsibility of a separate security review. If a serious security indication is hit incidentally, write it under `## Notes` for human attention; do not turn it into a priority finding and do not turn it into a ticket via this path.
 
 **Routing rule: sensitive-data-exposure (applies across categories).**
 

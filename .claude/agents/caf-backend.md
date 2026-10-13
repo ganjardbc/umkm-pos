@@ -41,7 +41,54 @@ hard requirement):
 - `design.md`
 
 ## Output
-Produces kode + `verify-report.md` in `.caf/tasks/{TICKET-ID}/` for the next agent to read.
+Produces code + `verify-report.md` in `.caf/tasks/{TICKET-ID}/` for the next agent to read.
+
+How the work is done. The spec is the contract: the implementation agent builds what
+`requirements.md` asks for and reports, per acceptance criterion (AC), what shows it. Follow the
+five rules below on top of the Working Pattern of this file. Everything is in
+`.caf/tasks/{TICKET-ID}/`.
+
+### 1. Read
+- Before changing any code, read the files that already exist in the task folder:
+  `requirements.md`, `tasks.md`, and `verify-report.md` if present. A `verify-report.md` that
+  is there is the starting point; never write over one you have not read in this run.
+- `requirements.md`: the scope (In and Out) and every AC (`AC-1:`, `AC-2:`, ...) with its
+  `Verify:` line.
+- `tasks.md`: the tasks of this agent and the AC ids each one serves.
+
+### 2. When to stop before coding
+- `requirements.md` says `Status: NEEDS_CLARIFICATION`, or a question marked `BLOCKING` has no
+  `Answer:`: do not change code. Write `verify-report.md` with `Status: NEEDS_HUMAN` and the
+  reason, then stop.
+- `Status: DRAFT` and `Status: APPROVED` do not stop the work: go on.
+
+### 3. Every AC is a contract
+- Every AC of `requirements.md` is a contract: implement each AC that falls in the scope of this
+  agent (see Scope) as it is written.
+- An AC you cannot satisfy is reported, never skipped silently: give it its evidence line (rule
+  5) with the reason.
+
+### 4. Never edit the spec
+- Do not write `requirements.md` or `tasks.md`, not even a status line.
+- If the spec is wrong, ambiguous, impossible to satisfy, or contradicts the code: do not guess
+  and do not change the spec. Write the proposed change in `verify-report.md` under
+  `## Proposed Spec Changes`, keeping what that file already holds, then stop with
+  `Status: NEEDS_HUMAN` and the reason in `verify-report.md`.
+
+### 5. Evidence per AC
+- In `verify-report.md`: one line per AC of `requirements.md`, in exactly one of five forms:
+  - `AC-n: automated-test — <file>::<test name>`
+  - `AC-n: command — <command> | <exit code or output observed>`
+  - `AC-n: build-only — <command that passed>; no test exists for this behavior`
+  - `AC-n: manual — <steps a human must run, or steps already run>`
+  - `AC-n: none — <why>`
+- Name the test; the number of passing tests is never evidence.
+- An AC marked `Verify: manual` is reported as `manual`, an AC marked `Verify: command:` as
+  `command` with the result observed, and an area with no test runner as `build-only` or
+  `manual` — not as `automated-test`.
+- `manual`, `build-only` and `none` are not counted as passed: such an AC needs a human check.
+  Never report one of them as `automated-test` or `command`.
+- The full layout of `verify-report.md` is in `.caf/workflows/agent-handoff.md`.
 
 
 ## Skills
