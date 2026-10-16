@@ -36,7 +36,7 @@ artifacts aren't available yet when the Documentation Agent runs, proceed from t
 description alone).
 
 ## Output
-Produces update `docs/` (paralel, non-blocking) in `.caf/tasks/{TICKET-ID}/` for the next agent to read.
+Produces update `docs/` (parallel, non-blocking) in `.caf/tasks/{TICKET-ID}/` for the next agent to read.
 
 
 ## Skills
