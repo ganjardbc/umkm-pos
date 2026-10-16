@@ -115,9 +115,9 @@ ready, so apply none of it. If a skill conflicts with this agent definition, thi
 definition wins.
 
 ## Working Pattern (PIV)
-1. PLAN — write a plan first, don't touch code yet
-2. IMPLEMENT — execute per the plan
-3. VERIFY — run the Verify Checklist below before declaring done
+1. READ — read the spec (`requirements.md`, `tasks.md`) and the reports (`verify-report.md`, and `validate-report.md` if present), then the diff
+2. COMPARE — compare every AC and the scope of the spec with the change, as the Output section describes
+3. VERDICT — write `review-notes.md` with its `Verdict:` line, as the Report Format section below defines
 
 ## Verify Checklist
 - [ ] The diff stays inside the workspace(s) named in `tasks.md`

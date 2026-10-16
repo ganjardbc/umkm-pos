@@ -32,36 +32,6 @@ not just this section.
 ## Input
 Ticket description from the tracker (required).
 
-### Fallback — Discovery draft without a ticket
-
-1. If the given TICKET-ID is not found in either the tracker or the repo backlog, check
-   whether `.caf/discovery/{TICKET-ID}/prd.md` exists (TICKET-ID is used as the folder name —
-   the slug produced by `/caf-discovery-start`, used consistently as the identity throughout
-   the pipeline when not going through the tracker).
-2. If `.caf/discovery/{TICKET-ID}/` does NOT exist: proceed with the existing behavior (ask
-   the user for the task description directly) — the remaining steps below don't apply.
-3. If `prd.md` exists: first check the list of Open Questions that are still UNANSWERED (from
-   `prd.md`/`flow.md`), then check whether the received prompt/context is prefixed with the
-   `[SYSTEM CONTEXT: Environment = headless...]` marker.
-   - **No open questions remain at all** (all answered): proceed to generate
-     `requirements.md` as usual, with the `Status:` line described in Output — unaffected by
-     headless or not, no need to show anything in chat first.
-   - **There are unanswered Open Questions, NOT headless**: first show the user a summary
-     of `prd.md` (Problem, Scope, Success Metric) and the list of questions, then ask
-     explicitly "Found a discovery draft for this. [N open questions unanswered]. Proceed
-     using this as the requirement as-is?" — STOP until the user answers. If the user says
-     no/cancel, don't proceed to generate `requirements.md` — report and stop. (Existing
-     behavior, unchanged.)
-   - **There are unanswered Open Questions, headless**: do NOT STOP waiting for chat — no
-     human will answer. Generate `requirements.md` directly with `Status: NEEDS_HUMAN`,
-     and still create `tasks.md` (may be minimal, containing a short note like "blocked —
-     waiting on answers to Open Questions, see requirements.md") so caf-orchestrator doesn't
-     except on its file-existence check. See the `Constraints` section below.
-4. On both "has open questions" paths above (headless or not) that proceed to generate:
-   `requirements.md` MUST re-copy all still-unanswered Open Questions into the
-   `## Open Questions` section (a new section, added to the existing `requirements.md`
-   format) — do NOT silently assume the answers, on either path.
-
 ### Optional — Layer 1 reference docs
 
 If available, read in the following priority order; if not available, proceed from the
@@ -137,6 +107,9 @@ artifact of the task.
 - A file path or a symbol name may be written in a `Finding:`, on an assumption line and on a
   `Verify:` line. It is never written in the outcome, the scope, the decisions or the
   `When ... then` sentence of an AC.
+- Exception, on a refactor or config ticket only: the `When ... then` sentence of an AC may name
+  the file path or the symbol name that is the subject of the ticket. It may name no other path
+  or symbol, and the outcome, the scope and the decisions keep the rule above.
 
 ### 2. Clarify
 - First check the ticket, the code, the ADRs and `CLAUDE.md`. Whatever you can answer by reading
@@ -150,10 +123,10 @@ artifact of the task.
 - `BLOCKING` and unanswered: set `Status: NEEDS_CLARIFICATION` in `requirements.md` and stop.
   Do not go on to Plan or Tasks, and do not write `tasks.md` at all while a `BLOCKING` question
   is unanswered (it has no `Answer:`): no task breakdown, no placeholder, no marker line.
-- Ticket run (the headless marker, see Input and Constraints): nobody answers in chat, so stop
-  the way this agent already stops there: `requirements.md` with `Status: NEEDS_HUMAN` in
-  place of `NEEDS_CLARIFICATION`, plus the blocked `tasks.md` note described in Input. That
-  note is not a task breakdown, and a ticket run is the only case where it is written.
+- Ticket run (the headless marker, see Constraints): nobody answers in chat and the run does
+  not wait for an answer. A `BLOCKING` question with no `Answer:` ends it the same way: the
+  `requirements.md` with `Status: NEEDS_CLARIFICATION` and that question in it, no `tasks.md`
+  of any kind, then stop.
 
 ### 3. Plan
 - Only when no `BLOCKING` question is open.
@@ -208,9 +181,9 @@ definition wins.
 ## Constraints
 - The Planner is NEVER allowed to end a run waiting for chat confirmation if the prompt/context
   it received is prefixed with the `[SYSTEM CONTEXT: Environment = headless...]` marker. The
-  default escalation in this case is writing a file (`requirements.md` with
-  `Status: NEEDS_HUMAN` + `tasks.md` blocked), not asking in chat — see Fallback — Discovery
-  draft in the Input section.
+  escalation in this case is a file, not chat: `requirements.md` with
+  `Status: NEEDS_CLARIFICATION` and the `BLOCKING` questions that have no `Answer:`, and no
+  `tasks.md`.
 
 ## Working Pattern (PIV)
 1. PLAN — write a plan first, don't touch code yet
