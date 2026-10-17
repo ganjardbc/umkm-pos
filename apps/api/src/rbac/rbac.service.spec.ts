@@ -4,6 +4,7 @@ import { RbacService } from './rbac.service';
 import { PrismaService } from '../database/prisma.service';
 import { AssignRoleDto } from './dto/assign-role.dto';
 import { RolesQueryDto } from './dto/roles-query.dto';
+import { PermissionsQueryDto } from './dto/permissions-query.dto';
 
 describe('RbacService', () => {
   let service: RbacService;
@@ -20,6 +21,13 @@ describe('RbacService', () => {
       create: jest.fn(),
       findMany: jest.fn(),
       count: jest.fn(),
+    },
+    permissions: {
+      findFirst: jest.fn(),
+      create: jest.fn(),
+      findMany: jest.fn(),
+      count: jest.fn(),
+      delete: jest.fn(),
     },
     user_roles: {
       findFirst: jest.fn(),
@@ -348,6 +356,120 @@ describe('RbacService', () => {
       expect(result.meta).toEqual({
         total: 12,
         page: 2,
+        limit: 5,
+        totalPages: 3,
+      });
+    });
+  });
+
+  describe('findAllPermissions', () => {
+    it('returns paginated permissions when no search term is provided', async () => {
+      const mockPermissions = [
+        {
+          id: 'perm-1',
+          code: 'product.create',
+          description: 'Create products',
+          created_at: new Date('2026-01-01'),
+        },
+        {
+          id: 'perm-2',
+          code: 'product.read',
+          description: 'Read products',
+          created_at: new Date('2026-01-02'),
+        },
+      ];
+
+      mockPrisma.$transaction.mockResolvedValue([mockPermissions, 2]);
+
+      const result = await service.findAllPermissions();
+
+      expect(mockPrisma.permissions.findMany).toHaveBeenCalledWith({
+        where: undefined,
+        orderBy: { created_at: 'desc' },
+        skip: 0,
+        take: 10,
+      });
+      expect(mockPrisma.permissions.count).toHaveBeenCalledWith({
+        where: undefined,
+      });
+      expect(result).toEqual({
+        data: mockPermissions,
+        meta: {
+          total: 2,
+          page: 1,
+          limit: 10,
+          totalPages: 1,
+        },
+      });
+    });
+
+    it('passes search filter on code and description to findMany and count when search query is provided', async () => {
+      const query = Object.assign(new PermissionsQueryDto(), {
+        page: 1,
+        limit: 10,
+        search: 'product',
+      });
+
+      const mockPermissions = [
+        {
+          id: 'perm-1',
+          code: 'product.create',
+          description: 'Create products',
+          created_at: new Date('2026-01-01'),
+        },
+      ];
+
+      mockPrisma.$transaction.mockResolvedValue([mockPermissions, 1]);
+
+      const result = await service.findAllPermissions(query);
+
+      const expectedWhere = {
+        OR: [
+          { code: { contains: 'product' } },
+          { description: { contains: 'product' } },
+        ],
+      };
+
+      expect(mockPrisma.permissions.findMany).toHaveBeenCalledWith({
+        where: expectedWhere,
+        orderBy: { created_at: 'desc' },
+        skip: 0,
+        take: 10,
+      });
+      expect(mockPrisma.permissions.count).toHaveBeenCalledWith({
+        where: expectedWhere,
+      });
+      expect(result).toEqual({
+        data: mockPermissions,
+        meta: {
+          total: 1,
+          page: 1,
+          limit: 10,
+          totalPages: 1,
+        },
+      });
+    });
+
+    it('handles custom pagination parameters correctly', async () => {
+      const query = Object.assign(new PermissionsQueryDto(), {
+        page: 3,
+        limit: 5,
+        search: 'outlet',
+      });
+
+      mockPrisma.$transaction.mockResolvedValue([[], 15]);
+
+      const result = await service.findAllPermissions(query);
+
+      expect(mockPrisma.permissions.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          skip: 10,
+          take: 5,
+        }),
+      );
+      expect(result.meta).toEqual({
+        total: 15,
+        page: 3,
         limit: 5,
         totalPages: 3,
       });

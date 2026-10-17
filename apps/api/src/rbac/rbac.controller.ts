@@ -17,12 +17,12 @@ import {
 import { RbacService } from './rbac.service';
 import { AssignRoleDto } from './dto/assign-role.dto';
 import { RolesQueryDto } from './dto/roles-query.dto';
+import { PermissionsQueryDto } from './dto/permissions-query.dto';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { RequirePermission } from '../common/decorators/require-permission.decorator';
 import { ScopeByOutlet } from '../common/decorators/scope-by-outlet.decorator';
 import { PermissionGuard } from '../common/guards/permission.guard';
 import { ScopeByOutletGuard } from '../common/guards/scope-by-outlet.guard';
-import { PaginationDto } from '../common/dto/pagination.dto';
 
 /**
  * Tenant-facing RBAC endpoints.
@@ -68,8 +68,8 @@ export class RbacController {
     status: 200,
     description: 'Return all permissions (paginated)',
   })
-  findAllPermissions(@Query() pagination: PaginationDto) {
-    return this.rbacService.findAllPermissions(pagination);
+  findAllPermissions(@Query() query: PermissionsQueryDto) {
+    return this.rbacService.findAllPermissions(query);
   }
 
   @Get('permissions/:id')
