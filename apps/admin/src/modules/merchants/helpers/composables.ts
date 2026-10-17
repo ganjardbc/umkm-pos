@@ -1,16 +1,13 @@
 import { ref } from 'vue';
-import { getErrorMessage } from '@umkm-pos/ui/helpers/utils';
+import { getErrorMessage, useDebounce } from '@umkm-pos/ui/helpers/utils';
 import { showToast } from '@umkm-pos/ui/helpers/toast';
-import { getListMerchants } from '@/modules/merchants/services/api.ts';
+import { getMerchantOptions } from '@/modules/merchants/services/api.ts';
 
 export interface MerchantOption {
   id: string;
   name: string;
   slug: string;
 }
-
-// API caps page size at 100.
-const MERCHANT_OPTIONS_LIMIT = 100;
 
 /**
  * Merchant dropdown options for forms and filters (outlet, user).
@@ -19,13 +16,13 @@ export const useMerchantOptions = () => {
   const merchantOptions = ref<MerchantOption[]>([]);
   const loadingMerchants = ref(false);
 
-  const fetchMerchantOptions = async () => {
+  const fetchMerchantOptions = async (search?: string) => {
     try {
       loadingMerchants.value = true;
-      const response = await getListMerchants({ page: 1, limit: MERCHANT_OPTIONS_LIMIT });
-      const { data } = response?.data?.data || {};
+      const response = await getMerchantOptions(search ? { search } : undefined);
+      const data = response?.data?.data;
 
-      merchantOptions.value = data || [];
+      merchantOptions.value = Array.isArray(data) ? data : [];
     } catch (error) {
       showToast({
         type: 'error',
@@ -37,9 +34,14 @@ export const useMerchantOptions = () => {
     }
   };
 
+  const onFilterMerchants = useDebounce((event: { value?: string }) => {
+    fetchMerchantOptions(event?.value || undefined);
+  }, 300);
+
   return {
     merchantOptions,
     loadingMerchants,
     fetchMerchantOptions,
+    onFilterMerchants,
   };
 };
