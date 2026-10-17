@@ -3,9 +3,6 @@ name: caf-breakdown
 description: Rules for deciding when a request is too big for one spec and for writing breakdown.md, a proposal of tickets. Use at the start of Specify, when a request holds more than one outcome that could ship and be used on its own.
 ---
 
-> DRAFT: this skill has not been tested with real agent dispatches yet.
-> Remove this banner only after that test is done.
-> Agents: this skill is NOT ready. Do not apply any rule in this file; ignore it entirely until this banner is removed.
 
 # caf-breakdown — when and how to propose several tickets
 

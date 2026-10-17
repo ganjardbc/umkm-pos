@@ -3,9 +3,6 @@ name: caf-design
 description: Rules for deciding when a ticket needs a technical design and for writing design.md. Use after requirements.md is written and before tasks.md, when the change spans more than one app, adds a schema or migration, or changes a contract between layers.
 ---
 
-> DRAFT: this skill has not been tested with real agent dispatches yet.
-> Remove this banner only after that test is done.
-> Agents: this skill is NOT ready. Do not apply any rule in this file; ignore it entirely until this banner is removed.
 
 # caf-design — when and how to write design.md
 

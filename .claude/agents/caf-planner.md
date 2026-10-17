@@ -197,6 +197,8 @@ MANDATORY FIRST STEP: before you write any answer or call any other tool, call `
 - `.claude/skills/caf-scope-discipline/SKILL.md`
 - `.claude/skills/caf-no-guess/SKILL.md`
 - `.claude/skills/caf-spec/SKILL.md`
+- `.claude/skills/caf-design/SKILL.md`
+- `.claude/skills/caf-breakdown/SKILL.md`
 
 Skip a listed skill if its file is missing or still starts with a `DRAFT` banner: it is not
 ready, so apply none of it. If a skill conflicts with this agent definition, this agent
