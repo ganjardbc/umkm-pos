@@ -82,9 +82,9 @@
           "lastSyncedAt": "2026-09-03T16:58:24.302Z"
         },
         "Output": {
-          "hash": "sha256:946570d3bf5cde71dfd9efb1b58509da5523a7d77c40c6cf0abfce392a18700b",
-          "templateVersion": "caf-initiator@0.1.9",
-          "lastSyncedAt": "2026-10-13T14:34:13.453Z"
+          "hash": "sha256:8b61ce452eec212716110bdb7d3868288749e777de0ae310e717d220f5a5341c",
+          "templateVersion": "caf-initiator@0.1.10",
+          "lastSyncedAt": "2026-10-17T08:17:03.526Z"
         },
         "Working Pattern (PIV)": {
           "hash": "sha256:7abd11e5f221a15f0d454fd4730f998357c7ebddfbf2a799860cad3e39db637c",
@@ -140,9 +140,9 @@
           "lastSyncedAt": "2026-09-03T16:58:24.302Z"
         },
         "Output": {
-          "hash": "sha256:946570d3bf5cde71dfd9efb1b58509da5523a7d77c40c6cf0abfce392a18700b",
-          "templateVersion": "caf-initiator@0.1.9",
-          "lastSyncedAt": "2026-10-13T14:34:13.457Z"
+          "hash": "sha256:8b61ce452eec212716110bdb7d3868288749e777de0ae310e717d220f5a5341c",
+          "templateVersion": "caf-initiator@0.1.10",
+          "lastSyncedAt": "2026-10-17T08:17:03.528Z"
         },
         "Working Pattern (PIV)": {
           "hash": "sha256:7abd11e5f221a15f0d454fd4730f998357c7ebddfbf2a799860cad3e39db637c",
@@ -169,9 +169,9 @@
           "lastSyncedAt": "2026-10-16T02:52:08.035Z"
         },
         "Output": {
-          "hash": "sha256:5ed348783093b56ab07817639f473254105f1907af21e33cea4aaad78ee72f55",
+          "hash": "sha256:e51d09593c87bb86cc51b60ddd5e40c6f36c3d4f6280ca02b00d41c8acc25f88",
           "templateVersion": "caf-initiator@0.1.10",
-          "lastSyncedAt": "2026-10-16T02:52:08.038Z"
+          "lastSyncedAt": "2026-10-17T08:55:10.619Z"
         },
         "Working Pattern (PIV)": {
           "hash": "sha256:7abd11e5f221a15f0d454fd4730f998357c7ebddfbf2a799860cad3e39db637c",
@@ -261,9 +261,9 @@
           "lastSyncedAt": "2026-09-03T17:30:36.799Z"
         },
         "Output": {
-          "hash": "sha256:6fbef239f614ed0d965c85d28fd7313be9bbcb3eb4b1cd935cc8540ccdbf6b5b",
-          "templateVersion": "caf-initiator@0.1.9",
-          "lastSyncedAt": "2026-10-12T16:42:21.763Z"
+          "hash": "sha256:9cf735f9e1a2a9f869e4657c472fdd76bf087f19d850069c47546c97201ca54b",
+          "templateVersion": "caf-initiator@0.1.10",
+          "lastSyncedAt": "2026-10-17T08:17:03.529Z"
         },
         "Working Pattern (PIV)": {
           "hash": "sha256:ea12ec6478f2b3a1ec442458fabd14903df729f68177392275c72b201eaa2995",

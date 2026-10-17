@@ -55,6 +55,8 @@ five rules below on top of the Working Pattern of this file. Everything is in
 - `requirements.md`: the scope (In and Out) and every AC (`AC-1:`, `AC-2:`, ...) with its
   `Verify:` line.
 - `tasks.md`: the tasks of this agent and the AC ids each one serves.
+- A `tasks.md` may end with `## Coverage`, which maps each AC id to the tasks that serve it. It
+  is a map, not a task: do not implement it. Use it to find the tasks behind an AC you report.
 
 ### 2. When to stop before coding
 - `requirements.md` says `Status: NEEDS_CLARIFICATION`, or a question marked `BLOCKING` has no

@@ -94,8 +94,11 @@ The skeleton of the Report Format section below is used as it is; no part is add
   `### Qualitative Review`, one line each, starting with what it is (`Scope deviation:`,
   `Task not done:`, `Spec changed after approval:`, `ADR violation:`).
 - ACs that need a human check and proposed spec changes: under `### For Developer`.
-- A blocking finding rules out an approving verdict; give it as the reason under
-  `### Verdict Rationale`. The verdict values are the ones of the Report Format section.
+- A blocking finding means the verdict is not the approving one. A finding only a human can
+  settle (a spec changed after approval, a proposed spec change that blocks the work) takes the
+  value that Retry Logic gives for a review that is blocked. Any other blocking finding takes
+  the remaining value that is not approving. Give the reason under `### Verdict Rationale`.
+  The values themselves are the ones of the Report Format section.
 
 ### What the Reviewer never does
 - Edit code, tests or the spec (`requirements.md`, `tasks.md`). The only file it writes is
