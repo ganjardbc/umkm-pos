@@ -52,7 +52,7 @@ receive that section):
   (unchanged from before).
 
 ## Output
-Produces `requirements.md`, `tasks.md` in `.caf/tasks/{TICKET-ID}/` for the next agent to read.
+Produces `requirements.md`, `tasks.md` (and `design.md` or `breakdown.md` when the request needs one) in `.caf/tasks/{TICKET-ID}/` for the next agent to read.
 
 How the two files are produced — spec-first. The Planner writes the spec, gets it clear, and
 only then breaks it into tasks: run the four steps below in order and do not skip one. Every
@@ -64,6 +64,14 @@ artifact of the task.
 - Before writing anything, read the files that already exist in the task folder:
   `requirements.md`, `tasks.md`, `verify-report.md`. A file that is there is the starting point;
   never write over one you have not read in this run.
+- Before specifying, check whether the request is one deliverable or several. A request with
+  more than one outcome that could ship and be used on its own is split: write `breakdown.md`
+  in the task folder, following the `caf-breakdown` skill when `## Skills` lists it. One outcome
+  reached in many steps is not split; its steps go to `tasks.md`.
+- When you split, write `requirements.md` for the request as a whole as an outline, with
+  `Status: NEEDS_CLARIFICATION` and one `BLOCKING` question: split as in `breakdown.md`, or
+  continue as one spec. Write no `tasks.md`. Once that question has an `Answer:`, do not split
+  again. Never create tickets: that is a human step.
 - A fact about the repo that `Read`, `Glob` or `Grep` can answer is read before any artifact is
   written, in this run, and is never handed on: no task in `tasks.md` asks the implementer to
   find out a fact the spec needs. A task may tell the implementer to read the file it is about
@@ -91,6 +99,13 @@ artifact of the task.
 - The status of `requirements.md` is one plain line, `Status: <value>`, never a heading. The
   values are `DRAFT`, `NEEDS_CLARIFICATION`, `APPROVED` and `NEEDS_HUMAN`. A spec written with
   no open `BLOCKING` question is `Status: DRAFT`.
+- Write the prose of `requirements.md`, `tasks.md`, `design.md` and `breakdown.md` in the
+  language of the ticket description (of the request, when it comes from chat), and the open
+  questions too. The words the templates and other agents read stay exactly as the templates
+  show them, in every language: section headings, `Status:` and its values, `AC-n:`,
+  `Verify:` and its three forms, `Finding:`, `Assumption A-n:`, `Q-n`, `BLOCKING`,
+  `NON-BLOCKING`, `Answer:` and `Tidak ada`. File paths, symbol names, commands and text
+  quoted from the ticket are written as they are.
 - A section with nothing to say is written `Tidak ada`. Never a placeholder: not `- -`, not an
   empty section, not `TBD`.
 - Number every acceptance criterion `AC-1:`, `AC-2:`, ... and end each one with `Verify:` in
@@ -98,6 +113,8 @@ artifact of the task.
   (a deterministic command from the verify checklist of the repo), or `manual:` and the steps
   when neither of the other two is possible. One observable behavior per AC.
 - An AC that holds more than one behavior is split into one AC per behavior.
+- A `requirements.md` written as an outline for a split request has no acceptance criteria:
+  write `Tidak ada` under that section.
 - An AC with `Verify: automated test` names the test file, or the task in `tasks.md` that
   creates that file.
 - The full format and its rules are the `caf-spec` skill; follow it when it is listed under
@@ -131,8 +148,11 @@ artifact of the task.
 ### 3. Plan
 - Only when no `BLOCKING` question is open.
 - Decide the approach at the level of work, not code: which agents and apps are involved, in
-  what order, and what depends on what. A change that needs a technical design goes to the
-  Architect (`design.md`); do not design it here.
+  what order, and what depends on what.
+- A change that touches more than one app or service, adds or changes a schema or a migration,
+  or changes a contract between layers needs a technical design: write `design.md` in the task
+  folder before `tasks.md`, following the `caf-design` skill when `## Skills` lists it.
+  Otherwise write none. Do not design inside `requirements.md` or `tasks.md`.
 
 ### 4. Tasks
 - Write `tasks.md` under the task sections described in Input.
