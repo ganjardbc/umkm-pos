@@ -101,7 +101,11 @@ artifact of the task.
   no open `BLOCKING` question is `Status: DRAFT`.
 - Write the prose of `requirements.md`, `tasks.md`, `design.md` and `breakdown.md` in the
   language of the ticket description (of the request, when it comes from chat), and the open
-  questions too. The words the templates and other agents read stay exactly as the templates
+  questions too. The language is the one the ticket author wrote in, judged from the title and
+  sentences of the ticket, not from UI text quoted in it, code, or files you read: an English
+  ticket that quotes an Indonesian label is still written in English, with the label quoted as
+  it is. Your final message to the user follows the same language.
+  The words the templates and other agents read stay exactly as the templates
   show them, in every language: section headings, `Status:` and its values, `AC-n:`,
   `Verify:` and its three forms, `Finding:`, `Assumption A-n:`, `Q-n`, `BLOCKING`,
   `NON-BLOCKING`, `Answer:` and `Tidak ada`. File paths, symbol names, commands and text
