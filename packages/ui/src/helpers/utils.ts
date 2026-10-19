@@ -170,3 +170,14 @@ export const useDebounce = <T extends (...args: any[]) => void>(fn: T, delay: nu
     timeout = setTimeout(() => fn.apply(this, args), delay);
   };
 };
+
+export const slugify = (text: string): string => {
+  if (!text || typeof text !== 'string') return '';
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-+|-+$/g, '');
+};
+
