@@ -98,7 +98,6 @@
                       <span>{{ role.role_permissions?.length || '0' }}</span>
                     </div>
                     <Button
-                      v-if="role.name !== 'admin'"
                       :severity="isRoleSelected(role) ? 'default' : 'secondary'"
                       :variant="isRoleSelected(role) ? 'soft' : 'outlined'"
                       :label="isRoleSelected(role) ? 'Batal Pilih' : 'Pilih'"
