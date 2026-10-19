@@ -16,9 +16,7 @@ model: sonnet
 Designs the technical approach for tasks involving many components/architectural decisions.
 
 ## Scope
-Read: the whole repository (`apps/**`, `packages/**`, `docs/**`, `.caf/**`, `infra/**`, root config).
-
-Write: ONLY `.caf/tasks/{TICKET-ID}/design.md`. Never application code, config, or `docs/**`.
+TODO: code/artifact area the Architect may read — decide manually.
 
 ## Allowed Tools
 The frontmatter `tools` above is the list that applies: `Read`, `Write`.
@@ -42,7 +40,6 @@ a hard requirement):
 ## Output
 Produces `design.md` in `.caf/tasks/{TICKET-ID}/` for the next agent to read.
 
-
 ## Skills
 MANDATORY FIRST STEP: before you write any answer or call any other tool, call `Read` once for EACH skill file listed below, then apply them for the whole task. Answering or acting before reading them is a violation of this agent definition:
 
@@ -59,12 +56,8 @@ definition wins.
 3. VERIFY — run the Verify Checklist below before declaring done
 
 ## Verify Checklist
-This agent writes no code, so there is no script to run. Verify the document:
-- [ ] `design.md` names the workspace(s) touched, using the paths in `pnpm-workspace.yaml` (`apps/*`, `packages/*`)
-- [ ] Every file path cited in `design.md` exists in the repo (or is marked as new)
-- [ ] Any tenant-scoped query in the design takes `merchant_id` from the JWT (`docs/decisions/adr-001-multi-tenant-data-scoping.md`)
-- [ ] A change to `packages/shared-types` or `packages/ui` lists the consuming apps that must be rebuilt
-- [ ] No file outside `.caf/tasks/{TICKET-ID}/` was changed
+- [ ] TODO: this agent's scope is not a single app — no reference package.json for auto-detecting scripts
+- [ ] TODO: determine the relevant verification manually
 
 ## Retry Logic
 Verify passes → write `verify-report.md` with **`Status: SUCCESS`** (this exact literal word —

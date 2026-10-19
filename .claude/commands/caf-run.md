@@ -1,6 +1,6 @@
 ---
 allowed-tools: Read, Write, Grep, Glob, Task, Bash(git status:*), Bash(git branch:*), Bash(git checkout:*), Bash(git ls-remote:*), Bash(git log:*), Bash(git diff:*), Bash(git add:*), Bash(git commit:*), Bash(git fetch:*), Bash(git merge-base:*), Bash(git push:*), Bash(git show:*), Bash(gh pr create:*), Bash(gh pr list:*), Bash(gh repo view:*), Bash(ls:*)
-description: Run the entire Cluster 2 pipeline (Planner → Architect → implementation → Documentation → QA → Reviewer) for one ticket in a single session, without caf-orchestrator — auto-commit/push/PR on SUCCESS, no commit on NEEDS_HUMAN
+description: Run the entire Cluster 2 pipeline (Planner → Architect → implementation → Validator → Reviewer) for one ticket in a single session, without caf-orchestrator — auto-commit/push/PR on SUCCESS, no commit on NEEDS_HUMAN
 argument-hint: [TICKET-ID, e.g. "GAN-44"]
 ---
 
@@ -17,7 +17,7 @@ Purpose: a manual alternative for projects that haven't set up (or don't want) `
 auto `gh pr create`** after Reviewer APPROVE — see section 7. No ticket status is changed in the
 tracker (that stays manual); only git + PR are automated.
 
-**If it stops at NEEDS_HUMAN** (implementation, QA gate, or Reviewer gate): there is NO commit,
+**If it stops at NEEDS_HUMAN** (implementation, Validator gate, or Reviewer gate): there is NO commit,
 push, or PR at all — the working tree is left as-is on branch `ai-agent/{TICKET-ID}` for a human.
 See "Controlled Stop" below.
 
@@ -68,7 +68,7 @@ STOP because of this, and don't treat the remote check as passed either.
 
 - **Not present in either** → proceed to 0.3.
 - **Present in either/both** → **STOP**. This is a strong signal this ticket is already/currently
-  being handled by the orchestrator or a previous `/caf-run-pipeline` run. Show the user:
+  being handled by the orchestrator or a previous `/caf-run` run. Show the user:
   - `git log --oneline` for that branch (whatever commits already exist there),
   - the contents of `.caf/tasks/{TICKET-ID}/verify-report.md` if it exists,
   - whether it was local, remote, or both.
@@ -119,6 +119,9 @@ Planner itself says it isn't confident about.
 
 This stage is **conditional** — don't always spawn it.
 
+If `design.md` already exists in the ticket folder (`.caf/tasks/{TICKET-ID}/design.md`, written by
+Planner), **skip** this stage and note the reason in the final summary.
+
 Spawn Architect (`.claude/agents/caf-architect.md`) ONLY if either is true:
 
 - `tasks.md` from Planner explicitly states it needs an architecture/design decision, OR
@@ -129,6 +132,29 @@ for a task that doesn't need it just adds run cost and a document nobody reads.
 
 Output: `.caf/tasks/{TICKET-ID}/design.md`. If skipped, note in the final summary that this
 stage was skipped along with the reason — don't let it silently disappear from the report.
+
+## Spec Status Check (before any implementation agent)
+
+Before stage 3 spawns an implementation agent, read `.caf/tasks/{TICKET-ID}/requirements.md` and
+look at its `Status:` line and at its questions.
+
+- `Status: NEEDS_CLARIFICATION`, or any question tagged `BLOCKING` that has no `Answer:` →
+  **STOP the entire pipeline** and go straight to the Final Summary with `Status: NEEDS_HUMAN`.
+  Show the user those questions, word for word, so they can answer them in `requirements.md`.
+  Spawn no implementation agent: code written on an unanswered question is the guess the spec was
+  meant to prevent.
+- `Status: DRAFT` or `Status: APPROVED` → go on. Only an unanswered question stops the run,
+  not the draft state of the spec.
+
+This command NEVER writes or edits `requirements.md` or `tasks.md`, whatever the status: the
+planner writes them and a human decides them.
+
+**A proposed change to the spec is shown, never applied.** Whenever a stage proposes one — under
+`## Proposed Spec Changes` in `verify-report.md`, in a line of the gate report that starts with
+`Proposed Spec Changes:`, or in what the Reviewer copied into `### For Developer` of
+`review-notes.md` — copy it as written into the Final Summary for a human to decide. Do not accept
+it, do not reject it, and do not apply it: not to `requirements.md`, not to `tasks.md`, not to
+the code.
 
 ## 3. Implementation
 
@@ -166,63 +192,55 @@ an implementation agent just because its verify failed — that would effectivel
 budget. The only respawn path is the gate retries in stages 5 and 6.
 
 If an agent finishes with `verify-report.md` `Status: NEEDS_HUMAN`:
-**STOP the entire pipeline here.** Don't proceed to Documentation/QA/Reviewer with code whose
+**STOP the entire pipeline here.** Don't proceed to Documentation/Validator/Reviewer with code whose
 verify hasn't passed — every subsequent stage would produce a report about code already known to
 be broken, and that's wasted cost.
 
 ## 4. Documentation (non-blocking)
 
-Spawn Documentation (`.claude/agents/caf-documentation.md`) to update the documentation to match
-the changes already written.
+This project has no Documentation Agent (`.claude/agents/caf-documentation.md` was not
+generated) — skip this stage, note "not available" in the final summary. This is not a
+pipeline failure.
 
-The spawn prompt MUST include, verbatim:
+## 5. Validator (gate)
 
-> Do not `git push`, do not open a PR, do not change the ticket status in the tracker — that is the main thread's job in section 7, not yours.
-
-**This stage is NON-BLOCKING.** By CAF design, Documentation is not a gate: if this agent
-fails, declines, or concludes there's no documentation to change — **do not stop the
-pipeline**. Record the outcome as one line in the final summary and continue to the QA stage.
-
-Do not retry this stage. There is no retry budget for a non-blocking stage.
-
-## 5. QA (gate)
-
-The QA (`.claude/agents/caf-qa.md`) spawn prompt MUST include, verbatim:
+The Validator (`.claude/agents/caf-validator.md`) spawn prompt MUST include, verbatim:
 
 > Do not `git push`, do not open a PR, do not change the ticket status in the tracker — that is the main thread's job in section 7, not yours.
 
-**Gate — `qaRetryCount`, `MAX_QA_RETRIES = 1`.**
+**Gate — `validatorRetryCount`, `MAX_VALIDATOR_RETRIES = 1`.**
 
-Set `qaRetryCount = 0` at the start of this run. This counter is **fresh every time
-`/caf-run-pipeline` runs** and **independent** of other gate counters — budget exhausted on
+Set `validatorRetryCount = 0` at the start of this run. This counter is **fresh every time
+`/caf-run` runs** and **independent** of other gate counters — budget exhausted on
 one gate does NOT reduce another gate's budget. Don't treat it as a shared budget.
 
 Flow:
 
-1. Spawn QA (`.claude/agents/caf-qa.md`), wait for its result.
+1. Spawn Validator (`.claude/agents/caf-validator.md`), wait for its result.
 2. Result OK → proceed to the next stage.
-3. Result `NEEDS_HUMAN / has a CRITICAL issue`:
-   - If `qaRetryCount >= MAX_QA_RETRIES` → **STOP here**, report NEEDS_HUMAN (see
+3. Result `FAIL`:
+   - If `validatorRetryCount >= MAX_VALIDATOR_RETRIES` → **STOP here**, report NEEDS_HUMAN (see
      "Controlled Stop" below).
-   - Otherwise → increment `qaRetryCount` by 1 from its previous value, then **respawn the
-     relevant implementation agent** with `qa-report.md` as input, asking it to fix only the
+   - Otherwise → increment `validatorRetryCount` by 1 from its previous value, then **respawn the
+     relevant implementation agent** with `validate-report.md` as input, asking it to fix only the
      findings (not redo the implementation from scratch). Once the fix is done, run this gate
      **once more**, back to step 1.
-4. Budget exhausted (`qaRetryCount >= MAX_QA_RETRIES`) and the gate still fails → STOP,
+4. Budget exhausted (`validatorRetryCount >= MAX_VALIDATOR_RETRIES`) and the gate still fails → STOP,
    NEEDS_HUMAN.
 
 Retry means **fix, then re-check** — not running the gate twice over the exact same code.
 Re-running the gate with nothing changed just burns cost for a result that's already certain to
 be the same.
 
-A `NON-CRITICAL` issue found by QA does NOT fail the gate — that's intentional, not an
-overlooked gap. If QA closes with `## Status: PASS` while the `### NON-CRITICAL` section in
-`qa-report.md` is non-empty, treat it as "Result OK" and proceed to the next stage. Those
-findings stay recorded in `qa-report.md` to be addressed separately — outside this retry loop.
-Only `## Status: NEEDS_HUMAN` or content in the `### CRITICAL` section triggers the retry
-gate.
+`UNVERIFIED` rows do NOT fail the gate — that's intentional, not an overlooked gap. If
+`validate-report.md` closes with `Status: PASS`, treat it as "Result OK" and proceed to the next
+stage, and copy its `Unverified:` line into the Final Summary so a human sees which criteria
+were not confirmed. Only `Status: FAIL` triggers the retry gate.
 
-Artifact: `.caf/tasks/{TICKET-ID}/qa-report.md`.
+`Status: NEEDS_HUMAN` means the validation could not be done at all (nothing to fix in the code):
+**STOP here** and report NEEDS_HUMAN without using the retry budget.
+
+Artifact: `.caf/tasks/{TICKET-ID}/validate-report.md`.
 
 ## 6. Reviewer (gate)
 
@@ -233,7 +251,7 @@ The Reviewer (`.claude/agents/caf-reviewer.md`) spawn prompt MUST include, verba
 **Gate — `reviewerRetryCount`, `MAX_REVIEWER_RETRIES = 1`.**
 
 Set `reviewerRetryCount = 0` at the start of this run. This counter is **fresh every time
-`/caf-run-pipeline` runs** and **independent** of other gate counters — budget exhausted on
+`/caf-run` runs** and **independent** of other gate counters — budget exhausted on
 one gate does NOT reduce another gate's budget. Don't treat it as a shared budget.
 
 Flow:
@@ -256,13 +274,13 @@ be the same.
 
 Artifact: `.caf/tasks/{TICKET-ID}/review-notes.md`.
 
-To be explicit: `reviewerRetryCount` is **not affected** by what happens in the QA stage. A
-ticket whose QA passed after a retry still enters this stage with a full budget of 1.
+To be explicit: `reviewerRetryCount` is **not affected** by what happens in the Validator stage. A
+ticket whose Validator passed after a retry still enters this stage with a full budget of 1.
 
 ## 7. Commit, Push, PR (SUCCESS)
 
 **This stage runs ONLY if Reviewer APPROVEs.** If the pipeline stopped at any stage before this
-(implementation NEEDS_HUMAN, QA/Reviewer gate exhausted), **skip this entire section** and go
+(implementation NEEDS_HUMAN, Validator/Reviewer gate exhausted), **skip this entire section** and go
 straight to "Controlled Stop" below — don't commit anything.
 
 Run these seven steps **in order**. Any step with a STOP condition must halt there, not proceed
@@ -282,14 +300,6 @@ Paths allowed into the commit (ONLY these, not the entire working tree):
 - `caf-backend`: `packages/eslint-config/`
 - `caf-backend`: `packages/shared-types/`
 - `caf-backend`: `packages/shared-utils/`
-- `caf-documentation`: `README.md`
-- `caf-documentation`: `CHANGELOG.md`
-- `caf-documentation`: `docs/`
-
-`docs/` is whitelisted as one whole folder (not a specific subpath) because the Documentation
-agent has no granular path scope — this means the scope check in 7.1 can't distinguish what the
-Documentation agent wrote from other files that happen to be written to `docs/` by another
-process in the same run.
 
 `git status --porcelain` → match **every** changed path against the whitelist above.
 
@@ -326,7 +336,7 @@ failure — proceed treating it as "remote doesn't exist yet" (next step).
   succeeds (exit 0) → the remote SHA is an ancestor of local HEAD, safe, proceed to 7.4.
 - **Remote exists**, and `git merge-base --is-ancestor` fails (exit != 0) → the remote SHA is
   NOT an ancestor of local HEAD. **STOP before pushing.** This signals the remote branch has been
-  changed by another party (the orchestrator, or another `/caf-run-pipeline` run) since guard
+  changed by another party (the orchestrator, or another `/caf-run` run) since guard
   0.2 ran at the start of this command. Show the user: the remote SHA, `git log --oneline` of
   that remote branch, and the local commit just created in 7.2 (still in the working tree, not
   yet pushed). **DO NOT force-push, DO NOT auto merge/rebase** — that's a human decision.
@@ -382,19 +392,19 @@ Ticket: {TICKET-ID}
 ## Reports
 - Requirements: `.caf/tasks/{TICKET-ID}/requirements.md`
 - Verify: `.caf/tasks/{TICKET-ID}/verify-report.md`
-- QA: `.caf/tasks/{TICKET-ID}/qa-report.md`
+- Validate: `.caf/tasks/{TICKET-ID}/validate-report.md`
 - Review: `.caf/tasks/{TICKET-ID}/review-notes.md`
 
 {docsNote — Documentation status from stage 4: SUCCESS / FAILED (non-blocking) / NOT AVAILABLE,
 the equivalent wording already used in the Final Summary}
 
-{raw contents of qa-report.md}
+{raw contents of validate-report.md}
 
 {raw contents of review-notes.md}
 ```
 
 No skip-gate warning block (`qualityGateWarning` in the orchestrator) — this command has no
-skip-QA/Reviewer feature, so it's not applicable.
+skip-Validator/Reviewer feature, so it's not applicable.
 
 Base: `{BASE-BRANCH}` from 7.5. Save the URL returned by `gh pr create` for the Final Summary.
 
@@ -450,18 +460,18 @@ Show a status table for every stage:
 | Architect      | SUCCESS / SKIP (reason)         | design.md |
 | Implementation | SUCCESS / NEEDS_HUMAN           | verify-report.md |
 | Documentation  | SUCCESS / FAILED (non-blocking) / NOT AVAILABLE | - |
-| QA             | PASS (retry: n/1) / NEEDS_HUMAN / NOT RUN (a prior stage stopped) | qa-report.md |
+| Validator      | PASS (retry: n/1) / NEEDS_HUMAN / NOT RUN (a prior stage stopped) | validate-report.md |
 | Reviewer       | APPROVE (retry: n/1) / NEEDS_HUMAN / NOT RUN (a prior stage stopped) | review-notes.md |
 | Commit/Push/PR | SUCCESS (new/existing PR) / ABORTED (scope drift) / NOT RUN (a prior stage stopped) | commit + PR URL |
 ```
 
 A stage that was **never invoked** because the pipeline already stopped before reaching it (e.g.
-QA exhausted → Reviewer never spawned) is filled in as `NOT RUN (a prior stage stopped)`.
+Validator exhausted → Reviewer never spawned) is filled in as `NOT RUN (a prior stage stopped)`.
 **Never** fill in `NEEDS_HUMAN` for a stage that was never executed — that implies the stage
 ran and found a problem, when it didn't. Its artifact doesn't exist either, so write `-` in the
 Artifact column.
 
-State the final `qaRetryCount` and `reviewerRetryCount` as-is — that tells the user how
+State the final `validatorRetryCount` and `reviewerRetryCount` as-is — that tells the user how
 smoothly this run went.
 
 Close with, depending on the final status:
@@ -473,5 +483,5 @@ Close with, depending on the final status:
 **NEEDS_HUMAN**:
 
 > Code is on branch `ai-agent/{TICKET-ID}`, not committed/pushed. Continue or fix it manually,
-> then re-run `/caf-run-pipeline {TICKET-ID}` when ready — guard 0.2/0.3 above will detect the
+> then re-run `/caf-run {TICKET-ID}` when ready — guard 0.2/0.3 above will detect the
 > existing branch/artifact and offer to continue from there.
