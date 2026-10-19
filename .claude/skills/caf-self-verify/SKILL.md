@@ -12,52 +12,46 @@ description: Verification commands for this repo (lint, typecheck, test, build).
 Commands detected by caf-init from `package.json` (repo mode `MONOREPO`):
 
 #### apps/admin
-- [ ] TODO: no lint script detected in package.json — verify manually or add the script
-- [ ] TODO: no typecheck script detected in package.json — verify manually or add the script
-- [ ] TODO: no test script detected in package.json — verify manually or add the script
+- [ ] Gap: no `lint:ci` or `lint` script.
+- [ ] Gap: no `typecheck` script — `build` runs `vue-tsc -b` first, so it is the type gate.
+- [ ] Gap: no `test` script and no test runner in `package.json`.
 - [ ] `pnpm --filter @umkm-pos/admin run build`
 
 #### apps/api
-- [ ] `pnpm --filter umkm-pos-api run lint`
-- [ ] TODO: no typecheck script detected in package.json — verify manually or add the script
+- [ ] `pnpm --filter umkm-pos-api run lint:ci` (non-mutating, same command CI runs; `lint` rewrites files with `--fix`)
+- [ ] Gap: no `typecheck` script — `build` (`nest build`) is the type gate.
 - [ ] `pnpm --filter umkm-pos-api run test`
 - [ ] `pnpm --filter umkm-pos-api run build`
 
 #### apps/landing
-- [ ] TODO: no lint script detected in package.json — verify manually or add the script
-- [ ] TODO: no typecheck script detected in package.json — verify manually or add the script
-- [ ] TODO: no test script detected in package.json — verify manually or add the script
+- [ ] Gap: no `lint:ci` or `lint` script.
+- [ ] Gap: no `typecheck` script — `build` runs `vue-tsc -b` first, so it is the type gate.
+- [ ] Gap: no `test` script and no test runner in `package.json`.
 - [ ] `pnpm --filter @umkm-pos/landing run build`
 
 #### apps/merchant
-- [ ] TODO: no lint script detected in package.json — verify manually or add the script
-- [ ] TODO: no typecheck script detected in package.json — verify manually or add the script
-- [ ] TODO: no test script detected in package.json — verify manually or add the script
+- [ ] Gap: no `lint:ci` or `lint` script.
+- [ ] Gap: no `typecheck` script — `build` runs `vue-tsc -b` first, so it is the type gate.
+- [ ] Gap: no `test` script and no test runner in `package.json` (`modules/dashboard/` has `*.test.ts` files that cannot be run).
 - [ ] `pnpm --filter @umkm-pos/merchant run build`
 
 #### packages/eslint-config
-- [ ] TODO: no lint script detected in package.json — verify manually or add the script
-- [ ] TODO: no typecheck script detected in package.json — verify manually or add the script
-- [ ] TODO: no test script detected in package.json — verify manually or add the script
-- [ ] TODO: no build script detected in package.json — verify manually or add the script
+- [ ] Gap: no scripts at all in `package.json` (stub package). Verify through a consumer: `pnpm --filter umkm-pos-api run lint:ci`.
 
 #### packages/shared-types
-- [ ] TODO: no lint script detected in package.json — verify manually or add the script
+- [ ] Gap: no `lint:ci` or `lint` script.
 - [ ] `pnpm --filter @umkm-pos/shared-types run typecheck`
-- [ ] TODO: no test script detected in package.json — verify manually or add the script
+- [ ] Gap: no `test` script.
 - [ ] `pnpm --filter @umkm-pos/shared-types run build`
 
 #### packages/shared-utils
-- [ ] TODO: no lint script detected in package.json — verify manually or add the script
-- [ ] TODO: no typecheck script detected in package.json — verify manually or add the script
-- [ ] TODO: no test script detected in package.json — verify manually or add the script
-- [ ] TODO: no build script detected in package.json — verify manually or add the script
+- [ ] Gap: no scripts at all in `package.json` (stub package). Verify through a consumer: `pnpm --filter umkm-pos-api run build`.
 
 #### packages/ui
-- [ ] TODO: no lint script detected in package.json — verify manually or add the script
+- [ ] Gap: no `lint:ci` or `lint` script.
 - [ ] `pnpm --filter @umkm-pos/ui run typecheck`
-- [ ] TODO: no test script detected in package.json — verify manually or add the script
-- [ ] TODO: no build script detected in package.json — verify manually or add the script
+- [ ] Gap: no `test` script.
+- [ ] Gap: source-only package, no `build` script — build a consumer: `pnpm --filter @umkm-pos/merchant run build` and `pnpm --filter @umkm-pos/admin run build`.
 
 Run only the checklist for the app(s) actually touched by this task — not every app every time.
 

@@ -16,7 +16,9 @@ model: sonnet
 Designs the technical approach for tasks involving many components/architectural decisions.
 
 ## Scope
-TODO: code/artifact area the Architect may read — decide manually.
+Read: the whole repository (`apps/**`, `packages/**`, `docs/**`, `.caf/**`, `infra/**`, root config).
+
+Write: ONLY `.caf/tasks/{TICKET-ID}/design.md`. The Architect never touches application code.
 
 ## Allowed Tools
 The frontmatter `tools` above is the list that applies: `Read`, `Write`.
@@ -56,8 +58,10 @@ definition wins.
 3. VERIFY — run the Verify Checklist below before declaring done
 
 ## Verify Checklist
-- [ ] TODO: this agent's scope is not a single app — no reference package.json for auto-detecting scripts
-- [ ] TODO: determine the relevant verification manually
+- [ ] No application code, config or `package.json` was changed — the only file written is `.caf/tasks/{TICKET-ID}/design.md`
+- [ ] Gap: this agent runs no build/test commands (no `Bash` tool); verification is reading, not running
+- [ ] Every file, module and endpoint named in `design.md` exists in the repo (or is marked as new)
+- [ ] The design respects `docs/architecture/*`, `docs/decisions/*` and the tenant rule (`merchant_id` from the JWT)
 
 ## Retry Logic
 Verify passes → write `verify-report.md` with **`Status: SUCCESS`** (this exact literal word —
