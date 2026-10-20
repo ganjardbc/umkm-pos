@@ -169,6 +169,24 @@ describe('AuditLogsService', () => {
         take: 20,
       });
     });
+
+    it('should default to limit 20 and offset 0 when limit is omitted', async () => {
+      mockPrisma.outlets.findMany.mockResolvedValue([{ id: 'outlet-1' }]);
+      mockPrisma.shifts.findFirst.mockResolvedValue({
+        id: 'shift-1',
+        outlet_id: 'outlet-1',
+      });
+      mockPrisma.shift_audit_logs.findMany.mockResolvedValue([]);
+      mockPrisma.shift_audit_logs.count.mockResolvedValue(0);
+
+      const result = await service.getAuditLogs('shift-1', 'merchant-1');
+
+      expect(result.limit).toBe(20);
+      expect(result.offset).toBe(0);
+      expect(mockPrisma.shift_audit_logs.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({ take: 20, skip: 0 }),
+      );
+    });
   });
 
   describe('validateAuditTrail', () => {
