@@ -106,9 +106,14 @@
 
           <span class="text-slate-400">Jumlah Stok</span>
           <span
-            class="text-right font-medium"
+            class="flex items-center justify-end gap-2 text-right font-medium"
             :class="isLowStock(product) ? 'text-orange-600 font-semibold' : 'text-slate-700 dark:text-slate-300'"
           >
+            <Tag
+              v-if="isLowStock(product)"
+              value="Stok Menipis"
+              severity="warn"
+            />
             {{ product.stock_qty }}
           </span>
 
