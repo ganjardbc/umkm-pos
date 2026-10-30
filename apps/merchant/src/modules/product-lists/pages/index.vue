@@ -40,7 +40,14 @@
       class="flex flex-col items-center justify-center py-16 text-gray-400"
     >
       <i class="pi pi-inbox mb-3 text-4xl" />
-      <p class="text-sm">Belum ada produk.</p>
+      <p class="text-sm">Belum ada produk</p>
+      <Button
+        icon="pi pi-plus"
+        label="Tambah Produk"
+        class="mt-4"
+        :disabled="!isCanCreate"
+        @click="addProduct"
+      />
     </div>
 
     <div v-else class="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
