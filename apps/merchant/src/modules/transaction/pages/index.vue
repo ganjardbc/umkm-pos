@@ -23,19 +23,22 @@
             @change="applyFilters"
           />
         </div>
-
-        <div class="min-w-0 xl:w-48">
-          <Select
-            v-model="filter.order_status"
-            :options="orderStatusFilters"
-            option-label="label"
-            option-value="value"
-            placeholder="Status Pesanan"
-            class="w-full"
-            @change="applyFilters"
-          />
-        </div>
       </div>
+    </div>
+
+    <div class="flex flex-wrap gap-2">
+      <button
+        v-for="item in orderStatusFilters"
+        :key="String(item.value)"
+        type="button"
+        @click="setOrderStatus(item.value)"
+      >
+        <Tag
+          :value="item.label"
+          :severity="filter.order_status === item.value ? 'success' : 'secondary'"
+          class="cursor-pointer px-4! py-2!"
+        />
+      </button>
     </div>
 
     <UiLoading
@@ -251,7 +254,7 @@ const transactions = ref<any[]>([]);
 const filter = ref({
   outlet_id: outlet?.id,
   is_cancelled: null,
-  order_status: null,
+  order_status: null as string | null,
 });
 const pagination = ref({
   page: 1,
@@ -438,6 +441,11 @@ const openDetail = (transaction: any) => {
 const applyFilters = () => {
   pagination.value.page = 1;
   fetchTransaction();
+};
+
+const setOrderStatus = (value: string | null) => {
+  filter.value.order_status = value;
+  applyFilters();
 };
 
 // Search
