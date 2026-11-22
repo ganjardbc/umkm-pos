@@ -11,7 +11,7 @@
       <Button
         icon="pi pi-plus"
         label="Tambah Pelanggan"
-        class="w-full md:w-[192px]"
+        class="w-full md:w-[248px]"
         :disabled="!isCanCreate"
         @click="openForm(null)"
       />
