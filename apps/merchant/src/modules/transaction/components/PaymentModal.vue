@@ -28,6 +28,57 @@
     <Divider />
 
     <div class="space-y-4 min-h-86">
+      <UiFormGroup v-if="allowCustomer" label="Pelanggan (opsional)" variant="vertical">
+        <div
+          v-if="customer"
+          class="flex items-center justify-between rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-2"
+        >
+          <div class="min-w-0">
+            <div class="truncate text-sm font-semibold">{{ customer.name }}</div>
+            <div class="text-xs text-gray-400">{{ customer.phone || 'Tanpa nomor' }}</div>
+          </div>
+          <Button
+            icon="pi pi-times"
+            severity="secondary"
+            text
+            rounded
+            size="small"
+            aria-label="Lepas pelanggan"
+            @click="customer = null"
+          />
+        </div>
+        <div
+          v-else
+          class="flex gap-2"
+        >
+          <AutoComplete
+            v-model="customerQuery"
+            :suggestions="customerSuggestions"
+            option-label="name"
+            placeholder="Cari nama atau nomor pelanggan"
+            class="flex-1"
+            fluid
+            @complete="searchCustomers"
+            @option-select="onPickCustomer"
+          >
+            <template #option="{ option }">
+              <div class="flex flex-col">
+                <span class="text-sm">{{ option.name }}</span>
+                <span class="text-xs text-gray-400">{{ option.phone || 'Tanpa nomor' }}</span>
+              </div>
+            </template>
+          </AutoComplete>
+          <Button
+            v-if="canCreateCustomer"
+            icon="pi pi-user-plus"
+            label="Baru"
+            severity="secondary"
+            variant="outlined"
+            @click="showNewCustomer = true"
+          />
+        </div>
+      </UiFormGroup>
+
       <UiFormGroup v-if="allowDiscount" label="Diskon" variant="vertical">
         <div class="flex gap-2">
           <Button
@@ -175,12 +226,19 @@
       </div>
     </template>
   </Dialog>
+
+  <CustomerFormDialog
+    v-model:visibility="showNewCustomer"
+    @saved="(created) => (customer = created)"
+  />
 </template>
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { getCurrency } from '@umkm-pos/ui/helpers/utils';
 import UiFormGroup from '@umkm-pos/ui/components/UiFormGroup.vue';
+import CustomerFormDialog from '@/modules/customers/components/CustomerFormDialog.vue';
+import { getListCustomers } from '@/modules/customers/services/api.ts';
 import { calcDiscountAmount, type DiscountType } from '@/modules/transaction/utils/discount.ts';
 
 const visibility = defineModel<boolean>('visibility', { required: true });
@@ -191,9 +249,13 @@ const cashAmount = defineModel<number>('cashAmount', { required: true });
 const discountType = defineModel<DiscountType | ''>('discountType', { default: '' });
 const discountValue = defineModel<number | null>('discountValue', { default: null });
 
+const customer = defineModel<any | null>('customer', { default: null });
+
 const props = defineProps<{
   totalAmount: number;
   allowDiscount?: boolean;
+  allowCustomer?: boolean;
+  canCreateCustomer?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -227,6 +289,24 @@ const addBill = (value: number) => {
 const setExactAmount = () => {
   cashAmount.value = payableAmount.value;
   calculatorBuffer.value = String(Math.floor(payableAmount.value));
+};
+
+const customerQuery = ref<any>('');
+const customerSuggestions = ref<any[]>([]);
+const showNewCustomer = ref(false);
+
+const searchCustomers = async (event: { query: string }) => {
+  try {
+    const response = await getListCustomers({ search: event.query, limit: 8 });
+    customerSuggestions.value = response?.data?.data?.data || [];
+  } catch {
+    customerSuggestions.value = [];
+  }
+};
+
+const onPickCustomer = (event: { value: any }) => {
+  customer.value = event.value;
+  customerQuery.value = '';
 };
 
 const toggleDiscountType = (type: DiscountType) => {

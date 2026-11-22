@@ -32,6 +32,10 @@ import { PERMISSIONS as CASHIER_PERMISSIONS } from '@/modules/cashier/services/r
 import { PREFIX_ROUTE_PATH as PRP_USER } from '@/modules/user/services/constants';
 import { PERMISSIONS as USER_PERMISSIONS } from '@/modules/user/services/rbac.ts';
 
+// Customers
+import { PREFIX_ROUTE_PATH as PRP_CUSTOMERS } from '@/modules/customers/services/constants';
+import { PERMISSIONS as CUSTOMER_PERMISSIONS } from '@/modules/customers/services/rbac.ts';
+
 // Reports
 import { PREFIX_ROUTE_PATH as PRP_REPORTS } from '@/modules/reports/services/constants';
 import { PERMISSIONS as REPORTS_PERMISSIONS } from '@/modules/reports/services/rbac.ts';
@@ -78,6 +82,13 @@ export default [
     featureFlag: DEFAULT_FEATURE_FLAG,
     permissions: STOCK_PERMISSIONS,
     route: PRP_STOCK,
+  },
+  {
+    icon: 'pi pi-id-card',
+    label: 'Pelanggan',
+    featureFlag: DEFAULT_FEATURE_FLAG,
+    permissions: CUSTOMER_PERMISSIONS,
+    route: PRP_CUSTOMERS,
   },
   {
     icon: 'pi pi-sitemap',

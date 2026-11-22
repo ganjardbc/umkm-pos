@@ -291,8 +291,11 @@
     v-model:cash-amount="cashPaidAmount"
     v-model:discount-type="discountType"
     v-model:discount-value="discountValue"
+    v-model:customer="customer"
     :total-amount="posStore.cartTotal"
     :allow-discount="isCanDiscount"
+    :allow-customer="isCanReadCustomer"
+    :can-create-customer="isCanCreateCustomer"
     @confirm="onCheckout"
   />
 
@@ -318,6 +321,7 @@ import PaymentModal from '@/modules/transaction/components/PaymentModal.vue';
 import ReceiptModal from '@/modules/transaction/components/ReceiptModal.vue';
 import type { ReceiptData } from '@/modules/transaction/utils/receiptGenerator.ts';
 import { PRINT, DISCOUNT } from '@/modules/transaction/services/rbac.ts';
+import { READ as CUSTOMER_READ, CREATE as CUSTOMER_CREATE } from '@/modules/customers/services/rbac.ts';
 import { calcDiscountAmount, type DiscountType } from '@/modules/transaction/utils/discount.ts';
 import { getPersonalInformation, isHasPermission } from '@/helpers/auth.ts';
 
@@ -326,6 +330,9 @@ const { shiftRequired } = useShift();
 // Receipt shown right after a successful payment
 const isCanPrint = computed(() => isHasPermission(PRINT));
 const isCanDiscount = computed(() => isHasPermission(DISCOUNT));
+const isCanReadCustomer = computed(() => isHasPermission(CUSTOMER_READ));
+const isCanCreateCustomer = computed(() => isHasPermission(CUSTOMER_CREATE));
+const customer = ref<any | null>(null);
 const showReceiptModal = ref(false);
 const receiptData = ref({} as ReceiptData);
 
@@ -512,6 +519,7 @@ const onCheckout = async () => {
       table_id: transactionForm.value.table_id || undefined,
       cash_received: isCashPayment.value ? cashPaidAmount.value : undefined,
       change_amount: isCashPayment.value ? cashChangeAmount.value : undefined,
+      customer_id: customer.value?.id,
       ...(discountAmount.value > 0 && {
         discount_type: discountType.value,
         discount_value: discountValue.value,
@@ -553,6 +561,7 @@ const onCheckout = async () => {
       cashPaidAmount.value = 0;
       discountType.value = '';
       discountValue.value = null;
+      customer.value = null;
     }
   } catch (error: any) {
     console.error('Checkout error:', error);
