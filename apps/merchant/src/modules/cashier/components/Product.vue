@@ -81,6 +81,16 @@
               v-else
               class="pi pi-image text-6xl text-gray-400"
             />
+
+            <!-- Bottom-left of the photo: never competes with the stock tag (top-right) or the price row -->
+            <Tag
+              v-if="product.product_option_groups?.length"
+              severity="info"
+              icon="pi pi-sliders-h"
+              value="Ada pilihan"
+              rounded
+              class="absolute bottom-2 left-2 text-xs!"
+            />
           </div>
 
           <Tag
@@ -110,16 +120,8 @@
             </div>
           </div>
 
-          <div class="flex items-center justify-between gap-2">
-            <div class="text-lg font-bold text-primary dark:text-primary-400">
-              {{ getCurrency(product.price) }}
-            </div>
-            <span
-              v-if="product.product_option_groups?.length"
-              class="text-xs text-gray-400"
-            >
-              <i class="pi pi-sliders-h" /> Ada pilihan
-            </span>
+          <div class="text-lg font-bold text-primary dark:text-primary-400">
+            {{ getCurrency(product.price) }}
           </div>
         </div>
       </UiCard>
