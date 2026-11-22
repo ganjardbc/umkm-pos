@@ -3,6 +3,8 @@ import { OutletsController } from './outlets.controller';
 import { OutletsService } from './outlets.service';
 import { PermissionGuard } from '../common/guards/permission.guard';
 import { OutletsQueryDto } from './dto/outlets-query.dto';
+import { ExecutionContext, ForbiddenException } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
 
 describe('OutletsController', () => {
   let controller: OutletsController;
@@ -53,5 +55,32 @@ describe('OutletsController', () => {
 
     expect(result).toEqual(response);
     expect(mockOutletsService.findAll).toHaveBeenCalledWith(merchantId, query);
+  });
+
+  it('rejects PATCH /outlets/:id with 403 without outlet.update (AC-3)', async () => {
+    const prisma = {
+      user_roles: {
+        findMany: jest.fn().mockResolvedValue([
+          {
+            roles: {
+              role_permissions: [{ permissions: { code: 'outlet.read' } }],
+            },
+          },
+        ]),
+      },
+    };
+    const guard = new PermissionGuard(new Reflector(), prisma as any);
+    const context = {
+      getHandler: () => OutletsController.prototype.update,
+      getClass: () => OutletsController,
+      switchToHttp: () => ({
+        getRequest: () => ({ user: { id: 'user-1' } }),
+      }),
+    } as unknown as ExecutionContext;
+
+    await expect(guard.canActivate(context)).rejects.toThrow(
+      ForbiddenException,
+    );
+    expect(mockOutletsService.update).not.toHaveBeenCalled();
   });
 });

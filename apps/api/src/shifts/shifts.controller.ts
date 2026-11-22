@@ -53,6 +53,24 @@ export class ShiftsController {
     return this.shiftsService.findByUser(userId, merchantId);
   }
 
+  @Get('outlet/:outlet_id/setting')
+  @RequirePermission('shift.read')
+  @ApiOperation({ summary: 'Get the outlet shift_required setting' })
+  @ApiResponse({ status: 200, description: '{ outlet_id, shift_required }' })
+  @ApiResponse({ status: 404, description: 'Outlet not found' })
+  async getSetting(
+    @Param('outlet_id') outletId: string,
+    @CurrentUser('merchant_id') merchantId: string,
+  ) {
+    return {
+      outlet_id: outletId,
+      shift_required: await this.shiftsService.isShiftRequired(
+        outletId,
+        merchantId,
+      ),
+    };
+  }
+
   @Get('outlet/:outlet_id')
   @RequirePermission('shift.read')
   @ApiOperation({

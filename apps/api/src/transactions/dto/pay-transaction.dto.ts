@@ -5,7 +5,6 @@ import {
   IsNumber,
   IsString,
   IsUUID,
-  ValidateIf,
   MaxLength,
   Min,
 } from 'class-validator';
@@ -50,9 +49,9 @@ export class PayTransactionDto {
   @ApiPropertyOptional({
     example: '550e8400-e29b-41d4-a716-446655440021',
     description:
-      'Shift receiving the payment (required when payment_method is cash)',
+      'Shift receiving the payment (required for cash when the outlet requires shifts; enforced by the service)',
   })
-  @ValidateIf((o) => o.payment_method === 'cash' || o.shift_id !== undefined)
+  @IsOptional()
   @IsUUID()
   shift_id?: string;
 }

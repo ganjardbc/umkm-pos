@@ -49,7 +49,7 @@
           @click="cashMode = 'close'"
         />
         <Button
-          v-else
+          v-else-if="shiftRequired"
           label="Buka Shift"
           size="small"
           severity="danger"
@@ -153,6 +153,7 @@ const props = defineProps({
 const emit = defineEmits(['shift-loaded']);
 
 const {
+  shiftRequired,
   isUserInShift,
   isUserRemovedFromShift,
   currentShift,

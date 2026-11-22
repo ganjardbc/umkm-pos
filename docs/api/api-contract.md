@@ -78,6 +78,10 @@ PATCH  /outlets/:id          — Update outlet
 DELETE /outlets/:id          — Delete outlet
 ```
 
+`shift_required` (boolean, opsional, default `true`) — setelan buka/tutup kasir per outlet. Diterima di body `POST /outlets` dan `PATCH /outlets/:id` (lewat `CreateOutletDto`), dan ikut pada respons outlet (`GET /outlets`, `GET /outlets/:id`) sebagai kolom `outlets.shift_required`.
+
+Mengubah `shift_required` menjadi `false` lewat `PATCH /outlets/:id` ditolak 400 (`Tutup shift yang masih terbuka sebelum mematikan buka/tutup kasir`) bila outlet masih punya shift `open`; update dibatalkan (satu transaksi database) sehingga nilai tidak berubah. Mengubahnya ke `true` tidak punya pemeriksaan tambahan. Izin yang dibutuhkan sama dengan update outlet (`outlet.update`; ditolak 403 bila tidak ada).
+
 ---
 
 ## User Endpoints
@@ -161,10 +165,17 @@ PATCH  /transactions/:id/pay — Pay a previously unpaid (pending) transaction
 payment_method — wajib (mis. cash, qris, transfer)
 cash_received, change_amount — opsional, khusus tunai
 is_offline     — opsional
-shift_id       — UUID shift penerima pembayaran; wajib bila payment_method = 'cash', opsional bila non-tunai
+shift_id       — UUID shift penerima pembayaran (opsional di DTO; aturan wajib ditegakkan service, lihat di bawah)
 ```
 
-Bila `shift_id` dikirim, divalidasi seperti pembuatan transaksi POS: shift harus open, user peserta aktif shift, outlet milik merchant. Pembayaran tunai tanpa `shift_id` ditolak 400 (`shift_id is required for cash payment`); shift tidak tersedia ditolak 400; bukan peserta ditolak 403. Pesanan tetap belum dibayar bila ditolak. Transaksi yang sudah dibayar atau dibatalkan ditolak 400.
+Perilaku menurut `outlets.shift_required` outlet transaksi:
+
+- Setelan hidup (`true`): `payment_method = 'cash'` tanpa `shift_id` ditolak 400 (`shift_id is required for cash payment`). Non-tunai boleh tanpa `shift_id`.
+- Setelan mati (`false`): `shift_id` yang dikirim diabaikan, `paid_shift_id` disimpan `null`; pembayaran tunai tanpa shift diterima.
+
+Bila `shift_id` dikirim (dan setelan hidup), divalidasi seperti pembuatan transaksi POS: shift harus open, user peserta aktif shift, outlet milik merchant. Pembayaran tunai tanpa `shift_id` ditolak 400 (`shift_id is required for cash payment`); shift tidak tersedia ditolak 400; bukan peserta ditolak 403. Pesanan tetap belum dibayar bila ditolak. Transaksi yang sudah dibayar atau dibatalkan ditolak 400.
+
+`POST /transactions`: setelan hidup, `shift_id` wajib (tanpa itu ditolak 400 `shift_id is required for POS transactions`; tidak ada transaksi dan stok tidak berubah) dan divalidasi seperti sebelumnya. Setelan mati, `shift_id` dari klien diabaikan dan `shift_id` serta `paid_shift_id` disimpan `null`; stok tetap berkurang untuk transaksi dibayar langsung. Outlet tidak ditemukan / bukan milik merchant: 404.
 
 `transactions.paid_shift_id` terisi dengan `shift_id` request (null bila tidak dikirim, mis. non-tunai tanpa shift). Pada `POST /transactions`, `paid_shift_id` = `shift_id` bila dibayar langsung (bukan `pending`), dan kosong bila `pending`. Hanya transaksi tunai dengan `paid_shift_id` = shift yang masuk perhitungan `expected_cash` shift tersebut (bukan `shift_id` pembuat pesanan).
 
@@ -195,12 +206,19 @@ page, limit, search
 
 ```txt
 GET    /shifts               — List shifts (outlet-scoped)
+GET    /shifts/outlet/:outlet_id/setting — Setelan shift outlet: { outlet_id, shift_required } (izin shift.read)
 POST   /shifts               — Open shift (body: outlet_id, opening_cash)
 GET    /shifts/:id           — Get shift detail
 PATCH  /shifts/:id/close     — Close shift (body: closing_cash)
 POST   /shifts/:id/participants — Add participant to shift
 DELETE /shifts/:id/participants/:userId — Remove participant
 ```
+
+### Setelan shift outlet
+
+`GET /shifts/outlet/:outlet_id/setting` (izin `shift.read`) mengembalikan `{ outlet_id, shift_required }`, dengan `merchant_id` dari JWT. Outlet tidak ditemukan atau milik merchant lain: 404.
+
+`POST /shifts` saat `outlets.shift_required = false` ditolak 400 (`Pengaturan buka/tutup kasir outlet ini sedang mati, shift tidak bisa dibuka`) dan tidak ada shift dibuat. Pemeriksaan ini setelah validasi outlet milik merchant (404 bila bukan).
 
 ### Kas shift (cash tracking)
 
@@ -302,6 +320,21 @@ GET    /public/sessions/:token        — Get session info
 POST   /public/orders                 — Submit customer order
 GET    /public/orders/:sessionToken   — Get order status
 ```
+
+### Katalog pelanggan: shift (rute di `CustomerCatalogController`)
+
+```txt
+GET    /catalog/shift-status?outlet_id=   — publik
+POST   /catalog/orders                    — publik, header x-customer-session-token
+```
+
+`GET /catalog/shift-status` mengembalikan `{ shift_required, is_open, shift_id, status }`; `shift_required` adalah nilai `outlets.shift_required` outlet aktif.
+
+`POST /catalog/orders` (outlet harus aktif, 404 bila tidak):
+- `shift_required = true`: butuh shift `open` di outlet, tanpa itu ditolak 400 (`Shift outlet belum dibuka`); `shift_id` pesanan diisi shift open terbaru.
+- `shift_required = false`: pesanan diterima tanpa shift, `shift_id` = `null`.
+
+TODO: daftar rute `/public/...` di atas tidak cocok dengan rute `catalog/*` dan `customer-sessions/start` pada controller; tidak diubah karena di luar lingkup tiket ini.
 
 ---
 

@@ -446,6 +446,13 @@ export class TransactionsService {
     userId: string,
   ) {
     const payNow = dto.pay_now !== false;
+    // Shift off: ignore any client shift_id and store null (no shift attached)
+    const shiftId = await this.resolveShiftIdForOutlet(
+      dto.outlet_id,
+      dto.shift_id,
+      merchantId,
+    );
+    dto = { ...dto, shift_id: shiftId ?? undefined };
     const cashierId = await this.resolveCashierForPos(dto, merchantId, userId);
     const prepared = await this.prepareTransactionPayload(
       dto,
@@ -538,7 +545,13 @@ export class TransactionsService {
       throw new BadRequestException('Transaction has already been paid');
     }
 
-    if (dto.payment_method === 'cash' && !dto.shift_id) {
+    const shiftRequired = await this.shiftsService.isShiftRequired(
+      transaction.outlet_id,
+      merchantId,
+    );
+    if (!shiftRequired) {
+      dto = { ...dto, shift_id: undefined };
+    } else if (dto.payment_method === 'cash' && !dto.shift_id) {
       throw new BadRequestException('shift_id is required for cash payment');
     }
     if (dto.shift_id) {
@@ -763,6 +776,25 @@ export class TransactionsService {
     }
 
     return { cashReceived, changeAmount };
+  }
+
+  /** Required: shift_id mandatory (400 if missing). Off: always null. */
+  private async resolveShiftIdForOutlet(
+    outletId: string,
+    shiftId: string | undefined,
+    merchantId: string,
+  ) {
+    const required = await this.shiftsService.isShiftRequired(
+      outletId,
+      merchantId,
+    );
+    if (!required) return null;
+    if (!shiftId) {
+      throw new BadRequestException(
+        'shift_id is required for POS transactions',
+      );
+    }
+    return shiftId;
   }
 
   private async resolveCashierForPos(

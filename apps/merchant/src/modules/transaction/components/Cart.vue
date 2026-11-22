@@ -294,7 +294,10 @@ import { useGlobalLoading } from '@umkm-pos/ui/composables/useGlobalLoading.ts';
 import { showConfirm, showToast } from '@umkm-pos/ui/helpers/toast';
 import { getOutletTables, postTransaction, patchTransactionItems } from '@/modules/transaction/services/api.ts';
 import UiCard from '@umkm-pos/ui/components/UiCard.vue';
+import { useShift } from '@/modules/shift/composables/useShift.ts';
 import PaymentModal from '@/modules/transaction/components/PaymentModal.vue';
+
+const { shiftRequired } = useShift();
 
 const props = defineProps({
   isUserInShift: {
@@ -407,7 +410,7 @@ const isCanCheckout = computed(() => {
   return (
     posStore.cartItems.length === 0 ||
     isCheckingOut.value ||
-    !transactionForm.value.shift_id ||
+    (shiftRequired.value && !transactionForm.value.shift_id) ||
     !transactionForm.value.outlet_id ||
     !transactionForm.value.payment_method
   );
@@ -431,7 +434,7 @@ const onCheckout = async () => {
     return;
   }
 
-  if (!transactionForm.value.shift_id) {
+  if (shiftRequired.value && !transactionForm.value.shift_id) {
     showToast({
       type: 'error',
       title: 'Validasi Gagal',
@@ -465,7 +468,7 @@ const onCheckout = async () => {
     // Prepare transaction payload
     const payload: any = {
       outlet_id: transactionForm.value.outlet_id,
-      shift_id: transactionForm.value.shift_id,
+      shift_id: transactionForm.value.shift_id || undefined,
       payment_method: transactionForm.value.payment_method,
       is_offline: transactionForm.value.is_offline,
       device_id: transactionForm.value.device_id,
@@ -531,7 +534,7 @@ const submitCreateOrder = async () => {
 
     const payload: any = {
       outlet_id: transactionForm.value.outlet_id,
-      shift_id: transactionForm.value.shift_id,
+      shift_id: transactionForm.value.shift_id || undefined,
       payment_method: 'pending',
       pay_now: false,
       is_offline: transactionForm.value.is_offline,

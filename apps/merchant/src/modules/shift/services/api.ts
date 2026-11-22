@@ -28,6 +28,13 @@ export const getOutletShift = async (outletId: string | number, options: any = {
   );
 };
 
+export const getOutletShiftSetting = async (outletId: string | number, options: any = {}) => {
+  return await api.get(
+    `/api/v1/shifts/outlet/${outletId}/setting`,
+    { ...(options || {}) },
+  );
+};
+
 export const openShift = async (data: { outlet_id: string | number; opening_cash: number }, options: any = {}) => {
   return await api.post(
     `/api/v1/shifts`,

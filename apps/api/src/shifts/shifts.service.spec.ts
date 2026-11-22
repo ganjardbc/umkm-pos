@@ -171,6 +171,42 @@ describe('ShiftsService', () => {
     });
   });
 
+  describe('shift_required setting', () => {
+    it('openShift rejects with 400 when setting is off and creates nothing (AC-19)', async () => {
+      mockPrisma.outlets.findFirst.mockResolvedValue({
+        id: 'outlet-1',
+        shift_required: false,
+      });
+
+      const promise = service.openShift('outlet-1', 'user-1', 'merchant-1', 0);
+
+      await expect(promise).rejects.toThrow(BadRequestException);
+      await expect(promise).rejects.toThrow(/buka\/tutup kasir/i);
+      expect(mockPrisma.shifts.create).not.toHaveBeenCalled();
+    });
+
+    it('isShiftRequired returns the outlet value scoped by merchant', async () => {
+      mockPrisma.outlets.findFirst.mockResolvedValue({ shift_required: false });
+
+      await expect(
+        service.isShiftRequired('outlet-1', 'merchant-1'),
+      ).resolves.toBe(false);
+      expect(mockPrisma.outlets.findFirst).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: 'outlet-1', merchant_id: 'merchant-1' },
+        }),
+      );
+    });
+
+    it('isShiftRequired rejects an outlet of another merchant', async () => {
+      mockPrisma.outlets.findFirst.mockResolvedValue(null);
+
+      await expect(
+        service.isShiftRequired('outlet-1', 'merchant-2'),
+      ).rejects.toThrow(NotFoundException);
+    });
+  });
+
   describe('getShift', () => {
     it('should return shift with participants and transaction counts', async () => {
       const shiftId = 'shift-1';

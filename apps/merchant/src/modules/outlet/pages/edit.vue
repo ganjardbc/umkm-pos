@@ -76,6 +76,18 @@
             {{ $form.is_active.error?.message }}
           </Message>
         </UiFormGroup>
+        <UiFormGroup label="Buka/tutup kasir" variant="vertical">
+          <div class="flex items-center gap-2">
+            <Checkbox
+              name="shift_required"
+              binary
+            />
+            <label class="text-sm text-gray-700">Wajibkan buka/tutup kasir</label>
+          </div>
+          <p class="text-xs text-gray-500">
+            Bila dimatikan, kasir langsung berjualan tanpa membuka shift dan kas tidak dicatat. Tidak bisa dimatikan selama ada shift terbuka.
+          </p>
+        </UiFormGroup>
       </div>
 
       <div class="w-full flex justify-end gap-4">
@@ -131,7 +143,8 @@ const initialValues = ref<FormEdit>({
   name: '',
   location: '',
   guest_session_secret: '',
-  is_active: true
+  is_active: true,
+  shift_required: true
 });
 
 const resolver = ref(zodResolver(
@@ -139,7 +152,8 @@ const resolver = ref(zodResolver(
     name: z.string().min(1, { message: 'Nama wajib diisi.' }),
     location: z.string().min(1, { message: 'Lokasi wajib diisi.' }),
     guest_session_secret: z.string().optional(),
-    is_active: z.boolean()
+    is_active: z.boolean(),
+    shift_required: z.boolean()
   })
 ));
 
@@ -155,6 +169,7 @@ const onFormSubmit = async (event: any) => {
         location: values?.location,
         guest_session_secret: values?.guest_session_secret,
         is_active: values?.is_active,
+        shift_required: values?.shift_required,
       };
       const response = await putOutlet(outletID.value, payload);
       const { success } = response?.data || {};
@@ -189,13 +204,14 @@ const fetchDetail = async () => {
   try {
     const response = await getDetailOutlet(outletID.value);
     const { data } = response?.data || {};
-    const { name, location, guest_session_secret, is_active, logo } = data || {};
+    const { name, location, guest_session_secret, is_active, shift_required, logo } = data || {};
 
     initialValues.value = {
       name,
       location,
       guest_session_secret,
-      is_active
+      is_active,
+      shift_required: shift_required !== false
     };
 
     if (logo) {

@@ -17,6 +17,10 @@ merchants
 
 outlets
   id, merchant_id, slug, name, location, is_active, guest_session_secret
+  shift_required (BOOLEAN / TINYINT(1), NOT NULL, default true)
+    — true: kasir wajib buka shift sebelum transaksi; false: buka/tutup kasir opsional,
+      transaksi disimpan tanpa shift (shift_id / paid_shift_id NULL)
+    — migrasi: apps/api/prisma/migrations/add_outlets_shift_required.sql
   → shifts (1:N)
   → transactions (1:N)
   → user_roles (1:N)

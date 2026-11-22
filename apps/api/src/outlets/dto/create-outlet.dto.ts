@@ -60,4 +60,13 @@ export class CreateOutletDto {
   @IsOptional()
   @IsBoolean()
   is_active?: boolean;
+
+  @ApiPropertyOptional({
+    example: true,
+    description: 'Whether cashiers must open a shift before selling',
+    default: true,
+  })
+  @IsOptional()
+  @IsBoolean()
+  shift_required?: boolean;
 }

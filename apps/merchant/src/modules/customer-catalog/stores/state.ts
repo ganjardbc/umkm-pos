@@ -10,6 +10,7 @@ export interface CatalogCartItem {
 
 export interface CatalogShiftStatus {
   is_open: boolean;
+  shift_required?: boolean;
   shift_id: string | null;
   status: string;
 }

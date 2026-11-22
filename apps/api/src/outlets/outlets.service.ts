@@ -137,13 +137,30 @@ export class OutletsService {
       }
     }
 
-    return this.prisma.outlets.update({
-      where: { id },
-      data: {
-        ...dto,
-        updated_by: userId,
-        updated_at: new Date(),
-      },
+    const run = (db: Pick<PrismaService, 'outlets'>) =>
+      db.outlets.update({
+        where: { id },
+        data: {
+          ...dto,
+          updated_by: userId,
+          updated_at: new Date(),
+        },
+      });
+
+    if (dto.shift_required !== false) return run(this.prisma);
+
+    // Turning shifts off: update + open-shift check in one tx so a throw rolls back
+    return this.prisma.$transaction(async (tx) => {
+      const updated = await run(tx);
+      const openShifts = await tx.shifts.count({
+        where: { outlet_id: id, status: 'open' },
+      });
+      if (openShifts > 0) {
+        throw new BadRequestException(
+          'Tutup shift yang masih terbuka sebelum mematikan buka/tutup kasir',
+        );
+      }
+      return updated;
     });
   }
 
