@@ -189,7 +189,7 @@
 
   <CancelReasonModal
     v-model:visibility="showCancelModal"
-    @confirm="(reason) => cancelTransaction(cancelTargetId, reason)"
+    @confirm="(payload) => cancelTransaction(cancelTargetId, payload)"
   />
 
   <ReceiptModal
@@ -386,11 +386,14 @@ const confirmPayment = async () => {
 };
 
 // Actions
-const cancelTransaction = async (id: string, reason: string) => {
+const cancelTransaction = async (
+  id: string,
+  payload: { reason: string; approver_pin?: string },
+) => {
   try {
     showLoading();
 
-    const response = await postCancelTransaction(id, { reason: reason || undefined });
+    const response = await postCancelTransaction(id, payload);
     const { success } = response?.data || {};
     if (success) {
       showToast({

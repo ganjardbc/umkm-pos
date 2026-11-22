@@ -7,6 +7,7 @@ import {
 import { PrismaService } from '../database/prisma.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { SetPinDto } from './dto/set-pin.dto';
 import { ChangeEmailDto } from './dto/change-email.dto';
 import { VerifyEmailDto } from './dto/verify-email.dto';
 import { DeactivateAccountDto } from './dto/deactivate-account.dto';
@@ -84,6 +85,25 @@ export class SettingsService {
       },
     });
     return this.attachSignedAvatar(updatedUser);
+  }
+
+  async setPin(userId: string, dto: SetPinDto) {
+    const user = await this.prisma.users.findUnique({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    const ok = await bcrypt.compare(dto.currentPassword, user.password_hash);
+    if (!ok) {
+      throw new BadRequestException('Current password is incorrect');
+    }
+    await this.prisma.users.update({
+      where: { id: userId },
+      data: {
+        pin_hash: await bcrypt.hash(dto.pin, 10),
+        updated_at: new Date(),
+      },
+    });
+    return { pin_set: true };
   }
 
   async changePassword(userId: string, dto: ChangePasswordDto) {

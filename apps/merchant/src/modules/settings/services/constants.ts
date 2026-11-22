@@ -30,6 +30,14 @@ export const LIST_MENU = [
     color: 'text-green-500',
   },
   {
+    label: 'PIN Persetujuan',
+    description: 'Atur PIN untuk menyetujui pembatalan transaksi',
+    route: 'settings-set-pin',
+    permission: PASSWORD_UPDATE,
+    icon: 'pi pi-key',
+    color: 'text-teal-500',
+  },
+  {
     label: 'Ubah Email',
     description: 'Perbarui alamat email akun Anda',
     route: 'settings-change-email',

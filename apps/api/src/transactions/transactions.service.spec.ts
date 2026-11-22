@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import * as bcrypt from 'bcrypt';
 import {
   BadRequestException,
   ForbiddenException,
@@ -37,6 +38,9 @@ describe('TransactionsService', () => {
     },
     role_permissions: {
       count: jest.fn(),
+    },
+    users: {
+      findMany: jest.fn(),
     },
     transaction_items: {
       createMany: jest.fn(),
@@ -220,6 +224,7 @@ describe('TransactionsService', () => {
     const userId = 'user-1';
 
     it('should restore stock only to transaction outlet and write inventory movement', async () => {
+      mockPrisma.role_permissions.count.mockResolvedValue(1);
       mockPrisma.outlets.findMany.mockResolvedValue([{ id: 'outlet-1' }]);
       mockPrisma.transactions.findFirst.mockResolvedValue({
         id: 'tx-1',
@@ -253,6 +258,8 @@ describe('TransactionsService', () => {
             data: expect.objectContaining({
               is_cancelled: true,
               cancel_reason: 'salah input',
+              cancelled_by: 'user-1',
+              cancel_approved_by: 'user-1',
             }),
           }),
         );
@@ -303,14 +310,113 @@ describe('TransactionsService', () => {
         ],
       });
 
-      const result = await service.cancel(
-        'tx-1',
-        merchantId,
-        userId,
-        '  salah input ',
-      );
+      const result = await service.cancel('tx-1', merchantId, userId, {
+        reason: '  salah input ',
+      });
       expect(result).toBeDefined();
       expect(mockPrisma.$transaction).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('cancel approval (PIN)', () => {
+    const merchantId = 'merchant-1';
+    const userId = 'cashier-1';
+
+    const setup = async (opts: {
+      callerApproves?: boolean;
+      approvers?: any[];
+    }) => {
+      mockPrisma.outlets.findMany.mockResolvedValue([{ id: 'outlet-1' }]);
+      mockPrisma.role_permissions.count.mockResolvedValue(
+        opts.callerApproves ? 1 : 0,
+      );
+      mockPrisma.users.findMany.mockResolvedValue(opts.approvers ?? []);
+      mockPrisma.transactions.findFirst.mockResolvedValue({
+        id: 'tx-1',
+        outlet_id: 'outlet-1',
+        is_cancelled: false,
+        payment_method: 'pending',
+        transaction_items: [],
+      });
+      const updates: any[] = [];
+      mockPrisma.$transaction.mockImplementation(async (cb: any) =>
+        cb({
+          transactions: {
+            update: jest.fn(async ({ data }) => {
+              updates.push(data);
+              return { id: 'tx-1' };
+            }),
+          },
+        }),
+      );
+      return updates;
+    };
+
+    const cancel = (dto: any) =>
+      service.cancel('tx-1', merchantId, userId, {
+        reason: 'salah input',
+        ...dto,
+      });
+
+    it('lets an approver cancel without a PIN and records self-approval', async () => {
+      const updates = await setup({ callerApproves: true });
+      await cancel({});
+      expect(updates[0]).toMatchObject({
+        cancelled_by: userId,
+        cancel_approved_by: userId,
+      });
+      expect(mockPrisma.users.findMany).not.toHaveBeenCalled();
+    });
+
+    it('requires a PIN from a caller who cannot approve', async () => {
+      await setup({});
+      await expect(cancel({})).rejects.toThrow(ForbiddenException);
+    });
+
+    it('accepts a manager PIN and records the manager as approver', async () => {
+      const updates = await setup({
+        approvers: [
+          { id: 'mgr-1', pin_hash: await bcrypt.hash('111111', 4) },
+          { id: 'mgr-2', pin_hash: await bcrypt.hash('222222', 4) },
+        ],
+      });
+      await cancel({ approver_pin: '222222' });
+      expect(updates[0]).toMatchObject({
+        cancelled_by: userId,
+        cancel_approved_by: 'mgr-2',
+        cancel_reason: 'salah input',
+      });
+    });
+
+    it('rejects a wrong PIN without cancelling', async () => {
+      await setup({
+        approvers: [{ id: 'mgr-1', pin_hash: await bcrypt.hash('111111', 4) }],
+      });
+      await expect(cancel({ approver_pin: '999999' })).rejects.toThrow(
+        ForbiddenException,
+      );
+      expect(mockPrisma.$transaction).not.toHaveBeenCalled();
+    });
+
+    it('fails clearly when no manager has a PIN set', async () => {
+      await setup({ approvers: [] });
+      await expect(cancel({ approver_pin: '111111' })).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('locks the caller out after 5 wrong PINs, even for the right one', async () => {
+      await setup({
+        approvers: [{ id: 'mgr-1', pin_hash: await bcrypt.hash('111111', 4) }],
+      });
+      for (let i = 0; i < 5; i++) {
+        await expect(cancel({ approver_pin: '000000' })).rejects.toThrow(
+          ForbiddenException,
+        );
+      }
+      await expect(cancel({ approver_pin: '111111' })).rejects.toMatchObject({
+        status: 429,
+      });
     });
   });
 

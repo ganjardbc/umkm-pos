@@ -8,6 +8,7 @@ import {
 import { SettingsService } from './settings.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { SetPinDto } from './dto/set-pin.dto';
 import { ChangeEmailDto } from './dto/change-email.dto';
 import { VerifyEmailDto } from './dto/verify-email.dto';
 import { DeactivateAccountDto } from './dto/deactivate-account.dto';
@@ -64,6 +65,18 @@ export class SettingsController {
     @Body() dto: ChangePasswordDto,
   ) {
     return this.settingsService.changePassword(userId, dto);
+  }
+
+  /**
+   * Set or reset the approval PIN used to authorise cancellations
+   */
+  @Put('pin')
+  @RequirePermission('settings.password.update')
+  @ApiOperation({ summary: 'Set approval PIN (requires current password)' })
+  @ApiResponse({ status: 200, description: 'PIN saved' })
+  @ApiResponse({ status: 400, description: 'Wrong password or invalid PIN' })
+  setPin(@CurrentUser('id') userId: string, @Body() dto: SetPinDto) {
+    return this.settingsService.setPin(userId, dto);
   }
 
   /**

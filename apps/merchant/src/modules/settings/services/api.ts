@@ -34,6 +34,15 @@ export const changePassword = async (data: ChangePasswordDto, options: any = {})
   );
 };
 
+// Approval PIN
+export const setApprovalPin = async (data: { currentPassword: string; pin: string }, options: any = {}) => {
+  return api.put(
+    '/api/v1/settings/pin',
+    data,
+    { ...(options || {}) },
+  );
+};
+
 // Email
 export const verifyEmailRequest = async (data: VerifyEmailDto, options: any = {}) => {
   return api.post(

@@ -891,6 +891,10 @@ async function main() {
       code: 'transaction.discount',
       description: 'Give discounts on transactions (POS)',
     },
+    {
+      code: 'transaction.cancel_approve',
+      description: 'Approve cancellations with a PIN, and cancel without one',
+    },
     { code: 'transaction.update_status', description: 'Update customer catalog order status' },
     // Notifications
     { code: 'notification.read', description: 'Read notifications' },
@@ -969,6 +973,7 @@ async function main() {
     'transaction.print',
     'transaction.cancel',
     'transaction.discount',
+    'transaction.cancel_approve',
     'transaction.update_status',
     'notification.read',
     'notification.update',
@@ -1012,6 +1017,7 @@ async function main() {
     'transaction.print',
     'transaction.cancel',
     'transaction.discount',
+    'transaction.cancel_approve',
     'transaction.update_status',
     'notification.read',
     'notification.update',

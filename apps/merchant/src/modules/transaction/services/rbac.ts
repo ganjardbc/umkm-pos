@@ -4,6 +4,7 @@ export const CREATE = 'transaction.create';
 export const CANCEL = 'transaction.cancel';
 export const UPDATE_STATUS = 'transaction.update_status';
 export const DISCOUNT = 'transaction.discount';
+export const CANCEL_APPROVE = 'transaction.cancel_approve';
 export const PERMISSIONS = [
   READ, 
   PRINT,
@@ -11,4 +12,5 @@ export const PERMISSIONS = [
   CANCEL,
   UPDATE_STATUS,
   DISCOUNT,
+  CANCEL_APPROVE,
 ];

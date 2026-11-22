@@ -1,17 +1,25 @@
 import {
   BadRequestException,
   ForbiddenException,
+  HttpException,
+  HttpStatus,
   Injectable,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../database/prisma.service';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
+import { CancelTransactionDto } from './dto/cancel-transaction.dto';
 import { PaginationDto } from '../common/dto/pagination.dto';
 import { ShiftsService } from '../shifts/shifts.service';
 import { UpdateTransactionStatusDto } from './dto/update-transaction-status.dto';
 
 const PERMISSION_DISCOUNT = 'transaction.discount';
+const PERMISSION_CANCEL_APPROVE = 'transaction.cancel_approve';
+
+const PIN_MAX_FAILURES = 5;
+const PIN_LOCK_MS = 5 * 60 * 1000;
 
 const ORDER_SOURCE_POS = 'pos';
 const ORDER_SOURCE_CUSTOMER = 'customer_catalog';
@@ -32,6 +40,13 @@ const ORDER_STATUS_TRANSITIONS: Record<string, string | null> = {
 
 @Injectable()
 export class TransactionsService {
+  // shortcut: failed-PIN counters live in process memory, so they reset on restart and are
+  // not shared across instances; move to Redis/DB if the API runs on several nodes.
+  private readonly pinFailures = new Map<
+    string,
+    { count: number; lockedUntil: number }
+  >();
+
   constructor(
     private prisma: PrismaService,
     private shiftsService: ShiftsService,
@@ -358,7 +373,7 @@ export class TransactionsService {
     id: string,
     merchantId: string,
     userId: string,
-    reason?: string,
+    dto: CancelTransactionDto,
   ) {
     const allowedOutletIds = await this.getAllowedOutletIds(userId, merchantId);
     const transaction = await this.prisma.transactions.findFirst({
@@ -379,12 +394,22 @@ export class TransactionsService {
       throw new BadRequestException('Transaction is already cancelled');
     }
 
+    const approvedBy = await this.resolveCancelApprover(
+      userId,
+      transaction.outlet_id,
+      merchantId,
+      dto.approver_pin,
+    );
+
     const result = await this.prisma.$transaction(async (tx) => {
       const cancelledTx = await tx.transactions.update({
         where: { id },
         data: {
           is_cancelled: true,
-          cancel_reason: reason?.trim() || null,
+          cancel_reason: dto.reason.trim(),
+          cancelled_by: userId,
+          cancel_approved_by: approvedBy,
+          cancelled_at: new Date(),
           ...(transaction.order_source === ORDER_SOURCE_CUSTOMER && {
             order_status: ORDER_STATUS_COMPLETED,
             completed_at: new Date(),
@@ -804,20 +829,100 @@ export class TransactionsService {
   }
 
   // Roles are per outlet, so check the role the user holds at this outlet.
-  private async assertCanDiscount(userId: string, outletId: string) {
+  private async hasOutletPermission(
+    userId: string,
+    outletId: string,
+    code: string,
+  ) {
     const granted = await this.prisma.role_permissions.count({
       where: {
-        permissions: { code: PERMISSION_DISCOUNT },
+        permissions: { code },
         roles: {
           user_roles: { some: { user_id: userId, outlet_id: outletId } },
         },
       },
     });
-    if (granted === 0) {
+    return granted > 0;
+  }
+
+  private async assertCanDiscount(userId: string, outletId: string) {
+    if (
+      !(await this.hasOutletPermission(userId, outletId, PERMISSION_DISCOUNT))
+    ) {
       throw new ForbiddenException(
         `Permission denied. Required: ${PERMISSION_DISCOUNT}`,
       );
     }
+  }
+
+  // Returns the id of whoever approved the cancellation. Holders of
+  // transaction.cancel_approve approve themselves; everyone else needs the PIN
+  // of a manager at this outlet.
+  private async resolveCancelApprover(
+    userId: string,
+    outletId: string,
+    merchantId: string,
+    pin?: string,
+  ): Promise<string> {
+    if (
+      await this.hasOutletPermission(
+        userId,
+        outletId,
+        PERMISSION_CANCEL_APPROVE,
+      )
+    ) {
+      return userId;
+    }
+    if (!pin) {
+      throw new ForbiddenException('Manager approval PIN is required');
+    }
+
+    const state = this.pinFailures.get(userId);
+    if (state && state.lockedUntil > Date.now()) {
+      throw new HttpException(
+        'Too many wrong PIN attempts. Try again later',
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
+    }
+
+    const approvers = await this.prisma.users.findMany({
+      where: {
+        merchant_id: merchantId,
+        is_active: true,
+        pin_hash: { not: null },
+        user_roles: {
+          some: {
+            outlet_id: outletId,
+            roles: {
+              role_permissions: {
+                some: { permissions: { code: PERMISSION_CANCEL_APPROVE } },
+              },
+            },
+          },
+        },
+      },
+      select: { id: true, pin_hash: true },
+    });
+    if (approvers.length === 0) {
+      throw new BadRequestException(
+        'No manager with an approval PIN is set for this outlet',
+      );
+    }
+
+    for (const approver of approvers) {
+      if (await bcrypt.compare(pin, approver.pin_hash!)) {
+        this.pinFailures.delete(userId);
+        return approver.id;
+      }
+    }
+
+    // The count is zeroed when a lock starts, so an expired lock begins fresh.
+    const count = (state?.count ?? 0) + 1;
+    this.pinFailures.set(userId, {
+      count: count >= PIN_MAX_FAILURES ? 0 : count,
+      lockedUntil: count >= PIN_MAX_FAILURES ? Date.now() + PIN_LOCK_MS : 0,
+    });
+    throw new ForbiddenException('Invalid approval PIN');
   }
 
   private validatePayment(

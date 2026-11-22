@@ -90,6 +90,33 @@ export default [
     }
   },
   {
+    path: `${PREFIX_ROUTE_PATH}/set-pin`,
+    name: `${PREFIX_ROUTE_NAME}-set-pin`,
+    component: () => import('@/modules/settings/pages/set-pin.vue'),
+    meta: {
+      title: 'Pengaturan',
+      layout: 'default',
+      permission: [PASSWORD_UPDATE],
+      breadcrumbs: [
+        {
+          label: 'Beranda',
+          route: '/landing',
+          isActive: false,
+        },
+        {
+          label: 'Pengaturan',
+          route: PREFIX_ROUTE_PATH,
+          isActive: false,
+        },
+        {
+          label: 'PIN Persetujuan',
+          route: `${PREFIX_ROUTE_PATH}/set-pin`,
+          isActive: true,
+        },
+      ]
+    }
+  },
+  {
     path: `${PREFIX_ROUTE_PATH}/change-email`,
     name: `${PREFIX_ROUTE_NAME}-change-email`,
     component: () => import('@/modules/settings/pages/change-email.vue'),
