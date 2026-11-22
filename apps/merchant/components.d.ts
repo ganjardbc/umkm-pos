@@ -53,6 +53,7 @@ declare module 'vue' {
     Textarea: typeof import('primevue/textarea')['default']
     Toast: typeof import('primevue/toast')['default']
     ToggleButton: typeof import('primevue/togglebutton')['default']
+    ToggleSwitch: typeof import('primevue/toggleswitch')['default']
     UiAdvanceFilter: typeof import('./../../packages/ui/src/components/UiAdvanceFilter.vue')['default']
     UiCard: typeof import('./../../packages/ui/src/components/UiCard.vue')['default']
     UiCardHeader: typeof import('./../../packages/ui/src/components/UiCardHeader.vue')['default']
