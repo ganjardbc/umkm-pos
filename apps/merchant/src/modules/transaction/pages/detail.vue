@@ -275,6 +275,7 @@ import { getErrorMessage, getCurrency, formatDateTime, formatPrice } from '@umkm
 import { showToast, showConfirm } from '@umkm-pos/ui/helpers/toast';
 import { showLoading, hideLoading } from '@umkm-pos/ui/helpers/loading';
 import { isHasPermission } from '@/helpers/auth.ts';
+import { useShift } from '@/modules/shift/composables/useShift.ts';
 import {
   getDetailTransaction,
   postCancelTransaction,
@@ -291,6 +292,7 @@ import UiLoading from '@umkm-pos/ui/components/UiLoading.vue';
 import Tag from 'primevue/tag';
 import Button from 'primevue/button';
 
+const { currentShift } = useShift();
 const route = useRoute();
 const router = useRouter();
 const transactionID = computed(() => route.params.id as string);
@@ -449,6 +451,7 @@ const onPayTransaction = async () => {
         : undefined,
     };
 
+    payload.shift_id = currentShift.id;
     const response = await patchTransactionPay(transactionID.value, payload);
     if (response.data) {
       showToast({

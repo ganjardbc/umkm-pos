@@ -58,6 +58,15 @@
 
           <span class="text-slate-400">Durasi</span>
           <span class="text-right text-slate-700 dark:text-slate-300">{{ getDuration(shift.start_time, shift.end_time) }}</span>
+
+          <span class="text-slate-400">Kas Awal</span>
+          <span class="text-right text-slate-700 dark:text-slate-300">{{ formatCash(shift.opening_cash) }}</span>
+
+          <span class="text-slate-400">Kas Akhir</span>
+          <span class="text-right text-slate-700 dark:text-slate-300">{{ formatCash(shift.closing_cash) }}</span>
+
+          <span class="text-slate-400">Selisih</span>
+          <span class="text-right text-slate-700 dark:text-slate-300">{{ formatCash(shift.cash_difference) }}</span>
         </div>
 
         <Divider class="my-0!" />
@@ -91,6 +100,7 @@ import { useRouter } from 'vue-router';
 import { getNoTable, getErrorMessage, formatDate, formatRangeTime, getDuration } from '@umkm-pos/ui/helpers/utils';
 import { PREFIX_ROUTE_NAME } from '@/modules/shift/services/constants.ts';
 import { getListShift } from '@/modules/shift/services/api.ts';
+import { formatCash } from '@/modules/shift/services/cash.ts';
 import { showToast } from '@umkm-pos/ui/helpers/toast';
 import { getOutlet, isHasPermission } from '@/helpers/auth.ts';
 import { READ } from '@/modules/shift/services/rbac.ts';

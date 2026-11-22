@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsUUID } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsUUID, Max, Min } from 'class-validator';
 
 export class CreateShiftDto {
   @ApiProperty({
@@ -9,4 +9,13 @@ export class CreateShiftDto {
   @IsNotEmpty()
   @IsUUID()
   outlet_id: string;
+
+  @ApiProperty({
+    example: 100000,
+    description: 'Opening cash in the drawer (>= 0, max 2 decimals)',
+  })
+  @IsNumber({ allowNaN: false, allowInfinity: false, maxDecimalPlaces: 2 })
+  @Min(0)
+  @Max(999999999999.99)
+  opening_cash: number;
 }

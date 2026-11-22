@@ -22,9 +22,8 @@
         label="Buka Shift"
         icon="pi pi-play"
         fluid
-        :loading="isOpeningShift"
-        :disabled="isOpeningShift || !outlet?.id"
-        @click="onOpenShift"
+        :disabled="!outlet?.id"
+        @click="showDialog = true"
       />
       <Message
         v-else
@@ -37,6 +36,12 @@
         </span>
       </Message>
     </div>
+
+    <CashDialog
+      v-model:visible="showDialog"
+      mode="open"
+      :submit="onOpenShift"
+    />
   </div>
 </template>
 
@@ -45,44 +50,28 @@ import { ref, computed } from 'vue';
 import { getOutlet, isHasPermission } from '@/helpers/auth.ts';
 import { openShift } from '@/modules/shift/services/api.ts';
 import { CREATE as SHIFT_CREATE } from '@/modules/shift/services/rbac.ts';
-import { getErrorMessage } from '@umkm-pos/ui/helpers/utils';
 import { showToast } from '@umkm-pos/ui/helpers/toast';
-import { useGlobalLoading } from '@umkm-pos/ui/composables/useGlobalLoading.ts';
+import CashDialog from '@/modules/shift/components/CashDialog.vue';
 
 const emit = defineEmits(['shift-opened']);
 
-const { show, hide } = useGlobalLoading();
 const outlet = getOutlet();
 const canOpenShift = computed(() => isHasPermission(SHIFT_CREATE));
-const isOpeningShift = ref(false);
+const showDialog = ref(false);
 
-const onOpenShift = async () => {
-  if (isOpeningShift.value || !outlet?.id) return;
-
-  try {
-    isOpeningShift.value = true;
-    show();
-
-    const response = await openShift({ outlet_id: outlet.id });
-    const newShift = response?.data?.data;
-    if (newShift?.id) {
-      showToast({
-        type: 'success',
-        title: 'Sukses',
-        message: 'Shift berhasil dibuka',
-      });
-      emit('shift-opened', newShift);
-    }
-  } catch (error) {
+// Errors propagate to CashDialog, which shows them and keeps the form open.
+const onOpenShift = async (openingCash: number) => {
+  const response = await openShift({ outlet_id: outlet.id, opening_cash: openingCash });
+  const newShift = response?.data?.data;
+  if (newShift?.id) {
     showToast({
-      type: 'error',
-      title: 'Gagal',
-      message: getErrorMessage(error) || 'Gagal membuka shift',
+      type: 'success',
+      title: 'Sukses',
+      message: 'Shift berhasil dibuka',
     });
-  } finally {
-    isOpeningShift.value = false;
-    hide();
+    emit('shift-opened', newShift);
   }
+  return newShift;
 };
 </script>
 

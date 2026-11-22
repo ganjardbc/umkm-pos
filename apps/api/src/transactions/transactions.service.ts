@@ -466,6 +466,7 @@ export class TransactionsService {
           table_id: tableId,
           user_id: userId,
           shift_id: dto.shift_id ?? null,
+          paid_shift_id: payNow ? (dto.shift_id ?? null) : null,
           cashier_id: cashierId,
           payment_method: payNow ? dto.payment_method : 'pending',
           total_amount: prepared.totalAmount,
@@ -522,6 +523,7 @@ export class TransactionsService {
       cash_received?: number;
       change_amount?: number;
       is_offline?: boolean;
+      shift_id?: string;
     },
     merchantId: string,
     userId: string,
@@ -534,6 +536,18 @@ export class TransactionsService {
 
     if (transaction.payment_method !== 'pending') {
       throw new BadRequestException('Transaction has already been paid');
+    }
+
+    if (dto.payment_method === 'cash' && !dto.shift_id) {
+      throw new BadRequestException('shift_id is required for cash payment');
+    }
+    if (dto.shift_id) {
+      // same shift rules as POS creation: open shift, active participant, outlet of merchant
+      await this.resolveCashierForPos(
+        { shift_id: dto.shift_id, outlet_id: transaction.outlet_id } as any,
+        merchantId,
+        userId,
+      );
     }
 
     const itemsPayload = transaction.transaction_items
@@ -574,6 +588,7 @@ export class TransactionsService {
           cash_received: prepared.cashReceived,
           change_amount: prepared.changeAmount,
           is_offline: dto.is_offline ?? false,
+          paid_shift_id: dto.shift_id ?? null,
           cashier_id: userId,
           updated_by: userId,
           updated_at: new Date(),

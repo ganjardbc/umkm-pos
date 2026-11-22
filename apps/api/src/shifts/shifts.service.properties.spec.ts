@@ -34,6 +34,7 @@ describe('ShiftsService - Property-Based Tests', () => {
     },
     transactions: {
       count: jest.fn(),
+      aggregate: jest.fn(),
     },
     users: {
       findFirst: jest.fn(),
@@ -539,6 +540,76 @@ describe('ShiftsService - Property-Based Tests', () => {
           return true;
         }),
         { numRuns: 100 },
+      );
+    });
+  });
+
+  // Property: expected cash = opening cash + cash, non-cancelled sales paid in this shift
+  // Validates: AC-6
+  describe('Property: expected cash on close', () => {
+    it('sums only cash, non-cancelled transactions paid in the shift', async () => {
+      const txArb = fc.record({
+        paid_shift_id: fc.constantFrom('shift-1', 'shift-2', null),
+        payment_method: fc.constantFrom('cash', 'qris', 'pending'),
+        is_cancelled: fc.boolean(),
+        cents: fc.integer({ min: 0, max: 10_000_000 }),
+      });
+
+      await fc.assert(
+        fc.asyncProperty(
+          fc.array(txArb, { maxLength: 30 }),
+          fc.integer({ min: 0, max: 10_000_000 }),
+          fc.integer({ min: 0, max: 10_000_000 }),
+          async (txs, openingCents, closingCents) => {
+            jest.clearAllMocks();
+            mockPrisma.outlets.findMany.mockResolvedValue([{ id: 'o1' }]);
+            mockPrisma.$transaction.mockImplementation(async (cb) =>
+              cb(mockPrisma),
+            );
+            mockPrisma.shifts.findFirst.mockResolvedValue({
+              id: 'shift-1',
+              outlet_id: 'o1',
+              status: 'open',
+              opening_cash: openingCents / 100,
+            });
+            mockPrisma.transactions.aggregate.mockImplementation(
+              async ({ where }) => ({
+                _sum: {
+                  total_amount:
+                    txs
+                      .filter(
+                        (t) =>
+                          t.paid_shift_id === where.paid_shift_id &&
+                          t.payment_method === where.payment_method &&
+                          t.is_cancelled === where.is_cancelled,
+                      )
+                      .reduce((a, t) => a + t.cents, 0) / 100,
+                },
+              }),
+            );
+            mockPrisma.shift_participants.findMany.mockResolvedValue([]);
+            mockPrisma.transactions.count.mockResolvedValue(0);
+
+            await service.closeShift('shift-1', 'u1', 'm1', closingCents / 100);
+
+            const expectedCents =
+              openingCents +
+              txs
+                .filter(
+                  (t) =>
+                    t.paid_shift_id === 'shift-1' &&
+                    t.payment_method === 'cash' &&
+                    !t.is_cancelled,
+                )
+                .reduce((a, t) => a + t.cents, 0);
+            const snap = mockPrisma.shifts.update.mock.calls[1][0].data;
+            expect(Math.round(snap.expected_cash * 100)).toBe(expectedCents);
+            expect(Math.round(snap.cash_difference * 100)).toBe(
+              closingCents - expectedCents,
+            );
+          },
+        ),
+        { numRuns: 50 },
       );
     });
   });

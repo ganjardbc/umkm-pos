@@ -152,7 +152,21 @@ POST   /transactions         — Commit POS transaction (atomic)
 GET    /transactions/:id     — Get transaction detail
 POST   /transactions/:id/cancel — Cancel transaction (atomic)
 PATCH  /transactions/:id/status — Update transaction status (customer orders)
+PATCH  /transactions/:id/pay — Pay a previously unpaid (pending) transaction
 ```
+
+`PATCH /transactions/:id/pay` body:
+
+```txt
+payment_method — wajib (mis. cash, qris, transfer)
+cash_received, change_amount — opsional, khusus tunai
+is_offline     — opsional
+shift_id       — UUID shift penerima pembayaran; wajib bila payment_method = 'cash', opsional bila non-tunai
+```
+
+Bila `shift_id` dikirim, divalidasi seperti pembuatan transaksi POS: shift harus open, user peserta aktif shift, outlet milik merchant. Pembayaran tunai tanpa `shift_id` ditolak 400 (`shift_id is required for cash payment`); shift tidak tersedia ditolak 400; bukan peserta ditolak 403. Pesanan tetap belum dibayar bila ditolak. Transaksi yang sudah dibayar atau dibatalkan ditolak 400.
+
+`transactions.paid_shift_id` terisi dengan `shift_id` request (null bila tidak dikirim, mis. non-tunai tanpa shift). Pada `POST /transactions`, `paid_shift_id` = `shift_id` bila dibayar langsung (bukan `pending`), dan kosong bila `pending`. Hanya transaksi tunai dengan `paid_shift_id` = shift yang masuk perhitungan `expected_cash` shift tersebut (bukan `shift_id` pembuat pesanan).
 
 ### Aturan Otorisasi Outlet (Outlet Access Control)
 Untuk memastikan keamanan multi-tenant dan isolasi data, seluruh endpoint transaksi memberlakukan aturan otorisasi berbasis outlet:
@@ -181,12 +195,45 @@ page, limit, search
 
 ```txt
 GET    /shifts               — List shifts (outlet-scoped)
-POST   /shifts               — Open shift
+POST   /shifts               — Open shift (body: outlet_id, opening_cash)
 GET    /shifts/:id           — Get shift detail
-POST   /shifts/:id/close     — Close shift
+PATCH  /shifts/:id/close     — Close shift (body: closing_cash)
 POST   /shifts/:id/participants — Add participant to shift
 DELETE /shifts/:id/participants/:userId — Remove participant
 ```
+
+### Kas shift (cash tracking)
+
+`POST /shifts` body:
+
+```txt
+outlet_id     — UUID, wajib
+opening_cash  — wajib, angka, >= 0, maks 2 desimal, maks 999999999999.99
+```
+
+`PATCH /shifts/:id/close` body:
+
+```txt
+closing_cash  — wajib, angka, >= 0, maks 2 desimal, maks 999999999999.99
+```
+
+Nilai kas tidak valid atau hilang ditolak 400 (validasi DTO) dan shift tidak dibuat / tetap open. Menutup shift yang sudah closed ditolak 400 (`Shift is already closed`), kas tidak berubah.
+
+Saat close, dalam satu transaksi database: status menjadi `closed`, lalu
+`expected_cash = opening_cash + SUM(total_amount)` dari transaksi dengan `paid_shift_id` = shift ini, `payment_method = 'cash'`, `is_cancelled = false` (opening_cash NULL dihitung 0), dan `cash_difference = closing_cash - expected_cash`. Selisih tidak menghalangi penutupan. Pembulatan dua desimal.
+
+Field kas pada respons detail shift (`POST /shifts`, `GET /shifts/:id`, `PATCH /shifts/:id/close`) dan pada item `GET /shifts`:
+
+```txt
+opening_cash     — kas awal; null untuk shift lama
+closing_cash     — kas akhir; null selama shift open / shift lama
+expected_cash    — kas diharapkan; null selama shift open / shift lama
+cash_difference  — closing_cash - expected_cash; null selama shift open / shift lama
+```
+
+`PATCH /shifts/:id/close` mengembalikan detail shift lengkap (termasuk empat field kas di atas). Kolom `DECIMAL` dapat diserialisasi sebagai string atau angka oleh Prisma/JSON; klien mengonversi dengan `Number(...)`.
+
+TODO: shape terserialisasi `Decimal` pada respons tidak diverifikasi dengan menjalankan API.
 
 ---
 

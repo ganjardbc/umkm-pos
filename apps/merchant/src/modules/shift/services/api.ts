@@ -28,7 +28,7 @@ export const getOutletShift = async (outletId: string | number, options: any = {
   );
 };
 
-export const openShift = async (data: any, options: any = {}) => {
+export const openShift = async (data: { outlet_id: string | number; opening_cash: number }, options: any = {}) => {
   return await api.post(
     `/api/v1/shifts`,
     data,
@@ -36,9 +36,10 @@ export const openShift = async (data: any, options: any = {}) => {
   );
 };
 
-export const closeShift = async (id: string | number, options: any = {}) => {
+export const closeShift = async (id: string | number, data: { closing_cash: number }, options: any = {}) => {
   return await api.patch(
     `/api/v1/shifts/${id}/close`,
+    data,
     { ...(options || {}) },
   );
 };

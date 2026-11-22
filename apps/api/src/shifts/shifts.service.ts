@@ -251,7 +251,12 @@ export class ShiftsService {
    * Open a new multi-cashier shift
    * Creates shift with owner and initial participant, creates audit log
    */
-  async openShift(outletId: string, userId: string, merchantId: string) {
+  async openShift(
+    outletId: string,
+    userId: string,
+    merchantId: string,
+    openingCash: number,
+  ) {
     // Validate outlet belongs to this merchant
     const outlet = await this.prisma.outlets.findFirst({
       where: { id: outletId, merchant_id: merchantId },
@@ -285,6 +290,7 @@ export class ShiftsService {
           shift_owner_id: userId,
           status: 'open' satisfies ShiftStatus,
           start_time: new Date(),
+          opening_cash: openingCash,
           created_by: userId,
           updated_by: userId,
         },
@@ -391,6 +397,10 @@ export class ShiftsService {
       status: shift.status,
       start_time: shift.start_time,
       end_time: shift.end_time,
+      opening_cash: shift.opening_cash ?? null,
+      closing_cash: shift.closing_cash ?? null,
+      expected_cash: shift.expected_cash ?? null,
+      cash_difference: shift.cash_difference ?? null,
       participants: participantsWithCounts,
       participant_count: participantsWithCounts.length,
       total_transactions: totalTransactions,
@@ -402,20 +412,21 @@ export class ShiftsService {
   /**
    * Close a multi-cashier shift and mark all participants as removed
    */
-  async closeShift(shiftId: string, userId: string, merchantId: string) {
-    try {
-      // Validate shift belongs to merchant
-      const outlets = await this.prisma.outlets.findMany({
-        where: { merchant_id: merchantId },
-        select: { id: true },
-      });
-      const outletIds = outlets.map((o) => o.id);
+  async closeShift(
+    shiftId: string,
+    userId: string,
+    merchantId: string,
+    closingCash: number,
+  ) {
+    const outlets = await this.prisma.outlets.findMany({
+      where: { merchant_id: merchantId },
+      select: { id: true },
+    });
+    const outletIds = outlets.map((o) => o.id);
 
-      const shift = await this.prisma.shifts.findFirst({
-        where: {
-          id: shiftId,
-          outlet_id: { in: outletIds },
-        },
+    await this.prisma.$transaction(async (tx) => {
+      const shift = await tx.shifts.findFirst({
+        where: { id: shiftId, outlet_id: { in: outletIds } },
       });
 
       if (!shift) {
@@ -426,8 +437,8 @@ export class ShiftsService {
         throw new BadRequestException('Shift is already closed');
       }
 
-      // Update shift status
-      await this.prisma.shifts.update({
+      // Close first so no new transactions land in this shift while summing
+      await tx.shifts.update({
         where: { id: shiftId },
         data: {
           status: 'closed',
@@ -436,35 +447,45 @@ export class ShiftsService {
         },
       });
 
-      // Mark all participants as removed
-      await this.prisma.shift_participants.updateMany({
+      const sales = await tx.transactions.aggregate({
         where: {
-          shift_id: shiftId,
-          participant_removed_at: null,
+          paid_shift_id: shiftId,
+          payment_method: 'cash',
+          is_cancelled: false,
         },
+        _sum: { total_amount: true },
+      });
+      // Number math rounded to cents: exact for DECIMAL(14,2) (< 2^53 cents)
+      const round2 = (n: number) => Math.round(n * 100) / 100;
+      const expected = round2(
+        Number(shift.opening_cash ?? 0) + Number(sales._sum.total_amount ?? 0),
+      );
+
+      await tx.shifts.update({
+        where: { id: shiftId },
         data: {
-          participant_removed_at: new Date(),
+          closing_cash: closingCash,
+          expected_cash: expected,
+          cash_difference: round2(closingCash - expected),
         },
       });
 
-      // Create audit log
-      await this.prisma.shift_audit_logs.create({
+      await tx.shift_participants.updateMany({
+        where: { shift_id: shiftId, participant_removed_at: null },
+        data: { participant_removed_at: new Date() },
+      });
+
+      await tx.shift_audit_logs.create({
         data: {
           shift_id: shiftId,
           action: 'shift_closed',
           user_id: userId,
-          action_details: {
-            closed_by: userId,
-          },
+          action_details: { closed_by: userId },
         },
       });
+    });
 
-      // Return full shift details
-      return this.getShift(shiftId, merchantId);
-    } catch (error) {
-      console.error('Error closing shift:', error);
-      throw error;
-    }
+    return this.getShift(shiftId, merchantId);
   }
 
   /**
@@ -582,6 +603,10 @@ export class ShiftsService {
           status: shift.status,
           start_time: shift.start_time,
           end_time: shift.end_time,
+          opening_cash: shift.opening_cash ?? null,
+          closing_cash: shift.closing_cash ?? null,
+          expected_cash: shift.expected_cash ?? null,
+          cash_difference: shift.cash_difference ?? null,
           participant_count: participantCount,
           total_transactions: totalTransactions,
         };

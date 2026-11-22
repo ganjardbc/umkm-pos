@@ -214,6 +214,7 @@ import { showToast, showConfirm } from '@umkm-pos/ui/helpers/toast';
 import { showLoading, hideLoading } from '@umkm-pos/ui/helpers/loading';
 import { getOutlet } from '@/helpers/auth.ts';
 import { isHasPermission } from '@/helpers/auth.ts';
+import { useShift } from '@/modules/shift/composables/useShift.ts';
 import UiCard from '@umkm-pos/ui/components/UiCard.vue';
 import UiSearch from '@umkm-pos/ui/components/UiSearch.vue';
 import UiPagination from '@umkm-pos/ui/components/UiPagination.vue';
@@ -224,6 +225,7 @@ import { READ, PRINT, CREATE, CANCEL, UPDATE_STATUS } from '@/modules/transactio
 import { getOrderStatusLabel } from '@/modules/transaction/services/status-labels.ts';
 import { PREFIX_ROUTE_NAME } from '@/modules/transaction/services/constants.ts';
 
+const { currentShift } = useShift();
 const router = useRouter();
 const outlet = getOutlet();
 
@@ -357,6 +359,7 @@ const confirmPayment = async () => {
       payload.cash_received = Number(paymentPayload.value.cash_received);
       payload.change_amount = Math.max(0, payload.cash_received - paymentPayload.value.total_amount);
     }
+    payload.shift_id = currentShift.id;
     await patchTransactionPay(paymentTarget.value.id, payload);
     showPaymentModal.value = false;
     showToast({

@@ -17,6 +17,7 @@ import {
 } from '@nestjs/swagger';
 import { ShiftsService } from './shifts.service';
 import { CreateShiftDto } from './dto/create-shift.dto';
+import { CloseShiftDto } from './dto/close-shift.dto';
 import { AddParticipantDto } from './dto/add-participant.dto';
 import { HandoffShiftDto } from './dto/handoff-shift.dto';
 import { QueryShiftsDto } from './dto/query-shifts.dto';
@@ -84,7 +85,12 @@ export class ShiftsController {
     @CurrentUser('merchant_id') merchantId: string,
     @CurrentUser('id') userId: string,
   ) {
-    return this.shiftsService.openShift(dto.outlet_id, userId, merchantId);
+    return this.shiftsService.openShift(
+      dto.outlet_id,
+      userId,
+      merchantId,
+      dto.opening_cash,
+    );
   }
 
   @Get()
@@ -137,10 +143,16 @@ export class ShiftsController {
   @ApiResponse({ status: 403, description: 'Insufficient permissions' })
   async closeShift(
     @Param('id') id: string,
+    @Body() dto: CloseShiftDto,
     @CurrentUser('merchant_id') merchantId: string,
     @CurrentUser('id') userId: string,
   ) {
-    return this.shiftsService.closeShift(id, userId, merchantId);
+    return this.shiftsService.closeShift(
+      id,
+      userId,
+      merchantId,
+      dto.closing_cash,
+    );
   }
 
   @Get(':id/participants')

@@ -71,20 +71,38 @@
           </div>
         </div>
       </div>
+
+      <Divider />
+
+      <div class="grid grid-cols-2 xl:grid-cols-4 gap-4">
+        <div v-for="item in cashItems" :key="item.label" class="space-y-1">
+          <label class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ item.label }}</label>
+          <div class="text-base font-semibold text-gray-900 dark:text-white">{{ item.value }}</div>
+        </div>
+      </div>
     </div>
   </UiCard>
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
+import { formatCash } from '@/modules/shift/services/cash.ts';
 import UiCard from '@umkm-pos/ui/components/UiCard.vue';
 import { formatDateTime, formatRangeTime } from '@umkm-pos/ui/helpers/utils';
 
-defineProps({
+const props = defineProps({
   currentShift: {
     type: Object,
     required: true
   }
 })
+
+const cashItems = computed(() => [
+  { label: 'Kas Awal', value: formatCash(props.currentShift.opening_cash) },
+  { label: 'Kas Diharapkan', value: formatCash(props.currentShift.expected_cash) },
+  { label: 'Kas Akhir', value: formatCash(props.currentShift.closing_cash) },
+  { label: 'Selisih', value: formatCash(props.currentShift.cash_difference) },
+]);
 </script>
 
 <style scoped>
