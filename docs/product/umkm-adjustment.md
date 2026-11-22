@@ -24,6 +24,7 @@ Tanda di dokumen ini:
 | Stok | Stok per outlet, stok awal dan stok minimum bisa diisi saat membuat produk (nilai awal 0), penyesuaian stok, riwayat stok, notifikasi stok rendah |
 | Produk di kasir | Grid produk dipaginasi (`page`, `limit`), filter kategori, label "Stok: n", tag "Habis" dan "Stok Menipis", tombol coba lagi bila gagal dimuat |
 | Pembatalan | Batal transaksi lewat dialog dengan alasan opsional (maks 255 karakter), stok dikembalikan, izin `transaction.cancel`. Alasan tersimpan di `transactions.cancel_reason` dan tampil di halaman detail |
+| Diskon | Diskon per transaksi (nominal Rp atau persen) di pembayaran kasir, hanya untuk peran dengan izin `transaction.discount` (default: owner, manager, admin). Hanya saat bayar langsung. Disimpan di `transactions` (`discount_type`, `discount_value`, `discount_amount`), `total_amount` tetap nilai bersih yang dibayar. Tampil di struk (layar, gambar, Bluetooth) |
 | Panduan awal | Halaman setelah login menampilkan langkah awal (produk pertama, staf, transaksi pertama), hanya untuk langkah yang diizinkan peran. Statis, tidak mendeteksi langkah yang sudah selesai |
 | Outlet dan akses | Multi-outlet, RBAC per outlet berbasis permission, meja (`store_tables`) |
 | Pelanggan | Self-order lewat katalog per outlet, sesi pelanggan dengan nama dan telepon |
@@ -38,7 +39,7 @@ Catatan migrasi: kolom `cancel_reason` butuh `prisma migrate deploy` di setiap e
 ## 3. Yang belum ada [kode]
 Terverifikasi: schema Prisma (`apps/api/prisma/schema.prisma`) tidak punya model atau kolom untuk diskon, varian, modifier, SKU, barcode, pajak, refund, void, loyalty, atau layar dapur. Tidak ada modul API maupun halaman merchant untuk impor massal atau WhatsApp.
 - varian, modifier (tambahan topping, ukuran), SKU, barcode atau pemindai;
-- diskon dan promo, pajak, multi-satuan produk;
+- promo otomatis atau diskon per item, diskon pada pesanan bayar-nanti, pajak, multi-satuan produk;
 - refund dan void dengan persetujuan manager. Pembatalan hanya butuh izin, tanpa PIN, dan alasan masih opsional;
 - pisah bayar (split bill);
 - data pelanggan tetap. Yang ada hanya `customer_sessions` per kunjungan;
@@ -83,7 +84,7 @@ Selisih yang bisa dijual Insell: shift dan kas opsional di paket dasar, self-ord
 
 ## 7. Rencana bertahap (usulan)
 **Fase 1, kemudahan pakai (murah, dampak tiap transaksi)**
-Status 2026-11-22: butir 1 sampai 4, 6, dan 7 sudah dikerjakan dan di-commit (build merchant dan tes API transaksi lolos, belum diuji manual di browser). Butir 6: alasan batal opsional, disimpan di `transactions.cancel_reason`, migrasi `20261122000000_add_cancel_reason_to_transactions` belum dijalankan ke database mana pun. Butir 5 di-hold bersama offline sync.
+Status 2026-11-22: Fase 2 butir 8 (diskon) juga sudah dikerjakan, lihat di bawah. Fase 1 butir 1 sampai 4, 6, dan 7 sudah dikerjakan dan di-commit (build merchant dan tes API transaksi lolos, belum diuji manual di browser). Butir 6: alasan batal opsional, disimpan di `transactions.cancel_reason`, migrasi `20261122000000_add_cancel_reason_to_transactions` belum dijalankan ke database mana pun. Butir 5 di-hold bersama offline sync.
 
 1. ✅ Tombol "Uang Pas" di pembayaran tunai (temuan 1). Pembulatan nominal cepat selain tombol pecahan yang sudah ada belum dibuat.
 2. ✅ Konfirmasi ganda dihapus. Struk terbuka otomatis setelah bayar, dengan tombol cetak (temuan 2, 3).
@@ -96,7 +97,7 @@ Status 2026-11-22: butir 1 sampai 4, 6, dan 7 sudah dikerjakan dan di-commit (bu
 (Paginasi grid produk sudah ada sebelum audit, tidak perlu dikerjakan.)
 
 **Fase 2, kebutuhan harian umum**
-8. Diskon sederhana per transaksi (nominal atau persen), disimpan sebagai snapshot di transaksi.
+8. ✅ Diskon sederhana per transaksi (nominal atau persen), disimpan sebagai snapshot di transaksi. Dibatasi izin `transaction.discount`, hanya saat bayar langsung. Belum ada: diskon pada pesanan bayar-nanti, batas maksimum diskon per peran, laporan total diskon, dan UI untuk memberi izin ke peran kasir (lewat pengaturan peran).
 9. Varian dan modifier produk (ukuran, topping) untuk kafe, dengan harga snapshot per item.
 10. Otorisasi PIN manager untuk pembatalan dan void, alasan wajib, tercatat di audit log. Kolom alasan sudah ada (Fase 1 butir 6), tinggal mewajibkannya dan menambah PIN.
 11. Struk digital lewat tautan atau WhatsApp (bagikan, bukan integrasi API).
