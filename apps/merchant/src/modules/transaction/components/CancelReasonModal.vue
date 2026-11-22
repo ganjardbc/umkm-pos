@@ -7,6 +7,7 @@
   >
     <p class="text-sm text-gray-500 mb-4">
       Stok produk akan dikembalikan. Transaksi yang sudah dibatalkan tidak bisa dipulihkan.
+      Untuk penjualan tunai dari shift yang sudah ditutup, uangnya dicatat sebagai kas keluar di shift yang sedang berjalan.
     </p>
 
     <div class="space-y-4">

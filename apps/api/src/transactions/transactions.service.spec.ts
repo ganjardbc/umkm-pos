@@ -42,6 +42,10 @@ describe('TransactionsService', () => {
     users: {
       findMany: jest.fn(),
     },
+    shifts: {
+      findUnique: jest.fn(),
+      findFirst: jest.fn(),
+    },
     customers: {
       findFirst: jest.fn(),
     },
@@ -676,6 +680,103 @@ describe('TransactionsService', () => {
         customer_name_snapshot: null,
       });
       expect(mockPrisma.customers.findFirst).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('cash refund on cancel', () => {
+    const merchantId = 'merchant-1';
+    const userId = 'mgr-1';
+
+    const setup = (
+      tx: any,
+      paid: { status: string } | null,
+      open: any = null,
+    ) => {
+      mockPrisma.outlets.findMany.mockResolvedValue([{ id: 'outlet-1' }]);
+      mockPrisma.role_permissions.count.mockResolvedValue(1); // approver
+      mockPrisma.transactions.findFirst.mockResolvedValue({
+        id: 'abcdef12-0000',
+        outlet_id: 'outlet-1',
+        is_cancelled: false,
+        payment_method: 'cash',
+        paid_shift_id: 'shift-old',
+        total_amount: '45000.00',
+        transaction_items: [],
+        ...tx,
+      });
+      mockPrisma.shifts.findUnique.mockResolvedValue(paid);
+      mockPrisma.shifts.findFirst.mockResolvedValue(open);
+      const entries: any[] = [];
+      const audits: any[] = [];
+      mockPrisma.$transaction.mockImplementation(async (cb: any) =>
+        cb({
+          transactions: { update: jest.fn(async () => ({ id: 'tx' })) },
+          shift_cash_entries: {
+            create: jest.fn(async ({ data }) => {
+              entries.push(data);
+              return { id: 'entry-1' };
+            }),
+          },
+          shift_audit_logs: {
+            create: jest.fn(async ({ data }) => audits.push(data)),
+          },
+        }),
+      );
+      return { entries, audits };
+    };
+
+    const cancel = () =>
+      service.cancel('abcdef12-0000', merchantId, userId, {
+        reason: 'pelanggan batal',
+      });
+
+    it('books the refund as cash out in the open shift when the sale is from a closed shift', async () => {
+      const { entries, audits } = setup(
+        {},
+        { status: 'closed' },
+        { id: 'shift-now' },
+      );
+      await cancel();
+      expect(entries).toEqual([
+        {
+          shift_id: 'shift-now',
+          type: 'out',
+          amount: 45000,
+          reason: 'Refund #ABCDEF12: pelanggan batal',
+          created_by: userId,
+        },
+      ]);
+      expect(audits[0]).toMatchObject({
+        shift_id: 'shift-now',
+        action: 'cash_entry_added',
+        action_details: {
+          refund_of_transaction: 'abcdef12-0000',
+          amount: 45000,
+        },
+      });
+    });
+
+    it('adds nothing when the sale is still in its own open shift (it just drops out of the total)', async () => {
+      const { entries } = setup({}, { status: 'open' });
+      await cancel();
+      expect(entries).toHaveLength(0);
+      expect(mockPrisma.shifts.findFirst).not.toHaveBeenCalled();
+    });
+
+    it('refuses to refund an old cash sale when no shift is open', async () => {
+      setup({}, { status: 'closed' }, null);
+      await expect(cancel()).rejects.toThrow(/Open a shift first/);
+      expect(mockPrisma.$transaction).not.toHaveBeenCalled();
+    });
+
+    it('ignores non-cash sales and sales without a paid shift', async () => {
+      const a = setup({ payment_method: 'qris' }, { status: 'closed' });
+      await cancel();
+      expect(a.entries).toHaveLength(0);
+      const b = setup({ paid_shift_id: null }, { status: 'closed' });
+      await cancel();
+      expect(b.entries).toHaveLength(0);
+      expect(mockPrisma.shifts.findUnique).not.toHaveBeenCalled();
     });
   });
 

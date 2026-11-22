@@ -410,6 +410,7 @@ export class TransactionsService {
       merchantId,
       dto.approver_pin,
     );
+    const refundShiftId = await this.resolveRefundShift(transaction);
 
     const result = await this.prisma.$transaction(async (tx) => {
       const cancelledTx = await tx.transactions.update({
@@ -428,6 +429,37 @@ export class TransactionsService {
           updated_at: new Date(),
         },
       });
+
+      if (refundShiftId) {
+        // The sale already counted in a closed shift, so today's drawer pays it back.
+        const amount = Number(transaction.total_amount);
+        const entry = await tx.shift_cash_entries.create({
+          data: {
+            shift_id: refundShiftId,
+            type: 'out',
+            amount,
+            reason:
+              `Refund #${transaction.id.slice(0, 8).toUpperCase()}: ${dto.reason.trim()}`.slice(
+                0,
+                255,
+              ),
+            created_by: userId,
+          },
+        });
+        await tx.shift_audit_logs.create({
+          data: {
+            shift_id: refundShiftId,
+            action: 'cash_entry_added',
+            user_id: userId,
+            action_details: {
+              entry_id: entry.id,
+              type: 'out',
+              amount,
+              refund_of_transaction: transaction.id,
+            },
+          },
+        });
+      }
 
       if (transaction.payment_method !== 'pending') {
         for (const item of transaction.transaction_items) {
@@ -929,6 +961,37 @@ export class TransactionsService {
       throw new BadRequestException('Discount cannot exceed the subtotal');
     }
     return { discountType: type, discountValue: value, discountAmount };
+  }
+
+  // Cash refunds. A cash sale cancelled while its own shift is still open simply
+  // drops out of that shift's expected cash. If that shift is already closed its
+  // figures are frozen, so the money must leave the drawer of the shift that is
+  // open now. Returns that shift's id, or null when nothing extra is needed.
+  private async resolveRefundShift(transaction: {
+    outlet_id: string;
+    payment_method: string;
+    paid_shift_id: string | null;
+  }): Promise<string | null> {
+    if (transaction.payment_method !== 'cash' || !transaction.paid_shift_id) {
+      return null;
+    }
+    const paidShift = await this.prisma.shifts.findUnique({
+      where: { id: transaction.paid_shift_id },
+      select: { status: true },
+    });
+    if (!paidShift || paidShift.status === 'open') return null;
+
+    const openShift = await this.prisma.shifts.findFirst({
+      where: { outlet_id: transaction.outlet_id, status: 'open' },
+      orderBy: { start_time: 'desc' },
+      select: { id: true },
+    });
+    if (!openShift) {
+      throw new BadRequestException(
+        'This cash sale belongs to a closed shift. Open a shift first so the refund can be paid from its cash drawer',
+      );
+    }
+    return openShift.id;
   }
 
   // Roles are per outlet, so check the role the user holds at this outlet.
