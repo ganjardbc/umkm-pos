@@ -1,22 +1,16 @@
 <template>
   <div class="mx-auto w-full max-w-5xl space-y-4">
-    <div class="flex items-center gap-3">
+    <div class="flex items-center gap-4">
       <Button
-        icon="pi pi-arrow-left"
         severity="secondary"
-        text
-        rounded
+        icon="pi pi-arrow-left"
+        size="small"
         aria-label="Kembali"
         @click="onCancel"
       />
-      <div>
-        <h1 class="text-xl font-semibold">
-          Tambah Produk
-        </h1>
-        <p class="text-sm text-gray-400">
-          Isi nama dan harga dulu, sisanya bisa dilengkapi nanti.
-        </p>
-      </div>
+      <h1 class="text-lg font-semibold">
+        Tambah Produk
+      </h1>
     </div>
 
     <ProductForm

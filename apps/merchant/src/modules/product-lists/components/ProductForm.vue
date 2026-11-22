@@ -22,7 +22,7 @@
           </template>
 
           <div class="space-y-4">
-            <UiFormGroup label="Nama produk *" variant="vertical">
+            <UiFormGroup label="Nama produk" variant="vertical">
               <InputText
                 name="name"
                 type="text"
@@ -76,7 +76,7 @@
           </template>
 
           <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <UiFormGroup label="Harga jual *" variant="vertical">
+            <UiFormGroup label="Harga jual" variant="vertical">
               <InputNumber
                 name="price"
                 placeholder="Rp 0"
@@ -265,39 +265,41 @@
             </h2>
           </template>
 
-          <label class="flex items-start justify-between gap-4">
+          <label class="flex items-start justify-between gap-4 cursor-pointer">
             <span>
               <span class="block text-sm font-semibold">Produk aktif</span>
               <span class="block text-xs text-gray-400">
                 Produk nonaktif tidak bisa dijual dan disembunyikan dari menu QR pelanggan.
               </span>
             </span>
-            <ToggleSwitch name="is_active" />
+            <Checkbox
+              name="is_active"
+              binary
+            />
           </label>
         </UiCard>
       </div>
     </div>
 
-    <!-- Actions stay in reach while scrolling a long form -->
-    <div class="sticky bottom-0 z-10 mt-4 -mx-1 flex items-center justify-end gap-3 border-t border-gray-200 bg-white/95 px-1 py-3 backdrop-blur dark:border-gray-800 dark:bg-dark-secondary/95">
+    <!-- Actions stay in reach while scrolling a long form; same buttons as the other forms -->
+    <div class="sticky bottom-4 z-10 mt-4 flex justify-end gap-4 rounded-xl bg-white p-3 shadow-md dark:bg-dark-secondary dark:shadow-xl">
       <Button
         type="button"
         severity="secondary"
-        variant="outlined"
         label="Batal"
-        class="w-full sm:w-32"
+        size="medium"
+        class="w-full md:w-[128px]"
         :disabled="submitting"
         @click="emit('cancel')"
       />
       <Button
         type="submit"
-        :label="mode === 'create' ? 'Simpan produk' : 'Simpan perubahan'"
-        icon="pi pi-check"
-        class="w-full sm:w-48"
+        label="Simpan"
+        size="medium"
+        class="w-full md:w-[128px]"
         :loading="submitting"
       />
     </div>
-
   </Form>
 </template>
 

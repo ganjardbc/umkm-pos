@@ -1,25 +1,16 @@
 <template>
   <div class="mx-auto w-full max-w-5xl space-y-4">
-    <div class="flex items-center gap-3">
+    <div class="flex items-center gap-4">
       <Button
-        icon="pi pi-arrow-left"
         severity="secondary"
-        text
-        rounded
+        icon="pi pi-arrow-left"
+        size="small"
         aria-label="Kembali"
         @click="onCancel"
       />
-      <div class="min-w-0">
-        <h1 class="text-xl font-semibold">
-          Ubah Produk
-        </h1>
-        <p
-          v-if="initialValues"
-          class="truncate text-sm text-gray-400"
-        >
-          {{ initialValues.name }}
-        </p>
-      </div>
+      <h1 class="text-lg font-semibold">
+        Ubah Produk
+      </h1>
     </div>
 
     <UiLoading
