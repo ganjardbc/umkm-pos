@@ -9,8 +9,14 @@ export const getters = {
       return count + item.quantity;
     }, 0);
   },
-  getCartItemById: (state: any) => (id: string) => {
-    return state.cartItems.find((item: any) => item.id === id);
+  getCartItemById: (state: any) => (key: string) => {
+    return state.cartItems.find((item: any) => (item.key ?? item.id) === key);
+  },
+  // Stock is per product, so lines that differ only by options share it.
+  productQtyInCart: (state: any) => (productId: string) => {
+    return state.cartItems
+      .filter((item: any) => item.id === productId)
+      .reduce((count: number, item: any) => count + item.quantity, 0);
   },
   isShiftOpen: (state: any) => {
     return state.shiftStatus?.shift_required === false || state.shiftStatus?.is_open === true;

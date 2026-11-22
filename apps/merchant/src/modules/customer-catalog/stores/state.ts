@@ -1,4 +1,14 @@
+export interface CatalogCartOption {
+  option_id: string;
+  group_name: string;
+  name: string;
+  price_delta: number;
+}
+
 export interface CatalogCartItem {
+  // Line identity (product + options). Carts saved before options existed have none: use lineKey().
+  key?: string;
+  options?: CatalogCartOption[];
   id: string;
   name: string;
   price: string;

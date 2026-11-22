@@ -38,7 +38,7 @@
         <div class="space-y-3">
           <div
             v-for="item in catalogStore.cartItems"
-            :key="item.id"
+            :key="item.key ?? item.id"
             :class="{
               'mb-6 pb-4 border-b border-gray-200 dark:border-white/10': item !== catalogStore.cartItems[catalogStore.cartItems.length - 1],
             }"
@@ -60,6 +60,17 @@
                   <div class="min-w-0">
                     <p class="truncate font-semibold">{{ item.name }}</p>
                     <p class="mt-1 text-sm text-gray-500">{{ getCurrency(item.price) }}</p>
+                    <ul
+                      v-if="item.options?.length"
+                      class="mt-1 text-xs text-gray-500"
+                    >
+                      <li
+                        v-for="option in item.options"
+                        :key="option.option_id"
+                      >
+                        {{ option.group_name }}: {{ option.name }}<template v-if="option.price_delta > 0"> (+{{ getCurrency(option.price_delta) }})</template>
+                      </li>
+                    </ul>
                   </div>
                   <Button
                     icon="pi pi-trash"
@@ -67,7 +78,7 @@
                     text
                     rounded
                     size="small"
-                    @click="catalogStore.removeFromCart(item.id)"
+                    @click="catalogStore.removeFromCart(item.key ?? item.id)"
                   />
                 </div>
               </div>
@@ -80,7 +91,7 @@
                   size="small"
                   severity="secondary"
                   variant="outlined"
-                  @click="catalogStore.decrementQuantity(item.id)"
+                  @click="catalogStore.decrementQuantity(item.key ?? item.id)"
                 />
                 <span class="w-8 text-center text-sm font-semibold">{{ item.quantity }}</span>
                 <Button
@@ -88,8 +99,8 @@
                   size="small"
                   severity="secondary"
                   variant="outlined"
-                  :disabled="item.quantity >= item.stock_qty"
-                  @click="catalogStore.incrementQuantity(item.id)"
+                  :disabled="catalogStore.productQtyInCart(item.id) >= item.stock_qty"
+                  @click="catalogStore.incrementQuantity(item.key ?? item.id)"
                 />
               </div>
               <p class="text-sm font-semibold">{{ getCurrency(Number(item.price) * item.quantity) }}</p>
@@ -239,6 +250,7 @@ const submitOrder = async () => {
         product_id: item.id,
         qty: item.quantity,
         customer_note: item.customer_note,
+        option_ids: item.options?.length ? item.options.map((o) => o.option_id) : undefined,
       })),
     });
     showToast({

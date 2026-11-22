@@ -42,8 +42,8 @@
     <div class="px-3 pb-4">
       <Button
         size="small"
-        label="Tambah ke Keranjang"
-        icon="pi pi-cart-plus"
+        :label="product.product_option_groups?.length ? 'Pilih Opsi' : 'Tambah ke Keranjang'"
+        :icon="product.product_option_groups?.length ? 'pi pi-sliders-h' : 'pi pi-cart-plus'"
         variant="outlined"
         class="w-full!"
         :disabled="disabled || product.stock_qty <= 0 || product.stock_qty <= product.min_stock"

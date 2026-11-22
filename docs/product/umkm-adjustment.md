@@ -20,7 +20,7 @@ Tanda di dokumen ini:
 | Kasir | Tunai, debit, e-wallet, QRIS (dicatat manual, lihat catatan), bayar-nanti ("Buat Pesanan"), tambah item ke pesanan, catatan per item, meja opsional (field disembunyikan bila outlet tanpa meja) |
 | Pembayaran tunai | Kalkulator, tombol "Uang Pas", tombol tambah pecahan, kembalian otomatis, tanpa konfirmasi ganda |
 | Produk di kasir | Grid dipaginasi, filter kategori, label "Stok: n", tag "Habis" dan "Stok Menipis", tombol coba lagi bila gagal dimuat |
-| Varian dan modifier | Grup opsi per produk (nama, wajib atau opsional, satu atau banyak pilihan) berisi opsi dengan tambahan harga, mis. "Ukuran" (wajib, satu) dan "Topping" (opsional, banyak). Diatur di form produk. Di kasir, produk beropsi membuka dialog pilihan. Baris keranjang dibedakan menurut produk dan opsi, stok tetap per produk. Harga satuan di transaksi sudah termasuk opsi, pilihan dibekukan di `transaction_items.options_snapshot` dan tampil di struk dan detail transaksi. **Belum didukung di self-order pelanggan** (bagian 3) |
+| Varian dan modifier | Grup opsi per produk (nama, wajib atau opsional, satu atau banyak pilihan) berisi opsi dengan tambahan harga, mis. "Ukuran" (wajib, satu) dan "Topping" (opsional, banyak). Diatur di form produk. Di kasir, produk beropsi membuka dialog pilihan. Baris keranjang dibedakan menurut produk dan opsi, stok tetap per produk. Harga satuan di transaksi sudah termasuk opsi, pilihan dibekukan di `transaction_items.options_snapshot` dan tampil di struk dan detail transaksi. Juga tersedia di menu QR pelanggan (lihat baris Self-order) |
 | Diskon | Per transaksi, nominal Rp atau persen, hanya saat bayar langsung dan hanya untuk peran berizin `transaction.discount` (default owner, manager, admin). `total_amount` tetap nilai bersih yang dibayar, subtotal dan diskon tampil di struk |
 | Struk | Terbuka otomatis setelah bayar (izin `transaction.print`), bisa dibuka dari daftar dan detail transaksi, cetak Bluetooth, unduh gambar. Tombol "Kirim" membuka WhatsApp dengan teks struk terisi (nomor Indonesia, terisi otomatis dari pelanggan terpilih). Bukan integrasi API: kasir menekan kirim sendiri |
 | Pelanggan tetap | Menu "Pelanggan": daftar, cari (nama atau nomor), tambah, ubah, hapus, riwayat (jumlah transaksi, total belanja tanpa yang dibatalkan, terakhir datang, 10 transaksi terakhir). Nomor dinormalisasi ke 62..., unik per merchant. Dipilih atau didaftarkan di pembayaran kasir, tersimpan di `transactions.customer_id` plus snapshot nama dan nomor. Izin `customer.*`: owner, manager, admin penuh, kasir hanya lihat dan daftar. Tanpa loyalty |
@@ -30,7 +30,7 @@ Tanda di dokumen ini:
 | Impor produk | Tombol "Impor" di daftar produk: CSV atau Excel dengan kolom nama dan harga, opsional modal, kategori, stok, stok minimum (nama kolom Indonesia atau Inggris, angka "15.000" dibaca benar), template CSV, pratinjau. Maks 500 produk, stok masuk ke outlet aktif, kategori baru dibuat otomatis. Semua atau tidak sama sekali: satu baris bermasalah menolak seluruh file dengan daftar kesalahan per baris |
 | Panduan awal | Halaman setelah login menampilkan langkah awal (produk pertama, staf, transaksi pertama) sesuai izin peran. Statis, tidak mendeteksi langkah yang sudah selesai |
 | Outlet dan akses | Multi-outlet, RBAC per outlet berbasis permission, meja (`store_tables`) |
-| Self-order | Katalog per outlet, sesi pelanggan (`customer_sessions`) dengan nama dan telepon per kunjungan |
+| Self-order (menu QR) | Pelanggan memindai QR outlet, mengisi nama dan telepon (`customer_sessions`), memilih menu, meja, dan memesan. Produk dengan grup opsi menampilkan tombol "Pilih Opsi" dan dialog pilihan yang sama dengan kasir. Keranjang membedakan baris menurut produk dan opsi, dan pesanan mengirim `option_ids` yang divalidasi ulang di API. Produk yang stoknya 0 di outlet disembunyikan |
 | Laporan | Ringkasan, tren harian, produk terlaris, perbandingan outlet, ekspor |
 
 Catatan QRIS, debit, e-wallet: layar pembayaran hanya meminta kasir menampilkan QR, memakai mesin EDC, atau meminta pelanggan membayar lewat aplikasi, lalu mengonfirmasi. Tidak ada integrasi payment gateway. Jangan diklaim sebagai "pembayaran terintegrasi".
@@ -43,8 +43,6 @@ Catatan QRIS, debit, e-wallet: layar pembayaran hanya meminta kasir menampilkan 
 - struk digital lewat email, tautan publik, atau lampiran gambar (WhatsApp hanya teks);
 - layar dapur (KDS): status pesanan ada (`order_status`), tetapi tidak ada halaman dapur;
 - loyalty, pelanggan pada pesanan bayar-nanti dan self-order, nama pelanggan di laporan.
-
-**Self-order dan varian:** halaman katalog pelanggan belum punya pilihan opsi. Produk dengan grup opsi **wajib** ditolak API saat dipesan lewat self-order (`Option group "..." is required for "..."`), sedangkan produk dengan opsi opsional bisa dipesan tanpa opsi. Jangan memasang grup wajib pada produk yang dijual lewat self-order sampai katalog mendukungnya.
 
 Sengaja belum ada (sesuai catatan proyek): akuntansi, pajak, CRM, loyalty, pembelian ke supplier, multi-gudang, analitik lanjutan.
 
@@ -97,7 +95,7 @@ Selisih yang bisa dijual Insell: shift dan kas opsional di paket dasar, refund t
 | # | Butir | Status | Belum ada |
 |---|---|---|---|
 | 8 | Diskon per transaksi | ✅ | Diskon pesanan bayar-nanti, batas maksimum per peran, laporan total diskon |
-| 9 | Varian dan modifier (kafe) | ✅ | Opsi di self-order, ubah satu opsi tanpa mengganti seluruh grup (id opsi ikut berubah, keranjang terbuka perlu diisi ulang), opsi per outlet, stok per opsi, laporan per opsi |
+| 9 | Varian dan modifier (kafe) | ✅ | Ubah satu opsi tanpa mengganti seluruh grup (id opsi ikut berubah, keranjang terbuka perlu diisi ulang), opsi per outlet, stok per opsi, laporan per opsi |
 | 10 | PIN manager untuk pembatalan | ✅ | Entri audit log umum (yang ada khusus shift), nama pembatal dan penyetuju di UI, penguncian PIN tahan restart dan multi-server (sekarang di memori proses), PIN untuk diskon |
 | 11 | Struk digital WhatsApp | ✅ | Tautan publik, lampiran gambar, kirim otomatis, nomor luar negeri |
 
@@ -113,10 +111,9 @@ Selisih yang bisa dijual Insell: shift dan kas opsional di paket dasar, refund t
 
 ## 8. Keputusan yang masih terbuka
 1. **Offline sync:** dibangun atau tidak? Bila ya, perlu desain sendiri (penyimpanan lokal, antrean, aturan shift). Bila tidak, hapus sakelar offline (Fase 1 butir 5) dan jangan diklaim.
-2. **Self-order dan opsi:** katalog pelanggan perlu mendukung pilihan opsi sebelum grup wajib dipakai di produk self-order.
-3. **Alasan pembatalan:** sekarang wajib dan disimpan di `transactions`. Perlu juga masuk tabel audit log umum?
-4. **Panduan awal:** cukup statis, atau perlu mendeteksi langkah yang sudah selesai?
-5. **Pengguna uji pertama:** adakah? Bila ada, pakai untuk uji manual (bagian 9) dan amati langkah awal serta alur pembatalan dengan PIN.
+2. **Alasan pembatalan:** sekarang wajib dan disimpan di `transactions`. Perlu juga masuk tabel audit log umum?
+3. **Panduan awal:** cukup statis, atau perlu mendeteksi langkah yang sudah selesai?
+4. **Pengguna uji pertama:** adakah? Bila ada, pakai untuk uji manual (bagian 9) dan amati langkah awal serta alur pembatalan dengan PIN.
 
 Keputusan yang sudah diambil: urutan fase, kafe sebagai target pertama varian, izin diskon lewat `transaction.discount`, PIN manager untuk pembatalan, refund tunai sebagai kas keluar di shift berjalan dan hanya seluruh transaksi.
 
@@ -126,6 +123,7 @@ Keputusan yang sudah diambil: urutan fase, kafe sebagai target pertama varian, i
 - Hasil insert izin di migrasi (`transaction.discount`, `transaction.cancel_approve`, `customer.*`) ke peran owner, manager, admin, cashier belum diperiksa langsung di database.
 - Halaman pengaturan peran belum dicek apakah menampilkan izin baru, yang dibutuhkan bila kasir perlu diberi diskon.
 - Alur impor dengan file Excel nyata (hanya CSV yang diuji lewat skrip).
+- Alur menu QR dengan opsi: dialog pilihan di perangkat pelanggan, keranjang tersimpan (pelanggan yang keranjangnya dibuat sebelum fitur ini tetap berfungsi lewat fallback kunci baris), dan pesanan tambahan ke pesanan yang masih aktif. Hanya logika API dan build yang dicek.
 
 ## 10. Catatan operasional
 **Urutan deploy.** Jalankan `prisma migrate deploy` di setiap environment **sebelum** kode API baru dideploy. Kode baru memilih kolom dan tabel baru, jadi tanpa migrasi endpoint terkait mengembalikan 500. Migrasi baru, berurutan:

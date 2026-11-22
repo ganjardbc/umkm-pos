@@ -35,6 +35,12 @@
       />
     </div>
 
+    <ProductOptionDialog
+      v-model:visibility="showOptionDialog"
+      :product="optionProduct"
+      @confirm="onOptionsConfirmed"
+    />
+
     <UiCard v-if="!loading && products.length === 0">
       <div class="flex flex-col items-center justify-center py-8 text-center text-gray-500">
         <i class="pi pi-box mb-3 text-3xl" />
@@ -51,6 +57,8 @@ import { getErrorMessage } from '@umkm-pos/ui/helpers/utils';
 import { showToast } from '@umkm-pos/ui/helpers/toast';
 import UiCard from '@umkm-pos/ui/components/UiCard.vue';
 import ProductCard from '../components/ProductCard.vue';
+// Shared with the cashier: same choice dialog, same option shape.
+import ProductOptionDialog from '@/modules/cashier/components/ProductOptionDialog.vue';
 import { useCatalogStore } from '../stores/index.ts';
 import { getCatalogCategories, getCatalogProducts } from '../services/api.ts';
 
@@ -103,7 +111,18 @@ const handleAddToCart = (product: any) => {
     });
     return;
   }
+  if (product.product_option_groups?.length) {
+    optionProduct.value = product;
+    showOptionDialog.value = true;
+    return;
+  }
   catalogStore.addToCart(product);
+};
+
+const optionProduct = ref<any>(null);
+const showOptionDialog = ref(false);
+const onOptionsConfirmed = (options: any[]) => {
+  catalogStore.addToCart(optionProduct.value, options);
 };
 
 watch([selectedCategory, search], loadProducts);

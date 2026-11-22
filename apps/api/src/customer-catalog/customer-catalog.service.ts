@@ -164,6 +164,11 @@ export class CustomerCatalogService {
               is_active: true,
             },
           },
+          // Same option groups the cashier sees; the order API validates the choice again.
+          product_option_groups: {
+            orderBy: { sort_order: 'asc' },
+            include: { product_options: { orderBy: { sort_order: 'asc' } } },
+          },
         },
         orderBy: { name: 'asc' },
         skip: query.skip,

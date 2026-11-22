@@ -1,4 +1,4 @@
-import type { CatalogCartItem } from './state';
+import type { CatalogCartItem, CatalogCartOption } from './state';
 import { clearCustomerSession, getCustomerSession } from '@/helpers/customer-session.ts';
 import {
   getCatalogShiftStatus,
@@ -6,6 +6,12 @@ import {
   getCustomerSessionStatus,
   postCatalogOrder,
 } from '../services/api.ts';
+
+// The same product with different options is a separate cart line.
+export const makeLineKey = (productId: string, options: CatalogCartOption[] = []) =>
+  [productId, ...options.map((option) => option.option_id).sort()].join('::');
+
+export const lineKey = (item: CatalogCartItem) => item.key ?? item.id;
 
 export const actions = {
   hydrateSession() {
@@ -71,55 +77,63 @@ export const actions = {
     return order;
   },
 
-  addToCart(product: any) {
-    const existingItem = (this as any).cartItems.find(
-      (item: CatalogCartItem) => item.id === product.id,
+  addToCart(product: any, options: CatalogCartOption[] = []) {
+    const self = this as any;
+    if (self.productQtyInCart(product.id) >= product.stock_qty) return;
+
+    const key = makeLineKey(product.id, options);
+    const existingItem = self.cartItems.find(
+      (item: CatalogCartItem) => lineKey(item) === key,
     );
 
     if (existingItem) {
-      if (existingItem.quantity < product.stock_qty) {
-        existingItem.quantity++;
-      }
+      existingItem.quantity++;
     } else {
-      (this as any).cartItems.push({
+      const unitPrice =
+        Number(product.price) +
+        options.reduce((sum, option) => sum + option.price_delta, 0);
+      self.cartItems.push({
+        key,
         id: product.id,
         name: product.name,
-        price: product.price,
+        price: String(unitPrice),
         quantity: 1,
         stock_qty: product.stock_qty,
         thumbnail: product.thumbnail || null,
         customer_note: '',
+        options,
       });
     }
   },
 
-  removeFromCart(productId: string) {
+  removeFromCart(key: string) {
     const index = (this as any).cartItems.findIndex(
-      (item: CatalogCartItem) => item.id === productId,
+      (item: CatalogCartItem) => lineKey(item) === key,
     );
     if (index > -1) {
       (this as any).cartItems.splice(index, 1);
     }
   },
 
-  incrementQuantity(productId: string) {
-    const item = (this as any).cartItems.find(
-      (item: CatalogCartItem) => item.id === productId,
+  incrementQuantity(key: string) {
+    const self = this as any;
+    const item = self.cartItems.find(
+      (item: CatalogCartItem) => lineKey(item) === key,
     );
-    if (item && item.quantity < item.stock_qty) {
+    if (item && self.productQtyInCart(item.id) < item.stock_qty) {
       item.quantity++;
     }
   },
 
-  decrementQuantity(productId: string) {
+  decrementQuantity(key: string) {
     const item = (this as any).cartItems.find(
-      (item: CatalogCartItem) => item.id === productId,
+      (item: CatalogCartItem) => lineKey(item) === key,
     );
     if (item) {
       if (item.quantity > 1) {
         item.quantity--;
       } else {
-        this.removeFromCart(productId);
+        this.removeFromCart(key);
       }
     }
   },

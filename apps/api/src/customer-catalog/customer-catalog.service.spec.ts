@@ -13,6 +13,10 @@ describe('CustomerCatalogService', () => {
     shifts: { findFirst: jest.fn() },
     customer_sessions: { findFirst: jest.fn() },
     transactions: { findFirst: jest.fn() },
+    products: { findMany: jest.fn(), count: jest.fn() },
+    $transaction: jest.fn((queries: Promise<unknown>[]) =>
+      Promise.all(queries),
+    ),
   };
   const mockTransactions = {
     createCatalogOrder: jest.fn(),
@@ -117,6 +121,50 @@ describe('CustomerCatalogService', () => {
       is_open: false,
       shift_id: null,
       status: 'closed',
+    });
+  });
+
+  it("listProducts returns each product's option groups with the outlet stock", async () => {
+    mockPrisma.outlets.findFirst.mockResolvedValue({
+      id: 'outlet-1',
+      merchant_id: 'merchant-1',
+      shift_required: false,
+    });
+    const groups = [
+      {
+        id: 'g-1',
+        name: 'Ukuran',
+        is_required: true,
+        product_options: [{ id: 'o-1', name: 'Large', price_delta: '5000.00' }],
+      },
+    ];
+    mockPrisma.products.findMany.mockResolvedValue([
+      {
+        id: 'p-1',
+        name: 'Kopi',
+        outlet_product_inventory: [{ stock_qty: 4, min_stock: 1 }],
+        product_option_groups: groups,
+      },
+      {
+        id: 'p-2',
+        name: 'Habis',
+        outlet_product_inventory: [],
+        product_option_groups: [],
+      },
+    ]);
+    mockPrisma.products.count.mockResolvedValue(2);
+
+    const result = await service.listProducts({ outlet_id: 'outlet-1' } as any);
+
+    expect(
+      mockPrisma.products.findMany.mock.calls[0][0].include,
+    ).toHaveProperty('product_option_groups');
+    // out-of-stock products stay hidden; the rest carry their groups for the dialog
+    expect(result.data).toHaveLength(1);
+    expect(result.data[0]).toMatchObject({
+      id: 'p-1',
+      stock_qty: 4,
+      product_option_groups: groups,
     });
   });
 });
