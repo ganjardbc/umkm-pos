@@ -1,279 +1,111 @@
 <template>
-  <UiCard class="max-w-2xl mx-auto">
-    <template #header>
-      <h1 class="text-xl font-semibold">
-        Ubah Produk
-      </h1>
-    </template>
-
-    <Form
-      v-if="isLoaded"
-      v-slot="$form"
-      :resolver="resolver"
-      :initialValues="initialValues"
-      @submit="onFormSubmit"
-      class="flex flex-col gap-4 w-full"
-    >
-      <div class="w-full space-y-4">
-        <UiFormGroup label="Nama" variant="vertical">
-          <InputText
-            name="name"
-            type="text"
-            placeholder=""
-            fluid
-          />
-          <Message
-            v-if="$form.name?.invalid"
-            severity="error"
-            size="small"
-            variant="simple"
-          >
-            {{ $form.name.error?.message }}
-          </Message>
-        </UiFormGroup>
-        <UiFormGroup label="Kategori" variant="vertical">
-          <Dropdown
-            :options="listOfCategories"
-            name="category_id"
-            option-label="name"
-            option-value="id"
-            placeholder="Pilih kategori"
-            class="w-full"
-            :loading="loadingCategory"
-          />
-          <Message
-            v-if="$form.category_id?.invalid"
-            severity="error"
-            size="small"
-            variant="simple"
-          >
-            {{ $form.category_id.error?.message }}
-          </Message>
-        </UiFormGroup>
-        <UiFormGroup label="Harga" variant="vertical">
-          <InputNumber
-            name="price"
-            placeholder=""
-            fluid
-            :min="0"
-            mode="currency"
-            currency="IDR"
-            locale="id-ID"
-          />
-          <Message
-            v-if="$form.price?.invalid"
-            severity="error"
-            size="small"
-            variant="simple"
-          >
-            {{ $form.price.error?.message }}
-          </Message>
-        </UiFormGroup>
-        <UiFormGroup label="Modal" variant="vertical">
-          <InputNumber
-            name="cost"
-            placeholder=""
-            fluid
-            :min="0"
-            mode="currency"
-            currency="IDR"
-            locale="id-ID"
-          />
-          <Message
-            v-if="$form.cost?.invalid"
-            severity="error"
-            size="small"
-            variant="simple"
-          >
-            {{ $form.cost.error?.message }}
-          </Message>
-        </UiFormGroup>
-        <UiFormGroup label="Stok Minimum" variant="vertical">
-          <InputNumber
-            name="min_stock"
-            placeholder=""
-            fluid
-            :min="0"
-          />
-          <Message
-            v-if="$form.min_stock?.invalid"
-            severity="error"
-            size="small"
-            variant="simple"
-          >
-            {{ $form.min_stock.error?.message }}
-          </Message>
-        </UiFormGroup>
-        <UiFormGroup label="Status Aktif" variant="vertical">
-          <Checkbox
-            name="is_active"
-            binary
-          />
-          <Message
-            v-if="$form.is_active?.invalid"
-            severity="error"
-            size="small"
-            variant="simple"
-          >
-            {{ $form.is_active.error?.message }}
-          </Message>
-        </UiFormGroup>
-        <UiFormGroup label="Opsi Produk (Varian dan Tambahan)" variant="vertical">
-          <OptionGroupsEditor v-model="optionGroups" />
-        </UiFormGroup>
-        <UiFormGroup label="Gambar Produk" variant="vertical">
-          <div class="flex items-start gap-4">
-            <div
-              v-if="imagePreview"
-              class="w-28 h-28 rounded-lg overflow-hidden border border-gray-200 flex-shrink-0"
-            >
-              <img
-                :src="imagePreview"
-                alt="Preview"
-                class="w-full h-full object-cover"
-              />
-            </div>
-            <div
-              v-else
-              class="w-28 h-28 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center flex-shrink-0"
-            >
-              <i class="pi pi-image text-3xl text-gray-400" />
-            </div>
-            <div class="flex flex-col gap-2">
-              <FileUpload
-                mode="basic"
-                accept="image/*"
-                :chooseLabel="imagePreview ? 'Ubah Gambar' : 'Pilih Gambar'"
-                customUpload
-                @select="onUploadImage"
-              />
-              <Button
-                v-if="imagePreview"
-                severity="danger"
-                variant="outlined"
-                size="small"
-                label="Hapus"
-                icon="pi pi-trash"
-                @click="onRemoveImage"
-              />
-              <p class="text-xs text-gray-400">
-                Format yang didukung: JPG, PNG, WebP. Maks 5MB.
-              </p>
-            </div>
-          </div>
-        </UiFormGroup>
+  <div class="mx-auto w-full max-w-5xl space-y-4">
+    <div class="flex items-center gap-3">
+      <Button
+        icon="pi pi-arrow-left"
+        severity="secondary"
+        text
+        rounded
+        aria-label="Kembali"
+        @click="onCancel"
+      />
+      <div class="min-w-0">
+        <h1 class="text-xl font-semibold">
+          Ubah Produk
+        </h1>
+        <p
+          v-if="initialValues"
+          class="truncate text-sm text-gray-400"
+        >
+          {{ initialValues.name }}
+        </p>
       </div>
+    </div>
 
-      <div class="w-full flex justify-end gap-4">
-        <Button
-          severity="secondary"
-          label="Batal"
-          size="medium"
-          class="w-full md:w-[128px]"
-          @click="onCancel"
-        />
-        <Button
-          type="submit"
-          label="Simpan"
-          size="medium"
-          class="w-full md:w-[128px]"
-        />
-      </div>
-    </Form>
-  </UiCard>
+    <UiLoading
+      v-if="!isLoaded"
+      message="Memuat produk..."
+    />
+
+    <ProductForm
+      v-else
+      mode="edit"
+      :initial-values="initialValues!"
+      :initial-option-groups="initialOptionGroups"
+      :initial-image="initialImage"
+      :categories="listOfCategories"
+      :loading-categories="loadingCategory"
+      :outlet-name="getOutlet()?.name"
+      :current-stock="currentStock"
+      :submitting="submitting"
+      @submit="onSubmit"
+      @cancel="onCancel"
+    />
+  </div>
 </template>
+
 <script setup lang="ts">
-import type { FormEdit } from '@/modules/product-lists/services/types';
 import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { z } from 'zod';
-import { zodResolver } from '@primevue/forms/resolvers/zod';
 import { getErrorMessage } from '@umkm-pos/ui/helpers/utils';
 import { showToast } from '@umkm-pos/ui/helpers/toast';
-import { showLoading, hideLoading } from '@umkm-pos/ui/helpers/loading';
+import UiLoading from '@umkm-pos/ui/components/UiLoading.vue';
 import { putProduct, getDetailProduct, setProductImage, removeProductImage } from '@/modules/product-lists/services/api';
-import OptionGroupsEditor from '@/modules/product-lists/components/OptionGroupsEditor.vue';
-import { toOptionGroupInputs, validateOptionGroups, type OptionGroupInput } from '@/modules/product-lists/helpers/options.ts';
+import { toOptionGroupInputs, type OptionGroupInput } from '@/modules/product-lists/helpers/options.ts';
 import { getOutlet } from '@/helpers/auth.ts';
 import { getActiveCategories } from '@/modules/product-categories/services/api';
-import { useFileUpload } from '@umkm-pos/ui/composables/useFileUpload';
-import UiCard from '@umkm-pos/ui/components/UiCard.vue';
-import UiFormGroup from '@umkm-pos/ui/components/UiFormGroup.vue';
+import ProductForm, {
+  type ProductFormSubmit,
+  type ProductFormValues,
+} from '@/modules/product-lists/components/ProductForm.vue';
 
 const route = useRoute();
 const router = useRouter();
 const productID = computed(() => route.params.id as string);
 
 const isLoaded = ref(false);
-const optionGroups = ref<OptionGroupInput[]>([]);
-const initialValues = ref<FormEdit>({
-  name: '',
-  category_id: null,
-  thumbnail: '',
-  upload_id: null as any,
-  price: 0,
-  cost: 0,
-  min_stock: 0,
-  is_active: true
-});
-
-const { selectedUploadId, imagePreview, onUploadImage, onRemoveImage } =
-  useFileUpload();
+const submitting = ref(false);
+const initialValues = ref<ProductFormValues | null>(null);
+const initialOptionGroups = ref<OptionGroupInput[]>([]);
+const initialImage = ref<string | null>(null);
 const existingUploadId = ref<string | null>(null);
+const currentStock = ref(0);
 
-const resolver = ref(zodResolver(
-  z.object({
-    name: z.string().min(1, { message: 'Nama wajib diisi.' }),
-    category_id: z.string().nullable().optional(),
-    price: z.number().min(0, { message: 'Harga minimal 0.' }),
-    cost: z.number().min(0, { message: 'Modal minimal 0.' }),
-    min_stock: z.number().min(0, { message: 'Stok minimum minimal 0.' }),
-    is_active: z.boolean()
-  })
-));
+const onSubmit = async ({ values, optionGroups, uploadId, imageCleared }: ProductFormSubmit) => {
+  if (submitting.value) return;
+  try {
+    submitting.value = true;
+    const response = await putProduct(productID.value, {
+      outlet_id: getOutlet()?.id,
+      name: values.name,
+      category_id: values.category_id,
+      price: values.price,
+      cost: values.cost,
+      min_stock: values.min_stock,
+      is_active: values.is_active,
+      // Always sent: the API replaces all groups, so removals must be explicit.
+      option_groups: optionGroups,
+    });
+    const { success } = response?.data || {};
 
-const onFormSubmit = async ({ valid, values }: any) => {
-  if (valid) {
-    const optionError = validateOptionGroups(optionGroups.value);
-    if (optionError) {
-      showToast({ type: 'error', title: 'Opsi Belum Lengkap', message: optionError });
-      return;
+    if (success && uploadId) {
+      await setProductImage(productID.value, uploadId);
+    } else if (success && imageCleared && existingUploadId.value) {
+      await removeProductImage(productID.value);
     }
-    try {
-      showLoading();
 
-      const payload = {
-        outlet_id: getOutlet()?.id,
-        name: values?.name,
-        category_id: values?.category_id,
-        price: values?.price,
-        cost: values?.cost,
-        min_stock: values?.min_stock,
-        is_active: values?.is_active,
-        // Always sent: the API replaces all groups, so removals must be explicit.
-        option_groups: optionGroups.value,
-      };
-      const response = await putProduct(productID.value, payload);
-      const { success } = response?.data || {};
-
-      if (success && selectedUploadId.value) {
-        await setProductImage(productID.value, selectedUploadId.value);
-      } else if (success && imagePreview.value === null && existingUploadId.value) {
-        await removeProductImage(productID.value);
-      }
-
-      if (success) {
-        router.back();
-      }
-    } catch (error) {
-      showToast({
-        type: 'error',
-        title: 'Gagal Memperbarui Produk.',
-        message: getErrorMessage(error) || 'Terjadi kesalahan.',
-      });
-    } finally {
-      hideLoading();
+    if (success) {
+      showToast({ type: 'success', title: 'Perubahan disimpan', message: `${values.name} diperbarui.` });
+      router.back();
     }
+  } catch (error) {
+    showToast({
+      type: 'error',
+      title: 'Gagal memperbarui produk',
+      message: getErrorMessage(error) || 'Terjadi kesalahan.',
+    });
+  } finally {
+    submitting.value = false;
   }
 };
 
@@ -281,60 +113,43 @@ const onCancel = () => {
   router.back();
 };
 
-// Fetch Detail
 const fetchDetail = async () => {
   try {
-    const response = await getDetailProduct(productID.value, {
-      outlet_id: getOutlet()?.id,
-    });
-    const { data } = response?.data || {};
-    const { name, category_id, price, cost, min_stock, is_active, thumbnail, upload, product_option_groups } = data || {};
-    optionGroups.value = toOptionGroupInputs(product_option_groups);
+    const response = await getDetailProduct(productID.value, { outlet_id: getOutlet()?.id });
+    const data = response?.data?.data || {};
 
     initialValues.value = {
-      name,
-      category_id: category_id,
-      thumbnail: thumbnail || '',
-      price: Number(price),
-      cost: Number(cost),
-      min_stock: Number(min_stock),
-      is_active
+      name: data.name,
+      category_id: data.category_id ?? null,
+      price: Number(data.price),
+      cost: Number(data.cost),
+      min_stock: Number(data.min_stock),
+      is_active: data.is_active,
     };
-
-    if (thumbnail) {
-      imagePreview.value = thumbnail;
-    }
-    if (upload?.id) {
-      existingUploadId.value = upload.id;
-    }
+    initialOptionGroups.value = toOptionGroupInputs(data.product_option_groups);
+    initialImage.value = data.thumbnail || null;
+    existingUploadId.value = data.upload?.id ?? null;
+    currentStock.value = Number(data.stock_qty ?? 0);
 
     isLoaded.value = true;
   } catch (error) {
     showToast({
       type: 'error',
-      title: 'Gagal memuat data.',
+      title: 'Gagal memuat produk',
       message: getErrorMessage(error) || 'Terjadi kesalahan.',
     });
   }
 };
 
-// Fetch Categories
+// Categories
 const listOfCategories = ref<any[]>([]);
-const loadingCategory = ref<boolean>(false);
-  const pagination = ref({
-  page: 1,
-});
+const loadingCategory = ref(false);
 
 const fetchCategories = async () => {
   try {
     loadingCategory.value = true;
-    const payload = {
-      page: pagination.value.page,
-    }
-    const response = await getActiveCategories(payload);
-    const { data } = response?.data || {};
-
-    listOfCategories.value = data;
+    const response = await getActiveCategories({ page: 1 });
+    listOfCategories.value = response?.data?.data || [];
   } catch (err) {
     console.warn('fetch categories', err);
   } finally {

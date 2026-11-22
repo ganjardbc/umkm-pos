@@ -20,6 +20,7 @@ Tanda di dokumen ini:
 | Kasir | Tunai, debit, e-wallet, QRIS (dicatat manual, lihat catatan), bayar-nanti ("Buat Pesanan"), tambah item ke pesanan, catatan per item, meja opsional (field disembunyikan bila outlet tanpa meja) |
 | Pembayaran tunai | Kalkulator, tombol "Uang Pas", tombol tambah pecahan, kembalian otomatis, tanpa konfirmasi ganda |
 | Produk di kasir | Grid dipaginasi, filter kategori, label "Stok: n", tag "Habis" dan "Stok Menipis", tombol coba lagi bila gagal dimuat |
+| Form produk | Tambah dan ubah produk memakai satu komponen (`ProductForm`): dua kolom di layar lebar, bagian Informasi, Harga (dengan indikator laba), Stok, Pilihan produk, lalu Foto dan Status di samping, bilah Batal/Simpan yang tetap terlihat saat menggulir. Kode produk (slug) dibuat otomatis dari nama dan hanya huruf kecil, angka, dan tanda hubung. Pesan validasi per kolom, tombol simpan menampilkan proses, nama yang bentrok dijelaskan dengan bahasa awam. Pilihan produk punya contoh cepat (Ukuran, Topping, Level gula). Di mode ubah, stok hanya ditampilkan dan diubah lewat Sesuaikan Stok |
 | Varian dan modifier | Grup opsi per produk (nama, wajib atau opsional, satu atau banyak pilihan) berisi opsi dengan tambahan harga, mis. "Ukuran" (wajib, satu) dan "Topping" (opsional, banyak). Diatur di form produk. Di kasir, produk beropsi membuka dialog pilihan. Baris keranjang dibedakan menurut produk dan opsi, stok tetap per produk. Harga satuan di transaksi sudah termasuk opsi, pilihan dibekukan di `transaction_items.options_snapshot` dan tampil di struk dan detail transaksi. Juga tersedia di menu QR pelanggan (lihat baris Self-order) |
 | Diskon | Per transaksi, nominal Rp atau persen, hanya saat bayar langsung dan hanya untuk peran berizin `transaction.discount` (default owner, manager, admin). `total_amount` tetap nilai bersih yang dibayar, subtotal dan diskon tampil di struk |
 | Struk | Terbuka otomatis setelah bayar (izin `transaction.print`), bisa dibuka dari daftar dan detail transaksi, cetak Bluetooth, unduh gambar. Tombol "Kirim" membuka WhatsApp dengan teks struk terisi (nomor Indonesia, terisi otomatis dari pelanggan terpilih). Bukan integrasi API: kasir menekan kirim sendiri |
@@ -124,6 +125,7 @@ Keputusan yang sudah diambil: urutan fase, kafe sebagai target pertama varian, i
 - Hasil insert izin di migrasi (`transaction.discount`, `transaction.cancel_approve`, `customer.*`) ke peran owner, manager, admin, cashier belum diperiksa langsung di database.
 - Halaman pengaturan peran belum dicek apakah menampilkan izin baru, yang dibutuhkan bila kasir perlu diberi diskon.
 - Alur impor dengan file Excel nyata (hanya CSV yang diuji lewat skrip).
+- Form tambah dan ubah produk (tata letak dua kolom, bilah aksi menempel, upload foto, validasi): hanya build dan logika `slugify` serta pesan validasi yang dicek.
 - Alur menu QR dengan opsi: dialog pilihan di perangkat pelanggan, keranjang tersimpan (pelanggan yang keranjangnya dibuat sebelum fitur ini tetap berfungsi lewat fallback kunci baris), dan pesanan tambahan ke pesanan yang masih aktif. Hanya logika API dan build yang dicek.
 
 ## 10. Catatan operasional

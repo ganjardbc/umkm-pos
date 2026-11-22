@@ -1,11 +1,25 @@
 <template>
   <div class="space-y-3">
-    <p
+    <div
       v-if="groups.length === 0"
-      class="text-sm text-gray-400"
+      class="space-y-2"
     >
-      Belum ada opsi. Tambahkan grup seperti "Ukuran" (wajib pilih satu) atau "Topping" (boleh banyak).
-    </p>
+      <p class="text-sm text-gray-400">
+        Belum ada pilihan. Mulai dari contoh, lalu sesuaikan nama dan harganya:
+      </p>
+      <div class="flex flex-wrap gap-2">
+        <Button
+          v-for="preset in presets"
+          :key="preset.name"
+          :label="preset.name"
+          icon="pi pi-plus"
+          size="small"
+          severity="secondary"
+          variant="outlined"
+          @click="addPreset(preset)"
+        />
+      </div>
+    </div>
 
     <div
       v-for="(group, groupIndex) in groups"
@@ -92,6 +106,42 @@
 import type { OptionGroupInput } from '@/modules/product-lists/helpers/options.ts';
 
 const groups = defineModel<OptionGroupInput[]>({ required: true });
+
+const presets: OptionGroupInput[] = [
+  {
+    name: 'Ukuran',
+    is_required: true,
+    allow_multiple: false,
+    options: [
+      { name: 'Small', price_delta: 0 },
+      { name: 'Medium', price_delta: 3000 },
+      { name: 'Large', price_delta: 6000 },
+    ],
+  },
+  {
+    name: 'Topping',
+    is_required: false,
+    allow_multiple: true,
+    options: [
+      { name: 'Boba', price_delta: 3000 },
+      { name: 'Keju', price_delta: 2000 },
+    ],
+  },
+  {
+    name: 'Level gula',
+    is_required: true,
+    allow_multiple: false,
+    options: [
+      { name: 'Normal', price_delta: 0 },
+      { name: 'Kurang manis', price_delta: 0 },
+      { name: 'Tanpa gula', price_delta: 0 },
+    ],
+  },
+];
+
+const addPreset = (preset: OptionGroupInput) => {
+  groups.value.push(JSON.parse(JSON.stringify(preset)));
+};
 
 const addGroup = () => {
   groups.value.push({
