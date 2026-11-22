@@ -47,6 +47,12 @@
         <div class="col-span-2 text-right">{{ item.qty }}x</div>
         <div class="col-span-2 text-right">{{ formatCurrency(item.price_snapshot) }}</div>
         <div class="col-span-2 text-right font-semibold">{{ formatCurrency(item.subtotal) }}</div>
+        <div
+          v-if="formatItemOptions(item)"
+          class="col-span-12 text-[11px] text-gray-500"
+        >
+          + {{ formatItemOptions(item) }}
+        </div>
       </div>
     </div>
 
@@ -99,6 +105,8 @@
 </template>
 
 <script lang="ts" setup>
+import { formatItemOptions } from '../utils/receiptGenerator';
+
 defineProps({
   transaction: {
     type: Object,

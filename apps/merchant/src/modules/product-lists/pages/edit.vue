@@ -118,6 +118,9 @@
             {{ $form.is_active.error?.message }}
           </Message>
         </UiFormGroup>
+        <UiFormGroup label="Opsi Produk (Varian dan Tambahan)" variant="vertical">
+          <OptionGroupsEditor v-model="optionGroups" />
+        </UiFormGroup>
         <UiFormGroup label="Gambar Produk" variant="vertical">
           <div class="flex items-start gap-4">
             <div
@@ -189,6 +192,8 @@ import { getErrorMessage } from '@umkm-pos/ui/helpers/utils';
 import { showToast } from '@umkm-pos/ui/helpers/toast';
 import { showLoading, hideLoading } from '@umkm-pos/ui/helpers/loading';
 import { putProduct, getDetailProduct, setProductImage, removeProductImage } from '@/modules/product-lists/services/api';
+import OptionGroupsEditor from '@/modules/product-lists/components/OptionGroupsEditor.vue';
+import { toOptionGroupInputs, validateOptionGroups, type OptionGroupInput } from '@/modules/product-lists/helpers/options.ts';
 import { getOutlet } from '@/helpers/auth.ts';
 import { getActiveCategories } from '@/modules/product-categories/services/api';
 import { useFileUpload } from '@umkm-pos/ui/composables/useFileUpload';
@@ -200,6 +205,7 @@ const router = useRouter();
 const productID = computed(() => route.params.id as string);
 
 const isLoaded = ref(false);
+const optionGroups = ref<OptionGroupInput[]>([]);
 const initialValues = ref<FormEdit>({
   name: '',
   category_id: null,
@@ -228,6 +234,11 @@ const resolver = ref(zodResolver(
 
 const onFormSubmit = async ({ valid, values }: any) => {
   if (valid) {
+    const optionError = validateOptionGroups(optionGroups.value);
+    if (optionError) {
+      showToast({ type: 'error', title: 'Opsi Belum Lengkap', message: optionError });
+      return;
+    }
     try {
       showLoading();
 
@@ -239,6 +250,8 @@ const onFormSubmit = async ({ valid, values }: any) => {
         cost: values?.cost,
         min_stock: values?.min_stock,
         is_active: values?.is_active,
+        // Always sent: the API replaces all groups, so removals must be explicit.
+        option_groups: optionGroups.value,
       };
       const response = await putProduct(productID.value, payload);
       const { success } = response?.data || {};
@@ -275,7 +288,8 @@ const fetchDetail = async () => {
       outlet_id: getOutlet()?.id,
     });
     const { data } = response?.data || {};
-    const { name, category_id, price, cost, min_stock, is_active, thumbnail, upload } = data || {};
+    const { name, category_id, price, cost, min_stock, is_active, thumbnail, upload, product_option_groups } = data || {};
+    optionGroups.value = toOptionGroupInputs(product_option_groups);
 
     initialValues.value = {
       name,

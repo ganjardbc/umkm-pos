@@ -88,6 +88,22 @@
           </div>
         </div>
 
+        <div v-if="productDetail.product_option_groups?.length">
+          <label class="text-sm font-medium text-gray-500">Opsi Produk</label>
+          <ul class="mt-1 space-y-1 text-sm">
+            <li
+              v-for="group in productDetail.product_option_groups"
+              :key="group.id"
+            >
+              <span class="font-semibold">{{ group.name }}</span>
+              <span class="text-gray-400">
+                ({{ group.is_required ? 'wajib' : 'opsional' }}, {{ group.allow_multiple ? 'banyak' : 'pilih satu' }}):
+              </span>
+              {{ group.product_options.map((o: any) => Number(o.price_delta) > 0 ? `${o.name} +${getCurrency(o.price_delta)}` : o.name).join(', ') }}
+            </li>
+          </ul>
+        </div>
+
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label class="text-sm font-medium text-gray-500">Status</label>

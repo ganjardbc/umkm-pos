@@ -1,4 +1,4 @@
-import type { ReceiptData } from './receiptGenerator';
+import { formatItemOptions, type ReceiptData } from './receiptGenerator';
 
 const rupiah = (amount: string | number): string =>
   new Intl.NumberFormat('id-ID', {
@@ -27,6 +27,8 @@ export const buildReceiptText = (t: ReceiptData): string => {
 
   for (const item of t.transaction_items ?? []) {
     lines.push(`${item.qty}x ${item.product_name_snapshot}`);
+    const optionsText = formatItemOptions(item);
+    if (optionsText) lines.push(`   + ${optionsText}`);
     lines.push(`   ${rupiah(item.price_snapshot)} = ${rupiah(item.subtotal)}`);
   }
   lines.push('------------------------');

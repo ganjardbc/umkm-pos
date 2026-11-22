@@ -152,6 +152,9 @@
             {{ $form.is_active.error?.message }}
           </Message>
         </UiFormGroup>
+        <UiFormGroup label="Opsi Produk (Varian dan Tambahan)" variant="vertical">
+          <OptionGroupsEditor v-model="optionGroups" />
+        </UiFormGroup>
         <UiFormGroup label="Gambar Produk" variant="vertical">
           <div class="flex items-start gap-4">
             <div
@@ -226,10 +229,14 @@ import { getOutlet } from '@/helpers/auth.ts';
 import { postProduct, setProductImage } from '@/modules/product-lists/services/api';
 import { getActiveCategories } from '@/modules/product-categories/services/api';
 import { useFileUpload } from '@umkm-pos/ui/composables/useFileUpload';
+import OptionGroupsEditor from '@/modules/product-lists/components/OptionGroupsEditor.vue';
+import { validateOptionGroups, type OptionGroupInput } from '@/modules/product-lists/helpers/options.ts';
 import UiCard from '@umkm-pos/ui/components/UiCard.vue';
 import UiFormGroup from '@umkm-pos/ui/components/UiFormGroup.vue';
 
 const router = useRouter();
+
+const optionGroups = ref<OptionGroupInput[]>([]);
 
 const initialValues = ref<FormCreate>({
   slug: '',
@@ -262,6 +269,11 @@ const resolver = ref(zodResolver(
 
 const onFormSubmit = async ({ valid, values }: any) => {
   if (valid) {
+    const optionError = validateOptionGroups(optionGroups.value);
+    if (optionError) {
+      showToast({ type: 'error', title: 'Opsi Belum Lengkap', message: optionError });
+      return;
+    }
     try {
       showLoading();
 
@@ -276,6 +288,7 @@ const onFormSubmit = async ({ valid, values }: any) => {
         stock_qty: values?.stock_qty,
         min_stock: values?.min_stock,
         is_active: values?.is_active,
+        option_groups: optionGroups.value,
       };
       const response = await postProduct(payload);
       const { success, data } = response?.data || {};

@@ -110,8 +110,16 @@
             </div>
           </div>
 
-          <div class="text-lg font-bold text-primary dark:text-primary-400">
-            {{ getCurrency(product.price) }}
+          <div class="flex items-center justify-between gap-2">
+            <div class="text-lg font-bold text-primary dark:text-primary-400">
+              {{ getCurrency(product.price) }}
+            </div>
+            <span
+              v-if="product.product_option_groups?.length"
+              class="text-xs text-gray-400"
+            >
+              <i class="pi pi-sliders-h" /> Ada pilihan
+            </span>
           </div>
         </div>
       </UiCard>
@@ -127,6 +135,12 @@
       no-padding
       @page="onPageChange"
     />
+
+    <ProductOptionDialog
+      v-model:visibility="showOptionDialog"
+      :product="optionProduct"
+      @confirm="onOptionsConfirmed"
+    />
   </div>
 </template>
 
@@ -139,6 +153,8 @@ import { getOutlet } from '@/helpers/auth.ts';
 import { getListProduct } from '@/modules/product-lists/services/api';
 import { showToast } from '@umkm-pos/ui/helpers/toast';
 import { useCashierStore } from '@/modules/cashier/stores';
+import type { CartOption } from '@/modules/cashier/stores/state.ts';
+import ProductOptionDialog from '@/modules/cashier/components/ProductOptionDialog.vue';
 import UiSearch from '@umkm-pos/ui/components/UiSearch.vue';
 import UiPagination from '@umkm-pos/ui/components/UiPagination.vue';
 import UiCard from '@umkm-pos/ui/components/UiCard.vue';
@@ -246,6 +262,12 @@ const selectCategory = (categoryId: string | null) => {
   fetchProduct();
 };
 
+const optionProduct = ref<any>(null);
+const showOptionDialog = ref(false);
+const onOptionsConfirmed = (options: CartOption[]) => {
+  posStore.addToCart(optionProduct.value, options);
+};
+
 // Cart
 const addProductToCart = (product: any) => {
   if (!props.isUserInShift) {
@@ -258,7 +280,12 @@ const addProductToCart = (product: any) => {
   }
 
   if (product.stock_qty > 0) {
-    posStore.addToCart(product);
+    if (product.product_option_groups?.length) {
+      optionProduct.value = product;
+      showOptionDialog.value = true;
+    } else {
+      posStore.addToCart(product);
+    }
   } else {
     showToast({
       type: 'warn',

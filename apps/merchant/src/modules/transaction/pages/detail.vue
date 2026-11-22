@@ -83,6 +83,9 @@
                   <p class="font-semibold text-gray-900 dark:text-gray-50 mt-1">
                     {{ item.product_name_snapshot }}
                   </p>
+                  <p v-if="item.options_snapshot?.length" class="mt-1 text-sm text-gray-500">
+                    + {{ item.options_snapshot.map((option: any) => option.name).join(', ') }}
+                  </p>
                   <p v-if="item.customer_note" class="mt-1 flex items-center">
                     <i class="pi pi-comment mr-1 text-gray-500" />
                     <span class="text-sm text-gray-500">

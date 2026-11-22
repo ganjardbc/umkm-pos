@@ -24,6 +24,7 @@ Tanda di dokumen ini:
 | Stok | Stok per outlet, stok awal dan stok minimum bisa diisi saat membuat produk (nilai awal 0), penyesuaian stok, riwayat stok, notifikasi stok rendah |
 | Produk di kasir | Grid produk dipaginasi (`page`, `limit`), filter kategori, label "Stok: n", tag "Habis" dan "Stok Menipis", tombol coba lagi bila gagal dimuat |
 | Pembatalan | Batal transaksi lewat dialog dengan alasan **wajib** (3 sampai 255 karakter), stok dikembalikan, izin `transaction.cancel`. Kasir harus memasukkan PIN 6 digit milik manager atau owner di outlet itu. Pemegang izin `transaction.cancel_approve` (default: owner, manager, admin) membatalkan tanpa PIN. Tersimpan: `cancel_reason`, `cancelled_by`, `cancel_approved_by`, `cancelled_at`. Alasan tampil di halaman detail. PIN diatur di Pengaturan, "PIN Persetujuan" (bcrypt, `users.pin_hash`). 5 PIN salah mengunci pembatalan oleh pengguna itu 5 menit |
+| Varian dan modifier | Grup opsi per produk (nama, wajib atau opsional, pilih satu atau banyak) berisi opsi dengan tambahan harga, contoh "Ukuran" (wajib, satu) dan "Topping" (opsional, banyak). Diatur di form produk (tambah dan ubah), tampil di detail produk. Di kasir, produk beropsi membuka dialog pilihan (grup wajib satu pilihan langsung terisi opsi pertama). Baris keranjang dibedakan menurut produk dan opsi, stok tetap dihitung per produk. Harga satuan di transaksi sudah termasuk opsi, pilihan dibekukan di `transaction_items.options_snapshot`, dan tampil di struk (layar, gambar, Bluetooth, WhatsApp) dan detail transaksi. **Belum didukung di self-order pelanggan** (lihat catatan) |
 | Diskon | Diskon per transaksi (nominal Rp atau persen) di pembayaran kasir, hanya untuk peran dengan izin `transaction.discount` (default: owner, manager, admin). Hanya saat bayar langsung. Disimpan di `transactions` (`discount_type`, `discount_value`, `discount_amount`), `total_amount` tetap nilai bersih yang dibayar. Tampil di struk (layar, gambar, Bluetooth) |
 | Panduan awal | Halaman setelah login menampilkan langkah awal (produk pertama, staf, transaksi pertama), hanya untuk langkah yang diizinkan peran. Statis, tidak mendeteksi langkah yang sudah selesai |
 | Outlet dan akses | Multi-outlet, RBAC per outlet berbasis permission, meja (`store_tables`) |
@@ -38,7 +39,7 @@ Catatan migrasi: kolom `cancel_reason` butuh `prisma migrate deploy` di setiap e
 
 ## 3. Yang belum ada [kode]
 Terverifikasi: schema Prisma (`apps/api/prisma/schema.prisma`) tidak punya model atau kolom untuk diskon, varian, modifier, SKU, barcode, pajak, refund, void, loyalty, atau layar dapur. Tidak ada modul API maupun halaman merchant untuk impor massal atau WhatsApp.
-- varian, modifier (tambahan topping, ukuran), SKU, barcode atau pemindai;
+- SKU, barcode atau pemindai, stok per opsi atau bahan baku (stok tetap per produk);
 - promo otomatis atau diskon per item, diskon pada pesanan bayar-nanti, pajak, multi-satuan produk;
 - refund dan void dengan persetujuan manager. Pembatalan sudah memakai PIN manager dan alasan wajib. Void dan refund (transaksi sudah dibayar yang menyentuh kas shift) belum ada;
 - pisah bayar (split bill);
@@ -46,6 +47,8 @@ Terverifikasi: schema Prisma (`apps/api/prisma/schema.prisma`) tidak punya model
 - impor produk massal;
 - struk digital lewat email atau tautan publik (WhatsApp sudah ada sebagai teks, tanpa lampiran atau tautan);
 - layar dapur (KDS). Status pesanan ada (`order_status`), tetapi tidak ada halaman atau modul dapur.
+
+Catatan self-order dan varian: halaman katalog pelanggan belum punya pilihan opsi. Produk dengan grup opsi **wajib** ditolak API saat dipesan lewat self-order (`Option group "..." is required for "..."`), sedangkan produk dengan opsi opsional bisa dipesan tanpa opsi. Jangan aktifkan grup wajib pada produk yang dijual lewat self-order sampai katalog mendukungnya.
 
 Sengaja belum ada (sesuai catatan proyek): akuntansi, pajak, CRM, loyalty, pembelian ke supplier, multi-gudang, analitik lanjutan.
 
@@ -84,7 +87,7 @@ Selisih yang bisa dijual Insell: shift dan kas opsional di paket dasar, self-ord
 
 ## 7. Rencana bertahap (usulan)
 **Fase 1, kemudahan pakai (murah, dampak tiap transaksi)**
-Status 2026-11-22: Fase 2 butir 8 (diskon), 10 (PIN manager), dan 11 (struk WhatsApp) juga sudah dikerjakan, lihat di bawah. Fase 1 butir 1 sampai 4, 6, dan 7 sudah dikerjakan dan di-commit (build merchant dan tes API transaksi lolos, belum diuji manual di browser). Butir 6: alasan batal opsional, disimpan di `transactions.cancel_reason`, migrasi `20261122000000_add_cancel_reason_to_transactions` belum dijalankan ke database mana pun. Butir 5 di-hold bersama offline sync.
+Status 2026-11-22: Fase 2 butir 8 (diskon), 9 (varian dan modifier), 10 (PIN manager), dan 11 (struk WhatsApp) juga sudah dikerjakan, lihat di bawah. Fase 1 butir 1 sampai 4, 6, dan 7 sudah dikerjakan dan di-commit (build merchant dan tes API transaksi lolos, belum diuji manual di browser). Butir 6: alasan batal opsional, disimpan di `transactions.cancel_reason`, migrasi `20261122000000_add_cancel_reason_to_transactions` belum dijalankan ke database mana pun. Butir 5 di-hold bersama offline sync.
 
 1. ✅ Tombol "Uang Pas" di pembayaran tunai (temuan 1). Pembulatan nominal cepat selain tombol pecahan yang sudah ada belum dibuat.
 2. ✅ Konfirmasi ganda dihapus. Struk terbuka otomatis setelah bayar, dengan tombol cetak (temuan 2, 3).
@@ -98,7 +101,7 @@ Status 2026-11-22: Fase 2 butir 8 (diskon), 10 (PIN manager), dan 11 (struk What
 
 **Fase 2, kebutuhan harian umum**
 8. ✅ Diskon sederhana per transaksi (nominal atau persen), disimpan sebagai snapshot di transaksi. Dibatasi izin `transaction.discount`, hanya saat bayar langsung. Belum ada: diskon pada pesanan bayar-nanti, batas maksimum diskon per peran, laporan total diskon, dan UI untuk memberi izin ke peran kasir (lewat pengaturan peran).
-9. Varian dan modifier produk (ukuran, topping) untuk kafe, dengan harga snapshot per item.
+9. ✅ Varian dan modifier produk (ukuran, topping) untuk kafe, dengan harga snapshot per item. Belum ada: pilihan opsi di katalog self-order pelanggan, mengubah harga atau menonaktifkan satu opsi tanpa mengganti seluruh grup (mengubah grup mengganti semua id opsi, keranjang yang sedang terbuka perlu diisi ulang), opsi per outlet, stok per opsi, preset grup, dan laporan penjualan per opsi.
 10. ✅ Otorisasi PIN manager untuk pembatalan, alasan wajib, siapa yang membatalkan dan menyetujui tersimpan di `transactions`. Belum ada: void terpisah dari pembatalan, entri di tabel audit log (audit log yang ada khusus shift), tampilan nama pembatal dan penyetuju di UI, penguncian PIN yang tahan restart dan multi-server, dan PIN untuk diskon.
 11. ✅ Struk digital lewat WhatsApp: teks struk dikirim lewat `wa.me` (bagikan, bukan integrasi API). Belum ada: tautan publik ke struk, lampiran gambar, pengiriman otomatis, dan nomor luar negeri (hanya nomor Indonesia).
 
@@ -113,7 +116,7 @@ Akuntansi, pajak, payroll, loyalty, CRM, integrasi marketplace dan pesan-antar, 
 
 ## 8. Keputusan yang dibutuhkan
 1. Setuju dengan urutan fase di atas, atau ada kebutuhan dari calon pengguna yang mengubah urutan?
-2. Varian dan modifier (butir 9): apakah target pertama kafe, atau toko oleh-oleh dulu? Ini menentukan apakah butir 9 naik atau turun.
+2. Varian dan modifier (butir 9): diputuskan kafe sebagai target pertama dan sudah dikerjakan. Toko oleh-oleh (banyak SKU, impor CSV) menunggu Fase 3.
 3. Offline sync: apakah memang mau dibangun? Bila ya, perlu desain sendiri (penyimpanan lokal, antrean, aturan shift). Bila tidak, hapus sakelar offline dan jangan diklaim.
 4. Alasan pembatalan: sekarang wajib dan disimpan di `transactions.cancel_reason` (keputusan diambil bersama butir 10). Masih terbuka: apakah juga perlu dicatat di tabel audit log umum?
 5. Apakah ada pengguna uji pertama? Fase 1 sudah selesai kecuali butir 5. Bila ada, pakai untuk uji manual dan amati langkah awal di halaman landing.

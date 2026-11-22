@@ -21,11 +21,17 @@ export interface ReceiptData {
   transaction_items: Array<{
     id: string;
     product_name_snapshot: string;
+    options_snapshot?: Array<{ group_name: string; name: string; price_delta: number }> | null;
     price_snapshot: string | number;
     qty: number;
     subtotal: string | number;
   }>;
 }
+
+// "Large, Boba, Keju" for the options chosen on a line; '' when there are none.
+export const formatItemOptions = (item: {
+  options_snapshot?: Array<{ name: string }> | null;
+}): string => (item.options_snapshot ?? []).map((option) => option.name).join(', ');
 
 const formatDate = (dateString: string): string => {
   if (!dateString) return '';
@@ -152,6 +158,11 @@ export const generateReceiptHTML = (transaction: ReceiptData): string => {
             <div style="text-align: right;">${item.qty}x</div>
             <div style="text-align: right;">${formatCurrency(item.price_snapshot)}</div>
             <div style="text-align: right; font-weight: bold;">${formatCurrency(item.subtotal)}</div>
+            ${
+              formatItemOptions(item)
+                ? `<div style="grid-column: 1 / -1; font-size: 11px; color: #666;">+ ${formatItemOptions(item)}</div>`
+                : ''
+            }
           </div>
         `
           )

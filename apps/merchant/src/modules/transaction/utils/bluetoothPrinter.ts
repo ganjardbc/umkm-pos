@@ -1,4 +1,4 @@
-import type { ReceiptData } from './receiptGenerator';
+import { formatItemOptions, type ReceiptData } from './receiptGenerator';
 
 // Common printer service UUIDs
 const PRINTER_SERVICES = [
@@ -363,6 +363,8 @@ export const printReceipt = async (transaction: ReceiptData, paperSize: '58mm' |
   for (const item of items) {
     // Print item name
     encoder.line(item.product_name_snapshot);
+    const optionsText = formatItemOptions(item);
+    if (optionsText) encoder.line(`  + ${optionsText}`);
 
     // Print qty x price and item total
     const leftText = `  ${item.qty}x ${formatCurrency(item.price_snapshot)}`;

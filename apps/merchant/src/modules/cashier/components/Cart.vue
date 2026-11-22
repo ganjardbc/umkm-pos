@@ -54,7 +54,7 @@
       >
         <UiCard
           v-for="item in posStore.cartItems"
-          :key="item.id"
+          :key="item.key"
           class="dark:bg-dark!"
         >
           <div class="space-y-4">
@@ -82,6 +82,17 @@
                 <div class="text-sm text-gray-400">
                   {{ item.category }}
                 </div>
+                <ul
+                  v-if="item.options?.length"
+                  class="text-xs text-gray-500 mt-1"
+                >
+                  <li
+                    v-for="option in item.options"
+                    :key="option.option_id"
+                  >
+                    {{ option.group_name }}: {{ option.name }}<template v-if="option.price_delta > 0"> (+{{ getCurrency(option.price_delta) }})</template>
+                  </li>
+                </ul>
                 <div class="text-sm font-semibold text-primary dark:text-primary-400 mt-1">
                   {{ getCurrency(item.price) }}
                 </div>
@@ -94,7 +105,7 @@
                   text
                   rounded
                   size="small"
-                  @click="removeItem(item.id)"
+                  @click="removeItem(item.key)"
                 />
                 
                 <div class="flex items-center gap-2">
@@ -103,7 +114,7 @@
                     size="small"
                     rounded
                     outlined
-                    @click="decrementQuantity(item.id)"
+                    @click="decrementQuantity(item.key)"
                   />
                   <span class="w-8 text-center font-semibold">
                     {{ item.quantity }}
@@ -113,8 +124,8 @@
                     size="small"
                     rounded
                     outlined
-                    :disabled="item.quantity >= item.stock_qty"
-                    @click="incrementQuantity(item.id)"
+                    :disabled="posStore.productQtyInCart(item.id) >= item.stock_qty"
+                    @click="incrementQuantity(item.key)"
                   />
                 </div>
               </div>
@@ -508,7 +519,8 @@ const onCheckout = async () => {
       items: posStore.cartItems.map(item => ({
         product_id: item.id,
         qty: item.quantity,
-        customer_note: item.customer_note || undefined
+        customer_note: item.customer_note || undefined,
+        option_ids: item.options?.length ? item.options.map(o => o.option_id) : undefined,
       }))
     };
 
@@ -586,7 +598,8 @@ const submitCreateOrder = async () => {
       items: posStore.cartItems.map(item => ({
         product_id: item.id,
         qty: item.quantity,
-        customer_note: item.customer_note || undefined
+        customer_note: item.customer_note || undefined,
+        option_ids: item.options?.length ? item.options.map(o => o.option_id) : undefined,
       }))
     };
 
@@ -628,7 +641,8 @@ const onAddItemsToOrder = async () => {
       items: posStore.cartItems.map(item => ({
         product_id: item.id,
         qty: item.quantity,
-        customer_note: item.customer_note || undefined
+        customer_note: item.customer_note || undefined,
+        option_ids: item.options?.length ? item.options.map(o => o.option_id) : undefined,
       })),
     };
 
