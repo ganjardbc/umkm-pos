@@ -52,6 +52,13 @@
             />
             <div class="flex flex-wrap gap-2">
               <Button
+                size="small"
+                rounded
+                class="text-xs"
+                label="Uang Pas"
+                @click="setExactAmount"
+              />
+              <Button
                 v-for="bill in cashBills"
                 :key="bill"
                 size="small"
@@ -141,7 +148,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { getCurrency } from '@umkm-pos/ui/helpers/utils';
-import { showConfirm } from '@umkm-pos/ui/helpers/toast';
 import UiFormGroup from '@umkm-pos/ui/components/UiFormGroup.vue';
 
 const visibility = defineModel<boolean>('visibility', { required: true });
@@ -178,19 +184,15 @@ const addBill = (value: number) => {
   calculatorBuffer.value = String(Math.floor(next));
 };
 
+const setExactAmount = () => {
+  cashAmount.value = props.totalAmount;
+  calculatorBuffer.value = String(Math.floor(props.totalAmount));
+};
+
+// "Bayar Sekarang" is already the explicit confirmation; no second dialog.
 const onConfirm = () => {
   if (isCashInsufficient.value) return;
-
-  showConfirm({
-    header: 'Konfirmasi Pembayaran',
-    message: 'Apakah Anda yakin ingin memproses pembayaran ini?',
-    rejectLabel: 'Batal',
-    acceptLabel: 'Konfirmasi',
-    type: 'info',
-    accept: () => {
-      emit('confirm');
-    },
-  });
+  emit('confirm');
 };
 
 const syncCalculatorToAmount = () => {

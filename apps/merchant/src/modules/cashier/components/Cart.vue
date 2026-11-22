@@ -140,7 +140,12 @@
 
         <Divider />
 
-        <UiFormGroup label="Meja" variant="vertical">
+        <!-- Retail outlets without tables never see this field. -->
+        <UiFormGroup
+          v-if="isLoadingTables || tableOptions.length > 0"
+          label="Meja"
+          variant="vertical"
+        >
           <div class="flex gap-2">
             <Dropdown
               v-model="transactionForm.table_id"
@@ -150,7 +155,7 @@
               placeholder="Pilih meja"
               class="w-full"
               :loading="isLoadingTables"
-              :disabled="!transactionForm.outlet_id || tableOptions.length === 0"
+              :disabled="!transactionForm.outlet_id"
               show-clear
             />
             <Button
@@ -162,12 +167,6 @@
               @click="transactionForm.table_id = ''"
             />
           </div>
-          <p
-            v-if="!isLoadingTables && transactionForm.outlet_id && tableOptions.length === 0"
-            class="text-xs text-gray-400"
-          >
-            Tidak ada meja aktif untuk outlet ini.
-          </p>
         </UiFormGroup>
       </div>
     </div>
@@ -282,6 +281,12 @@
     :total-amount="posStore.cartTotal"
     @confirm="onCheckout"
   />
+
+  <ReceiptModal
+    v-if="isCanPrint"
+    v-model:visibility="showReceiptModal"
+    :selected="receiptData"
+  />
 </template>
 
 <script setup lang="ts">
@@ -296,8 +301,17 @@ import { getOutletTables, postTransaction, patchTransactionItems } from '@/modul
 import UiCard from '@umkm-pos/ui/components/UiCard.vue';
 import { useShift } from '@/modules/shift/composables/useShift.ts';
 import PaymentModal from '@/modules/transaction/components/PaymentModal.vue';
+import ReceiptModal from '@/modules/transaction/components/ReceiptModal.vue';
+import type { ReceiptData } from '@/modules/transaction/utils/receiptGenerator.ts';
+import { PRINT } from '@/modules/transaction/services/rbac.ts';
+import { getPersonalInformation, isHasPermission } from '@/helpers/auth.ts';
 
 const { shiftRequired } = useShift();
+
+// Receipt shown right after a successful payment
+const isCanPrint = computed(() => isHasPermission(PRINT));
+const showReceiptModal = ref(false);
+const receiptData = ref({} as ReceiptData);
 
 const props = defineProps({
   isUserInShift: {
@@ -490,6 +504,17 @@ const onCheckout = async () => {
         title: 'Transaksi Berhasil',
         message: 'Transaksi telah berhasil diproses',
       });
+
+      if (isCanPrint.value && response.data.data) {
+        // The create response has no outlet/user relations; fill them from the session.
+        const { outlet, user } = getPersonalInformation();
+        receiptData.value = {
+          ...response.data.data,
+          outlets: { name: outlet?.name, location: outlet?.location },
+          users: { name: user?.name },
+        };
+        showReceiptModal.value = true;
+      }
 
       posStore.clearCart();
       openCloseCart();

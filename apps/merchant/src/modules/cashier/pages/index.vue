@@ -4,6 +4,19 @@
     message="Memuat shift..."
   />
 
+  <!-- Shift failed to load: don't show the open-shift screen as if no shift exists -->
+  <div
+    v-else-if="shiftLoadError"
+    class="flex flex-col items-center gap-3 py-12"
+  >
+    <span>Shift gagal dimuat. Periksa koneksi lalu coba lagi.</span>
+    <Button
+      label="Coba Lagi"
+      icon="pi pi-refresh"
+      @click="retryFetchShift"
+    />
+  </div>
+
   <!-- No Active Shift -->
   <OpenShift
     v-else-if="shiftRequired && !isShiftOpen"
@@ -93,7 +106,10 @@ const clearForm = () => {
   posStore.clearCart();
 };
 
+const shiftLoadError = ref(false);
+
 const fetchOutletShift = async () => {
+  shiftLoadError.value = false;
   try {
     const response = await getOutletShift(outlet.id);
     const shiftData = response?.data?.data || {};
@@ -103,9 +119,15 @@ const fetchOutletShift = async () => {
     }
   } catch (error) {
     console.error('Failed to fetch outlet shift:', error);
+    shiftLoadError.value = true;
   } finally {
     isShiftLoaded.value = true;
   }
+};
+
+const retryFetchShift = () => {
+  isShiftLoaded.value = false;
+  fetchOutletShift();
 };
 
 onMounted(() => {

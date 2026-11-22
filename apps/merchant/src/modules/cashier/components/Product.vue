@@ -33,7 +33,20 @@
     </div>
 
     <div
-      v-if="!loading && products && products.length === 0"
+      v-if="!loading && loadError"
+      class="flex flex-col items-center gap-3 py-6"
+    >
+      <span>Produk gagal dimuat.</span>
+      <Button
+        label="Coba Lagi"
+        icon="pi pi-refresh"
+        size="small"
+        @click="fetchProduct"
+      />
+    </div>
+
+    <div
+      v-else-if="!loading && products && products.length === 0"
     >
       <span class="w-full text-center flex justify-center">
         Produk tidak ditemukan.
@@ -71,7 +84,13 @@
           </div>
 
           <Tag
-            v-if="product.stock_qty <= product.min_stock"
+            v-if="product.stock_qty <= 0"
+            severity="danger"
+            value="Habis"
+            class="absolute top-0 right-0 text-xs!"
+          />
+          <Tag
+            v-else-if="product.stock_qty <= product.min_stock"
             severity="warn"
             value="Stok Menipis"
             class="absolute top-0 right-0 text-xs!"
@@ -86,7 +105,7 @@
                 {{ product.product_categories?.name || '-' }}
               </div>
               <div class="text-sm text-gray-400">
-                {{ product.stock_qty }}x
+                Stok: {{ product.stock_qty }}
               </div>
             </div>
           </div>
@@ -149,9 +168,12 @@ const pagination = ref({
   totalRecords: 0,
 });
 
+const loadError = ref(false);
+
 const fetchProduct = async () => {
   try {
     loading.value = true;
+    loadError.value = false;
 
     const payload = {
       page: pagination.value.page,
@@ -166,7 +188,7 @@ const fetchProduct = async () => {
     pagination.value.totalRecords = meta?.total;
     pagination.value.pageCount = meta?.totalPages;
   } catch (error) {
-    console.log(error);
+    loadError.value = true;
     showToast({
       type: 'error',
       title: 'Gagal',
