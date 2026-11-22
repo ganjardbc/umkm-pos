@@ -8,6 +8,15 @@
         class="w-full"
         @input="search"
       />
+      <Button
+        v-if="isCanAdjust"
+        icon="pi pi-list-check"
+        label="Stok Opname"
+        severity="secondary"
+        variant="outlined"
+        class="w-full md:w-[192px]"
+        @click="router.push({ name: 'stock-opname' })"
+      />
     </div>
 
     <UiLoading
@@ -67,7 +76,10 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { isHasPermission } from '@/helpers/auth.ts';
+import { ADJUST } from '@/modules/stock/services/rbac.ts';
 import { getNoTable, getErrorMessage, formatDateTime } from '@umkm-pos/ui/helpers/utils';
 import { getOutlet } from '@/helpers/auth.ts';
 import { getListStock } from '@/modules/stock/services/api.ts';
@@ -76,6 +88,9 @@ import UiCard from '@umkm-pos/ui/components/UiCard.vue';
 import UiSearch from '@umkm-pos/ui/components/UiSearch.vue';
 import UiPagination from '@umkm-pos/ui/components/UiPagination.vue';
 import UiLoading from '@umkm-pos/ui/components/UiLoading.vue';
+
+const router = useRouter();
+const isCanAdjust = computed(() => isHasPermission(ADJUST));
 
 // Fetch Data
 const loading = ref(false);

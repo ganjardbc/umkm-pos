@@ -32,7 +32,8 @@ export class StockLogsQueryDto extends PaginationDto {
   outlet_id?: string;
 
   @ApiPropertyOptional({
-    description: 'Only inventory rows at or below min_stock (inventory endpoint)',
+    description:
+      'Only inventory rows at or below min_stock (inventory endpoint)',
     example: 'true',
   })
   @IsOptional()

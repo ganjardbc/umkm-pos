@@ -21,3 +21,11 @@ export const adjustStock = async (data: any, options: any = {}) => {
     { ...(options || {}) },
   );
 };
+
+export const postStockOpname = async (data: any, options: any = {}) => {
+  return await api.post(
+    `/api/v1/stock/opname`,
+    data,
+    { ...(options || {}) },
+  );
+};

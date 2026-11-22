@@ -9,6 +9,7 @@ describe('StockService', () => {
   const mockPrisma = {
     products: {
       findFirst: jest.fn(),
+      findMany: jest.fn(),
     },
     outlets: {
       findFirst: jest.fn(),
@@ -131,6 +132,124 @@ describe('StockService', () => {
 
       await expect(
         service.findLogs(merchantId, 'product-1', 'non-existent-outlet'),
+      ).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('opname', () => {
+    const merchantId = 'merchant-1';
+    const userId = 'user-1';
+    const outlet_id = '550e8400-e29b-41d4-a716-446655440021';
+    const A = '550e8400-e29b-41d4-a716-4466554400a1';
+    const B = '550e8400-e29b-41d4-a716-4466554400b2';
+    const C = '550e8400-e29b-41d4-a716-4466554400c3';
+
+    const setup = (stock: Record<string, number | undefined>) => {
+      mockPrisma.outlets.findFirst.mockResolvedValue({ id: outlet_id });
+      mockPrisma.products.findMany.mockResolvedValue(
+        [A, B, C].map((id) => ({
+          id,
+          name: `P-${id.slice(-2)}`,
+          min_stock: 2,
+        })),
+      );
+      const tx = {
+        outlet_product_inventory: {
+          findFirst: jest.fn(async ({ where }: any) =>
+            stock[where.product_id] === undefined
+              ? null
+              : { stock_qty: stock[where.product_id] },
+          ),
+          update: jest.fn(),
+          create: jest.fn(),
+        },
+        inventory_movements: { create: jest.fn() },
+      };
+      mockPrisma.$transaction.mockImplementation(async (cb: any) => cb(tx));
+      return tx;
+    };
+
+    it('sets stock to the count, logs only real differences and links them by ref_id', async () => {
+      const tx = setup({ [A]: 10, [B]: 5, [C]: undefined });
+      const result = await service.opname(
+        {
+          outlet_id,
+          note: 'akhir bulan',
+          counts: [
+            { product_id: A, counted_qty: 7 }, // -3
+            { product_id: B, counted_qty: 5 }, // unchanged
+            { product_id: C, counted_qty: 4 }, // no inventory row yet, +4
+          ],
+        },
+        merchantId,
+        userId,
+      );
+
+      expect(result).toMatchObject({ counted: 3, adjusted: 2 });
+      expect(result.items.map((i) => i.diff)).toEqual([-3, 0, 4]);
+      expect(tx.outlet_product_inventory.update).toHaveBeenCalledTimes(1);
+      expect(tx.outlet_product_inventory.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          product_id: C,
+          stock_qty: 4,
+          min_stock: 2,
+        }),
+      });
+      const movements = tx.inventory_movements.create.mock.calls.map(
+        (c: any) => c[0].data,
+      );
+      expect(movements).toHaveLength(2);
+      expect(movements[0]).toMatchObject({
+        product_id: A,
+        change_qty: -3,
+        stock_after: 7,
+        reason: 'opname_adjustment',
+        ref_type: 'stock_opname',
+        note: 'akhir bulan',
+      });
+      expect(movements[0].ref_id).toBe(result.opname_id);
+      expect(movements[1].ref_id).toBe(result.opname_id);
+    });
+
+    it('rejects a product listed twice', async () => {
+      setup({});
+      await expect(
+        service.opname(
+          {
+            outlet_id,
+            counts: [
+              { product_id: A, counted_qty: 1 },
+              { product_id: A, counted_qty: 2 },
+            ],
+          },
+          merchantId,
+          userId,
+        ),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it("rejects a product that is not the merchant's", async () => {
+      setup({});
+      mockPrisma.products.findMany.mockResolvedValue([]);
+      await expect(
+        service.opname(
+          { outlet_id, counts: [{ product_id: A, counted_qty: 1 }] },
+          merchantId,
+          userId,
+        ),
+      ).rejects.toThrow(NotFoundException);
+      expect(mockPrisma.$transaction).not.toHaveBeenCalled();
+    });
+
+    it('rejects an outlet of another merchant', async () => {
+      setup({});
+      mockPrisma.outlets.findFirst.mockResolvedValue(null);
+      await expect(
+        service.opname(
+          { outlet_id, counts: [{ product_id: A, counted_qty: 1 }] },
+          merchantId,
+          userId,
+        ),
       ).rejects.toThrow(NotFoundException);
     });
   });

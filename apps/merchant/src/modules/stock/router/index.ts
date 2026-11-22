@@ -5,6 +5,7 @@ import {
 
 import {
   PERMISSIONS,
+  ADJUST,
 } from '@/modules/stock/services/rbac.ts';
 
 export default [
@@ -25,6 +26,33 @@ export default [
         {
           label: 'Stok',
           route: PREFIX_ROUTE_PATH,
+          isActive: true,
+        },
+      ]
+    }
+  },
+  {
+    path: `${PREFIX_ROUTE_PATH}/opname`,
+    name: `${PREFIX_ROUTE_NAME}-opname`,
+    component: () => import('@/modules/stock/pages/opname.vue'),
+    meta: {
+      title: 'Stok Opname',
+      layout: 'default',
+      permission: [ADJUST],
+      breadcrumbs: [
+        {
+          label: 'Beranda',
+          route: '/landing',
+          isActive: false,
+        },
+        {
+          label: 'Stok',
+          route: PREFIX_ROUTE_PATH,
+          isActive: false,
+        },
+        {
+          label: 'Stok Opname',
+          route: `${PREFIX_ROUTE_PATH}/opname`,
           isActive: true,
         },
       ]

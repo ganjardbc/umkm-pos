@@ -4,7 +4,9 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
+import { randomUUID } from 'crypto';
 import { CreateStockAdjustmentDto } from './dto/create-stock-adjustment.dto';
+import { CreateStockOpnameDto } from './dto/create-stock-opname.dto';
 import { PaginationDto } from '../common/dto/pagination.dto';
 
 const INCREASE_REASONS = new Set([
@@ -278,6 +280,127 @@ export class StockService {
         stock_qty: updatedInventory.stock_qty,
       },
       movement,
+    };
+  }
+
+  /**
+   * Stock opname: set the outlet stock of every counted product to what was
+   * physically counted. The difference is computed inside the transaction from
+   * the stock at that moment, so sales made while counting are not overwritten
+   * twice. Uncounted products are untouched. One movement per changed product,
+   * all sharing the same ref_id so the session can be traced.
+   */
+  async opname(dto: CreateStockOpnameDto, merchantId: string, userId: string) {
+    const ids = dto.counts.map((c) => c.product_id);
+    if (new Set(ids).size !== ids.length) {
+      throw new BadRequestException('A product appears more than once');
+    }
+
+    const outlet = await this.prisma.outlets.findFirst({
+      where: { id: dto.outlet_id, merchant_id: merchantId },
+    });
+    if (!outlet) {
+      throw new NotFoundException(`Outlet with ID ${dto.outlet_id} not found`);
+    }
+
+    const products = await this.prisma.products.findMany({
+      where: { id: { in: ids }, merchant_id: merchantId },
+      select: { id: true, name: true, min_stock: true },
+    });
+    const productById = new Map(products.map((p) => [p.id, p]));
+    const unknown = ids.filter((id) => !productById.has(id));
+    if (unknown.length > 0) {
+      throw new NotFoundException(
+        `Product(s) not found: ${unknown.join(', ')}`,
+      );
+    }
+
+    const opnameId = randomUUID();
+    // shortcut: one query pair per counted product inside a single transaction
+    // (<= 500 rows); batch the writes if opname sessions ever get much larger.
+    const items = await this.prisma.$transaction(
+      async (tx) => {
+        const result: Array<{
+          product_id: string;
+          name: string;
+          before: number;
+          counted: number;
+          diff: number;
+        }> = [];
+        for (const count of dto.counts) {
+          const product = productById.get(count.product_id)!;
+          const inventory = await tx.outlet_product_inventory.findFirst({
+            where: {
+              merchant_id: merchantId,
+              outlet_id: dto.outlet_id,
+              product_id: count.product_id,
+            },
+          });
+          const before = inventory?.stock_qty ?? 0;
+          const diff = count.counted_qty - before;
+          result.push({
+            product_id: count.product_id,
+            name: product.name,
+            before,
+            counted: count.counted_qty,
+            diff,
+          });
+          if (diff === 0) continue;
+
+          if (inventory) {
+            await tx.outlet_product_inventory.update({
+              where: {
+                outlet_id_product_id: {
+                  outlet_id: dto.outlet_id,
+                  product_id: count.product_id,
+                },
+              },
+              data: {
+                stock_qty: count.counted_qty,
+                updated_by: userId,
+                updated_at: new Date(),
+              },
+            });
+          } else {
+            await tx.outlet_product_inventory.create({
+              data: {
+                merchant_id: merchantId,
+                outlet_id: dto.outlet_id,
+                product_id: count.product_id,
+                stock_qty: count.counted_qty,
+                min_stock: product.min_stock ?? 0,
+                is_active: true,
+                created_by: userId,
+                updated_by: userId,
+              },
+            });
+          }
+          await tx.inventory_movements.create({
+            data: {
+              merchant_id: merchantId,
+              outlet_id: dto.outlet_id,
+              product_id: count.product_id,
+              change_qty: diff,
+              stock_after: count.counted_qty,
+              reason: 'opname_adjustment',
+              ref_type: 'stock_opname',
+              ref_id: opnameId,
+              note: dto.note ?? null,
+              created_by: userId,
+              updated_by: userId,
+            },
+          });
+        }
+        return result;
+      },
+      { timeout: 30000 },
+    );
+
+    return {
+      opname_id: opnameId,
+      counted: items.length,
+      adjusted: items.filter((i) => i.diff !== 0).length,
+      items,
     };
   }
 }

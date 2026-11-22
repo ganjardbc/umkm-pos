@@ -7,6 +7,7 @@ import {
 } from '@nestjs/swagger';
 import { StockService } from './stock.service';
 import { CreateStockAdjustmentDto } from './dto/create-stock-adjustment.dto';
+import { CreateStockOpnameDto } from './dto/create-stock-opname.dto';
 import { StockLogsQueryDto } from './dto/stock-logs-query.dto';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { RequirePermission } from '../common/decorators/require-permission.decorator';
@@ -68,6 +69,24 @@ export class StockController {
       lowStockOnly === 'true',
       pager,
     );
+  }
+
+  @Post('opname')
+  @RequirePermission('stock.adjust')
+  @ApiOperation({
+    summary: 'Stock opname: set counted products to their physical count',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Differences applied; returns per-product before/counted/diff',
+  })
+  @ApiResponse({ status: 404, description: 'Outlet or product not found' })
+  opname(
+    @Body() dto: CreateStockOpnameDto,
+    @CurrentUser('merchant_id') merchantId: string,
+    @CurrentUser('id') userId: string,
+  ) {
+    return this.stockService.opname(dto, merchantId, userId);
   }
 
   @Post('adjust')
