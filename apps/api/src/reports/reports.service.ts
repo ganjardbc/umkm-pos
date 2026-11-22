@@ -45,37 +45,45 @@ export class ReportsService {
     return dateStr ? new Date(dateStr) : undefined;
   }
 
+  /** Like parseDate, but a date-only string (YYYY-MM-DD) covers the whole day */
+  private parseDateEnd(dateStr?: string): Date | undefined {
+    if (!dateStr) return undefined;
+    const d = new Date(dateStr);
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) d.setUTCHours(23, 59, 59, 999);
+    return d;
+  }
+
   // ─────────────────────────────────────────────
   //  Summary — aggregate from daily_reports
   // ─────────────────────────────────────────────
 
   async getSummary(merchantId: string, dto: QueryReportDto) {
     const dateFrom = this.parseDate(dto.date_from);
-    const dateTo = this.parseDate(dto.date_to);
+    const dateTo = this.parseDateEnd(dto.date_to);
     const outletIds = await this.resolveOutletIds(merchantId, dto.outlet_id);
 
-    const where: Record<string, unknown> = {
-      merchant_id: merchantId,
+    // daily_reports is never populated, so aggregate straight from transactions
+    const txWhere: Record<string, unknown> = {
       outlet_id: { in: outletIds },
+      is_cancelled: false,
     };
     if (dateFrom || dateTo) {
-      where.report_date = {
+      txWhere.created_at = {
         ...(dateFrom && { gte: dateFrom }),
         ...(dateTo && { lte: dateTo }),
       };
     }
 
-    const reports = await this.prisma.daily_reports.findMany({ where });
+    const txs = await this.prisma.transactions.findMany({
+      where: txWhere,
+      select: { total_amount: true, created_at: true },
+    });
 
-    const total_sales = reports.reduce(
-      (acc, r) => acc + Number(r.total_sales),
-      0,
-    );
-    const total_transactions = reports.reduce(
-      (acc, r) => acc + r.total_transactions,
-      0,
-    );
-    const total_days = reports.length;
+    const total_sales = txs.reduce((acc, t) => acc + Number(t.total_amount), 0);
+    const total_transactions = txs.length;
+    const total_days = new Set(
+      txs.map((t) => t.created_at.toISOString().slice(0, 10)),
+    ).size;
 
     return {
       total_sales,
@@ -95,24 +103,43 @@ export class ReportsService {
 
   async getDailyReports(merchantId: string, dto: QueryReportDto) {
     const dateFrom = this.parseDate(dto.date_from);
-    const dateTo = this.parseDate(dto.date_to);
+    const dateTo = this.parseDateEnd(dto.date_to);
     const outletIds = await this.resolveOutletIds(merchantId, dto.outlet_id);
 
-    const where: Record<string, unknown> = {
-      merchant_id: merchantId,
+    // daily_reports is never populated, so group transactions per day
+    const txWhere: Record<string, unknown> = {
       outlet_id: { in: outletIds },
+      is_cancelled: false,
     };
     if (dateFrom || dateTo) {
-      where.report_date = {
+      txWhere.created_at = {
         ...(dateFrom && { gte: dateFrom }),
         ...(dateTo && { lte: dateTo }),
       };
     }
 
-    return this.prisma.daily_reports.findMany({
-      where,
-      orderBy: { report_date: 'desc' },
+    const txs = await this.prisma.transactions.findMany({
+      where: txWhere,
+      select: { total_amount: true, created_at: true },
+      orderBy: { created_at: 'asc' },
     });
+
+    const byDay = new Map<
+      string,
+      { report_date: string; total_sales: number; total_transactions: number }
+    >();
+    for (const t of txs) {
+      const day = t.created_at.toISOString().slice(0, 10);
+      const row = byDay.get(day) ?? {
+        report_date: day,
+        total_sales: 0,
+        total_transactions: 0,
+      };
+      row.total_sales += Number(t.total_amount);
+      row.total_transactions += 1;
+      byDay.set(day, row);
+    }
+    return [...byDay.values()];
   }
 
   // ─────────────────────────────────────────────
@@ -122,7 +149,7 @@ export class ReportsService {
   async getTopProducts(merchantId: string, dto: QueryReportDto) {
     const outletIds = await this.resolveOutletIds(merchantId, dto.outlet_id);
     const dateFrom = this.parseDate(dto.date_from);
-    const dateTo = this.parseDate(dto.date_to);
+    const dateTo = this.parseDateEnd(dto.date_to);
     const limit = dto.limit ?? 10;
 
     // Get transaction IDs scoped to merchant (& optionally date range)
@@ -170,7 +197,7 @@ export class ReportsService {
   async getOutletComparison(merchantId: string, dto: QueryReportDto) {
     const outletIds = await this.resolveOutletIds(merchantId, undefined);
     const dateFrom = this.parseDate(dto.date_from);
-    const dateTo = this.parseDate(dto.date_to);
+    const dateTo = this.parseDateEnd(dto.date_to);
 
     const txWhere: Record<string, unknown> = {
       outlet_id: { in: outletIds },
@@ -233,7 +260,7 @@ export class ReportsService {
   ) {
     const outletIds = await this.resolveOutletIds(merchantId, dto.outlet_id);
     const dateFrom = this.parseDate(dto.date_from);
-    const dateTo = this.parseDate(dto.date_to);
+    const dateTo = this.parseDateEnd(dto.date_to);
 
     const txWhere: Record<string, unknown> = {
       outlet_id: { in: outletIds },
