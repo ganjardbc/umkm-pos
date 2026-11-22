@@ -18,35 +18,6 @@
       />
     </template>
 
-    <template #sidebar-footer="{ navigate }">
-      <Button
-        v-if="ENABLE_DARKMODE_TOGGLE"
-        severity="secondary"
-        variant="outlined"
-        size="medium"
-        :icon="isDark ? 'pi pi-sun' : 'pi pi-moon'"
-        @click="toggleDarkMode"
-      />
-      <router-link to="/settings">
-        <Button
-          severity="secondary"
-          variant="outlined"
-          size="medium"
-          icon="pi pi-cog"
-          @click="navigate"
-        />
-      </router-link>
-      <router-link to="/profile">
-        <Button
-          severity="secondary"
-          variant="outlined"
-          size="medium"
-          icon="pi pi-user"
-          @click="navigate"
-        />
-      </router-link>
-    </template>
-
     <template #header-right="{ isCollapsed, navigate }">
       <UiSidebarOutlet
         :is-collapsed="isCollapsed"
@@ -106,8 +77,6 @@ import { PREFIX_ROUTE_PATH as PRP_MERCHANT } from '@/modules/merchants/services/
 import { READ as MERCHANT_READ } from '@/modules/merchants/services/rbac.ts';
 import { PREFIX_ROUTE_PATH as PRP_SETTINGS } from '@/modules/settings/services/constants.ts';
 
-const ENABLE_DARKMODE_TOGGLE = false;
-
 const route = useRoute();
 const isBack = computed(() => Boolean(route.meta.isBack));
 const title = computed(() => String(route.meta.title ?? '-'));
@@ -115,7 +84,7 @@ const breadcrumbs = computed(() => Array.isArray(route.meta.breadcrumbs) ? route
 
 const outlet = getOutlet();
 
-const { isDark, toggleDarkMode, initializeTheme } = useDarkMode();
+const { initializeTheme } = useDarkMode();
 
 const authStore = useAuthStore();
 const { deviceType } = storeToRefs(authStore);
