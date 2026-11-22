@@ -23,7 +23,7 @@ Tanda di dokumen ini:
 | Shift dan kas | Buka/tutup kasir opsional per outlet, kas awal, kas akhir, selisih, kas masuk/keluar, peserta dan handoff, audit log |
 | Stok | Stok per outlet, stok awal dan stok minimum bisa diisi saat membuat produk (nilai awal 0), penyesuaian stok, riwayat stok, notifikasi stok rendah |
 | Produk di kasir | Grid produk dipaginasi (`page`, `limit`), filter kategori, label "Stok: n", tag "Habis" dan "Stok Menipis", tombol coba lagi bila gagal dimuat |
-| Pembatalan | Batal transaksi lewat dialog dengan alasan opsional (maks 255 karakter), stok dikembalikan, izin `transaction.cancel`. Alasan tersimpan di `transactions.cancel_reason` dan tampil di halaman detail |
+| Pembatalan | Batal transaksi lewat dialog dengan alasan **wajib** (3 sampai 255 karakter), stok dikembalikan, izin `transaction.cancel`. Kasir harus memasukkan PIN 6 digit milik manager atau owner di outlet itu. Pemegang izin `transaction.cancel_approve` (default: owner, manager, admin) membatalkan tanpa PIN. Tersimpan: `cancel_reason`, `cancelled_by`, `cancel_approved_by`, `cancelled_at`. Alasan tampil di halaman detail. PIN diatur di Pengaturan, "PIN Persetujuan" (bcrypt, `users.pin_hash`). 5 PIN salah mengunci pembatalan oleh pengguna itu 5 menit |
 | Diskon | Diskon per transaksi (nominal Rp atau persen) di pembayaran kasir, hanya untuk peran dengan izin `transaction.discount` (default: owner, manager, admin). Hanya saat bayar langsung. Disimpan di `transactions` (`discount_type`, `discount_value`, `discount_amount`), `total_amount` tetap nilai bersih yang dibayar. Tampil di struk (layar, gambar, Bluetooth) |
 | Panduan awal | Halaman setelah login menampilkan langkah awal (produk pertama, staf, transaksi pertama), hanya untuk langkah yang diizinkan peran. Statis, tidak mendeteksi langkah yang sudah selesai |
 | Outlet dan akses | Multi-outlet, RBAC per outlet berbasis permission, meja (`store_tables`) |
@@ -40,7 +40,7 @@ Catatan migrasi: kolom `cancel_reason` butuh `prisma migrate deploy` di setiap e
 Terverifikasi: schema Prisma (`apps/api/prisma/schema.prisma`) tidak punya model atau kolom untuk diskon, varian, modifier, SKU, barcode, pajak, refund, void, loyalty, atau layar dapur. Tidak ada modul API maupun halaman merchant untuk impor massal atau WhatsApp.
 - varian, modifier (tambahan topping, ukuran), SKU, barcode atau pemindai;
 - promo otomatis atau diskon per item, diskon pada pesanan bayar-nanti, pajak, multi-satuan produk;
-- refund dan void dengan persetujuan manager. Pembatalan hanya butuh izin, tanpa PIN, dan alasan masih opsional;
+- refund dan void dengan persetujuan manager. Pembatalan sudah memakai PIN manager dan alasan wajib. Void dan refund (transaksi sudah dibayar yang menyentuh kas shift) belum ada;
 - pisah bayar (split bill);
 - data pelanggan tetap. Yang ada hanya `customer_sessions` per kunjungan;
 - impor produk massal;
@@ -84,7 +84,7 @@ Selisih yang bisa dijual Insell: shift dan kas opsional di paket dasar, self-ord
 
 ## 7. Rencana bertahap (usulan)
 **Fase 1, kemudahan pakai (murah, dampak tiap transaksi)**
-Status 2026-11-22: Fase 2 butir 8 (diskon) dan 11 (struk WhatsApp) juga sudah dikerjakan, lihat di bawah. Fase 1 butir 1 sampai 4, 6, dan 7 sudah dikerjakan dan di-commit (build merchant dan tes API transaksi lolos, belum diuji manual di browser). Butir 6: alasan batal opsional, disimpan di `transactions.cancel_reason`, migrasi `20261122000000_add_cancel_reason_to_transactions` belum dijalankan ke database mana pun. Butir 5 di-hold bersama offline sync.
+Status 2026-11-22: Fase 2 butir 8 (diskon), 10 (PIN manager), dan 11 (struk WhatsApp) juga sudah dikerjakan, lihat di bawah. Fase 1 butir 1 sampai 4, 6, dan 7 sudah dikerjakan dan di-commit (build merchant dan tes API transaksi lolos, belum diuji manual di browser). Butir 6: alasan batal opsional, disimpan di `transactions.cancel_reason`, migrasi `20261122000000_add_cancel_reason_to_transactions` belum dijalankan ke database mana pun. Butir 5 di-hold bersama offline sync.
 
 1. ✅ Tombol "Uang Pas" di pembayaran tunai (temuan 1). Pembulatan nominal cepat selain tombol pecahan yang sudah ada belum dibuat.
 2. ✅ Konfirmasi ganda dihapus. Struk terbuka otomatis setelah bayar, dengan tombol cetak (temuan 2, 3).
@@ -99,7 +99,7 @@ Status 2026-11-22: Fase 2 butir 8 (diskon) dan 11 (struk WhatsApp) juga sudah di
 **Fase 2, kebutuhan harian umum**
 8. ✅ Diskon sederhana per transaksi (nominal atau persen), disimpan sebagai snapshot di transaksi. Dibatasi izin `transaction.discount`, hanya saat bayar langsung. Belum ada: diskon pada pesanan bayar-nanti, batas maksimum diskon per peran, laporan total diskon, dan UI untuk memberi izin ke peran kasir (lewat pengaturan peran).
 9. Varian dan modifier produk (ukuran, topping) untuk kafe, dengan harga snapshot per item.
-10. Otorisasi PIN manager untuk pembatalan dan void, alasan wajib, tercatat di audit log. Kolom alasan sudah ada (Fase 1 butir 6), tinggal mewajibkannya dan menambah PIN.
+10. ✅ Otorisasi PIN manager untuk pembatalan, alasan wajib, siapa yang membatalkan dan menyetujui tersimpan di `transactions`. Belum ada: void terpisah dari pembatalan, entri di tabel audit log (audit log yang ada khusus shift), tampilan nama pembatal dan penyetuju di UI, penguncian PIN yang tahan restart dan multi-server, dan PIN untuk diskon.
 11. ✅ Struk digital lewat WhatsApp: teks struk dikirim lewat `wa.me` (bagikan, bukan integrasi API). Belum ada: tautan publik ke struk, lampiran gambar, pengiriman otomatis, dan nomor luar negeri (hanya nomor Indonesia).
 
 **Fase 3, kontrol lanjutan**
@@ -115,7 +115,7 @@ Akuntansi, pajak, payroll, loyalty, CRM, integrasi marketplace dan pesan-antar, 
 1. Setuju dengan urutan fase di atas, atau ada kebutuhan dari calon pengguna yang mengubah urutan?
 2. Varian dan modifier (butir 9): apakah target pertama kafe, atau toko oleh-oleh dulu? Ini menentukan apakah butir 9 naik atau turun.
 3. Offline sync: apakah memang mau dibangun? Bila ya, perlu desain sendiri (penyimpanan lokal, antrean, aturan shift). Bila tidak, hapus sakelar offline dan jangan diklaim.
-4. Alasan pembatalan: saat ini opsional dan disimpan di kolom `transactions.cancel_reason` (asumsi sementara, belum diputuskan). Perlu diputuskan: wajib atau tetap opsional, dan apakah juga dicatat di audit log?
+4. Alasan pembatalan: sekarang wajib dan disimpan di `transactions.cancel_reason` (keputusan diambil bersama butir 10). Masih terbuka: apakah juga perlu dicatat di tabel audit log umum?
 5. Apakah ada pengguna uji pertama? Fase 1 sudah selesai kecuali butir 5. Bila ada, pakai untuk uji manual dan amati langkah awal di halaman landing.
 6. Panduan awal: cukup statis seperti sekarang, atau perlu mendeteksi langkah yang sudah selesai (butuh hitung produk, staf, transaksi per outlet)?
 
