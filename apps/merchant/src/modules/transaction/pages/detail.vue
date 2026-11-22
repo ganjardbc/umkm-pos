@@ -59,10 +59,6 @@
             </div>
           </template>
 
-          <div>
-            isCanAddItems: {{ isCanAddItems }}
-          </div>
-
           <div
             v-if="!transactionDetail.transaction_items?.length"
             class="flex flex-col items-center justify-center gap-2 py-12 text-center text-gray-400"
