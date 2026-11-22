@@ -36,6 +36,8 @@ export const actions = {
       const response = await getCatalogShiftStatus(outletId);
       const data = response.data?.data || {};
       (this as any).shiftStatus = {
+        // Outlets that do not use shifts accept orders without one; only an explicit false opts out.
+        shift_required: data.shift_required !== false,
         is_open: data.is_open === true,
         shift_id: data.shift_id || null,
         status: data.status || 'closed',

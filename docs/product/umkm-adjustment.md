@@ -63,6 +63,7 @@ Hasil verifikasi kode pada 2026-11-22 dan statusnya:
 | 9 | Halaman setelah login kosong | Benar, hanya logo | Diperbaiki (langkah awal) |
 | 10 | Stok awal produk selalu 0 | **Salah**, form punya kolom stok | Tidak perlu |
 | 11 | Pesanan kasir default `is_offline: true` | Benar, label menyesatkan | **Ditahan** (bagian 5) |
+| 12 | Menu QR menolak pesanan ("Outlet belum menerima pesanan karena shift kasir belum dibuka") di outlet yang tidak memakai shift | Benar: API sudah mengirim `shift_required: false`, tetapi store pelanggan membuang field itu sehingga hanya `is_open` yang dibaca | Diperbaiki |
 
 ## 5. Offline sync [kode]
 Tidak ada fitur offline di merchant app: tidak ada service worker, PWA/manifest, IndexedDB, atau antrean sinkronisasi. Di API, `is_offline` hanya kolom boolean yang disimpan apa adanya, tanpa logika sinkronisasi atau penolakan terkait shift. Kasir menginisialisasinya `true` dan `PaymentModal` menampilkan sakelar "Pesanan Offline?", jadi hampir semua transaksi kasir tersimpan `is_offline = true`.
