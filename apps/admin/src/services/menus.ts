@@ -32,7 +32,10 @@ export default [
     permissions: DASHBOARD_PERMISSIONS,
     route: PRP_DASHBOARD,
   },
+
+  // Tenant
   {
+    group: 'Tenant',
     icon: 'pi pi-shop',
     label: 'Merchant',
     featureFlag: DEFAULT_FEATURE_FLAG,
@@ -40,6 +43,7 @@ export default [
     route: PRP_MERCHANTS,
   },
   {
+    group: 'Tenant',
     icon: 'pi pi-sitemap',
     label: 'Outlet',
     featureFlag: DEFAULT_FEATURE_FLAG,
@@ -47,13 +51,17 @@ export default [
     route: PRP_OUTLET,
   },
   {
+    group: 'Tenant',
     icon: 'pi pi-users',
     label: 'Pengguna',
     featureFlag: DEFAULT_FEATURE_FLAG,
     permissions: USER_PERMISSIONS,
     route: PRP_USER,
   },
+
+  // Akses
   {
+    group: 'Akses',
     icon: 'pi pi-flag',
     label: 'Role',
     featureFlag: DEFAULT_FEATURE_FLAG,
@@ -61,6 +69,7 @@ export default [
     route: PRP_ROLE,
   },
   {
+    group: 'Akses',
     icon: 'pi pi-shield',
     label: 'Permission',
     featureFlag: DEFAULT_FEATURE_FLAG,

@@ -8,7 +8,7 @@
     </div>
     <div
       v-if="isCollapsed && !isFirst"
-      class="w-1/2 mx-auto border-b border-gray-200 mb-3"
+      class="w-1/2 mx-auto border-b border-gray-200 dark:border-white/10 mb-3"
     />
   </div>
 </template>

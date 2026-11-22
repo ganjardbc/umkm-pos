@@ -1,9 +1,21 @@
 <template>
   <div class="w-full flex flex-col gap-4">
-    <div class="w-full flex flex-col gap-1">
+    <!-- One block per run of items sharing a `group`; ungrouped items form a headerless block -->
+    <div
+      v-for="(section, sectionIndex) in sections"
+      :key="`${section.label ?? 'none'}-${sectionIndex}`"
+      class="w-full flex flex-col gap-1"
+    >
+      <SectionHeader
+        v-if="section.label"
+        :label="section.label"
+        :is-collapsed="isCollapsed"
+        :is-first="sectionIndex === 0"
+      />
+
       <!-- Menu Items -->
       <MenuItem
-        v-for="(item, index) in filteredSidebars"
+        v-for="(item, index) in section.items"
         :key="item?.label || index"
         :item="item"
         :is-collapsed="isCollapsed"
@@ -30,6 +42,7 @@ import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 import MenuItem from './UiSidebarMenuItem.vue';
 import SubmenuContainer from './UiSidebarSubmenuContainer.vue';
+import SectionHeader from './UiSidebarMenuSectionHeader.vue';
 
 interface SidebarItem {
   label: string;
@@ -37,6 +50,9 @@ interface SidebarItem {
   icon?: string;
   permissions: string[];
   featureFlag: boolean;
+  // Section header this item sits under (e.g. "Penjualan"). Consecutive items with the
+  // same group share one header; a group with no visible item shows no header.
+  group?: string;
   menus?: SidebarItem[];
 }
 
@@ -62,6 +78,17 @@ const filteredSidebars = computed(() =>
       item.featureFlag
   )
 );
+
+// Group after filtering by permission, so an empty group never leaves a lonely header.
+const sections = computed(() => {
+  const result: { label?: string; items: SidebarItem[] }[] = [];
+  for (const item of filteredSidebars.value) {
+    const last = result[result.length - 1];
+    if (last && last.label === item.group) last.items.push(item);
+    else result.push({ label: item.group, items: [item] });
+  }
+  return result;
+});
 
 const isActive = (path: string): boolean => {
   const routePath = path.split('/')[1];

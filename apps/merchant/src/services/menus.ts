@@ -48,7 +48,10 @@ export default [
     permissions: DASHBOARD_PERMISSIONS,
     route: PRP_DASHBOARD,
   },
+
+  // Penjualan
   {
+    group: 'Penjualan',
     icon: 'pi pi-desktop',
     label: 'Kasir',
     featureFlag: DEFAULT_FEATURE_FLAG,
@@ -56,6 +59,7 @@ export default [
     route: PRP_CASHIER,
   },
   {
+    group: 'Penjualan',
     icon: 'pi pi-list',
     label: 'Transaksi',
     featureFlag: DEFAULT_FEATURE_FLAG,
@@ -63,6 +67,7 @@ export default [
     route: PRP_TRANSACTION,
   },
   {
+    group: 'Penjualan',
     icon: 'pi pi-clock',
     label: 'Shift',
     featureFlag: DEFAULT_FEATURE_FLAG,
@@ -70,6 +75,17 @@ export default [
     route: PRP_SHIFT,
   },
   {
+    group: 'Penjualan',
+    icon: 'pi pi-id-card',
+    label: 'Pelanggan',
+    featureFlag: DEFAULT_FEATURE_FLAG,
+    permissions: CUSTOMER_PERMISSIONS,
+    route: PRP_CUSTOMERS,
+  },
+
+  // Inventori
+  {
+    group: 'Inventori',
     icon: 'pi pi-box',
     label: 'Produk',
     featureFlag: DEFAULT_FEATURE_FLAG,
@@ -77,20 +93,25 @@ export default [
     route: PRP_PRODUCT,
   },
   {
+    group: 'Inventori',
     icon: 'pi pi-table',
     label: 'Stok',
     featureFlag: DEFAULT_FEATURE_FLAG,
     permissions: STOCK_PERMISSIONS,
     route: PRP_STOCK,
   },
+
+  // Manajemen
   {
-    icon: 'pi pi-id-card',
-    label: 'Pelanggan',
+    group: 'Manajemen',
+    icon: 'pi pi-download',
+    label: 'Laporan',
     featureFlag: DEFAULT_FEATURE_FLAG,
-    permissions: CUSTOMER_PERMISSIONS,
-    route: PRP_CUSTOMERS,
+    permissions: REPORTS_PERMISSIONS,
+    route: PRP_REPORTS,
   },
   {
+    group: 'Manajemen',
     icon: 'pi pi-sitemap',
     label: 'Outlet',
     featureFlag: DEFAULT_FEATURE_FLAG,
@@ -98,17 +119,11 @@ export default [
     route: PRP_OUTLET,
   },
   {
+    group: 'Manajemen',
     icon: 'pi pi-users',
     label: 'Pengguna',
     featureFlag: DEFAULT_FEATURE_FLAG,
     permissions: USER_PERMISSIONS,
     route: PRP_USER,
-  },
-  {
-    icon: 'pi pi-download',
-    label: 'Laporan',
-    featureFlag: DEFAULT_FEATURE_FLAG,
-    permissions: REPORTS_PERMISSIONS,
-    route: PRP_REPORTS,
   },
 ];
