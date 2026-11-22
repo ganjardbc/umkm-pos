@@ -109,10 +109,11 @@ export class CustomerCatalogService {
       throw new BadRequestException('outlet_id is required');
     }
 
-    await this.resolveOutlet(outletId);
+    const outlet = await this.resolveOutlet(outletId);
     const shift = await this.findOpenShift(outletId);
 
     return {
+      shift_required: outlet.shift_required,
       is_open: Boolean(shift),
       shift_id: shift?.id ?? null,
       status: shift?.status ?? 'closed',
@@ -211,8 +212,12 @@ export class CustomerCatalogService {
       throw new UnauthorizedException('Session does not match outlet');
     }
 
-    const shift = await this.findOpenShift(dto.outlet_id);
-    if (!shift) {
+    // resolveOutlet rejects inactive outlets and supplies shift_required
+    const outlet = await this.resolveOutlet(dto.outlet_id);
+    const shift = outlet.shift_required
+      ? await this.findOpenShift(dto.outlet_id)
+      : null;
+    if (outlet.shift_required && !shift) {
       throw new BadRequestException('Shift outlet belum dibuka');
     }
 
@@ -252,7 +257,7 @@ export class CustomerCatalogService {
     const newOrder = await this.transactionsService.createCatalogOrder(
       {
         ...dto,
-        shift_id: shift.id,
+        shift_id: shift?.id,
         customer_session_id: session.id,
         customer_name_snapshot: session.customer_name,
         customer_phone_snapshot: session.customer_phone ?? undefined,

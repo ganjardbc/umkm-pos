@@ -1,12 +1,12 @@
 <template>
   <UiLoading
-    v-if="!isShiftLoaded"
+    v-if="!isShiftLoaded || !isSettingLoaded"
     message="Memuat shift..."
   />
 
   <!-- No Active Shift -->
   <OpenShift
-    v-else-if="!isShiftOpen"
+    v-else-if="shiftRequired && !isShiftOpen"
     @shift-opened="fetchOutletShift"
   />
 
@@ -25,13 +25,13 @@
 
       <!-- Products Tab -->
       <PosProduct
-        :is-user-in-shift="isShiftUserCanManage"
+        :is-user-in-shift="!shiftRequired || isShiftUserCanManage"
       />
     </div>
 
     <!-- POS Cart -->
     <PosCart
-      :is-user-in-shift="isShiftUserCanManage"
+      :is-user-in-shift="!shiftRequired || isShiftUserCanManage"
       :shift-id="currentShift?.id"
       :outlet-id="currentShift?.outlet_id"
       :target-transaction-id="targetTransactionId"
@@ -77,12 +77,15 @@ const isWeb = computed(() => deviceType.value === 'web');
 // Computed for Shift
 const {
   isShiftUserCanManage,
+  shiftRequired,
+  fetchShiftSetting,
   currentShift,
   fetchShift,
   fetchShiftParticipants,
 } = useShift();
 
 const isShiftLoaded = ref(false);
+const isSettingLoaded = ref(false);
 const isShiftOpen = computed(() => currentShift.status === 'open');
 
 // Task 26: Clear form - reset all state to defaults
@@ -106,6 +109,7 @@ const fetchOutletShift = async () => {
 };
 
 onMounted(() => {
+  fetchShiftSetting(outlet.id).finally(() => { isSettingLoaded.value = true; });
   fetchOutletShift();
 });
 </script>

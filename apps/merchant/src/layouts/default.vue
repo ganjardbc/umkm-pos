@@ -64,11 +64,11 @@
           :login-path="PRP_AUTH"
           :profile-path="PRP_PROFILE"
           :is-collapsed="isCollapsed"
-          :badge-severity="isUserInShift ? 'success' : 'danger'"
-          :status-tag="{
+          :badge-severity="shiftRequired ? (isUserInShift ? 'success' : 'danger') : null"
+          :status-tag="shiftRequired ? {
             severity: isUserInShift ? 'success' : 'secondary',
             value: isUserInShift ? 'In Shift' : 'Not Shift',
-          }"
+          } : null"
           :links="profileLinks"
           @navigate="navigate"
         />
@@ -131,11 +131,14 @@ const profileLinks = computed(() => [
 // Computed for Shift
 const {
   isUserInShift,
+  shiftRequired,
+  fetchShiftSetting,
   fetchShift,
   fetchShiftParticipants,
 } = useShift();
 
 const fetchOutletShift = async () => {
+  fetchShiftSetting(outlet.id);
   try {
     const response = await getOutletShift(outlet.id);
     const shiftData = response?.data?.data || {};

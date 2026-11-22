@@ -47,6 +47,7 @@ describe('TransactionsService', () => {
   const mockShiftsService = {
     validateShiftOpen: jest.fn(),
     isActiveParticipant: jest.fn(),
+    isShiftRequired: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -66,6 +67,7 @@ describe('TransactionsService', () => {
 
     service = module.get<TransactionsService>(TransactionsService);
     jest.clearAllMocks();
+    mockShiftsService.isShiftRequired.mockResolvedValue(true);
     mockPrisma.user_roles.findMany.mockResolvedValue([
       {
         user_id: 'user-1',
@@ -78,6 +80,11 @@ describe('TransactionsService', () => {
   describe('create', () => {
     const merchantId = 'merchant-1';
     const userId = 'user-1';
+
+    beforeEach(() => {
+      // these tests cover inventory, not shifts
+      mockShiftsService.isShiftRequired.mockResolvedValue(false);
+    });
 
     it('should reject sale when outlet inventory is insufficient even if legacy product stock is high', async () => {
       mockPrisma.outlets.findFirst.mockResolvedValue({
@@ -442,13 +449,73 @@ describe('TransactionsService', () => {
       expect(updated).toHaveLength(0);
     });
 
-    it('DTO requires shift_id for cash and a UUID when present', async () => {
+    // AC-5, AC-14
+    it('shift off: POS sale without shift_id is saved with null shift and stock decremented', async () => {
+      const { created } = setup();
+      mockShiftsService.isShiftRequired.mockResolvedValue(false);
+      await service.create(
+        {
+          outlet_id: 'outlet-1',
+          payment_method: 'cash',
+          cash_received: 10000,
+          change_amount: 0,
+          items: [{ product_id: 'product-1', qty: 1 }],
+        } as any,
+        merchantId,
+        userId,
+      );
+      expect(created[0].shift_id).toBeNull();
+      expect(created[0].paid_shift_id).toBeNull();
+      expect(mockShiftsService.validateShiftOpen).not.toHaveBeenCalled();
+      expect(mockPrisma.$transaction).toHaveBeenCalledTimes(1);
+    });
+
+    it('shift off: a client-sent shift_id is ignored and stored null', async () => {
+      const { created } = setup();
+      mockShiftsService.isShiftRequired.mockResolvedValue(false);
+      await create(true);
+      expect(created[0].shift_id).toBeNull();
+      expect(created[0].paid_shift_id).toBeNull();
+      expect(mockShiftsService.validateShiftOpen).not.toHaveBeenCalled();
+    });
+
+    // AC-6
+    it('shift on: POS sale without shift_id is rejected with 400, no transaction, no stock change', async () => {
+      const { created } = setup();
+      await expect(
+        service.create(
+          {
+            outlet_id: 'outlet-1',
+            payment_method: 'cash',
+            cash_received: 10000,
+            change_amount: 0,
+            items: [{ product_id: 'product-1', qty: 1 }],
+          } as any,
+          merchantId,
+          userId,
+        ),
+      ).rejects.toThrow(BadRequestException);
+      expect(created).toHaveLength(0);
+      expect(mockPrisma.$transaction).not.toHaveBeenCalled();
+    });
+
+    // AC-7
+    it('shift off: pay-later cash payment without shift is accepted with empty paid_shift_id', async () => {
+      const { updated } = setup();
+      mockShiftsService.isShiftRequired.mockResolvedValue(false);
+      await pay({ payment_method: 'cash' });
+      expect(updated[0].payment_method).toBe('cash');
+      expect(updated[0].paid_shift_id).toBeNull();
+      expect(mockShiftsService.validateShiftOpen).not.toHaveBeenCalled();
+    });
+
+    it('DTO requires a UUID shift_id when present (presence for cash is enforced by the service)', async () => {
       const pipe = new ValidationPipe();
       const v = (b: any) =>
         pipe.transform(b, { type: 'body', metatype: PayTransactionDto });
-      await expect(v({ payment_method: 'cash' })).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(
+        v({ payment_method: 'cash', shift_id: 'not-a-uuid' }),
+      ).rejects.toThrow(BadRequestException);
       await expect(v({ payment_method: 'qris' })).resolves.toBeDefined();
       await expect(
         v({

@@ -1,7 +1,7 @@
 <template>
   <!-- Warning Shift -->
   <Message
-    v-if="currentShift.status === ShiftStatus.CLOSED"
+    v-if="shiftRequired && currentShift.status === ShiftStatus.CLOSED"
     severity="warn"
     icon="pi pi-info-circle"
   >
@@ -12,7 +12,7 @@
   </Message>
 
   <Message
-    v-if="!isUserInShift && currentShift.status === ShiftStatus.OPEN"
+    v-if="shiftRequired && !isUserInShift && currentShift.status === ShiftStatus.OPEN"
     severity="info"
     icon="pi pi-info-circle"
   >
@@ -33,6 +33,7 @@ const ShiftStatus = {
 
 // Computed for Shift
 const {
+  shiftRequired,
   isUserInShift,
   currentShift,
 } = useShift();

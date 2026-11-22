@@ -12,4 +12,5 @@ export interface FormEdit {
   location: string;
   guest_session_secret?: string;
   is_active: boolean;
+  shift_required: boolean;
 };

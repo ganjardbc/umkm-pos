@@ -49,7 +49,7 @@
     </UiCard>
 
     <!-- Active Shifts -->
-    <UiCard class="bg-white dark:bg-dark-secondary! rounded-lg shadow">
+    <UiCard v-if="showActiveShifts" class="bg-white dark:bg-dark-secondary! rounded-lg shadow">
       <div class="flex justify-between items-center">
         <div class="space-y-1">
           <p class="text-sm text-gray-400 font-medium">Shift Aktif</p>
@@ -75,9 +75,10 @@ interface Props {
   lowStockCount: number;
   activeShiftsCount: number;
   loading: boolean;
+  showActiveShifts?: boolean;
 }
 
-defineProps<Props>();
+withDefaults(defineProps<Props>(), { showActiveShifts: true });
 
 const formatCurrency = (value: number): string => {
   return new Intl.NumberFormat('id-ID', {

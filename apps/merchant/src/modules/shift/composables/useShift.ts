@@ -77,6 +77,8 @@ const shiftState = {
   auditLogs: ref<AuditLog[]>([]),
   loading: ref(false),
   error: ref(null),
+  // Default true (current behavior) until the outlet setting is loaded.
+  shiftRequired: ref(true),
 };
 
 export const useShift = () => {
@@ -174,6 +176,16 @@ export const useShift = () => {
   });
 
   // Async actions
+  // On load failure keep true: the API is the final guard (design D-6).
+  const fetchShiftSetting = async (outletId: string | number) => {
+    try {
+      const response = await shiftApi.getOutletShiftSetting(outletId);
+      shiftState.shiftRequired.value = response?.data?.data?.shift_required !== false;
+    } catch (err) {
+      shiftState.shiftRequired.value = true;
+    }
+  };
+
   const fetchShift = async (payload: any) => {
     try {
       const { shiftId } = payload || {};
@@ -353,12 +365,14 @@ export const useShift = () => {
     auditLogs: shiftState.auditLogs,
     loading,
     error,
+    shiftRequired: shiftState.shiftRequired,
     isShiftClosed,
     isUserOwner,
     isUserInShift,
     isUserRemovedFromShift,
     isShiftUserCanManage,
     // Actions
+    fetchShiftSetting,
     fetchShift,
     fetchShiftParticipants,
     addParticipant,

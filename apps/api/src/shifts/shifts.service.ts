@@ -140,6 +140,20 @@ export class ShiftsService {
     return shift;
   }
 
+  /** Whether the outlet requires cashiers to open a shift (merchant-scoped). */
+  async isShiftRequired(outletId: string, merchantId: string) {
+    const outlet = await this.prisma.outlets.findFirst({
+      where: { id: outletId, merchant_id: merchantId },
+      select: { shift_required: true },
+    });
+    if (!outlet) {
+      throw new NotFoundException(
+        `Outlet with ID ${outletId} not found or does not belong to your merchant`,
+      );
+    }
+    return outlet.shift_required;
+  }
+
   async findByOutlet(outletId: string) {
     // Find the last shift for this user in any of the merchant's outlets
     const shift = await this.prisma.shifts.findFirst({
@@ -264,6 +278,12 @@ export class ShiftsService {
     if (!outlet) {
       throw new NotFoundException(
         `Outlet with ID ${outletId} not found or does not belong to your merchant`,
+      );
+    }
+
+    if (outlet.shift_required === false) {
+      throw new BadRequestException(
+        'Pengaturan buka/tutup kasir outlet ini sedang mati, shift tidak bisa dibuka',
       );
     }
 

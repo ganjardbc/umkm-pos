@@ -29,6 +29,7 @@
       :transactions-today="transactionsToday"
       :low-stock-count="lowStockCount"
       :active-shifts-count="activeShiftsCount"
+      :show-active-shifts="shiftRequired"
       :loading="statsLoading"
     />
 
@@ -89,11 +90,15 @@ import {
 } from '@/modules/dashboard/services/api.ts';
 import { getListInventory } from '@/modules/stock/services/api.ts';
 import { getListShift } from '@/modules/shift/services/api.ts';
+import { useShift } from '@/modules/shift/composables/useShift.ts';
 import SalesSummaryChart from '@/modules/dashboard/components/SalesSummaryChart.vue';
 import DailyReportsChart from '@/modules/dashboard/components/DailyReportsChart.vue';
 import TopProductsChart from '@/modules/dashboard/components/TopProductsChart.vue';
 import OutletComparisonChart from '@/modules/dashboard/components/OutletComparisonChart.vue';
 import SummaryStats from '@/modules/dashboard/components/SummaryStats.vue';
+
+// Setting is loaded by the default layout
+const { shiftRequired } = useShift();
 
 // Date range state
 const dateRange = ref<Date[] | null>(null);

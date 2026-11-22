@@ -13,7 +13,7 @@ export const getters = {
     return state.cartItems.find((item: any) => item.id === id);
   },
   isShiftOpen: (state: any) => {
-    return state.shiftStatus?.is_open === true;
+    return state.shiftStatus?.shift_required === false || state.shiftStatus?.is_open === true;
   },
   currentShiftId: (state: any) => {
     return state.shiftStatus?.shift_id || null;

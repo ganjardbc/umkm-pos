@@ -359,7 +359,7 @@ const confirmPayment = async () => {
       payload.cash_received = Number(paymentPayload.value.cash_received);
       payload.change_amount = Math.max(0, payload.cash_received - paymentPayload.value.total_amount);
     }
-    payload.shift_id = currentShift.id;
+    payload.shift_id = currentShift.id || undefined;
     await patchTransactionPay(paymentTarget.value.id, payload);
     showPaymentModal.value = false;
     showToast({

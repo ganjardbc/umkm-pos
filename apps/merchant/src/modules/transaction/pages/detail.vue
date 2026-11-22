@@ -451,7 +451,7 @@ const onPayTransaction = async () => {
         : undefined,
     };
 
-    payload.shift_id = currentShift.id;
+    payload.shift_id = currentShift.id || undefined;
     const response = await patchTransactionPay(transactionID.value, payload);
     if (response.data) {
       showToast({
