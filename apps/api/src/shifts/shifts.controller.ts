@@ -18,6 +18,7 @@ import {
 import { ShiftsService } from './shifts.service';
 import { CreateShiftDto } from './dto/create-shift.dto';
 import { CloseShiftDto } from './dto/close-shift.dto';
+import { AddCashEntryDto } from './dto/add-cash-entry.dto';
 import { AddParticipantDto } from './dto/add-participant.dto';
 import { HandoffShiftDto } from './dto/handoff-shift.dto';
 import { QueryShiftsDto } from './dto/query-shifts.dto';
@@ -171,6 +172,25 @@ export class ShiftsController {
       merchantId,
       dto.closing_cash,
     );
+  }
+
+  @Post(':id/cash-entries')
+  @RequirePermission('shift.update')
+  @ApiOperation({ summary: 'Record cash in / cash out on an open shift' })
+  @ApiResponse({ status: 201, description: 'Cash entry recorded' })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid body, shift closed, or outlet does not use shifts',
+  })
+  @ApiResponse({ status: 403, description: 'Not an active participant' })
+  @ApiResponse({ status: 404, description: 'Shift not found' })
+  async addCashEntry(
+    @Param('id') id: string,
+    @Body() dto: AddCashEntryDto,
+    @CurrentUser('merchant_id') merchantId: string,
+    @CurrentUser('id') userId: string,
+  ) {
+    return this.shiftsService.addCashEntry(id, userId, merchantId, dto);
   }
 
   @Get(':id/participants')

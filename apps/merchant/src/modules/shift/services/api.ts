@@ -102,3 +102,15 @@ export const getParticipantMetrics = async (shiftId: string | number, userId: st
     { ...(options || {}) },
   );
 };
+
+export const addCashEntry = async (
+  shiftId: string | number,
+  data: { type: 'in' | 'out'; amount: number; reason: string },
+  options: any = {},
+) => {
+  return await api.post(
+    `/api/v1/shifts/${shiftId}/cash-entries`,
+    data,
+    { ...(options || {}) },
+  );
+};

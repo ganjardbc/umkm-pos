@@ -38,6 +38,7 @@ declare module 'vue' {
     RouterView: typeof import('vue-router')['RouterView']
     SampleComponents: typeof import('./../../packages/ui/src/components/SampleComponents.vue')['default']
     Select: typeof import('primevue/select')['default']
+    SelectButton: typeof import('primevue/selectbutton')['default']
     Step: typeof import('primevue/step')['default']
     StepList: typeof import('primevue/steplist')['default']
     StepPanel: typeof import('primevue/steppanel')['default']

@@ -4,9 +4,11 @@ import {
   BadRequestException,
   UnauthorizedException,
   ConflictException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 import { CreateShiftDto } from './dto/create-shift.dto';
+import { AddCashEntryDto } from './dto/add-cash-entry.dto';
 import { PaginationDto } from '../common/dto/pagination.dto';
 import { Prisma } from '@prisma/client';
 
@@ -408,6 +410,18 @@ export class ShiftsService {
       },
     });
 
+    const entries = await this.prisma.shift_cash_entries.findMany({
+      where: { shift_id: shiftId },
+      include: { users: { select: { name: true } } },
+      orderBy: { created_at: 'asc' },
+    });
+    const sumType = (t: string) =>
+      Math.round(
+        entries
+          .filter((e) => e.type === t)
+          .reduce((a, e) => a + Number(e.amount), 0) * 100,
+      ) / 100;
+
     return {
       id: shift.id,
       outlet_id: shift.outlet_id,
@@ -421,6 +435,17 @@ export class ShiftsService {
       closing_cash: shift.closing_cash ?? null,
       expected_cash: shift.expected_cash ?? null,
       cash_difference: shift.cash_difference ?? null,
+      cash_entries: entries.map((e) => ({
+        id: e.id,
+        type: e.type,
+        amount: e.amount,
+        reason: e.reason,
+        created_by: e.created_by,
+        created_by_name: e.users?.name ?? null,
+        created_at: e.created_at,
+      })),
+      total_cash_in: sumType('in'),
+      total_cash_out: sumType('out'),
       participants: participantsWithCounts,
       participant_count: participantsWithCounts.length,
       total_transactions: totalTransactions,
@@ -477,8 +502,21 @@ export class ShiftsService {
       });
       // Number math rounded to cents: exact for DECIMAL(14,2) (< 2^53 cents)
       const round2 = (n: number) => Math.round(n * 100) / 100;
+      const entries = await tx.shift_cash_entries.findMany({
+        where: { shift_id: shiftId },
+        select: { type: true, amount: true },
+      });
+      const cashIn = entries
+        .filter((e) => e.type === 'in')
+        .reduce((a, e) => a + Number(e.amount), 0);
+      const cashOut = entries
+        .filter((e) => e.type === 'out')
+        .reduce((a, e) => a + Number(e.amount), 0);
       const expected = round2(
-        Number(shift.opening_cash ?? 0) + Number(sales._sum.total_amount ?? 0),
+        Number(shift.opening_cash ?? 0) +
+          Number(sales._sum.total_amount ?? 0) +
+          cashIn -
+          cashOut,
       );
 
       await tx.shifts.update({
@@ -506,6 +544,73 @@ export class ShiftsService {
     });
 
     return this.getShift(shiftId, merchantId);
+  }
+
+  /**
+   * Record cash in/out on an open shift (final entry + audit log, atomic)
+   */
+  async addCashEntry(
+    shiftId: string,
+    userId: string,
+    merchantId: string,
+    dto: AddCashEntryDto,
+  ) {
+    const outlets = await this.prisma.outlets.findMany({
+      where: { merchant_id: merchantId },
+      select: { id: true },
+    });
+    const shift = await this.prisma.shifts.findFirst({
+      where: { id: shiftId, outlet_id: { in: outlets.map((o) => o.id) } },
+    });
+    if (!shift) {
+      throw new NotFoundException(`Shift with ID ${shiftId} not found`);
+    }
+    if (shift.status !== 'open') {
+      throw new BadRequestException('Cannot record cash on a closed shift');
+    }
+    if (!(await this.isShiftRequired(shift.outlet_id, merchantId))) {
+      throw new BadRequestException(
+        'Cash entries are not available when the outlet does not use shifts',
+      );
+    }
+    if (!(await this.isActiveParticipant(shiftId, userId))) {
+      throw new ForbiddenException('You are not an active participant');
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      const entry = await tx.shift_cash_entries.create({
+        data: {
+          shift_id: shiftId,
+          type: dto.type,
+          amount: dto.amount,
+          reason: dto.reason,
+          created_by: userId,
+        },
+        include: { users: { select: { name: true } } },
+      });
+      await tx.shift_audit_logs.create({
+        data: {
+          shift_id: shiftId,
+          action: 'cash_entry_added',
+          user_id: userId,
+          action_details: {
+            entry_id: entry.id,
+            type: dto.type,
+            amount: dto.amount,
+          },
+        },
+      });
+      return {
+        id: entry.id,
+        shift_id: entry.shift_id,
+        type: entry.type,
+        amount: entry.amount,
+        reason: entry.reason,
+        created_by: entry.created_by,
+        created_by_name: entry.users?.name ?? null,
+        created_at: entry.created_at,
+      };
+    });
   }
 
   /**

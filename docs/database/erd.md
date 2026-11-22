@@ -107,6 +107,7 @@ shifts
     — DECIMAL(14,2) NULL; NULL untuk shift lama, tiga terakhir NULL selama open
   → shift_participants (1:N)
   → shift_audit_logs (1:N)
+  → shift_cash_entries (1:N)
   → transactions (1:N, via transactions.shift_id)
   → transactions (1:N, via transactions.paid_shift_id)
 
@@ -116,6 +117,16 @@ shift_participants
 
 shift_audit_logs
   id, shift_id, action, user_id, action_details (JSON)
+  — action antara lain: shift_opened, shift_closed, participant_added, participant_removed,
+    participant_restored, shift_handoff, cash_entry_added
+
+shift_cash_entries
+  id (CHAR(36), default UUID()), shift_id (FK → shifts.id, ON DELETE CASCADE; indexed),
+  type (VARCHAR(10): in | out), amount (DECIMAL(14,2), NOT NULL), reason (VARCHAR(255), NOT NULL),
+  created_by (FK → users.id, NO ACTION), created_at (TIMESTAMP, default CURRENT_TIMESTAMP)
+  — kas masuk/keluar saat shift open; entri final (tanpa update/delete)
+  — masuk rumus expected_cash: opening_cash + kas tunai + SUM(in) - SUM(out)
+  — migrasi: apps/api/prisma/migrations/add_shift_cash_entries.sql
 ```
 
 ---

@@ -32,6 +32,10 @@ describe('ShiftsService - Property-Based Tests', () => {
       create: jest.fn(),
       count: jest.fn(),
     },
+    shift_cash_entries: {
+      findMany: jest.fn(),
+      create: jest.fn(),
+    },
     transactions: {
       count: jest.fn(),
       aggregate: jest.fn(),
@@ -62,6 +66,7 @@ describe('ShiftsService - Property-Based Tests', () => {
     prisma = module.get<PrismaService>(PrismaService);
 
     jest.clearAllMocks();
+    mockPrisma.shift_cash_entries.findMany.mockResolvedValue([]);
   });
 
   // Property 1: Shift Opening Creates Owner and Initial Participant
@@ -602,6 +607,60 @@ describe('ShiftsService - Property-Based Tests', () => {
                     !t.is_cancelled,
                 )
                 .reduce((a, t) => a + t.cents, 0);
+            const snap = mockPrisma.shifts.update.mock.calls[1][0].data;
+            expect(Math.round(snap.expected_cash * 100)).toBe(expectedCents);
+            expect(Math.round(snap.cash_difference * 100)).toBe(
+              closingCents - expectedCents,
+            );
+          },
+        ),
+        { numRuns: 50 },
+      );
+    });
+  });
+
+  // AC-5: entries in the formula
+  describe('Property: expected cash with cash in/out', () => {
+    it('expected = opening + cash sales + in - out; difference = closing - expected', async () => {
+      const entryArb = fc.record({
+        type: fc.constantFrom('in', 'out'),
+        cents: fc.integer({ min: 1, max: 5_000_000 }),
+      });
+      await fc.assert(
+        fc.asyncProperty(
+          fc.array(entryArb, { maxLength: 20 }),
+          fc.integer({ min: 0, max: 10_000_000 }),
+          fc.integer({ min: 0, max: 10_000_000 }),
+          fc.integer({ min: 0, max: 10_000_000 }),
+          async (entries, openingCents, salesCents, closingCents) => {
+            jest.clearAllMocks();
+            mockPrisma.outlets.findMany.mockResolvedValue([{ id: 'o1' }]);
+            mockPrisma.$transaction.mockImplementation(async (cb) =>
+              cb(mockPrisma),
+            );
+            mockPrisma.shifts.findFirst.mockResolvedValue({
+              id: 'shift-1',
+              outlet_id: 'o1',
+              status: 'open',
+              opening_cash: openingCents / 100,
+            });
+            mockPrisma.transactions.aggregate.mockResolvedValue({
+              _sum: { total_amount: salesCents / 100 },
+            });
+            mockPrisma.shift_cash_entries.findMany.mockResolvedValue(
+              entries.map((e) => ({ type: e.type, amount: e.cents / 100 })),
+            );
+            mockPrisma.shift_participants.findMany.mockResolvedValue([]);
+            mockPrisma.transactions.count.mockResolvedValue(0);
+
+            await service.closeShift('shift-1', 'u1', 'm1', closingCents / 100);
+
+            const sum = (t: string) =>
+              entries
+                .filter((e) => e.type === t)
+                .reduce((a, e) => a + e.cents, 0);
+            const expectedCents =
+              openingCents + salesCents + sum('in') - sum('out');
             const snap = mockPrisma.shifts.update.mock.calls[1][0].data;
             expect(Math.round(snap.expected_cash * 100)).toBe(expectedCents);
             expect(Math.round(snap.cash_difference * 100)).toBe(
