@@ -1,5 +1,9 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
+  ArrayMaxSize,
+  ArrayMinSize,
+  IsArray,
   IsBoolean,
   IsNotEmpty,
   IsNumber,
@@ -9,7 +13,58 @@ import {
   Matches,
   MaxLength,
   Min,
+  ValidateNested,
 } from 'class-validator';
+
+export class ProductOptionInputDto {
+  @ApiProperty({ example: 'Large' })
+  @IsNotEmpty()
+  @IsString()
+  @MaxLength(80)
+  name: string;
+
+  @ApiPropertyOptional({
+    example: 5000,
+    description: 'Added to the product price when chosen (>= 0)',
+    default: 0,
+  })
+  @IsOptional()
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0)
+  price_delta?: number;
+}
+
+export class ProductOptionGroupInputDto {
+  @ApiProperty({ example: 'Ukuran' })
+  @IsNotEmpty()
+  @IsString()
+  @MaxLength(80)
+  name: string;
+
+  @ApiPropertyOptional({
+    default: false,
+    description: 'Customer must pick at least one',
+  })
+  @IsOptional()
+  @IsBoolean()
+  is_required?: boolean;
+
+  @ApiPropertyOptional({
+    default: false,
+    description: 'Customer may pick more than one',
+  })
+  @IsOptional()
+  @IsBoolean()
+  allow_multiple?: boolean;
+
+  @ApiProperty({ type: [ProductOptionInputDto] })
+  @IsArray()
+  @ArrayMinSize(1)
+  @ArrayMaxSize(20)
+  @ValidateNested({ each: true })
+  @Type(() => ProductOptionInputDto)
+  options: ProductOptionInputDto[];
+}
 
 export class CreateProductDto {
   @ApiProperty({
@@ -108,4 +163,16 @@ export class CreateProductDto {
   @IsOptional()
   @IsBoolean()
   is_active?: boolean;
+
+  @ApiPropertyOptional({
+    type: [ProductOptionGroupInputDto],
+    description:
+      'Full replacement of the product option groups. Omit to leave them untouched; send [] to remove all',
+  })
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(10)
+  @ValidateNested({ each: true })
+  @Type(() => ProductOptionGroupInputDto)
+  option_groups?: ProductOptionGroupInputDto[];
 }

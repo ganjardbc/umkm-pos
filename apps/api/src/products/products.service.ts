@@ -5,12 +5,25 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
-import { CreateProductDto } from './dto/create-product.dto';
+import {
+  CreateProductDto,
+  ProductOptionGroupInputDto,
+} from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { PaginationDto } from '../common/dto/pagination.dto';
 import { ProductsQueryDto } from './dto/products-query.dto';
 import { CategoriesService } from './categories/categories.service';
 import { UploadsService } from '../uploads/uploads.service';
+
+const PRODUCT_INCLUDE = {
+  merchants: true,
+  product_categories: true,
+  upload: true,
+  product_option_groups: {
+    orderBy: { sort_order: 'asc' as const },
+    include: { product_options: { orderBy: { sort_order: 'asc' as const } } },
+  },
+};
 
 @Injectable()
 export class ProductsService {
@@ -52,7 +65,7 @@ export class ProductsService {
     const [data, total] = await this.prisma.$transaction([
       this.prisma.products.findMany({
         where,
-        include: { merchants: true, product_categories: true, upload: true },
+        include: PRODUCT_INCLUDE,
         orderBy: { created_at: 'desc' },
         skip,
         take: limit,
@@ -115,7 +128,7 @@ export class ProductsService {
     }
 
     const product = await this.prisma.products.findFirst({
-      include: { merchants: true, product_categories: true, upload: true },
+      include: PRODUCT_INCLUDE,
       where: { id, merchant_id: merchantId },
     });
 
@@ -177,7 +190,13 @@ export class ProductsService {
       }
     }
 
-    const { outlet_id, stock_qty, min_stock, ...productPayload } = dto;
+    const {
+      outlet_id,
+      stock_qty,
+      min_stock,
+      option_groups,
+      ...productPayload
+    } = dto;
 
     if (outlet_id) {
       const outlet = await this.prisma.outlets.findFirst({
@@ -199,8 +218,13 @@ export class ProductsService {
         is_active: dto.is_active ?? true,
         created_by: userId,
         updated_by: userId,
+        ...(option_groups?.length && {
+          product_option_groups: {
+            create: this.toOptionGroupRows(option_groups),
+          },
+        }),
       },
-      include: { merchants: true, product_categories: true, upload: true },
+      include: PRODUCT_INCLUDE,
     });
 
     if (outlet_id) {
@@ -271,7 +295,13 @@ export class ProductsService {
       }
     }
 
-    const { outlet_id, stock_qty, min_stock, ...productPayload } = dto as any;
+    const {
+      outlet_id,
+      stock_qty,
+      min_stock,
+      option_groups,
+      ...productPayload
+    } = dto as UpdateProductDto;
 
     if (outlet_id) {
       const outlet = await this.prisma.outlets.findFirst({
@@ -303,15 +333,39 @@ export class ProductsService {
       });
     }
 
+    // Replacing groups wipes their option ids; sold items keep their own
+    // options_snapshot, so history is unaffected.
     return this.prisma.products.update({
       where: { id },
       data: {
         ...productPayload,
         updated_by: userId,
         updated_at: new Date(),
+        ...(option_groups !== undefined && {
+          product_option_groups: {
+            deleteMany: {},
+            create: this.toOptionGroupRows(option_groups),
+          },
+        }),
       },
-      include: { merchants: true, product_categories: true, upload: true },
+      include: PRODUCT_INCLUDE,
     });
+  }
+
+  private toOptionGroupRows(groups: ProductOptionGroupInputDto[]) {
+    return groups.map((group, groupIndex) => ({
+      name: group.name.trim(),
+      is_required: group.is_required ?? false,
+      allow_multiple: group.allow_multiple ?? false,
+      sort_order: groupIndex,
+      product_options: {
+        create: group.options.map((option, optionIndex) => ({
+          name: option.name.trim(),
+          price_delta: option.price_delta ?? 0,
+          sort_order: optionIndex,
+        })),
+      },
+    }));
   }
 
   async remove(id: string, merchantId: string) {
@@ -347,7 +401,7 @@ export class ProductsService {
         updated_by: userId,
         updated_at: new Date(),
       },
-      include: { merchants: true, product_categories: true, upload: true },
+      include: PRODUCT_INCLUDE,
     });
   }
 
@@ -362,7 +416,7 @@ export class ProductsService {
         updated_by: userId,
         updated_at: new Date(),
       },
-      include: { merchants: true, product_categories: true, upload: true },
+      include: PRODUCT_INCLUDE,
     });
   }
 }

@@ -165,11 +165,39 @@ model products {
   outlet_product_inventory outlet_product_inventory[]
   inventory_movements inventory_movements[]
   transaction_items  transaction_items[]
+  product_option_groups product_option_groups[]
 
   @@unique([merchant_id, slug], map: "unique_merchant_slug")
   @@index([is_active], map: "idx_products_active")
   @@index([merchant_id], map: "idx_products_merchant")
   @@index([category_id], map: "idx_products_category")
+}
+
+/// Choice groups on a product, e.g. "Ukuran" (required, pick one) or "Topping" (optional, pick many).
+model product_option_groups {
+  id              String            @id @default(dbgenerated("(uuid())")) @db.Char(36)
+  product_id      String            @db.Char(36)
+  name            String            @db.VarChar(80)
+  is_required     Boolean           @default(false)
+  allow_multiple  Boolean           @default(false)
+  sort_order      Int               @default(0)
+  created_at      DateTime          @default(now()) @db.Timestamp(0)
+  products        products          @relation(fields: [product_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  product_options product_options[]
+
+  @@index([product_id], map: "idx_option_groups_product")
+}
+
+model product_options {
+  id                    String                @id @default(dbgenerated("(uuid())")) @db.Char(36)
+  group_id              String                @db.Char(36)
+  name                  String                @db.VarChar(80)
+  price_delta           Decimal               @default(0.00) @db.Decimal(14, 2)
+  sort_order            Int                   @default(0)
+  created_at            DateTime              @default(now()) @db.Timestamp(0)
+  product_option_groups product_option_groups @relation(fields: [group_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([group_id], map: "idx_options_group")
 }
 
 model outlet_product_inventory {
@@ -347,6 +375,7 @@ model transaction_items {
   qty                   Int
   subtotal              Decimal      @db.Decimal(14, 2)
   customer_note         String?      @db.VarChar(255)
+  options_snapshot      Json?
   created_at            DateTime     @default(now()) @db.Timestamp(0)
   updated_at            DateTime     @default(now()) @db.Timestamp(0)
   created_by            String?      @db.Char(36)

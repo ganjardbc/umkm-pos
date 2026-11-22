@@ -242,7 +242,11 @@ describe('ProductsService', () => {
           created_by: userId,
           updated_by: userId,
         }),
-        include: { merchants: true, product_categories: true, upload: true },
+        include: expect.objectContaining({
+          merchants: true,
+          product_categories: true,
+          upload: true,
+        }),
       });
     });
   });
@@ -316,7 +320,11 @@ describe('ProductsService', () => {
 
       expect(mockPrisma.products.findMany).toHaveBeenCalledWith({
         where: { merchant_id: merchantId, category_id: 'category-1' },
-        include: { merchants: true, product_categories: true, upload: true },
+        include: expect.objectContaining({
+          merchants: true,
+          product_categories: true,
+          upload: true,
+        }),
         orderBy: { created_at: 'desc' },
         skip: pagination.skip,
         take: pagination.limit,
@@ -419,6 +427,100 @@ describe('ProductsService', () => {
     });
   });
 
+  describe('option groups', () => {
+    const merchantId = 'merchant-1';
+    const userId = 'user-1';
+    const groups = [
+      {
+        name: ' Ukuran ',
+        is_required: true,
+        options: [{ name: 'Small' }, { name: 'Large', price_delta: 5000 }],
+      },
+      {
+        name: 'Topping',
+        allow_multiple: true,
+        options: [{ name: 'Boba', price_delta: 3000 }],
+      },
+    ];
+
+    it('creates groups and options nested with sort order and defaults', async () => {
+      mockPrisma.products.findFirst.mockResolvedValue(null);
+      mockPrisma.products.create.mockResolvedValue({ id: 'p-1' });
+      await service.create(
+        { slug: 'kopi', name: 'Kopi', price: 10000, option_groups: groups },
+        merchantId,
+        userId,
+      );
+      const data = mockPrisma.products.create.mock.calls[0][0].data;
+      expect(data.option_groups).toBeUndefined();
+      expect(data.product_option_groups.create).toEqual([
+        {
+          name: 'Ukuran',
+          is_required: true,
+          allow_multiple: false,
+          sort_order: 0,
+          product_options: {
+            create: [
+              { name: 'Small', price_delta: 0, sort_order: 0 },
+              { name: 'Large', price_delta: 5000, sort_order: 1 },
+            ],
+          },
+        },
+        {
+          name: 'Topping',
+          is_required: false,
+          allow_multiple: true,
+          sort_order: 1,
+          product_options: {
+            create: [{ name: 'Boba', price_delta: 3000, sort_order: 0 }],
+          },
+        },
+      ]);
+    });
+
+    it('replaces all groups on update when option_groups is sent', async () => {
+      mockPrisma.products.findFirst.mockResolvedValue({
+        id: 'p-1',
+        merchants: {},
+      });
+      mockPrisma.products.update.mockResolvedValue({ id: 'p-1' });
+      await service.update(
+        'p-1',
+        { option_groups: groups },
+        merchantId,
+        userId,
+      );
+      const data = mockPrisma.products.update.mock.calls[0][0].data;
+      expect(data.product_option_groups.deleteMany).toEqual({});
+      expect(data.product_option_groups.create).toHaveLength(2);
+    });
+
+    it('sending an empty list removes all groups', async () => {
+      mockPrisma.products.findFirst.mockResolvedValue({
+        id: 'p-1',
+        merchants: {},
+      });
+      mockPrisma.products.update.mockResolvedValue({ id: 'p-1' });
+      await service.update('p-1', { option_groups: [] }, merchantId, userId);
+      const data = mockPrisma.products.update.mock.calls[0][0].data;
+      expect(data.product_option_groups).toEqual({
+        deleteMany: {},
+        create: [],
+      });
+    });
+
+    it('leaves groups untouched when option_groups is omitted', async () => {
+      mockPrisma.products.findFirst.mockResolvedValue({
+        id: 'p-1',
+        merchants: {},
+      });
+      mockPrisma.products.update.mockResolvedValue({ id: 'p-1' });
+      await service.update('p-1', { name: 'Baru' }, merchantId, userId);
+      const data = mockPrisma.products.update.mock.calls[0][0].data;
+      expect(data.product_option_groups).toBeUndefined();
+    });
+  });
+
   describe('update', () => {
     const merchantId = 'merchant-1';
     const userId = 'user-1';
@@ -479,7 +581,11 @@ describe('ProductsService', () => {
           category_id: 'category-1',
           updated_by: userId,
         }),
-        include: { merchants: true, product_categories: true, upload: true },
+        include: expect.objectContaining({
+          merchants: true,
+          product_categories: true,
+          upload: true,
+        }),
       });
       expect(result.category_id).toBe('category-1');
     });
@@ -529,7 +635,11 @@ describe('ProductsService', () => {
           category_id: null,
           updated_by: userId,
         }),
-        include: { merchants: true, product_categories: true, upload: true },
+        include: expect.objectContaining({
+          merchants: true,
+          product_categories: true,
+          upload: true,
+        }),
       });
       expect(result.category_id).toBeNull();
     });

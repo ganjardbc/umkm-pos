@@ -15,6 +15,14 @@ import { PaginationDto } from '../common/dto/pagination.dto';
 import { ShiftsService } from '../shifts/shifts.service';
 import { UpdateTransactionStatusDto } from './dto/update-transaction-status.dto';
 
+// A type alias (not an interface) so it is assignable to Prisma's Json input.
+type ItemOptionSnapshot = {
+  option_id: string;
+  group_name: string;
+  name: string;
+  price_delta: number;
+};
+
 const PERMISSION_DISCOUNT = 'transaction.discount';
 const PERMISSION_CANCEL_APPROVE = 'transaction.cancel_approve';
 
@@ -211,6 +219,7 @@ export class TransactionsService {
           product_id: item.product_id,
           product_name_snapshot: item.product_name_snapshot,
           price_snapshot: item.price_snapshot,
+          options_snapshot: item.options_snapshot ?? undefined,
           qty: item.qty,
           subtotal: item.subtotal,
           customer_note: item.customer_note ?? null,
@@ -286,6 +295,7 @@ export class TransactionsService {
           product_id: item.product_id,
           product_name_snapshot: item.product_name_snapshot,
           price_snapshot: item.price_snapshot,
+          options_snapshot: item.options_snapshot ?? undefined,
           qty: item.qty,
           subtotal: item.subtotal,
           customer_note: item.customer_note
@@ -541,6 +551,7 @@ export class TransactionsService {
           product_id: item.product_id,
           product_name_snapshot: item.product_name_snapshot,
           price_snapshot: item.price_snapshot,
+          options_snapshot: item.options_snapshot ?? undefined,
           qty: item.qty,
           subtotal: item.subtotal,
           customer_note: item.customer_note ?? null,
@@ -615,6 +626,7 @@ export class TransactionsService {
         product_id: item.product_id!,
         qty: item.qty,
         customer_note: item.customer_note ?? undefined,
+        options_snapshot: item.options_snapshot ?? undefined,
       }));
 
     const prepared = await this.prepareTransactionPayload(
@@ -627,6 +639,8 @@ export class TransactionsService {
       },
       merchantId,
       userId,
+      true,
+      false,
       true,
     );
 
@@ -674,6 +688,7 @@ export class TransactionsService {
     userId?: string,
     validatePayment = true,
     allowDiscount = false,
+    trustSnapshots = false,
   ) {
     await this.assertOutletBelongsToMerchant(dto.outlet_id, merchantId);
 
@@ -715,6 +730,18 @@ export class TransactionsService {
     });
 
     const productMap = new Map(products.map((p) => [p.id, p]));
+
+    const optionGroups = await this.prisma.product_option_groups.findMany({
+      where: { product_id: { in: uniqueProductIds } },
+      include: { product_options: { orderBy: { sort_order: 'asc' } } },
+      orderBy: { sort_order: 'asc' },
+    });
+    const groupsByProduct = new Map<string, typeof optionGroups>();
+    for (const group of optionGroups) {
+      const list = groupsByProduct.get(group.product_id) ?? [];
+      list.push(group);
+      groupsByProduct.set(group.product_id, list);
+    }
     const inventoryMap = new Map(
       inventoryRows.map((row) => [row.product_id, row]),
     );
@@ -728,6 +755,7 @@ export class TransactionsService {
       subtotal: number;
       stock_after: number;
       customer_note?: string;
+      options_snapshot?: ItemOptionSnapshot[];
     }> = [];
 
     // Track remaining stock across items so duplicate product_id entries
@@ -754,7 +782,21 @@ export class TransactionsService {
         );
       }
 
-      const price = Number(product.price);
+      // Stored snapshots are only trusted when re-pricing an existing order
+      // (pay-later); client input always goes through validation.
+      const optionsSnapshot =
+        trustSnapshots && Array.isArray(item.options_snapshot)
+          ? (item.options_snapshot as ItemOptionSnapshot[])
+          : this.resolveItemOptions(
+              product.name,
+              groupsByProduct.get(product.id) ?? [],
+              item.option_ids,
+            );
+      const optionsTotal = optionsSnapshot.reduce(
+        (sum, option) => sum + option.price_delta,
+        0,
+      );
+      const price = Number((Number(product.price) + optionsTotal).toFixed(2));
       const subtotal = price * item.qty;
       totalAmount += subtotal;
 
@@ -769,6 +811,7 @@ export class TransactionsService {
         subtotal,
         stock_after: stockAfter,
         customer_note: item.customer_note,
+        options_snapshot: optionsSnapshot.length ? optionsSnapshot : undefined,
       });
     }
 
@@ -800,6 +843,52 @@ export class TransactionsService {
       changeAmount,
       userId,
     };
+  }
+
+  private resolveItemOptions(
+    productName: string,
+    groups: Array<{
+      name: string;
+      is_required: boolean;
+      allow_multiple: boolean;
+      product_options: Array<{
+        id: string;
+        name: string;
+        price_delta: unknown;
+      }>;
+    }>,
+    optionIds: string[] = [],
+  ): ItemOptionSnapshot[] {
+    const unclaimed = new Set(optionIds);
+    const snapshot: ItemOptionSnapshot[] = [];
+    for (const group of groups) {
+      const picked = group.product_options.filter((o) => unclaimed.has(o.id));
+      picked.forEach((o) => unclaimed.delete(o.id));
+      if (group.is_required && picked.length === 0) {
+        throw new BadRequestException(
+          `Option group "${group.name}" is required for "${productName}"`,
+        );
+      }
+      if (!group.allow_multiple && picked.length > 1) {
+        throw new BadRequestException(
+          `Option group "${group.name}" allows only one choice`,
+        );
+      }
+      for (const option of picked) {
+        snapshot.push({
+          option_id: option.id,
+          group_name: group.name,
+          name: option.name,
+          price_delta: Number(option.price_delta),
+        });
+      }
+    }
+    if (unclaimed.size > 0) {
+      throw new BadRequestException(
+        `Unknown option for product "${productName}"`,
+      );
+    }
+    return snapshot;
   }
 
   private computeDiscount(

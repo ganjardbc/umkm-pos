@@ -42,6 +42,9 @@ describe('TransactionsService', () => {
     users: {
       findMany: jest.fn(),
     },
+    product_option_groups: {
+      findMany: jest.fn().mockResolvedValue([]),
+    },
     transaction_items: {
       createMany: jest.fn(),
     },
@@ -417,6 +420,180 @@ describe('TransactionsService', () => {
       await expect(cancel({ approver_pin: '111111' })).rejects.toMatchObject({
         status: 429,
       });
+    });
+  });
+
+  describe('product options', () => {
+    const merchantId = 'merchant-1';
+    const userId = 'user-1';
+
+    const groups = [
+      {
+        id: 'g-size',
+        product_id: 'product-1',
+        name: 'Ukuran',
+        is_required: true,
+        allow_multiple: false,
+        product_options: [
+          { id: 'o-s', name: 'Small', price_delta: '0.00' },
+          { id: 'o-l', name: 'Large', price_delta: '5000.00' },
+        ],
+      },
+      {
+        id: 'g-top',
+        product_id: 'product-1',
+        name: 'Topping',
+        is_required: false,
+        allow_multiple: true,
+        product_options: [
+          { id: 'o-boba', name: 'Boba', price_delta: '3000.00' },
+          { id: 'o-keju', name: 'Keju', price_delta: '2000.00' },
+        ],
+      },
+    ];
+
+    const setup = () => {
+      mockShiftsService.isShiftRequired.mockResolvedValue(false);
+      mockPrisma.outlets.findFirst.mockResolvedValue({ id: 'outlet-1' });
+      mockPrisma.products.findMany.mockResolvedValue([
+        { id: 'product-1', name: 'Kopi', price: 10000, is_active: true },
+      ]);
+      mockPrisma.outlet_product_inventory.findMany.mockResolvedValue([
+        { outlet_id: 'outlet-1', product_id: 'product-1', stock_qty: 10 },
+      ]);
+      mockPrisma.product_option_groups.findMany.mockResolvedValue(groups);
+      const items: any[] = [];
+      const created: any[] = [];
+      mockPrisma.$transaction.mockImplementation(async (cb: any) =>
+        cb({
+          transactions: {
+            create: jest.fn(async ({ data }) => {
+              created.push(data);
+              return { id: 'tx-1' };
+            }),
+          },
+          transaction_items: {
+            createMany: jest.fn(async ({ data }) => {
+              items.push(...data);
+            }),
+          },
+          outlet_product_inventory: { update: jest.fn() },
+          inventory_movements: { create: jest.fn() },
+        }),
+      );
+      mockPrisma.transactions.findFirst.mockResolvedValue({ id: 'tx-1' });
+      return { items, created };
+    };
+
+    // Cash payment needs exact change, so pay-later keeps these tests about options only.
+    const order = (option_ids: string[] | undefined, qty = 1) =>
+      service.create(
+        {
+          outlet_id: 'outlet-1',
+          payment_method: 'pending',
+          pay_now: false,
+          items: [{ product_id: 'product-1', qty, option_ids }],
+        } as any,
+        merchantId,
+        userId,
+      );
+
+    it('prices the line as base + chosen deltas and snapshots the options', async () => {
+      const { items, created } = setup();
+      await order(['o-l', 'o-boba', 'o-keju'], 2);
+      expect(items[0].price_snapshot).toBe(20000);
+      expect(items[0].subtotal).toBe(40000);
+      expect(created[0].total_amount).toBe(40000);
+      expect(items[0].options_snapshot).toEqual([
+        {
+          option_id: 'o-l',
+          group_name: 'Ukuran',
+          name: 'Large',
+          price_delta: 5000,
+        },
+        {
+          option_id: 'o-boba',
+          group_name: 'Topping',
+          name: 'Boba',
+          price_delta: 3000,
+        },
+        {
+          option_id: 'o-keju',
+          group_name: 'Topping',
+          name: 'Keju',
+          price_delta: 2000,
+        },
+      ]);
+    });
+
+    it('rejects a missing required group', async () => {
+      setup();
+      await expect(order(['o-boba'])).rejects.toThrow(BadRequestException);
+      await expect(order(undefined)).rejects.toThrow(/"Ukuran" is required/);
+    });
+
+    it('rejects two choices in a single-choice group', async () => {
+      setup();
+      await expect(order(['o-s', 'o-l'])).rejects.toThrow(
+        /allows only one choice/,
+      );
+    });
+
+    it('rejects an option that does not belong to the product', async () => {
+      setup();
+      await expect(order(['o-s', 'o-foreign'])).rejects.toThrow(
+        /Unknown option/,
+      );
+    });
+
+    it('products without option groups keep working and store no snapshot', async () => {
+      const { items } = setup();
+      mockPrisma.product_option_groups.findMany.mockResolvedValue([]);
+      await order(undefined);
+      expect(items[0].price_snapshot).toBe(10000);
+      expect(items[0].options_snapshot).toBeUndefined();
+    });
+
+    it('pay-later reuses the stored snapshot even if the option was removed since', async () => {
+      setup();
+      mockShiftsService.isShiftRequired.mockResolvedValue(false);
+      mockPrisma.product_option_groups.findMany.mockResolvedValue([]);
+      mockPrisma.transactions.findFirst.mockResolvedValue({
+        id: 'tx-1',
+        outlet_id: 'outlet-1',
+        is_cancelled: false,
+        payment_method: 'pending',
+        transaction_items: [
+          {
+            product_id: 'product-1',
+            qty: 1,
+            options_snapshot: [
+              {
+                option_id: 'gone',
+                group_name: 'Ukuran',
+                name: 'Large',
+                price_delta: 5000,
+              },
+            ],
+          },
+        ],
+      });
+      mockPrisma.$transaction.mockImplementation(async (cb: any) =>
+        cb({
+          transactions: { update: jest.fn(async () => ({ id: 'tx-1' })) },
+          outlet_product_inventory: { update: jest.fn() },
+          inventory_movements: { create: jest.fn() },
+        }),
+      );
+      // 10000 + 5000 delta from the snapshot, so exactly 15000 must be tendered.
+      await expect(
+        service.payTransaction(
+          'tx-1',
+          { payment_method: 'cash', cash_received: 15000, change_amount: 0 },
+          merchantId,
+          userId,
+        ),
+      ).resolves.toBeDefined();
     });
   });
 

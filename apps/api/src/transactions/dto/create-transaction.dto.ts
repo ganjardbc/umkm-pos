@@ -1,5 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
+  ArrayMaxSize,
+  ArrayUnique,
   IsArray,
   IsBoolean,
   IsIn,
@@ -38,6 +40,18 @@ export class TransactionItemInputDto {
   @IsString()
   @MaxLength(255)
   customer_note?: string;
+
+  @ApiPropertyOptional({
+    type: [String],
+    description:
+      'Chosen product_options ids. Required option groups must have a choice',
+  })
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(30)
+  @ArrayUnique()
+  @IsUUID('all', { each: true })
+  option_ids?: string[];
 }
 
 export class CreateTransactionDto {
