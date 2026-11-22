@@ -37,8 +37,6 @@
             type="text"
             placeholder=""
             fluid
-            readonly
-            disabled
           />
           <Message
             v-if="$form.slug?.invalid"
@@ -111,7 +109,7 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { z } from 'zod';
 import { zodResolver } from '@primevue/forms/resolvers/zod';
-import { getErrorMessage } from '@umkm-pos/ui/helpers/utils';
+import { getErrorMessage, slugify } from '@umkm-pos/ui/helpers/utils';
 import { showToast } from '@umkm-pos/ui/helpers/toast';
 import { showLoading, hideLoading } from '@umkm-pos/ui/helpers/loading';
 import { postMerchants } from '@/modules/merchants/services/api.ts';
@@ -139,7 +137,10 @@ const initialValues = ref<FormCreate>({
 
 const resolver = ref(zodResolver(
   z.object({
-    slug: z.string().min(1, { message: 'Slug wajib diisi.' }),
+    slug: z
+      .string()
+      .min(1, { message: 'Slug wajib diisi.' })
+      .regex(/^[a-z0-9-]+$/, { message: 'Slug hanya boleh berisi huruf kecil, angka, dan tanda hubung (-).' }),
     name: z.string().min(1, { message: 'Nama wajib diisi.' }),
     phone: z.string().min(1, { message: 'Nomor telepon wajib diisi.' }),
     address: z.string().min(1, { message: 'Alamat wajib diisi.' })
@@ -189,14 +190,7 @@ const onFormSubmit = async (event: any) => {
 };
 
 const onNameChange = (name: string, form: any) => {
-  const slug = name
-    .toLowerCase()
-    .trim()
-    .replace(/[^\w\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-');
-
-  form.slug.value = slug;
+  form.slug.value = slugify(name);
 };
 
 const onCancel = () => {
