@@ -35,6 +35,11 @@ export interface Currentshift {
   },
   created_at?: string,
   updated_at?: string,
+  // Decimal JSON shape unconfirmed (string or number): convert with Number() before use.
+  opening_cash?: string | number | null,
+  closing_cash?: string | number | null,
+  expected_cash?: string | number | null,
+  cash_difference?: string | number | null,
 }
 
 export interface Metrics {

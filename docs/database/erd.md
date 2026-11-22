@@ -75,6 +75,9 @@ user_roles
 ```
 transactions
   id, outlet_id, user_id, cashier_id, shift_id
+  paid_shift_id (nullable, FK → shifts.id, no cascade; indexed)
+    — shift tempat uang diterima; beda dari shift_id untuk pesanan bayar-nanti
+    — diisi saat bayar langsung / payTransaction; backfill = shift_id untuk transaksi non-pending
   payment_method, total_amount, cash_received, change_amount
   order_source (pos | customer), order_status
   customer_session_id, table_id
@@ -96,9 +99,12 @@ transaction_items
 shifts
   id, outlet_id, shift_owner_id, status (open | closed)
   start_time, end_time (nullable until closed)
+  opening_cash, closing_cash, expected_cash, cash_difference
+    — DECIMAL(14,2) NULL; NULL untuk shift lama, tiga terakhir NULL selama open
   → shift_participants (1:N)
   → shift_audit_logs (1:N)
-  → transactions (1:N)
+  → transactions (1:N, via transactions.shift_id)
+  → transactions (1:N, via transactions.paid_shift_id)
 
 shift_participants
   id, shift_id, user_id, is_owner

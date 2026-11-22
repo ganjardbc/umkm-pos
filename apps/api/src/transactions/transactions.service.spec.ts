@@ -6,6 +6,8 @@ import {
 } from '@nestjs/common';
 import { TransactionsService } from './transactions.service';
 import { PrismaService } from '../database/prisma.service';
+import { ValidationPipe } from '../common/pipes/validation.pipe';
+import { PayTransactionDto } from './dto/pay-transaction.dto';
 import { ShiftsService } from '../shifts/shifts.service';
 
 describe('TransactionsService', () => {
@@ -286,6 +288,174 @@ describe('TransactionsService', () => {
       const result = await service.cancel('tx-1', merchantId, userId);
       expect(result).toBeDefined();
       expect(mockPrisma.$transaction).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('shift cash tracking (paid_shift_id)', () => {
+    const merchantId = 'merchant-1';
+    const userId = 'user-1';
+
+    const setup = (shiftOk = true, participant = true) => {
+      mockPrisma.outlets.findFirst.mockResolvedValue({
+        id: 'outlet-1',
+        merchant_id: merchantId,
+      });
+      mockPrisma.products.findMany.mockResolvedValue([
+        {
+          id: 'product-1',
+          merchant_id: merchantId,
+          name: 'P',
+          price: 10000,
+          stock_qty: 100,
+          is_active: true,
+        },
+      ]);
+      mockPrisma.outlet_product_inventory.findMany.mockResolvedValue([
+        {
+          outlet_id: 'outlet-1',
+          product_id: 'product-1',
+          stock_qty: 10,
+          is_active: true,
+        },
+      ]);
+      if (shiftOk)
+        mockShiftsService.validateShiftOpen.mockResolvedValue(undefined);
+      else
+        mockShiftsService.validateShiftOpen.mockRejectedValue(
+          new BadRequestException('Shift is not available for transactions'),
+        );
+      mockShiftsService.isActiveParticipant.mockResolvedValue(participant);
+      const created: any[] = [];
+      const updated: any[] = [];
+      mockPrisma.$transaction.mockImplementation(async (cb: any) =>
+        cb({
+          transactions: {
+            create: jest.fn(async ({ data }) => {
+              created.push(data);
+              return { id: 'tx-1' };
+            }),
+            update: jest.fn(async ({ data }) => {
+              updated.push(data);
+              return { id: 'tx-1' };
+            }),
+          },
+          transaction_items: { createMany: jest.fn() },
+          outlet_product_inventory: { update: jest.fn() },
+          inventory_movements: { create: jest.fn() },
+        }),
+      );
+      mockPrisma.transactions.findFirst.mockResolvedValue({
+        id: 'tx-1',
+        outlet_id: 'outlet-1',
+        is_cancelled: false,
+        payment_method: 'pending',
+        shift_id: 'shift-A',
+        transaction_items: [{ product_id: 'product-1', qty: 1 }],
+      });
+      return { created, updated };
+    };
+
+    const create = (pay_now: boolean) =>
+      service.create(
+        {
+          outlet_id: 'outlet-1',
+          shift_id: 'shift-A',
+          payment_method: 'cash',
+          pay_now,
+          cash_received: 10000,
+          change_amount: 0,
+          items: [{ product_id: 'product-1', qty: 1 }],
+        } as any,
+        merchantId,
+        userId,
+      );
+
+    const pay = (dto: any) =>
+      service.payTransaction(
+        'tx-1',
+        { cash_received: 10000, change_amount: 0, ...dto },
+        merchantId,
+        userId,
+      );
+
+    // AC-6, AC-7
+    it('direct payment sets paid_shift_id to the creating shift', async () => {
+      const { created } = setup();
+      await create(true);
+      expect(created[0].shift_id).toBe('shift-A');
+      expect(created[0].paid_shift_id).toBe('shift-A');
+    });
+
+    it('pay-later order leaves paid_shift_id empty', async () => {
+      const { created } = setup();
+      await create(false);
+      expect(created[0].shift_id).toBe('shift-A');
+      expect(created[0].paid_shift_id).toBeNull();
+    });
+
+    // AC-7
+    it('pay-later created in shift A paid cash in shift B goes to paid_shift_id B only', async () => {
+      const { updated } = setup();
+      await pay({ payment_method: 'cash', shift_id: 'shift-B' });
+      expect(mockShiftsService.validateShiftOpen).toHaveBeenCalledWith(
+        'shift-B',
+      );
+      expect(updated[0].paid_shift_id).toBe('shift-B');
+      expect(updated[0]).not.toHaveProperty('shift_id');
+    });
+
+    // AC-8
+    it('non-cash payment without shift_id is allowed and sets no paid shift', async () => {
+      const { updated } = setup();
+      await service.payTransaction(
+        'tx-1',
+        { payment_method: 'qris' },
+        merchantId,
+        userId,
+      );
+      expect(updated[0].payment_method).toBe('qris');
+      expect(updated[0].paid_shift_id).toBeNull();
+    });
+
+    // AC-9
+    it('rejects cash payment without shift_id', async () => {
+      const { updated } = setup();
+      await expect(pay({ payment_method: 'cash' })).rejects.toThrow(
+        BadRequestException,
+      );
+      expect(updated).toHaveLength(0);
+    });
+
+    it('rejects cash payment when shift is not open', async () => {
+      const { updated } = setup(false);
+      await expect(
+        pay({ payment_method: 'cash', shift_id: 'shift-B' }),
+      ).rejects.toThrow(BadRequestException);
+      expect(updated).toHaveLength(0);
+    });
+
+    it('rejects cash payment by a non-participant', async () => {
+      const { updated } = setup(true, false);
+      await expect(
+        pay({ payment_method: 'cash', shift_id: 'shift-B' }),
+      ).rejects.toThrow(ForbiddenException);
+      expect(updated).toHaveLength(0);
+    });
+
+    it('DTO requires shift_id for cash and a UUID when present', async () => {
+      const pipe = new ValidationPipe();
+      const v = (b: any) =>
+        pipe.transform(b, { type: 'body', metatype: PayTransactionDto });
+      await expect(v({ payment_method: 'cash' })).rejects.toThrow(
+        BadRequestException,
+      );
+      await expect(v({ payment_method: 'qris' })).resolves.toBeDefined();
+      await expect(
+        v({
+          payment_method: 'cash',
+          shift_id: '550e8400-e29b-41d4-a716-446655440021',
+        }),
+      ).resolves.toBeDefined();
     });
   });
 

@@ -46,7 +46,7 @@
           class="w-full md:w-auto"
           :loading="loading"
           :disabled="loading"
-          @click="handleCloseConfirm"
+          @click="cashMode = 'close'"
         />
         <Button
           v-else
@@ -56,7 +56,7 @@
           class="w-full md:w-auto"
           :loading="loading"
           :disabled="loading"
-          @click="handleOpenShift"
+          @click="cashMode = 'open'"
         />
       </div>
     </div>
@@ -120,17 +120,22 @@
         Silakan hubungi pemilik shift untuk mengaktifkan kembali shift Anda.
       </span>
     </Message>
+
+    <CashDialog
+      v-model:visible="cashVisible"
+      :mode="cashMode || 'open'"
+      :submit="cashMode === 'close' ? handleCloseShift : handleOpenShift"
+    />
   </div>
 
 </template>
 
 <script setup lang="ts">
-import { onMounted, watch } from 'vue';
+import { onMounted, watch, ref, computed } from 'vue';
+import CashDialog from '@/modules/shift/components/CashDialog.vue';
 import { useShift } from '@/modules/shift/composables/useShift.ts';
 import { formatDateTime, formatRangeTime } from '@umkm-pos/ui/helpers/utils';
-import { showConfirm, showToast } from '@umkm-pos/ui/helpers/toast';
-import { getErrorMessage } from '@umkm-pos/ui/helpers/utils';
-import { useGlobalLoading } from '@umkm-pos/ui/composables/useGlobalLoading.ts';
+import { showToast } from '@umkm-pos/ui/helpers/toast';
 import * as shiftApi from '@/modules/shift/services/api.ts';
 
 const ShiftStatus = {
@@ -147,7 +152,6 @@ const props = defineProps({
 
 const emit = defineEmits(['shift-loaded']);
 
-const { show, hide } = useGlobalLoading();
 const {
   isUserInShift,
   isUserRemovedFromShift,
@@ -175,67 +179,40 @@ const fetchOutletShift = async () => {
   }
 };
 
-const handleOpenShift = async () => {
-  try {
-    show();
+const cashMode = ref<'open' | 'close' | null>(null);
+const cashVisible = computed({
+  get: () => cashMode.value !== null,
+  set: (v) => { if (!v) cashMode.value = null; },
+});
 
-    const response = await shiftApi.openShift({
-      outlet_id: props.outletId,
-      // shift_owner_id: user?.id,
-    });
-    const newShift = response?.data?.data;
-    if (newShift?.id) {
-      await fetchOutletShift();
-      showToast({
-        type: 'success',
-        title: 'Sukses',
-        message: 'Shift berhasil dibuka',
-      });
-    }
-  } catch (error) {
-    showToast({
-      type: 'error',
-      title: 'Gagal',
-      message: getErrorMessage(error) || 'Gagal membuka shift',
-    });
-  } finally {
-    hide();
-  }
-};
-
-const handleCloseShift = async () => {
-  try {
-    show();
-
-    await shiftApi.closeShift(currentShift.id);
+// Errors propagate to CashDialog, which shows them and keeps the form open.
+const handleOpenShift = async (openingCash: number) => {
+  const response = await shiftApi.openShift({
+    outlet_id: props.outletId,
+    opening_cash: openingCash,
+  });
+  const newShift = response?.data?.data;
+  if (newShift?.id) {
     await fetchOutletShift();
     showToast({
       type: 'success',
       title: 'Sukses',
-      message: 'Shift berhasil ditutup',
+      message: 'Shift berhasil dibuka',
     });
-  } catch (error) {
-    showToast({
-      type: 'error',
-      title: 'Gagal',
-      message: getErrorMessage(error) || 'Gagal menutup shift',
-    });
-  } finally {
-    hide();
   }
+  return newShift;
 };
 
-const handleCloseConfirm = () => {
-  showConfirm({
-    header: 'Tutup Shift?',
-    message: 'Apakah Anda yakin ingin menutup shift ini?',
-    rejectLabel: 'Batal',
-    acceptLabel: 'Tutup Shift',
-    type: 'warn',
-    accept: () => {
-      handleCloseShift();
-    },
+const handleCloseShift = async (closingCash: number) => {
+  const response = await shiftApi.closeShift(currentShift.id, { closing_cash: closingCash });
+  const closed = response?.data?.data;
+  await fetchOutletShift();
+  showToast({
+    type: 'success',
+    title: 'Sukses',
+    message: 'Shift berhasil ditutup',
   });
+  return closed;
 };
 
 onMounted(() => {
