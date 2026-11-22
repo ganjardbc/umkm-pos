@@ -11,6 +11,8 @@ import { PaginationDto } from '../common/dto/pagination.dto';
 import { ShiftsService } from '../shifts/shifts.service';
 import { UpdateTransactionStatusDto } from './dto/update-transaction-status.dto';
 
+const PERMISSION_DISCOUNT = 'transaction.discount';
+
 const ORDER_SOURCE_POS = 'pos';
 const ORDER_SOURCE_CUSTOMER = 'customer_catalog';
 
@@ -460,11 +462,21 @@ export class TransactionsService {
     );
     dto = { ...dto, shift_id: shiftId ?? undefined };
     const cashierId = await this.resolveCashierForPos(dto, merchantId, userId);
+    const hasDiscount = dto.discount_type != null || dto.discount_value != null;
+    if (hasDiscount) {
+      if (!payNow) {
+        throw new BadRequestException(
+          'Discount can only be applied when paying immediately',
+        );
+      }
+      await this.assertCanDiscount(userId, dto.outlet_id);
+    }
     const prepared = await this.prepareTransactionPayload(
       dto,
       merchantId,
       userId,
       payNow,
+      true,
     );
     const tableId = dto.table_id ?? null;
 
@@ -483,6 +495,9 @@ export class TransactionsService {
           cashier_id: cashierId,
           payment_method: payNow ? dto.payment_method : 'pending',
           total_amount: prepared.totalAmount,
+          discount_type: prepared.discountType,
+          discount_value: prepared.discountValue,
+          discount_amount: prepared.discountAmount,
           cash_received: payNow ? prepared.cashReceived : null,
           change_amount: payNow ? prepared.changeAmount : null,
           order_source: ORDER_SOURCE_POS,
@@ -633,6 +648,7 @@ export class TransactionsService {
     merchantId: string,
     userId?: string,
     validatePayment = true,
+    allowDiscount = false,
   ) {
     await this.assertOutletBelongsToMerchant(dto.outlet_id, merchantId);
 
@@ -731,6 +747,13 @@ export class TransactionsService {
       });
     }
 
+    // Discounts come only from callers that opted in (POS pay-now); catalog
+    // and add-items flows never read them from client input.
+    const { discountType, discountValue, discountAmount } = allowDiscount
+      ? this.computeDiscount(totalAmount, dto.discount_type, dto.discount_value)
+      : { discountType: null, discountValue: null, discountAmount: 0 };
+    totalAmount = Number((totalAmount - discountAmount).toFixed(2));
+
     let cashReceived: number | null = null;
     let changeAmount: number | null = null;
     if (validatePayment) {
@@ -742,7 +765,59 @@ export class TransactionsService {
       ));
     }
 
-    return { totalAmount, itemsData, cashReceived, changeAmount, userId };
+    return {
+      totalAmount,
+      discountType,
+      discountValue,
+      discountAmount,
+      itemsData,
+      cashReceived,
+      changeAmount,
+      userId,
+    };
+  }
+
+  private computeDiscount(
+    subtotal: number,
+    type?: 'amount' | 'percent',
+    value?: number,
+  ) {
+    if (type == null && value == null) {
+      return { discountType: null, discountValue: null, discountAmount: 0 };
+    }
+    if (type == null || value == null) {
+      throw new BadRequestException(
+        'discount_type and discount_value must be sent together',
+      );
+    }
+    if (type === 'percent' && value > 100) {
+      throw new BadRequestException('Percent discount cannot exceed 100');
+    }
+    const discountAmount =
+      type === 'percent'
+        ? Number(((subtotal * value) / 100).toFixed(2))
+        : value;
+    if (discountAmount > subtotal) {
+      throw new BadRequestException('Discount cannot exceed the subtotal');
+    }
+    return { discountType: type, discountValue: value, discountAmount };
+  }
+
+  // Roles are per outlet, so check the role the user holds at this outlet.
+  private async assertCanDiscount(userId: string, outletId: string) {
+    const granted = await this.prisma.role_permissions.count({
+      where: {
+        permissions: { code: PERMISSION_DISCOUNT },
+        roles: {
+          user_roles: { some: { user_id: userId, outlet_id: outletId } },
+        },
+      },
+    });
+    if (granted === 0) {
+      throw new ForbiddenException(
+        `Permission denied. Required: ${PERMISSION_DISCOUNT}`,
+      );
+    }
   }
 
   private validatePayment(

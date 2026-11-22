@@ -2,6 +2,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsArray,
   IsBoolean,
+  IsIn,
   IsInt,
   IsNumber,
   IsNotEmpty,
@@ -162,6 +163,26 @@ export class CreateTransactionDto {
   @IsNumber()
   @Min(0)
   change_amount?: number;
+
+  @ApiPropertyOptional({
+    example: 'percent',
+    enum: ['amount', 'percent'],
+    description:
+      'Discount kind. Only honoured for POS orders paid immediately, and needs the transaction.discount permission',
+  })
+  @IsOptional()
+  @IsIn(['amount', 'percent'])
+  discount_type?: 'amount' | 'percent';
+
+  @ApiPropertyOptional({
+    example: 10,
+    description:
+      'Discount value: rupiah for "amount", 0-100 for "percent". Required with discount_type',
+  })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  discount_value?: number;
 
   @ApiPropertyOptional({
     example: true,

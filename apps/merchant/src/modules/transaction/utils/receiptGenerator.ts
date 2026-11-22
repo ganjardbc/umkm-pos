@@ -12,6 +12,9 @@ export interface ReceiptData {
   total_amount: string | number;
   cash_received?: string | number | null;
   change_amount?: string | number | null;
+  discount_type?: 'amount' | 'percent' | null;
+  discount_value?: string | number | null;
+  discount_amount?: string | number | null;
   is_offline: boolean;
   is_cancelled: boolean;
   transaction_items: Array<{
@@ -160,6 +163,19 @@ export const generateReceiptHTML = (transaction: ReceiptData): string => {
         padding-bottom: 24px;
         border-bottom: 2px dashed #ccc;
       ">
+        ${
+          Number(transaction?.discount_amount) > 0
+            ? `
+          <div style="display: flex; justify-content: space-between; font-size: 12px; color: #333;">
+            <span>Subtotal:</span>
+            <span>${formatCurrency(Number(transaction?.total_amount) + Number(transaction?.discount_amount))}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 12px; color: #333; margin-bottom: 4px;">
+            <span>Diskon${transaction?.discount_type === 'percent' ? ` (${Number(transaction?.discount_value)}%)` : ''}:</span>
+            <span>-${formatCurrency(transaction?.discount_amount as number)}</span>
+          </div>`
+            : ''
+        }
         <div style="
           display: flex;
           justify-content: space-between;

@@ -35,6 +35,9 @@ describe('TransactionsService', () => {
     user_roles: {
       findMany: jest.fn(),
     },
+    role_permissions: {
+      count: jest.fn(),
+    },
     transaction_items: {
       createMany: jest.fn(),
     },
@@ -308,6 +311,137 @@ describe('TransactionsService', () => {
       );
       expect(result).toBeDefined();
       expect(mockPrisma.$transaction).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('discount', () => {
+    const merchantId = 'merchant-1';
+    const userId = 'user-1';
+
+    const setup = (canDiscount = true) => {
+      mockPrisma.outlets.findFirst.mockResolvedValue({
+        id: 'outlet-1',
+        merchant_id: merchantId,
+      });
+      mockPrisma.products.findMany.mockResolvedValue([
+        { id: 'product-1', name: 'P', price: 10000, is_active: true },
+      ]);
+      mockPrisma.outlet_product_inventory.findMany.mockResolvedValue([
+        { outlet_id: 'outlet-1', product_id: 'product-1', stock_qty: 10 },
+      ]);
+      mockShiftsService.isShiftRequired.mockResolvedValue(false);
+      mockPrisma.role_permissions.count.mockResolvedValue(canDiscount ? 1 : 0);
+      const created: any[] = [];
+      mockPrisma.$transaction.mockImplementation(async (cb: any) =>
+        cb({
+          transactions: {
+            create: jest.fn(async ({ data }) => {
+              created.push(data);
+              return { id: 'tx-1' };
+            }),
+          },
+          transaction_items: { createMany: jest.fn() },
+          outlet_product_inventory: { update: jest.fn() },
+          inventory_movements: { create: jest.fn() },
+        }),
+      );
+      mockPrisma.transactions.findFirst.mockResolvedValue({ id: 'tx-1' });
+      return created;
+    };
+
+    const create = (extra: any) =>
+      service.create(
+        {
+          outlet_id: 'outlet-1',
+          payment_method: 'cash',
+          cash_received: 9000,
+          change_amount: 0,
+          items: [{ product_id: 'product-1', qty: 1 }],
+          ...extra,
+        } as any,
+        merchantId,
+        userId,
+      );
+
+    it('stores a percent discount and charges the net total', async () => {
+      const created = setup();
+      await create({ discount_type: 'percent', discount_value: 10 });
+      expect(created[0]).toMatchObject({
+        total_amount: 9000,
+        discount_type: 'percent',
+        discount_value: 10,
+        discount_amount: 1000,
+      });
+    });
+
+    it('stores a fixed amount discount', async () => {
+      const created = setup();
+      await create({ discount_type: 'amount', discount_value: 1000 });
+      expect(created[0]).toMatchObject({
+        total_amount: 9000,
+        discount_amount: 1000,
+      });
+    });
+
+    it('rejects cash that only covers the pre-discount shortfall', async () => {
+      setup();
+      await expect(
+        create({
+          discount_type: 'amount',
+          discount_value: 1000,
+          cash_received: 8000,
+        }),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('rejects a discount larger than the subtotal', async () => {
+      setup();
+      await expect(
+        create({ discount_type: 'amount', discount_value: 10001 }),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('rejects a percent above 100', async () => {
+      setup();
+      await expect(
+        create({ discount_type: 'percent', discount_value: 101 }),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('rejects a type without a value', async () => {
+      setup();
+      await expect(create({ discount_type: 'percent' })).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('rejects a discount from a role without transaction.discount', async () => {
+      setup(false);
+      await expect(
+        create({ discount_type: 'percent', discount_value: 10 }),
+      ).rejects.toThrow(ForbiddenException);
+    });
+
+    it('rejects a discount on a pay-later order', async () => {
+      setup();
+      await expect(
+        create({
+          pay_now: false,
+          discount_type: 'percent',
+          discount_value: 10,
+        }),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('no discount keeps the old behaviour and skips the permission check', async () => {
+      const created = setup(false);
+      await create({ cash_received: 10000 });
+      expect(created[0]).toMatchObject({
+        total_amount: 10000,
+        discount_type: null,
+        discount_amount: 0,
+      });
+      expect(mockPrisma.role_permissions.count).not.toHaveBeenCalled();
     });
   });
 

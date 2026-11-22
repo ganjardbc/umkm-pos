@@ -372,6 +372,14 @@ export const printReceipt = async (transaction: ReceiptData, paperSize: '58mm' |
   encoder.line('-'.repeat(columns));
 
   // Totals
+  if (Number(transaction.discount_amount) > 0) {
+    const subtotal = Number(transaction.total_amount) + Number(transaction.discount_amount);
+    const label = transaction.discount_type === 'percent'
+      ? `Diskon (${Number(transaction.discount_value)}%):`
+      : 'Diskon:';
+    encoder.line(formatRow('Subtotal:', formatCurrency(subtotal), columns));
+    encoder.line(formatRow(label, `-${formatCurrency(transaction.discount_amount as number)}`, columns));
+  }
   encoder.bold(true);
   encoder.line(formatRow('Total Pembayaran:', formatCurrency(transaction.total_amount), columns));
   encoder.bold(false);

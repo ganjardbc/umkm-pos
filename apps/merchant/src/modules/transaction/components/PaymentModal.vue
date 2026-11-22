@@ -28,16 +28,48 @@
     <Divider />
 
     <div class="space-y-4 min-h-86">
+      <UiFormGroup v-if="allowDiscount" label="Diskon" variant="vertical">
+        <div class="flex gap-2">
+          <Button
+            size="small"
+            label="Rp"
+            :variant="discountType === 'amount' ? undefined : 'outlined'"
+            @click="toggleDiscountType('amount')"
+          />
+          <Button
+            size="small"
+            label="%"
+            :variant="discountType === 'percent' ? undefined : 'outlined'"
+            @click="toggleDiscountType('percent')"
+          />
+          <InputNumber
+            v-model="discountValue"
+            :mode="discountType === 'amount' ? 'currency' : 'decimal'"
+            currency="IDR"
+            locale="id-ID"
+            :suffix="discountType === 'percent' ? '%' : undefined"
+            :min="0"
+            :max="discountType === 'percent' ? 100 : totalAmount"
+            :disabled="!discountType"
+            :placeholder="discountType ? 'Nilai diskon' : 'Pilih Rp atau %'"
+            fluid
+          />
+        </div>
+        <div v-if="discountAmount > 0" class="text-xs text-gray-500">
+          Subtotal {{ getCurrency(totalAmount) }}, diskon -{{ getCurrency(discountAmount) }}
+        </div>
+      </UiFormGroup>
+
       <div v-if="!isPaymentMethodCash" class="flex items-center justify-between p-3 bg-gray-100 dark:bg-dark! rounded-lg">
         <span class="text-sm text-gray-700 dark:text-gray-300">Total Pembayaran</span>
-        <span class="text-base font-semibold text-primary dark:text-primary-400">{{ getCurrency(totalAmount) }}</span>
+        <span class="text-base font-semibold text-primary dark:text-primary-400">{{ getCurrency(payableAmount) }}</span>
       </div>
 
       <div v-if="isPaymentMethodCash" class="w-full grid md:grid-cols-[1fr_260px] gap-5">
         <div class="flex-1 space-y-4">
           <div class="flex items-center justify-between p-3 bg-gray-100 dark:bg-dark! rounded-lg">
             <span class="text-sm text-gray-700 dark:text-gray-300">Total Pembayaran</span>
-            <span class="text-base font-semibold text-primary dark:text-primary-400">{{ getCurrency(totalAmount) }}</span>
+            <span class="text-base font-semibold text-primary dark:text-primary-400">{{ getCurrency(payableAmount) }}</span>
           </div>
 
           <UiFormGroup label="Uang Tunai Diterima" variant="vertical">
@@ -149,15 +181,19 @@
 import { computed, ref, watch } from 'vue';
 import { getCurrency } from '@umkm-pos/ui/helpers/utils';
 import UiFormGroup from '@umkm-pos/ui/components/UiFormGroup.vue';
+import { calcDiscountAmount, type DiscountType } from '@/modules/transaction/utils/discount.ts';
 
 const visibility = defineModel<boolean>('visibility', { required: true });
 
 const payment_method = defineModel<string>('paymentMethod', { required: true });
 const is_offline = defineModel<boolean>('isOffline', { required: true });
 const cashAmount = defineModel<number>('cashAmount', { required: true });
+const discountType = defineModel<DiscountType | ''>('discountType', { default: '' });
+const discountValue = defineModel<number | null>('discountValue', { default: null });
 
 const props = defineProps<{
   totalAmount: number;
+  allowDiscount?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -174,9 +210,13 @@ const paymentMethods = ref([
 const cashBills = [1000, 2000, 5000, 10000, 20000, 50000, 100000];
 const calculatorKeys = ['7', '8', '9', '4', '5', '6', '1', '2', '3', '000', '0', '00'];
 const calculatorBuffer = ref('0');
-const changeAmount = computed(() => Math.max(0, Number(cashAmount.value || 0) - props.totalAmount));
+const discountAmount = computed(() =>
+  props.allowDiscount ? calcDiscountAmount(props.totalAmount, discountType.value, discountValue.value) : 0,
+);
+const payableAmount = computed(() => props.totalAmount - discountAmount.value);
+const changeAmount = computed(() => Math.max(0, Number(cashAmount.value || 0) - payableAmount.value));
 const isPaymentMethodCash = computed(() => payment_method.value === 'cash');
-const isCashInsufficient = computed(() => isPaymentMethodCash.value && Number(cashAmount.value || 0) < props.totalAmount);
+const isCashInsufficient = computed(() => isPaymentMethodCash.value && Number(cashAmount.value || 0) < payableAmount.value);
 
 const addBill = (value: number) => {
   const next = Number(cashAmount.value || 0) + value;
@@ -185,8 +225,13 @@ const addBill = (value: number) => {
 };
 
 const setExactAmount = () => {
-  cashAmount.value = props.totalAmount;
-  calculatorBuffer.value = String(Math.floor(props.totalAmount));
+  cashAmount.value = payableAmount.value;
+  calculatorBuffer.value = String(Math.floor(payableAmount.value));
+};
+
+const toggleDiscountType = (type: DiscountType) => {
+  discountType.value = discountType.value === type ? '' : type;
+  discountValue.value = null;
 };
 
 // "Bayar Sekarang" is already the explicit confirmation; no second dialog.

@@ -278,7 +278,10 @@
     v-model:payment-method="transactionForm.payment_method"
     v-model:is-offline="transactionForm.is_offline"
     v-model:cash-amount="cashPaidAmount"
+    v-model:discount-type="discountType"
+    v-model:discount-value="discountValue"
     :total-amount="posStore.cartTotal"
+    :allow-discount="isCanDiscount"
     @confirm="onCheckout"
   />
 
@@ -303,13 +306,15 @@ import { useShift } from '@/modules/shift/composables/useShift.ts';
 import PaymentModal from '@/modules/transaction/components/PaymentModal.vue';
 import ReceiptModal from '@/modules/transaction/components/ReceiptModal.vue';
 import type { ReceiptData } from '@/modules/transaction/utils/receiptGenerator.ts';
-import { PRINT } from '@/modules/transaction/services/rbac.ts';
+import { PRINT, DISCOUNT } from '@/modules/transaction/services/rbac.ts';
+import { calcDiscountAmount, type DiscountType } from '@/modules/transaction/utils/discount.ts';
 import { getPersonalInformation, isHasPermission } from '@/helpers/auth.ts';
 
 const { shiftRequired } = useShift();
 
 // Receipt shown right after a successful payment
 const isCanPrint = computed(() => isHasPermission(PRINT));
+const isCanDiscount = computed(() => isHasPermission(DISCOUNT));
 const showReceiptModal = ref(false);
 const receiptData = ref({} as ReceiptData);
 
@@ -354,9 +359,16 @@ const isLoadingTables = ref(false);
 const cashPaidAmount = ref<number>(0);
 const showPaymentModal = ref(false);
 const isCashPayment = computed(() => transactionForm.value.payment_method === 'cash');
-const hasInsufficientCash = computed(() => isCashPayment.value && cashPaidAmount.value < posStore.cartTotal);
+// Discount is only offered (and sent) to roles holding transaction.discount; the API enforces it too.
+const discountType = ref<DiscountType | ''>('');
+const discountValue = ref<number | null>(null);
+const discountAmount = computed(() =>
+  isCanDiscount.value ? calcDiscountAmount(posStore.cartTotal, discountType.value, discountValue.value) : 0,
+);
+const payableTotal = computed(() => posStore.cartTotal - discountAmount.value);
+const hasInsufficientCash = computed(() => isCashPayment.value && cashPaidAmount.value < payableTotal.value);
 const cashChangeAmount = computed(() =>
-  isCashPayment.value ? Math.max(0, cashPaidAmount.value - posStore.cartTotal) : 0,
+  isCashPayment.value ? Math.max(0, cashPaidAmount.value - payableTotal.value) : 0,
 );
 
 const fetchTables = async (outletId: string) => {
@@ -489,6 +501,10 @@ const onCheckout = async () => {
       table_id: transactionForm.value.table_id || undefined,
       cash_received: isCashPayment.value ? cashPaidAmount.value : undefined,
       change_amount: isCashPayment.value ? cashChangeAmount.value : undefined,
+      ...(discountAmount.value > 0 && {
+        discount_type: discountType.value,
+        discount_value: discountValue.value,
+      }),
       items: posStore.cartItems.map(item => ({
         product_id: item.id,
         qty: item.quantity,
@@ -523,6 +539,8 @@ const onCheckout = async () => {
       // Emit event to parent to handle form clearing
       emit('checkout-success');
       cashPaidAmount.value = 0;
+      discountType.value = '';
+      discountValue.value = null;
     }
   } catch (error: any) {
     console.error('Checkout error:', error);

@@ -52,6 +52,16 @@
 
     <!-- Total -->
     <div class="mb-4 space-y-2">
+      <template v-if="Number(transaction?.discount_amount) > 0">
+        <div class="flex justify-between text-xs text-gray-700">
+          <span>Subtotal:</span>
+          <span>{{ formatCurrency(Number(transaction?.total_amount) + Number(transaction?.discount_amount)) }}</span>
+        </div>
+        <div class="flex justify-between text-xs text-gray-700">
+          <span>Diskon{{ transaction?.discount_type === 'percent' ? ` (${Number(transaction?.discount_value)}%)` : '' }}:</span>
+          <span>-{{ formatCurrency(transaction?.discount_amount as number) }}</span>
+        </div>
+      </template>
       <div class="flex justify-between text-sm font-bold text-gray-900">
         <span>Total Pembayaran:</span>
         <span>{{ formatCurrency(transaction?.total_amount) }}</span>
