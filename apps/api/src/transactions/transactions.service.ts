@@ -352,7 +352,12 @@ export class TransactionsService {
     return updated;
   }
 
-  async cancel(id: string, merchantId: string, userId: string) {
+  async cancel(
+    id: string,
+    merchantId: string,
+    userId: string,
+    reason?: string,
+  ) {
     const allowedOutletIds = await this.getAllowedOutletIds(userId, merchantId);
     const transaction = await this.prisma.transactions.findFirst({
       where: {
@@ -377,6 +382,7 @@ export class TransactionsService {
         where: { id },
         data: {
           is_cancelled: true,
+          cancel_reason: reason?.trim() || null,
           ...(transaction.order_source === ORDER_SOURCE_CUSTOMER && {
             order_status: ORDER_STATUS_COMPLETED,
             completed_at: new Date(),

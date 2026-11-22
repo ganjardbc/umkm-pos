@@ -119,7 +119,7 @@ export class TransactionsController {
     @CurrentUser('merchant_id') merchantId: string,
     @CurrentUser('id') userId: string,
   ) {
-    return this.transactionsService.cancel(id, merchantId, userId);
+    return this.transactionsService.cancel(id, merchantId, userId, dto.reason);
   }
 
   @Patch(':id/status')

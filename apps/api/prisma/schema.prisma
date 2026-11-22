@@ -406,6 +406,7 @@ model transactions {
   created_by        String?             @db.Char(36)
   updated_by        String?             @db.Char(36)
   is_cancelled      Boolean             @default(false)
+  cancel_reason     String?             @db.VarChar(255)
   transaction_items transaction_items[]
   outlets           outlets             @relation(fields: [outlet_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "transactions_ibfk_1")
   users             users?              @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "transactions_ibfk_2")

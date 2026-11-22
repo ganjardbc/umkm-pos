@@ -17,6 +17,12 @@
           :value="transactionDetail.is_cancelled ? 'Dibatalkan' : 'Aktif'"
           :severity="transactionDetail.is_cancelled ? 'danger' : 'success'"
         />
+        <span
+          v-if="transactionDetail?.is_cancelled && transactionDetail.cancel_reason"
+          class="text-sm text-gray-500"
+        >
+          Alasan: {{ transactionDetail.cancel_reason }}
+        </span>
       </div>
     </div>
 
@@ -250,6 +256,11 @@
     </div>
   </div>
 
+  <CancelReasonModal
+    v-model:visibility="showCancelModal"
+    @confirm="(reason) => cancelTransaction(cancelTargetId, reason)"
+  />
+
   <ReceiptModal
     v-if="isCanPrint"
     v-model:visibility="showReceiptModal"
@@ -272,7 +283,7 @@ import { type ReceiptData } from '../utils/receiptGenerator';
 import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { getErrorMessage, getCurrency, formatDateTime, formatPrice } from '@umkm-pos/ui/helpers/utils';
-import { showToast, showConfirm } from '@umkm-pos/ui/helpers/toast';
+import { showToast } from '@umkm-pos/ui/helpers/toast';
 import { showLoading, hideLoading } from '@umkm-pos/ui/helpers/loading';
 import { isHasPermission } from '@/helpers/auth.ts';
 import { useShift } from '@/modules/shift/composables/useShift.ts';
@@ -285,6 +296,7 @@ import {
 import { PRINT, CANCEL, CREATE, UPDATE_STATUS } from '@/modules/transaction/services/rbac.ts';
 import { getOrderStatusLabel } from '@/modules/transaction/services/status-labels.ts';
 import ReceiptModal from '@/modules/transaction/components/ReceiptModal.vue';
+import CancelReasonModal from '@/modules/transaction/components/CancelReasonModal.vue';
 import PaymentModal from '@/modules/transaction/components/PaymentModal.vue';
 
 import UiCard from '@umkm-pos/ui/components/UiCard.vue';
@@ -365,11 +377,11 @@ const fetchDetail = async () => {
 };
 
 // Actions
-const cancelTransaction = async (id: string) => {
+const cancelTransaction = async (id: string, reason: string) => {
   try {
     showLoading();
 
-    const response = await postCancelTransaction(id);
+    const response = await postCancelTransaction(id, { reason: reason || undefined });
     const { success } = response?.data || {};
     if (success) {
       showToast({
@@ -390,17 +402,12 @@ const cancelTransaction = async (id: string) => {
   }
 };
 
+const showCancelModal = ref(false);
+const cancelTargetId = ref('');
+
 const onCancelTransaction = (transaction: any) => {
-  showConfirm({
-    header: 'Batalkan Transaksi',
-    message: 'Apakah Anda yakin ingin membatalkan transaksi ini? Stok produk akan dikembalikan.',
-    rejectLabel: 'Tidak',
-    acceptLabel: 'Ya, Batalkan',
-    type: 'warn',
-    accept: () => {
-      cancelTransaction(transaction?.id);
-    },
-  });
+  cancelTargetId.value = transaction?.id;
+  showCancelModal.value = true;
 };
 
 // Advance order status (pure workflow, no payment involved)

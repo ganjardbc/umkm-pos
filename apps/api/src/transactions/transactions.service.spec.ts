@@ -245,6 +245,14 @@ describe('TransactionsService', () => {
 
         const result = await callback(tx);
 
+        expect(tx.transactions.update).toHaveBeenCalledWith(
+          expect.objectContaining({
+            data: expect.objectContaining({
+              is_cancelled: true,
+              cancel_reason: 'salah input',
+            }),
+          }),
+        );
         expect(tx.outlet_product_inventory.update).toHaveBeenCalledWith(
           expect.objectContaining({
             where: {
@@ -292,7 +300,12 @@ describe('TransactionsService', () => {
         ],
       });
 
-      const result = await service.cancel('tx-1', merchantId, userId);
+      const result = await service.cancel(
+        'tx-1',
+        merchantId,
+        userId,
+        '  salah input ',
+      );
       expect(result).toBeDefined();
       expect(mockPrisma.$transaction).toHaveBeenCalledTimes(1);
     });

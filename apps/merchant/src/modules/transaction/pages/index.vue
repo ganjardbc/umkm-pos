@@ -187,6 +187,11 @@
     />
   </div>
 
+  <CancelReasonModal
+    v-model:visibility="showCancelModal"
+    @confirm="(reason) => cancelTransaction(cancelTargetId, reason)"
+  />
+
   <ReceiptModal
     v-if="isCanPrint"
     v-model:visibility="showReceiptModal"
@@ -210,7 +215,7 @@ import { onMounted, ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { getNoTable, getErrorMessage, getCurrency, formatDateTime, useDebounce } from '@umkm-pos/ui/helpers/utils';
 import { getListTransaction, patchTransactionStatus, patchTransactionPay, postCancelTransaction } from '@/modules/transaction/services/api.ts';
-import { showToast, showConfirm } from '@umkm-pos/ui/helpers/toast';
+import { showToast } from '@umkm-pos/ui/helpers/toast';
 import { showLoading, hideLoading } from '@umkm-pos/ui/helpers/loading';
 import { getOutlet } from '@/helpers/auth.ts';
 import { isHasPermission } from '@/helpers/auth.ts';
@@ -220,6 +225,7 @@ import UiSearch from '@umkm-pos/ui/components/UiSearch.vue';
 import UiPagination from '@umkm-pos/ui/components/UiPagination.vue';
 import UiLoading from '@umkm-pos/ui/components/UiLoading.vue';
 import ReceiptModal from '@/modules/transaction/components/ReceiptModal.vue';
+import CancelReasonModal from '@/modules/transaction/components/CancelReasonModal.vue';
 import PaymentModal from '@/modules/transaction/components/PaymentModal.vue';
 import { READ, PRINT, CREATE, CANCEL, UPDATE_STATUS } from '@/modules/transaction/services/rbac.ts';
 import { getOrderStatusLabel } from '@/modules/transaction/services/status-labels.ts';
@@ -380,11 +386,11 @@ const confirmPayment = async () => {
 };
 
 // Actions
-const cancelTransaction = async (id: string) => {
+const cancelTransaction = async (id: string, reason: string) => {
   try {
     showLoading();
 
-    const response = await postCancelTransaction(id);
+    const response = await postCancelTransaction(id, { reason: reason || undefined });
     const { success } = response?.data || {};
     if (success) {
       showToast({
@@ -405,17 +411,12 @@ const cancelTransaction = async (id: string) => {
   }
 };
 
+const showCancelModal = ref(false);
+const cancelTargetId = ref('');
+
 const onCancelTransaction = (transaction: any) => {
-  showConfirm({
-    header: 'Batalkan Transaksi',
-    message: 'Apakah Anda yakin ingin membatalkan transaksi ini? Stok produk akan dikembalikan.',
-    rejectLabel: 'Tidak',
-    acceptLabel: 'Ya, Batalkan',
-    type: 'warn',
-    accept: () => {
-      cancelTransaction(transaction?.id);
-    },
-  });
+  cancelTargetId.value = transaction?.id;
+  showCancelModal.value = true;
 };
 
 const advanceStatus = async (transaction: any) => {
