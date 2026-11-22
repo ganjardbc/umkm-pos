@@ -46,15 +46,31 @@ export class StockService {
       ...(outletId ? { outlet_id: outletId } : {}),
     };
 
+    const include = {
+      outlets: { select: { id: true, name: true, slug: true } },
+      products: { select: { id: true, name: true, slug: true, price: true } },
+    };
+
+    if (lowStockOnly) {
+      // Prisma can't compare two columns, so filter in memory before paginating
+      const rows = await this.prisma.outlet_product_inventory.findMany({
+        where,
+        include,
+        orderBy: { created_at: 'desc' },
+      });
+      const low = rows.filter(
+        (row) => row.min_stock > 0 && row.stock_qty <= row.min_stock,
+      );
+      return {
+        data: low.slice(skip, skip + limit),
+        meta: PaginationDto.calculateMeta(low.length, page, limit),
+      };
+    }
+
     const [data, total] = await this.prisma.$transaction([
       this.prisma.outlet_product_inventory.findMany({
         where,
-        include: {
-          outlets: { select: { id: true, name: true, slug: true } },
-          products: {
-            select: { id: true, name: true, slug: true, price: true },
-          },
-        },
+        include,
         orderBy: { created_at: 'desc' },
         skip,
         take: limit,
@@ -62,12 +78,8 @@ export class StockService {
       this.prisma.outlet_product_inventory.count({ where }),
     ]);
 
-    const filtered = lowStockOnly
-      ? data.filter((row) => row.stock_qty <= row.min_stock)
-      : data;
-
     return {
-      data: filtered,
+      data,
       meta: PaginationDto.calculateMeta(total, page, limit),
     };
   }
