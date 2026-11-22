@@ -15,6 +15,7 @@ export interface ReceiptData {
   discount_type?: 'amount' | 'percent' | null;
   discount_value?: string | number | null;
   discount_amount?: string | number | null;
+  customer_phone_snapshot?: string | null;
   is_offline: boolean;
   is_cancelled: boolean;
   transaction_items: Array<{

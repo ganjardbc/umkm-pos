@@ -117,6 +117,24 @@
           </div>
         </div>
 
+        <!-- WhatsApp: opens a prefilled chat; no API, the cashier taps send -->
+        <div class="flex gap-2">
+          <InputText
+            v-model="whatsappPhone"
+            inputmode="tel"
+            class="flex-1"
+            placeholder="No. WhatsApp pelanggan (opsional)"
+            @keyup.enter="sendWhatsApp"
+          />
+          <Button
+            label="Kirim"
+            icon="pi pi-whatsapp"
+            severity="success"
+            variant="outlined"
+            @click="sendWhatsApp"
+          />
+        </div>
+
         <!-- Footer -->
         <div class="w-full grid grid-cols-2 gap-4">
           <Button
@@ -145,10 +163,11 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import html2canvas from 'html2canvas';
 import ReceiptPreview from './ReceiptPreview.vue';
 import { generateReceiptHTML, type ReceiptData } from '../utils/receiptGenerator';
+import { buildReceiptText, buildWhatsAppUrl, toWhatsAppNumber } from '../utils/receiptText';
 import { showToast } from '@umkm-pos/ui/helpers/toast';
 import {
   isBluetoothSupported,
@@ -176,6 +195,27 @@ const isDownloading = ref(false);
 const isSupported = ref(false);
 const isConnected = ref(false);
 const deviceName = ref<string | null>(null);
+const whatsappPhone = ref('');
+
+// Prefill from the customer's phone when the order has one (self-order flow)
+watch(visibility, (open) => {
+  if (open) whatsappPhone.value = props.selected?.customer_phone_snapshot ?? '';
+});
+
+const sendWhatsApp = () => {
+  const raw = whatsappPhone.value.trim();
+  const phone = raw ? toWhatsAppNumber(raw) : null;
+  if (raw && !phone) {
+    showToast({
+      type: 'error',
+      title: 'Nomor Tidak Valid',
+      message: 'Gunakan nomor Indonesia, contoh 0812xxxxxxx.',
+    });
+    return;
+  }
+  window.open(buildWhatsAppUrl(phone, buildReceiptText(props.selected)), '_blank', 'noopener');
+};
+
 const paperSize = ref<'58mm' | '80mm'>('58mm');
 const showSettings = ref(false);
 const isConnecting = ref(false);

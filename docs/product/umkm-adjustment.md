@@ -19,7 +19,7 @@ Tanda di dokumen ini:
 |---|---|
 | Kasir | Transaksi tunai, debit, e-wallet, QRIS (dicatat manual, lihat catatan), bayar-nanti ("Buat Pesanan", `pay_now: false`), tambah item ke pesanan, catatan per item, pilih meja opsional |
 | Pembayaran tunai | Kalkulator angka, tombol "Uang Pas", tombol tambah pecahan (+1.000 sampai +100.000), kembalian otomatis. Tanpa konfirmasi kedua setelah "Bayar Sekarang" |
-| Struk | Pratinjau dan cetak printer Bluetooth. Terbuka otomatis setelah bayar di kasir (bila punya izin `transaction.print`), dan bisa dibuka dari halaman daftar dan detail transaksi |
+| Struk | Pratinjau dan cetak printer Bluetooth. Terbuka otomatis setelah bayar di kasir (bila punya izin `transaction.print`), dan bisa dibuka dari halaman daftar dan detail transaksi. Tombol "Kirim" membuka WhatsApp dengan teks struk terisi (nomor Indonesia opsional, terisi otomatis dari nomor pesanan self-order). Bukan integrasi API: kasir menekan kirim sendiri |
 | Shift dan kas | Buka/tutup kasir opsional per outlet, kas awal, kas akhir, selisih, kas masuk/keluar, peserta dan handoff, audit log |
 | Stok | Stok per outlet, stok awal dan stok minimum bisa diisi saat membuat produk (nilai awal 0), penyesuaian stok, riwayat stok, notifikasi stok rendah |
 | Produk di kasir | Grid produk dipaginasi (`page`, `limit`), filter kategori, label "Stok: n", tag "Habis" dan "Stok Menipis", tombol coba lagi bila gagal dimuat |
@@ -44,7 +44,7 @@ Terverifikasi: schema Prisma (`apps/api/prisma/schema.prisma`) tidak punya model
 - pisah bayar (split bill);
 - data pelanggan tetap. Yang ada hanya `customer_sessions` per kunjungan;
 - impor produk massal;
-- struk digital (WhatsApp atau email);
+- struk digital lewat email atau tautan publik (WhatsApp sudah ada sebagai teks, tanpa lampiran atau tautan);
 - layar dapur (KDS). Status pesanan ada (`order_status`), tetapi tidak ada halaman atau modul dapur.
 
 Sengaja belum ada (sesuai catatan proyek): akuntansi, pajak, CRM, loyalty, pembelian ke supplier, multi-gudang, analitik lanjutan.
@@ -84,7 +84,7 @@ Selisih yang bisa dijual Insell: shift dan kas opsional di paket dasar, self-ord
 
 ## 7. Rencana bertahap (usulan)
 **Fase 1, kemudahan pakai (murah, dampak tiap transaksi)**
-Status 2026-11-22: Fase 2 butir 8 (diskon) juga sudah dikerjakan, lihat di bawah. Fase 1 butir 1 sampai 4, 6, dan 7 sudah dikerjakan dan di-commit (build merchant dan tes API transaksi lolos, belum diuji manual di browser). Butir 6: alasan batal opsional, disimpan di `transactions.cancel_reason`, migrasi `20261122000000_add_cancel_reason_to_transactions` belum dijalankan ke database mana pun. Butir 5 di-hold bersama offline sync.
+Status 2026-11-22: Fase 2 butir 8 (diskon) dan 11 (struk WhatsApp) juga sudah dikerjakan, lihat di bawah. Fase 1 butir 1 sampai 4, 6, dan 7 sudah dikerjakan dan di-commit (build merchant dan tes API transaksi lolos, belum diuji manual di browser). Butir 6: alasan batal opsional, disimpan di `transactions.cancel_reason`, migrasi `20261122000000_add_cancel_reason_to_transactions` belum dijalankan ke database mana pun. Butir 5 di-hold bersama offline sync.
 
 1. ✅ Tombol "Uang Pas" di pembayaran tunai (temuan 1). Pembulatan nominal cepat selain tombol pecahan yang sudah ada belum dibuat.
 2. ✅ Konfirmasi ganda dihapus. Struk terbuka otomatis setelah bayar, dengan tombol cetak (temuan 2, 3).
@@ -100,7 +100,7 @@ Status 2026-11-22: Fase 2 butir 8 (diskon) juga sudah dikerjakan, lihat di bawah
 8. ✅ Diskon sederhana per transaksi (nominal atau persen), disimpan sebagai snapshot di transaksi. Dibatasi izin `transaction.discount`, hanya saat bayar langsung. Belum ada: diskon pada pesanan bayar-nanti, batas maksimum diskon per peran, laporan total diskon, dan UI untuk memberi izin ke peran kasir (lewat pengaturan peran).
 9. Varian dan modifier produk (ukuran, topping) untuk kafe, dengan harga snapshot per item.
 10. Otorisasi PIN manager untuk pembatalan dan void, alasan wajib, tercatat di audit log. Kolom alasan sudah ada (Fase 1 butir 6), tinggal mewajibkannya dan menambah PIN.
-11. Struk digital lewat tautan atau WhatsApp (bagikan, bukan integrasi API).
+11. ✅ Struk digital lewat WhatsApp: teks struk dikirim lewat `wa.me` (bagikan, bukan integrasi API). Belum ada: tautan publik ke struk, lampiran gambar, pengiriman otomatis, dan nomor luar negeri (hanya nomor Indonesia).
 
 **Fase 3, kontrol lanjutan**
 12. Pelanggan tetap sederhana (nama, telepon, riwayat), tanpa loyalty.
