@@ -427,6 +427,113 @@ describe('ProductsService', () => {
     });
   });
 
+  describe('importProducts', () => {
+    const merchantId = 'merchant-1';
+    const userId = 'user-1';
+    const outlet_id = '550e8400-e29b-41d4-a716-446655440021';
+
+    const setup = (existing: Array<{ name: string; slug: string }> = []) => {
+      mockPrisma.outlets.findFirst.mockResolvedValue({ id: outlet_id });
+      mockPrisma.products.findMany.mockResolvedValue(existing);
+      const tx = {
+        product_categories: {
+          findMany: jest
+            .fn()
+            .mockResolvedValue([{ id: 'cat-1', name: 'Makanan' }]),
+          create: jest.fn().mockResolvedValue({ id: 'cat-new' }),
+        },
+        products: { createMany: jest.fn() },
+        outlet_product_inventory: { createMany: jest.fn() },
+      };
+      mockPrisma.$transaction.mockImplementation(async (cb: any) => cb(tx));
+      return tx;
+    };
+
+    it('creates products, inventory and missing categories in one transaction', async () => {
+      const tx = setup([{ name: 'Lama', slug: 'keripik-singkong' }]);
+      const result = await service.importProducts(
+        {
+          outlet_id,
+          rows: [
+            {
+              name: 'Keripik Singkong',
+              price: 15000,
+              category: 'makanan',
+              stock_qty: 50,
+            },
+            {
+              name: 'Kaos Bali',
+              price: 80000,
+              cost: 40000,
+              category: 'Fashion',
+              min_stock: 3,
+            },
+          ],
+        },
+        merchantId,
+        userId,
+      );
+      expect(result).toEqual({ created: 2, categories_created: 1 });
+      expect(tx.product_categories.create).toHaveBeenCalledTimes(1);
+      const products = tx.products.createMany.mock.calls[0][0].data;
+      // existing slug is taken, so the new one gets a numeric suffix
+      expect(products[0]).toMatchObject({
+        slug: 'keripik-singkong-2',
+        category_id: 'cat-1',
+        cost: 0,
+      });
+      expect(products[1]).toMatchObject({
+        slug: 'kaos-bali',
+        category_id: 'cat-new',
+        cost: 40000,
+      });
+      const inventory =
+        tx.outlet_product_inventory.createMany.mock.calls[0][0].data;
+      expect(
+        inventory.map((i: any) => [i.product_id, i.stock_qty, i.min_stock]),
+      ).toEqual([
+        [products[0].id, 50, 0],
+        [products[1].id, 0, 3],
+      ]);
+    });
+
+    it('rejects everything and writes nothing when any row is bad', async () => {
+      setup([{ name: 'Sudah Ada', slug: 'sudah-ada' }]);
+      const promise = service.importProducts(
+        {
+          outlet_id,
+          rows: [
+            { name: 'Baru', price: 1 },
+            { name: 'sudah ada', price: 1 },
+            { name: 'BARU', price: 1 },
+          ],
+        },
+        merchantId,
+        userId,
+      );
+      await expect(promise).rejects.toThrow(BadRequestException);
+      await promise.catch((e) => {
+        expect(e.getResponse().message).toEqual([
+          'Baris 3: produk "sudah ada" sudah ada',
+          'Baris 4: "BARU" duplikat dengan baris 2',
+        ]);
+      });
+      expect(mockPrisma.$transaction).not.toHaveBeenCalled();
+    });
+
+    it('rejects an outlet of another merchant', async () => {
+      setup();
+      mockPrisma.outlets.findFirst.mockResolvedValue(null);
+      await expect(
+        service.importProducts(
+          { outlet_id, rows: [{ name: 'A', price: 1 }] },
+          merchantId,
+          userId,
+        ),
+      ).rejects.toThrow(NotFoundException);
+    });
+  });
+
   describe('option groups', () => {
     const merchantId = 'merchant-1';
     const userId = 'user-1';

@@ -57,3 +57,11 @@ export const getProductStock = async (data: any, options: any = {}) => {
   );
 };
 
+
+export const postImportProducts = async (data: any, options: any = {}) => {
+  return await api.post(
+    `/api/v1/products/import`,
+    data,
+    { ...(options || {}) },
+  );
+};

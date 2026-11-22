@@ -12,6 +12,8 @@ import {
 import { UpdateProductDto } from './dto/update-product.dto';
 import { PaginationDto } from '../common/dto/pagination.dto';
 import { ProductsQueryDto } from './dto/products-query.dto';
+import { ImportProductsDto } from './dto/import-products.dto';
+import { randomUUID } from 'crypto';
 import { CategoriesService } from './categories/categories.service';
 import { UploadsService } from '../uploads/uploads.service';
 
@@ -349,6 +351,135 @@ export class ProductsService {
         }),
       },
       include: PRODUCT_INCLUDE,
+    });
+  }
+
+  // All-or-nothing: every row is checked first, and nothing is written unless all pass.
+  async importProducts(
+    dto: ImportProductsDto,
+    merchantId: string,
+    userId: string,
+  ) {
+    const outlet = await this.prisma.outlets.findFirst({
+      where: { id: dto.outlet_id, merchant_id: merchantId },
+    });
+    if (!outlet) {
+      throw new NotFoundException(`Outlet with ID ${dto.outlet_id} not found`);
+    }
+
+    const names = dto.rows.map((row) => row.name.trim());
+    const existing = await this.prisma.products.findMany({
+      where: { merchant_id: merchantId },
+      select: { name: true, slug: true },
+    });
+    const takenNames = new Set(
+      existing.map((p) => p.name.trim().toLowerCase()),
+    );
+    const takenSlugs = new Set(existing.map((p) => p.slug));
+
+    // Row numbers match a spreadsheet whose header is on row 1.
+    const errors: string[] = [];
+    const seenInFile = new Map<string, number>();
+    names.forEach((name, index) => {
+      const row = index + 2;
+      const key = name.toLowerCase();
+      if (!name) errors.push(`Baris ${row}: nama kosong`);
+      else if (takenNames.has(key))
+        errors.push(`Baris ${row}: produk "${name}" sudah ada`);
+      else if (seenInFile.has(key))
+        errors.push(
+          `Baris ${row}: "${name}" duplikat dengan baris ${seenInFile.get(key)}`,
+        );
+      else seenInFile.set(key, row);
+    });
+    if (errors.length > 0) {
+      throw new BadRequestException({
+        message: errors,
+        error: 'Bad Request',
+      });
+    }
+
+    const slugFor = (name: string) => {
+      const base =
+        name
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-+|-+$/g, '')
+          .slice(0, 100) || 'produk';
+      let slug = base;
+      for (let n = 2; takenSlugs.has(slug); n++) slug = `${base}-${n}`;
+      takenSlugs.add(slug);
+      return slug;
+    };
+
+    return this.prisma.$transaction(async (tx) => {
+      const categoryNames = [
+        ...new Set(
+          dto.rows
+            .map((r) => r.category?.trim())
+            .filter((c): c is string => !!c),
+        ),
+      ];
+      const categories = await tx.product_categories.findMany({
+        where: { merchant_id: merchantId },
+      });
+      const categoryIds = new Map(
+        categories.map((c) => [c.name.toLowerCase(), c.id]),
+      );
+      let categoriesCreated = 0;
+      for (const name of categoryNames) {
+        if (categoryIds.has(name.toLowerCase())) continue;
+        const created = await tx.product_categories.create({
+          data: {
+            merchant_id: merchantId,
+            name,
+            created_by: userId,
+            updated_by: userId,
+          },
+        });
+        categoryIds.set(name.toLowerCase(), created.id);
+        categoriesCreated++;
+      }
+
+      const products = dto.rows.map((row) => ({
+        id: randomUUID(),
+        row,
+      }));
+      await tx.products.createMany({
+        data: products.map(({ id, row }) => ({
+          id,
+          merchant_id: merchantId,
+          slug: slugFor(row.name.trim()),
+          name: row.name.trim(),
+          price: row.price,
+          cost: row.cost ?? 0,
+          category_id: row.category?.trim()
+            ? categoryIds.get(row.category.trim().toLowerCase())
+            : null,
+          stock_qty: 0,
+          min_stock: 0,
+          is_active: true,
+          created_by: userId,
+          updated_by: userId,
+        })),
+      });
+      await tx.outlet_product_inventory.createMany({
+        data: products.map(({ id, row }) => ({
+          merchant_id: merchantId,
+          outlet_id: dto.outlet_id,
+          product_id: id,
+          stock_qty: row.stock_qty ?? 0,
+          min_stock: row.min_stock ?? 0,
+          is_active: true,
+          created_by: userId,
+          updated_by: userId,
+        })),
+      });
+
+      return {
+        created: products.length,
+        categories_created: categoriesCreated,
+      };
     });
   }
 

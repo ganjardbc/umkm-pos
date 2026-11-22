@@ -20,6 +20,7 @@ import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { SetProductImageDto } from './dto/set-product-image.dto';
+import { ImportProductsDto } from './dto/import-products.dto';
 import { ProductsQueryDto } from './dto/products-query.dto';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { RequirePermission } from '../common/decorators/require-permission.decorator';
@@ -46,6 +47,24 @@ export class ProductsController {
     @CurrentUser('id') userId: string,
   ) {
     return this.productsService.create(dto, merchantId, userId);
+  }
+
+  @Post('import')
+  @RequirePermission('product.create')
+  @ApiOperation({
+    summary: 'Bulk-create products (max 500) from parsed CSV/Excel rows',
+  })
+  @ApiResponse({ status: 201, description: 'All rows were created' })
+  @ApiResponse({
+    status: 400,
+    description: 'Nothing was created; errors[] lists every bad row',
+  })
+  importProducts(
+    @Body() dto: ImportProductsDto,
+    @CurrentUser('merchant_id') merchantId: string,
+    @CurrentUser('id') userId: string,
+  ) {
+    return this.productsService.importProducts(dto, merchantId, userId);
   }
 
   @Get()

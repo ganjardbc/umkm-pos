@@ -22,6 +22,15 @@
         @update:modelValue="onFilterChange"
       />
       <Button
+        icon="pi pi-upload"
+        label="Impor"
+        severity="secondary"
+        variant="outlined"
+        class="w-full md:w-32"
+        :disabled="!isCanCreate"
+        @click="showImport = true"
+      />
+      <Button
         icon="pi pi-plus"
         label="Tambah Produk"
         class="w-full md:w-[192px]"
@@ -170,10 +179,16 @@
     @cancel="cancelAdjustStockModal"
     @submit="submitAdjustStockModal"
   />
+
+  <ImportProductsModal
+    v-model:visibility="showImport"
+    @imported="fetchProduct"
+  />
 </template>
 
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue';
+import ImportProductsModal from '@/modules/product-lists/components/ImportProductsModal.vue';
 import { useRouter } from 'vue-router';
 import { getNoTable, getErrorMessage, getCurrency, formatDateTime } from '@umkm-pos/ui/helpers/utils';
 import { getListProduct, deleteProduct, postAdjustStock } from '@/modules/product-lists/services/api';
@@ -195,6 +210,7 @@ const router = useRouter();
 
 // RBAC
 const isCanCreate = computed(() => isHasPermission(CREATE));
+const showImport = ref(false);
 const isCanUpdate = computed(() => isHasPermission(UPDATE));
 const isCanDelete = computed(() => isHasPermission(DELETE));
 const isCanAdjust = computed(() => isHasPermission(ADJUST));
