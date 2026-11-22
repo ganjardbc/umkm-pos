@@ -42,6 +42,9 @@ describe('TransactionsService', () => {
     users: {
       findMany: jest.fn(),
     },
+    customers: {
+      findFirst: jest.fn(),
+    },
     product_option_groups: {
       findMany: jest.fn().mockResolvedValue([]),
     },
@@ -594,6 +597,85 @@ describe('TransactionsService', () => {
           userId,
         ),
       ).resolves.toBeDefined();
+    });
+  });
+
+  describe('customer link', () => {
+    const merchantId = 'merchant-1';
+    const userId = 'user-1';
+
+    const setup = (customer: any) => {
+      mockShiftsService.isShiftRequired.mockResolvedValue(false);
+      mockPrisma.outlets.findFirst.mockResolvedValue({ id: 'outlet-1' });
+      mockPrisma.products.findMany.mockResolvedValue([
+        { id: 'product-1', name: 'P', price: 10000, is_active: true },
+      ]);
+      mockPrisma.outlet_product_inventory.findMany.mockResolvedValue([
+        { outlet_id: 'outlet-1', product_id: 'product-1', stock_qty: 10 },
+      ]);
+      mockPrisma.customers.findFirst.mockResolvedValue(customer);
+      const created: any[] = [];
+      mockPrisma.$transaction.mockImplementation(async (cb: any) =>
+        cb({
+          transactions: {
+            create: jest.fn(async ({ data }) => {
+              created.push(data);
+              return { id: 'tx-1' };
+            }),
+          },
+          transaction_items: { createMany: jest.fn() },
+          outlet_product_inventory: { update: jest.fn() },
+          inventory_movements: { create: jest.fn() },
+        }),
+      );
+      mockPrisma.transactions.findFirst.mockResolvedValue({ id: 'tx-1' });
+      return created;
+    };
+
+    const order = (customer_id?: string) =>
+      service.create(
+        {
+          outlet_id: 'outlet-1',
+          payment_method: 'pending',
+          pay_now: false,
+          customer_id,
+          items: [{ product_id: 'product-1', qty: 1 }],
+        } as any,
+        merchantId,
+        userId,
+      );
+
+    it('stores the customer id and a name/phone snapshot', async () => {
+      const created = setup({
+        id: 'c-1',
+        name: 'Bu Sari',
+        phone: '6281234567890',
+      });
+      await order('c-1');
+      expect(created[0]).toMatchObject({
+        customer_id: 'c-1',
+        customer_name_snapshot: 'Bu Sari',
+        customer_phone_snapshot: '6281234567890',
+      });
+      expect(mockPrisma.customers.findFirst).toHaveBeenCalledWith({
+        where: { id: 'c-1', merchant_id: merchantId },
+      });
+    });
+
+    it('rejects a customer of another merchant', async () => {
+      setup(null);
+      await expect(order('c-9')).rejects.toThrow(NotFoundException);
+      expect(mockPrisma.$transaction).not.toHaveBeenCalled();
+    });
+
+    it('works without a customer', async () => {
+      const created = setup(null);
+      await order(undefined);
+      expect(created[0]).toMatchObject({
+        customer_id: null,
+        customer_name_snapshot: null,
+      });
+      expect(mockPrisma.customers.findFirst).not.toHaveBeenCalled();
     });
   });
 

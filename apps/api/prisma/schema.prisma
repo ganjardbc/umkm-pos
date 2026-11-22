@@ -46,6 +46,7 @@ model merchants {
   inventory_movements inventory_movements[]
   store_tables       store_tables[]
   customer_sessions  customer_sessions[]
+  customers          customers[]
   notifications      notifications[]
   upload             uploads?             @relation(fields: [logo_upload_id], references: [id], onDelete: SetNull, map: "merchants_ibfk_logo_upload")
 
@@ -423,6 +424,7 @@ model transactions {
   order_source      String              @default("pos") @db.VarChar(50)
   order_status      String              @default("selesai") @db.VarChar(50)
   customer_session_id String?           @db.Char(36)
+  customer_id       String?             @db.Char(36)
   table_id          String?             @db.Char(36)
   customer_name_snapshot String?        @db.VarChar(150)
   customer_phone_snapshot String?       @db.VarChar(50)
@@ -450,6 +452,7 @@ model transactions {
   cashier           users?              @relation("cashier_transactions", fields: [cashier_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "transactions_ibfk_cashier")
   customer_sessions customer_sessions?  @relation(fields: [customer_session_id], references: [id], onDelete: SetNull, onUpdate: NoAction, map: "transactions_ibfk_customer_session")
   store_tables      store_tables?       @relation(fields: [table_id], references: [id], onDelete: SetNull, onUpdate: NoAction, map: "transactions_ibfk_table")
+  customers         customers?          @relation(fields: [customer_id], references: [id], onDelete: SetNull, onUpdate: NoAction, map: "transactions_ibfk_customer")
 
   @@index([is_cancelled], map: "idx_tx_cancelled")
   @@index([created_at], map: "idx_tx_created")
@@ -462,6 +465,25 @@ model transactions {
   @@index([order_source], map: "idx_tx_order_source")
   @@index([table_id], map: "idx_tx_table")
   @@index([customer_session_id], map: "idx_tx_customer_session")
+  @@index([customer_id], map: "idx_tx_customer")
+}
+
+/// Regulars the merchant registers on purpose (not the per-visit customer_sessions of self-order).
+model customers {
+  id           String         @id @default(dbgenerated("(uuid())")) @db.Char(36)
+  merchant_id  String         @db.Char(36)
+  name         String         @db.VarChar(150)
+  phone        String?        @db.VarChar(30)
+  note         String?        @db.VarChar(255)
+  created_at   DateTime       @default(now()) @db.Timestamp(0)
+  updated_at   DateTime       @default(now()) @db.Timestamp(0)
+  created_by   String?        @db.Char(36)
+  updated_by   String?        @db.Char(36)
+  merchants    merchants      @relation(fields: [merchant_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  transactions transactions[]
+
+  @@unique([merchant_id, phone], map: "unique_merchant_customer_phone")
+  @@index([merchant_id], map: "idx_customers_merchant")
 }
 
 model store_tables {

@@ -179,6 +179,13 @@ export class CreateTransactionDto {
   change_amount?: number;
 
   @ApiPropertyOptional({
+    description: 'Registered customer (POS only; ignored for catalog orders)',
+  })
+  @IsOptional()
+  @IsUUID()
+  customer_id?: string;
+
+  @ApiPropertyOptional({
     example: 'percent',
     enum: ['amount', 'percent'],
     description:

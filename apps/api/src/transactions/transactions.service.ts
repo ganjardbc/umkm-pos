@@ -515,6 +515,17 @@ export class TransactionsService {
     );
     const tableId = dto.table_id ?? null;
 
+    const customer = dto.customer_id
+      ? await this.prisma.customers.findFirst({
+          where: { id: dto.customer_id, merchant_id: merchantId },
+        })
+      : null;
+    if (dto.customer_id && !customer) {
+      throw new NotFoundException(
+        `Customer with ID ${dto.customer_id} not found`,
+      );
+    }
+
     if (tableId) {
       await this.assertTableBelongsToOutlet(tableId, dto.outlet_id, merchantId);
     }
@@ -530,6 +541,9 @@ export class TransactionsService {
           cashier_id: cashierId,
           payment_method: payNow ? dto.payment_method : 'pending',
           total_amount: prepared.totalAmount,
+          customer_id: customer?.id ?? null,
+          customer_name_snapshot: customer?.name ?? null,
+          customer_phone_snapshot: customer?.phone ?? null,
           discount_type: prepared.discountType,
           discount_value: prepared.discountValue,
           discount_amount: prepared.discountAmount,

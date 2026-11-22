@@ -14,6 +14,7 @@ import { ShiftsModule } from './shifts/shifts.module';
 import { AuditLogsModule } from './audit-logs/audit-logs.module';
 import { MetricsModule } from './metrics/metrics.module';
 import { StockModule } from './stock/stock.module';
+import { CustomersModule } from './customers/customers.module';
 import { UsersModule } from './users/users.module';
 import { RbacModule } from './rbac/rbac.module';
 import { ReportsModule } from './reports/reports.module';
@@ -42,6 +43,7 @@ import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
     AuditLogsModule,
     MetricsModule,
     StockModule,
+    CustomersModule,
     UsersModule,
     RbacModule,
     ReportsModule,
