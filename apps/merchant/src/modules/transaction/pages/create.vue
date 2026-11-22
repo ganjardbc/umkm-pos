@@ -24,13 +24,13 @@
       <ShiftStatus />
 
       <!-- Products Tab -->
-      <PosProduct
+      <CashierProduct
         :is-user-in-shift="isShiftUserCanManage"
       />
     </div>
 
     <!-- POS Cart -->
-    <PosCart
+    <CashierCart
       :is-user-in-shift="isShiftUserCanManage"
       :shift-id="currentShift?.id"
       :outlet-id="currentShift?.outlet_id"
@@ -48,14 +48,14 @@ import { getOutlet } from '@/helpers/auth.ts';
 import { useAuthStore } from '@/modules/auth/stores/index.ts';
 import { useShift } from '@/modules/shift/composables/useShift.ts';
 import { getOutletShift } from '@/modules/shift/services/api.ts';
-import { usePosStore } from '@/modules/transaction/stores-pos';
+import { useCashierStore } from '@/modules/cashier/stores';
 import ShiftStatus from '@/modules/transaction/components/ShiftStatus.vue';
-import PosCart from '@/modules/transaction/components/Cart.vue';
-import PosProduct from '@/modules/transaction/components/Product.vue';
+import CashierCart from '@/modules/cashier/components/Cart.vue';
+import CashierProduct from '@/modules/cashier/components/Product.vue';
 
 const router = useRouter();
 const outlet = getOutlet();
-const posStore = usePosStore();
+const posStore = useCashierStore();
 
 // Device type
 const authStore = useAuthStore();

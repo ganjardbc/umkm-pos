@@ -288,7 +288,7 @@
 import { ref, computed, watch } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useAuthStore } from '@/modules/auth/stores/index.ts';
-import { usePosStore } from '@/modules/transaction/stores-pos';
+import { useCashierStore } from '@/modules/cashier/stores';
 import { getCurrency } from '@umkm-pos/ui/helpers/utils';
 import { useGlobalLoading } from '@umkm-pos/ui/composables/useGlobalLoading.ts';
 import { showConfirm, showToast } from '@umkm-pos/ui/helpers/toast';
@@ -321,7 +321,7 @@ const props = defineProps({
 const emit = defineEmits(['checkout-success', 'add-items-success']);
 
 const { show, hide } = useGlobalLoading();
-const posStore = usePosStore();
+const posStore = useCashierStore();
 const isCheckingOut = ref(false);
 const isCreatingOrder = ref(false);
 const isAddingItems = ref(false);

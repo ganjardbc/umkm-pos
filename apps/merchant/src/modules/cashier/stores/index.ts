@@ -3,7 +3,7 @@ import { state } from './state';
 import { getters } from './getters';
 import { actions } from './actions';
 
-export const usePosStore = defineStore('pos', {
+export const useCashierStore = defineStore('cashier', {
   state,
   getters,
   actions

@@ -33,7 +33,7 @@
 |--------|------|-------------|
 | auth | `modules/auth/` | Login page |
 | dashboard | `modules/dashboard/` | Dashboard overview |
-| pos | `modules/pos/` | POS terminal (cashier interface) |
+| cashier | `modules/cashier/` | POS terminal (cashier interface) |
 | transaction | `modules/transaction/` | Transaction history + detail |
 | product | `modules/product/` | Product management |
 | product-categories | `modules/product-categories/` | Kategori produk |

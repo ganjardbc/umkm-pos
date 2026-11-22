@@ -119,14 +119,14 @@ import { getErrorMessage, getCurrency } from '@umkm-pos/ui/helpers/utils';
 import { getOutlet } from '@/helpers/auth.ts';
 import { getListProduct } from '@/modules/product-lists/services/api';
 import { showToast } from '@umkm-pos/ui/helpers/toast';
-import { usePosStore } from '@/modules/transaction/stores-pos';
+import { useCashierStore } from '@/modules/cashier/stores';
 import UiSearch from '@umkm-pos/ui/components/UiSearch.vue';
 import UiPagination from '@umkm-pos/ui/components/UiPagination.vue';
 import UiCard from '@umkm-pos/ui/components/UiCard.vue';
 import UiLoading from '@umkm-pos/ui/components/UiLoading.vue';
 import { getActiveCategories } from '@/modules/product-categories/services/api';
 
-const posStore = usePosStore();
+const posStore = useCashierStore();
 
 const props = defineProps({
   isUserInShift: {

@@ -24,9 +24,9 @@ import { PERMISSIONS as SHIFT_PERMISSIONS } from '@/modules/shift/services/rbac.
 import { PREFIX_ROUTE_PATH as PRP_TRANSACTION } from '@/modules/transaction/services/constants';
 import { PERMISSIONS as TRANSACTION_PERMISSIONS } from '@/modules/transaction/services/rbac.ts';
 
-// POS
-import { PREFIX_ROUTE_PATH as PRP_POS } from '@/modules/pos/services/constants';
-import { PERMISSIONS as POS_PERMISSIONS } from '@/modules/pos/services/rbac.ts';
+// Cashier
+import { PREFIX_ROUTE_PATH as PRP_CASHIER } from '@/modules/cashier/services/constants';
+import { PERMISSIONS as CASHIER_PERMISSIONS } from '@/modules/cashier/services/rbac.ts';
 
 // User
 import { PREFIX_ROUTE_PATH as PRP_USER } from '@/modules/user/services/constants';
@@ -48,8 +48,8 @@ export default [
     icon: 'pi pi-desktop',
     label: 'Kasir',
     featureFlag: DEFAULT_FEATURE_FLAG,
-    permissions: POS_PERMISSIONS,
-    route: PRP_POS,
+    permissions: CASHIER_PERMISSIONS,
+    route: PRP_CASHIER,
   },
   {
     icon: 'pi pi-list',

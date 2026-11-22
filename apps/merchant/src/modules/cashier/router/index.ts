@@ -1,17 +1,17 @@
 import {
   PREFIX_ROUTE_PATH,
   PREFIX_ROUTE_NAME,
-} from '@/modules/pos/services/constants.ts';
+} from '@/modules/cashier/services/constants.ts';
 
 import {
   CREATE,
-} from '@/modules/pos/services/rbac.ts';
+} from '@/modules/cashier/services/rbac.ts';
 
 export default [
   {
     path: PREFIX_ROUTE_PATH,
     name: PREFIX_ROUTE_NAME,
-    component: () => import('@/modules/pos/pages/index.vue'),
+    component: () => import('@/modules/cashier/pages/index.vue'),
     meta: {
       title: 'Kasir',
       layout: 'default',

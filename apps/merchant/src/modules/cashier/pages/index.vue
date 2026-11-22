@@ -24,13 +24,13 @@
       <ShiftStatus />
 
       <!-- Products Tab -->
-      <PosProduct
+      <CashierProduct
         :is-user-in-shift="!shiftRequired || isShiftUserCanManage"
       />
     </div>
 
     <!-- POS Cart -->
-    <PosCart
+    <CashierCart
       :is-user-in-shift="!shiftRequired || isShiftUserCanManage"
       :shift-id="currentShift?.id"
       :outlet-id="currentShift?.outlet_id"
@@ -50,15 +50,15 @@ import { getOutlet } from '@/helpers/auth.ts';
 import { useAuthStore } from '@/modules/auth/stores/index.ts';
 import { useShift } from '@/modules/shift/composables/useShift.ts';
 import { getOutletShift } from '@/modules/shift/services/api.ts';
-import { usePosStore } from '@/modules/transaction/stores-pos';
+import { useCashierStore } from '@/modules/cashier/stores';
 import ShiftStatus from '@/modules/transaction/components/ShiftStatus.vue';
-import PosCart from '@/modules/transaction/components/Cart.vue';
-import PosProduct from '@/modules/transaction/components/Product.vue';
-import OpenShift from '@/modules/transaction/components/OpenShift.vue';
+import CashierCart from '@/modules/cashier/components/Cart.vue';
+import CashierProduct from '@/modules/cashier/components/Product.vue';
+import OpenShift from '@/modules/cashier/components/OpenShift.vue';
 import UiLoading from '@umkm-pos/ui/components/UiLoading.vue';
 
 const outlet = getOutlet();
-const posStore = usePosStore();
+const posStore = useCashierStore();
 const route = useRoute();
 const router = useRouter();
 
