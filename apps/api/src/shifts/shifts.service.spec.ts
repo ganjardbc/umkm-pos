@@ -4,10 +4,12 @@ import { PrismaService } from '../database/prisma.service';
 import { ValidationPipe } from '../common/pipes/validation.pipe';
 import { CreateShiftDto } from './dto/create-shift.dto';
 import { CloseShiftDto } from './dto/close-shift.dto';
+import { AddCashEntryDto } from './dto/add-cash-entry.dto';
 import {
   NotFoundException,
   BadRequestException,
   ConflictException,
+  ForbiddenException,
 } from '@nestjs/common';
 
 describe('ShiftsService', () => {
@@ -39,6 +41,10 @@ describe('ShiftsService', () => {
       create: jest.fn(),
       count: jest.fn(),
     },
+    shift_cash_entries: {
+      findMany: jest.fn(),
+      create: jest.fn(),
+    },
     transactions: {
       count: jest.fn(),
       aggregate: jest.fn(),
@@ -69,6 +75,7 @@ describe('ShiftsService', () => {
     prisma = module.get<PrismaService>(PrismaService);
 
     jest.clearAllMocks();
+    mockPrisma.shift_cash_entries.findMany.mockResolvedValue([]);
   });
 
   describe('openShift', () => {
@@ -839,6 +846,212 @@ describe('ShiftsService', () => {
         service.closeShift('shift-1', 'user-1', 'm-1', 1),
       ).rejects.toThrow(BadRequestException);
       expect(mockPrisma.shifts.update).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('cash entries (kas masuk/keluar)', () => {
+    const pipe = new ValidationPipe();
+    const validate = (body: any) =>
+      pipe.transform(body, { type: 'body', metatype: AddCashEntryDto });
+    const dto = { type: 'out', amount: 25000, reason: 'Beli es' } as const;
+
+    const setup = (
+      over: {
+        status?: string;
+        shiftRequired?: boolean;
+        participant?: boolean;
+        found?: boolean;
+      } = {},
+    ) => {
+      const {
+        status = 'open',
+        shiftRequired = true,
+        participant = true,
+      } = over;
+      mockPrisma.outlets.findMany.mockResolvedValue([{ id: 'outlet-1' }]);
+      mockPrisma.shifts.findFirst.mockResolvedValue(
+        over.found === false
+          ? null
+          : { id: 'shift-1', outlet_id: 'outlet-1', status },
+      );
+      mockPrisma.outlets.findFirst.mockResolvedValue({
+        shift_required: shiftRequired,
+      });
+      mockPrisma.shift_participants.findFirst.mockResolvedValue(
+        participant ? { id: 'p1' } : null,
+      );
+      mockPrisma.$transaction.mockImplementation(async (cb) => cb(mockPrisma));
+      mockPrisma.shift_cash_entries.create.mockResolvedValue({
+        id: 'e1',
+        shift_id: 'shift-1',
+        type: 'out',
+        amount: 25000,
+        reason: 'Beli es',
+        created_by: 'user-1',
+        created_at: new Date(),
+        users: { name: 'Kasir' },
+      });
+    };
+
+    it('AC-1 records in/out entry for active participant', async () => {
+      setup();
+      const r = await service.addCashEntry('shift-1', 'user-1', 'm-1', dto);
+      expect(
+        mockPrisma.shift_cash_entries.create.mock.calls[0][0].data,
+      ).toEqual({
+        shift_id: 'shift-1',
+        type: 'out',
+        amount: 25000,
+        reason: 'Beli es',
+        created_by: 'user-1',
+      });
+      expect(r.created_by_name).toBe('Kasir');
+      await service.addCashEntry('shift-1', 'user-1', 'm-1', {
+        ...dto,
+        type: 'in',
+      });
+      expect(
+        mockPrisma.shift_cash_entries.create.mock.calls[1][0].data.type,
+      ).toBe('in');
+    });
+
+    it.each([
+      [{ ...dto, amount: 0 }],
+      [{ ...dto, amount: -1 }],
+      [{ ...dto, amount: 'abc' }],
+      [{ ...dto, amount: 1.234 }],
+      [{ ...dto, amount: 1000000000000 }],
+      [{ ...dto, reason: '' }],
+      [{ ...dto, reason: '   ' }],
+      [{ ...dto, reason: 'x'.repeat(256) }],
+      [{ ...dto, type: 'other' }],
+    ])('AC-2 rejects invalid amount/reason via DTO %#', async (body) => {
+      await expect(validate(body)).rejects.toThrow(BadRequestException);
+      expect(mockPrisma.shift_cash_entries.create).not.toHaveBeenCalled();
+    });
+
+    it('AC-2 accepts valid body and trims reason', async () => {
+      const r: any = await validate({ ...dto, reason: '  Beli es  ' });
+      expect(r.reason).toBe('Beli es');
+    });
+
+    it('AC-3 rejects closed shift', async () => {
+      setup({ status: 'closed' });
+      await expect(
+        service.addCashEntry('shift-1', 'user-1', 'm-1', dto),
+      ).rejects.toThrow(BadRequestException);
+      expect(mockPrisma.shift_cash_entries.create).not.toHaveBeenCalled();
+    });
+
+    it('AC-4 rejects non-participant (403, no create)', async () => {
+      setup({ participant: false });
+      await expect(
+        service.addCashEntry('shift-1', 'user-1', 'm-1', dto),
+      ).rejects.toThrow(ForbiddenException);
+      expect(mockPrisma.shift_cash_entries.create).not.toHaveBeenCalled();
+    });
+
+    it('AC-7 rejects when shift_required is false', async () => {
+      setup({ shiftRequired: false });
+      await expect(
+        service.addCashEntry('shift-1', 'user-1', 'm-1', dto),
+      ).rejects.toThrow(BadRequestException);
+      expect(mockPrisma.shift_cash_entries.create).not.toHaveBeenCalled();
+    });
+
+    it('AC-8 404 for shift of other merchant', async () => {
+      setup({ found: false });
+      mockPrisma.outlets.findMany.mockResolvedValue([]);
+      await expect(
+        service.addCashEntry('shift-1', 'user-1', 'm-2', dto),
+      ).rejects.toThrow(NotFoundException);
+      await expect(service.getShift('shift-1', 'm-2')).rejects.toThrow(
+        NotFoundException,
+      );
+      expect(mockPrisma.shift_cash_entries.create).not.toHaveBeenCalled();
+    });
+
+    it('AC-9 entry and audit log created in one $transaction; no entry when audit write fails', async () => {
+      setup();
+      await service.addCashEntry('shift-1', 'user-1', 'm-1', dto);
+      expect(mockPrisma.$transaction).toHaveBeenCalledTimes(1);
+      expect(mockPrisma.shift_audit_logs.create.mock.calls[0][0].data).toEqual({
+        shift_id: 'shift-1',
+        action: 'cash_entry_added',
+        user_id: 'user-1',
+        action_details: { entry_id: 'e1', type: 'out', amount: 25000 },
+      });
+
+      // The mock tx has no rollback: a rejected $transaction callback is what
+      // Prisma rolls back, so assert the failure propagates out of it.
+      mockPrisma.shift_audit_logs.create.mockRejectedValueOnce(new Error('db'));
+      await expect(
+        service.addCashEntry('shift-1', 'user-1', 'm-1', dto),
+      ).rejects.toThrow('db');
+    });
+
+    const detailSetup = (entries: any[]) => {
+      mockPrisma.outlets.findMany.mockResolvedValue([{ id: 'outlet-1' }]);
+      mockPrisma.shifts.findFirst.mockResolvedValue({
+        id: 'shift-1',
+        outlet_id: 'outlet-1',
+        status: 'open',
+        outlets: {},
+        shift_owner: {},
+      });
+      mockPrisma.shift_participants.findMany.mockResolvedValue([]);
+      mockPrisma.transactions.count.mockResolvedValue(0);
+      mockPrisma.shift_cash_entries.findMany.mockResolvedValue(entries);
+    };
+
+    it('AC-10 getShift returns cash_entries and totals', async () => {
+      const e = (type: string, amount: number) => ({
+        id: type + amount,
+        type,
+        amount,
+        reason: 'r',
+        created_by: 'u',
+        created_at: new Date(),
+        users: { name: 'K' },
+      });
+      detailSetup([e('in', 10000.1), e('in', 0.2), e('out', 5000)]);
+      const r = await service.getShift('shift-1', 'm-1');
+      expect(r.cash_entries).toHaveLength(3);
+      expect(r.total_cash_in).toBe(10000.3);
+      expect(r.total_cash_out).toBe(5000);
+    });
+
+    it('AC-10 getShift returns 0 and [] when no entries', async () => {
+      detailSetup([]);
+      const r = await service.getShift('shift-1', 'm-1');
+      expect(r.cash_entries).toEqual([]);
+      expect(r.total_cash_in).toBe(0);
+      expect(r.total_cash_out).toBe(0);
+    });
+
+    it('AC-6 closeShift without entries equals B-1 expected/difference', async () => {
+      mockPrisma.outlets.findMany.mockResolvedValue([{ id: 'outlet-1' }]);
+      mockPrisma.$transaction.mockImplementation(async (cb) => cb(mockPrisma));
+      mockPrisma.shifts.findFirst.mockResolvedValue({
+        id: 'shift-1',
+        outlet_id: 'outlet-1',
+        status: 'open',
+        opening_cash: 150000,
+        outlets: {},
+        shift_owner: {},
+      });
+      mockPrisma.transactions.aggregate.mockResolvedValue({
+        _sum: { total_amount: 40000 },
+      });
+      mockPrisma.shift_participants.findMany.mockResolvedValue([]);
+      mockPrisma.transactions.count.mockResolvedValue(0);
+      mockPrisma.shift_cash_entries.findMany.mockResolvedValue([]);
+
+      await service.closeShift('shift-1', 'user-1', 'm-1', 180000);
+
+      const snap = mockPrisma.shifts.update.mock.calls[1][0].data;
+      expect(Number(snap.expected_cash)).toBe(190000);
+      expect(Number(snap.cash_difference)).toBe(-10000);
     });
   });
 });

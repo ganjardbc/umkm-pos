@@ -91,11 +91,15 @@ const summaryRows = computed(() => {
   const s = summary.value || {};
   const expected = Number(s.expected_cash);
   const opening = Number(s.opening_cash);
+  const totalIn = Number(s.total_cash_in ?? 0);
+  const totalOut = Number(s.total_cash_out ?? 0);
   const diff = Number(s.cash_difference);
   return [
     { label: 'Kas Awal', value: formatCash(s.opening_cash) },
-    // derived: expected = opening + cash sales
-    { label: 'Penjualan Tunai', value: formatCash(Number.isNaN(expected - opening) ? null : expected - opening) },
+    // derived: expected = opening + cash sales + cash in - cash out
+    { label: 'Penjualan Tunai', value: formatCash(Number.isNaN(expected - opening) ? null : Math.round((expected - opening - totalIn + totalOut) * 100) / 100) },
+    { label: 'Kas Masuk', value: formatCash(totalIn) },
+    { label: 'Kas Keluar', value: formatCash(totalOut) },
     { label: 'Kas Diharapkan', value: formatCash(s.expected_cash) },
     { label: 'Kas Akhir', value: formatCash(s.closing_cash) },
     { label: 'Selisih', value: formatCash(Number.isNaN(diff) ? null : diff) },

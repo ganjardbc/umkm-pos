@@ -264,6 +264,7 @@ model shifts {
   transactions       transactions[]
   shift_participants shift_participants[]
   shift_audit_logs   shift_audit_logs[]
+  shift_cash_entries shift_cash_entries[]
 
   @@index([outlet_id], map: "idx_shifts_outlet")
   @@index([shift_owner_id], map: "idx_shifts_shift_owner_id")
@@ -304,6 +305,20 @@ model shift_audit_logs {
   @@index([shift_id], map: "idx_shift_audit_logs_shift_id")
   @@index([user_id], map: "idx_shift_audit_logs_user_id")
   @@index([created_at(sort: Desc)], map: "idx_shift_audit_logs_created_at")
+}
+
+model shift_cash_entries {
+  id         String   @id @default(dbgenerated("(uuid())")) @db.Char(36)
+  shift_id   String   @db.Char(36)
+  type       String   @db.VarChar(10)
+  amount     Decimal  @db.Decimal(14, 2)
+  reason     String   @db.VarChar(255)
+  created_by String   @db.Char(36)
+  created_at DateTime @default(now()) @db.Timestamp(0)
+  shifts     shifts   @relation(fields: [shift_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "shift_cash_entries_ibfk_1")
+  users      users    @relation(fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "shift_cash_entries_ibfk_2")
+
+  @@index([shift_id], map: "idx_shift_cash_entries_shift_id")
 }
 
 model stock_logs {
@@ -500,6 +515,7 @@ model users {
   user_roles           user_roles[]
   shift_participants   shift_participants[]
   shift_audit_logs     shift_audit_logs[]
+  shift_cash_entries   shift_cash_entries[]
   notifications        notifications[]
   merchants            merchants            @relation(fields: [merchant_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "users_ibfk_1")
   upload               uploads?             @relation(fields: [avatar_upload_id], references: [id], onDelete: SetNull, map: "users_ibfk_avatar_upload")

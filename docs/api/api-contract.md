@@ -210,6 +210,7 @@ GET    /shifts/outlet/:outlet_id/setting — Setelan shift outlet: { outlet_id, 
 POST   /shifts               — Open shift (body: outlet_id, opening_cash)
 GET    /shifts/:id           — Get shift detail
 PATCH  /shifts/:id/close     — Close shift (body: closing_cash)
+POST   /shifts/:id/cash-entries — Catat kas masuk/keluar pada shift open (izin shift.update)
 POST   /shifts/:id/participants — Add participant to shift
 DELETE /shifts/:id/participants/:userId — Remove participant
 ```
@@ -238,7 +239,7 @@ closing_cash  — wajib, angka, >= 0, maks 2 desimal, maks 999999999999.99
 Nilai kas tidak valid atau hilang ditolak 400 (validasi DTO) dan shift tidak dibuat / tetap open. Menutup shift yang sudah closed ditolak 400 (`Shift is already closed`), kas tidak berubah.
 
 Saat close, dalam satu transaksi database: status menjadi `closed`, lalu
-`expected_cash = opening_cash + SUM(total_amount)` dari transaksi dengan `paid_shift_id` = shift ini, `payment_method = 'cash'`, `is_cancelled = false` (opening_cash NULL dihitung 0), dan `cash_difference = closing_cash - expected_cash`. Selisih tidak menghalangi penutupan. Pembulatan dua desimal.
+`expected_cash = opening_cash + SUM(total_amount) + kas masuk - kas keluar`; `SUM(total_amount)` dari transaksi dengan `paid_shift_id` = shift ini, `payment_method = 'cash'`, `is_cancelled = false` (opening_cash NULL dihitung 0); kas masuk/keluar = jumlah `shift_cash_entries` shift ini bertipe `in` / `out` (lihat Kas masuk/keluar di bawah). `cash_difference` dihitung dari `expected_cash` tersebut, yaitu `cash_difference = closing_cash - expected_cash`. Selisih tidak menghalangi penutupan. Pembulatan dua desimal.
 
 Field kas pada respons detail shift (`POST /shifts`, `GET /shifts/:id`, `PATCH /shifts/:id/close`) dan pada item `GET /shifts`:
 
@@ -252,6 +253,35 @@ cash_difference  — closing_cash - expected_cash; null selama shift open / shif
 `PATCH /shifts/:id/close` mengembalikan detail shift lengkap (termasuk empat field kas di atas). Kolom `DECIMAL` dapat diserialisasi sebagai string atau angka oleh Prisma/JSON; klien mengonversi dengan `Number(...)`.
 
 TODO: shape terserialisasi `Decimal` pada respons tidak diverifikasi dengan menjalankan API.
+
+### Kas masuk/keluar (cash entries)
+
+`POST /shifts/:id/cash-entries` (izin `shift.update`; `merchant_id` dan user dari JWT) mencatat satu entri kas pada shift yang masih open. Entri bersifat final (tidak ada endpoint ubah/hapus). Body:
+
+```txt
+type    — wajib, 'in' | 'out'
+amount  — wajib, angka, >= 0.01, maks 2 desimal, maks 999999999999.99
+reason  — wajib, string, di-trim, tidak boleh kosong, maks 255 karakter
+```
+
+Body tidak valid ditolak 400 (validasi DTO). Urutan pemeriksaan di service:
+
+1. Shift tidak ditemukan / bukan milik merchant: 404 (`Shift with ID {id} not found`).
+2. Shift tidak `open`: 400 (`Cannot record cash on a closed shift`).
+3. Outlet `shift_required = false`: 400 (`Cash entries are not available when the outlet does not use shifts`).
+4. User bukan peserta aktif shift (`participant_removed_at` null): 403 (`You are not an active participant`).
+
+Sukses: 201, entri dan audit log `shift_audit_logs` (`action = cash_entry_added`, `action_details = { entry_id, type, amount }`) ditulis dalam satu transaksi database. Respons: `{ id, shift_id, type, amount, reason, created_by, created_by_name, created_at }`.
+
+`GET /shifts/:id` (dan respons detail lain yang lewat `getShift`: `POST /shifts`, `PATCH /shifts/:id/close`) menambah field:
+
+```txt
+cash_entries    — daftar entri shift (urut created_at naik): { id, type, amount, reason, created_by, created_by_name, created_at }
+total_cash_in   — jumlah amount bertipe 'in' (dibulatkan 2 desimal)
+total_cash_out  — jumlah amount bertipe 'out' (dibulatkan 2 desimal)
+```
+
+Item `GET /shifts` (list) tidak memuat field ini.
 
 ---
 

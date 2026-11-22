@@ -99,6 +99,8 @@ const props = defineProps({
 
 const cashItems = computed(() => [
   { label: 'Kas Awal', value: formatCash(props.currentShift.opening_cash) },
+  { label: 'Kas Masuk', value: formatCash(props.currentShift.total_cash_in ?? 0) },
+  { label: 'Kas Keluar', value: formatCash(props.currentShift.total_cash_out ?? 0) },
   { label: 'Kas Diharapkan', value: formatCash(props.currentShift.expected_cash) },
   { label: 'Kas Akhir', value: formatCash(props.currentShift.closing_cash) },
   { label: 'Selisih', value: formatCash(props.currentShift.cash_difference) },
