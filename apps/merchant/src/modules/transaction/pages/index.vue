@@ -11,18 +11,16 @@
         />
       </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 xl:flex gap-3 xl:items-end">
-        <div class="min-w-0 xl:w-48">
-          <Select
-            v-model="filter.is_cancelled"
-            :options="listOfCancelFilters"
-            option-label="label"
-            option-value="value"
-            placeholder="Status"
-            class="w-full"
-            @change="applyFilters"
-          />
-        </div>
+      <div class="min-w-0 xl:w-48">
+        <Select
+          v-model="filter.is_cancelled"
+          :options="listOfCancelFilters"
+          option-label="label"
+          option-value="value"
+          placeholder="Status"
+          class="w-full"
+          @change="applyFilters"
+        />
       </div>
     </div>
 
