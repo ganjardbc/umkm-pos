@@ -12,9 +12,14 @@
           <div class="text-xs text-gray-500 dark:text-gray-400">{{ item.hint }}</div>
         </div>
 
-        <!-- Hitung buta (B-1): angka kas seharusnya tidak dikirim ke tampilan kasir. -->
-        <!-- TODO langkah lanjut: pemilik (izin laporan) boleh melihat angka di sini; butuh izin dan data baru. -->
-        <div class="p-4 rounded-lg border border-dashed border-gray-300 dark:border-gray-600 space-y-1 col-span-2 xl:col-span-1">
+        <!-- Hitung buta (B-1): kasir tidak menerima angkanya. Pemilik/manajer (izin shift.view_expected)
+             menerima expected_cash_live dari API; selain itu tetap terkunci sampai kas akhir diisi. -->
+        <div v-if="hasLiveExpected" class="p-4 rounded-lg bg-gray-50 dark:bg-dark-secondary space-y-1 col-span-2 xl:col-span-1">
+          <div class="text-sm text-gray-600 dark:text-gray-400">Kas Seharusnya</div>
+          <div class="text-base font-semibold text-gray-900 dark:text-white">{{ formatCash(currentShift.expected_cash_live) }}</div>
+          <div class="text-xs text-gray-500 dark:text-gray-400">Hanya terlihat oleh pemilik. Diperbarui saat halaman dimuat ulang.</div>
+        </div>
+        <div v-else class="p-4 rounded-lg border border-dashed border-gray-300 dark:border-gray-600 space-y-1 col-span-2 xl:col-span-1">
           <div class="text-sm text-gray-600 dark:text-gray-400">
             <i class="pi pi-lock text-xs mr-1" />Kas seharusnya disembunyikan
           </div>
@@ -98,6 +103,7 @@ const {
 } = useShift();
 
 const isOpen = computed(() => currentShift.status === 'open');
+const hasLiveExpected = computed(() => isOpen.value && currentShift.expected_cash_live != null);
 
 // Money cards: only what the shift response carries.
 const entries = computed(() => currentShift.cash_entries || []);

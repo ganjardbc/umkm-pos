@@ -24,29 +24,31 @@
       />
     </div>
 
+    <!-- Belum dimuat: jangan tampilkan keadaan "tutup" sebelum data datang -->
+    <UiLoading v-else-if="!loaded" message="Memuat..." />
+
     <!-- Kasir tutup -->
-    <div v-else class="flex flex-col items-center gap-3 py-6 text-center">
-      <span class="w-3 h-3 rounded-full bg-gray-400" />
-      <div class="text-base font-semibold">Kasir belum dibuka</div>
-      <template v-if="shiftRequired">
-        <div class="text-sm text-gray-500 dark:text-gray-400">
-          Buka kasir dan isi kas awal untuk mulai menerima transaksi.
+    <UiEmptyState
+      v-else
+      class="py-8!"
+      :title="shiftRequired ? 'Kasir belum dibuka' : 'Buka/tutup kasir tidak diwajibkan'"
+      :description="emptyDescription"
+    >
+      <template #icon>
+        <div class="w-20 h-20 mx-auto mb-4 flex items-center justify-center rounded-full bg-gray-100 dark:bg-dark">
+          <i class="pi pi-lock text-3xl text-gray-400" />
         </div>
+      </template>
+      <template v-if="shiftRequired && canOpen" #actions>
         <Button
-          v-if="canOpen"
           label="Buka Kasir"
           icon="pi pi-play"
+          class="mt-6"
           :disabled="loading"
           @click="startOpen"
         />
-        <div v-else class="text-sm text-gray-500 dark:text-gray-400">
-          Anda tidak memiliki akses untuk membuka kasir.
-        </div>
       </template>
-      <div v-else class="text-sm text-gray-500 dark:text-gray-400">
-        Outlet ini tidak mewajibkan buka kasir.
-      </div>
-    </div>
+    </UiEmptyState>
 
     <Message
       v-if="isOpen && canClose && !isUserOwner"
@@ -101,6 +103,8 @@ import { CREATE, UPDATE } from '@/modules/shift/services/rbac.ts';
 import { formatTime } from '@umkm-pos/ui/helpers/utils';
 import { showToast } from '@umkm-pos/ui/helpers/toast';
 import UiCard from '@umkm-pos/ui/components/UiCard.vue';
+import UiEmptyState from '@umkm-pos/ui/components/UiEmptyState.vue';
+import UiLoading from '@umkm-pos/ui/components/UiLoading.vue';
 import * as shiftApi from '@/modules/shift/services/api.ts';
 
 const props = defineProps({
@@ -137,6 +141,13 @@ const duration = computed(() => {
   return h ? `${h} jam ${m} menit` : `${m} menit`;
 });
 
+const loaded = ref(false);
+const emptyDescription = computed(() => {
+  if (!shiftRequired.value) return 'Outlet ini langsung berjualan tanpa membuka kasir, jadi kas tidak dicatat.';
+  if (!canOpen.value) return 'Anda tidak memiliki akses untuk membuka kasir. Hubungi pemilik outlet.';
+  return 'Buka kasir untuk mulai menerima transaksi. Kas awal terisi dari kas akhir terakhir dan bisa Anda ubah.';
+});
+
 const fetchOutletShift = async () => {
   try {
     const response = await shiftApi.getOutletShift(props.outletId);
@@ -148,6 +159,8 @@ const fetchOutletShift = async () => {
     }
   } catch (error) {
     console.error('Failed to fetch outlet shift:', error);
+  } finally {
+    loaded.value = true;
   }
 };
 

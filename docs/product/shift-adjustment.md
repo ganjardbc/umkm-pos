@@ -1,6 +1,6 @@
 # Adjustment fitur Shift menjadi Buka/Tutup Kasir
 
-Status: DRAFT untuk diputuskan pemilik produk. Tanggal: 2026-11-23.
+Status: DISETUJUI (4 keputusan di bagian 6 sudah dijawab). Tanggal: 2026-11-23.
 Tanda: **[kode]** terbukti dari kode yang dibaca hari ini. **[riset]** dari halaman publik kompetitor. **[belum dicek]** dugaan.
 
 ## 1. Latar belakang
@@ -69,16 +69,25 @@ Perlu perubahan API:
 
 Pekerjaan lanjutan, tidak masuk batch pertama: tutup kasir otomatis pada jam tertentu, batas kas keluar harian, kode alasan kas keluar, laporan harian outlet ("tutup toko"), peringatan shift lupa ditutup.
 
-## 6. Keputusan yang dibutuhkan
-1. Kas seharusnya selama shift berjalan: dikunci untuk kasir dan terbuka untuk pemilik (usulan), atau dikunci untuk semua sampai tutup?
-2. Pesanan belum dibayar saat tutup kasir: blokir, atau peringatan yang bisa dilewati?
-3. Setelan aktif/mati: tetap bawaan hidup, atau bawaan mati untuk outlet baru yang hanya punya satu pengguna?
-4. Nama menu: "Buka/Tutup Kasir" atau "Kasir & Kas"?
+## 6. Keputusan (2026-11-23)
+1. Kas seharusnya selama kasir buka: dikunci untuk kasir, terbuka untuk pemilik.
+2. Pesanan belum dibayar saat tutup kasir: peringatan yang bisa dilewati, tidak memblokir.
+3. Setelan aktif/mati: bawaan tetap hidup.
+4. Nama menu: "Buka/Tutup Kasir" (sempat dipilih "Kasir & Kas", diganti 2026-11-23 karena terlalu mirip dengan menu "Kasir"; kompetitor memakai "Buka/Tutup Kasir" untuk aksinya dan menaruh kas masuk/keluar di dalamnya). Sama dengan judul di rancangan UI.
 
-## 7. Urutan pengerjaan (usulan)
-1. Ganti label dan susun ulang halaman "Hari Ini" tanpa mengubah API.
-2. Pintasan Catat Kas dan bar status di layar kasir.
-3. Kas awal otomatis dan ringkasan tutup kasir yang bisa dibagikan.
-4. Penghitung pecahan uang dan peringatan pesanan belum dibayar.
-5. Riwayat dengan selisih dan filter.
-6. Lanjutan: tutup kasir otomatis, batas kas keluar, kode alasan, laporan harian outlet.
+## 7. Urutan pengerjaan dan statusnya
+Status per 2026-11-23, dari git log dan pembacaan kode. Build lengkap dan uji manual di layar belum dijalankan.
+1. ✅ Label dan halaman "Hari Ini" (`c95dc4d`).
+2. ✅ Pintasan Catat Kas dan bar status di layar kasir (`c95dc4d`).
+3. ✅ Kas awal otomatis dari kas akhir terakhir (lewat endpoint daftar shift yang ada) dan ringkasan tutup yang bisa dibagikan (`2118b63`).
+4. ✅ Penghitung pecahan uang dan peringatan pesanan belum dibayar (`5293020`).
+5. ✅ Riwayat dengan selisih dan filter (`e4e9702`).
+6. ✅ PWA dasar: manifest, service worker app-shell, tombol pasang (`1fe6252`, `d5559b2`). Belum ada transaksi offline. Printer tetap Web Bluetooth (BLE saja, tidak jalan di Safari iOS); keluhan printer atau koneksi adalah sinyal untuk menimbang aplikasi native. Logika bisnis kasir tetap di API dan `@umkm-pos/shared-types`.
+7. ✅ Kode alasan kas keluar, batas harian, tutup otomatis, laporan harian (`fe9d97b`, `9142098`).
+
+Keputusan 1 sisi pemilik (2026-11-23, belum di-commit): izin baru `shift.view_expected` (migrasi `20261124010000_shift_view_expected_permission`, diberikan ke owner, manager, admin; kasir tidak). `GET /shifts/:id` mengembalikan `expected_cash_live` hanya untuk shift yang masih buka dan hanya bila pemanggil memegang izin itu di outlet tersebut; `expected_cash` tetap null sampai tutup. Rumus dipakai bersama dengan tutup kasir (`calcExpectedCash`). Halaman "Hari Ini" menampilkan angkanya bila ada, selain itu kartu terkunci. Angka tidak memperbarui sendiri; muncul ulang saat halaman dimuat atau data shift dimuat ulang.
+
+Belum dikerjakan:
+- Peringatan lupa menutup kasir (hanya tutup otomatis yang ada).
+- Pembaruan otomatis angka langsung (polling) dan tampilannya di layar kasir milik pemilik.
+- Uji manual di layar. Build `vite` belum dijalankan dari perangkat ini.

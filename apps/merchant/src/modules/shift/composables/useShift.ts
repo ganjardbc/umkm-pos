@@ -39,6 +39,7 @@ export interface Currentshift {
   opening_cash?: string | number | null,
   closing_cash?: string | number | null,
   expected_cash?: string | number | null,
+  expected_cash_live?: number | null,
   cash_difference?: string | number | null,
   cash_entries?: any[],
   total_cash_in?: number,
