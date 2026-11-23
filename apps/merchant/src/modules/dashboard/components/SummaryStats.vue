@@ -49,7 +49,12 @@
     </UiCard>
 
     <!-- Active Shifts -->
-    <UiCard v-if="showActiveShifts" class="bg-white dark:bg-dark-secondary! rounded-lg shadow">
+    <UiCard
+      class="bg-white dark:bg-dark-secondary! rounded-lg shadow"
+      :class="{
+        'blur-sm select-none pointer-events-none': !showActiveShifts,
+      }"
+    >
       <div class="flex justify-between items-center">
         <div class="space-y-1">
           <p class="text-sm text-gray-400 font-medium">Shift Aktif</p>
