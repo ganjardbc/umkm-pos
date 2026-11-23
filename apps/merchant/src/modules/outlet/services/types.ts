@@ -13,4 +13,6 @@ export interface FormEdit {
   guest_session_secret?: string;
   is_active: boolean;
   shift_required: boolean;
+  cash_out_daily_limit?: number | null;
+  auto_close_time?: string | null;
 };

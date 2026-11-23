@@ -29,6 +29,18 @@
           placeholder="Masukkan nominal"
         />
       </UiFormGroup>
+      <UiFormGroup label="Kategori" variant="vertical">
+        <Select
+          v-model="reasonCode"
+          :options="codeOptions"
+          option-label="label"
+          option-value="value"
+          show-clear
+          fluid
+          :disabled="submitting"
+          placeholder="Pilih kategori (opsional)"
+        />
+      </UiFormGroup>
       <UiFormGroup label="Alasan" variant="vertical">
         <Textarea
           v-model="reason"
@@ -36,7 +48,7 @@
           maxlength="255"
           fluid
           :disabled="submitting"
-          placeholder="Alasan wajib diisi"
+          placeholder="Alasan wajib diisi, kecuali kategori dipilih"
         />
       </UiFormGroup>
       <Message v-if="errorMessage" severity="error" size="small">
@@ -55,7 +67,7 @@
       <Button
         label="Simpan"
         :loading="submitting"
-        :disabled="submitting || !amount || !reason.trim()"
+        :disabled="submitting || !amount || !finalReason"
         @click="onSubmit"
       />
     </template>
@@ -63,14 +75,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { getErrorMessage } from '@umkm-pos/ui/helpers/utils';
 
 const props = defineProps<{
   // Preselected type when the dialog opens (default: Kas Masuk).
   initialType?: 'in' | 'out';
   // Calls the API. Rejects => error shown, dialog stays open with inputs kept.
-  submit: (data: { type: 'in' | 'out'; amount: number; reason: string }) => Promise<any>;
+  submit: (data: { type: 'in' | 'out'; amount: number; reason: string; reason_code?: string }) => Promise<any>;
 }>();
 
 const emit = defineEmits<{ (e: 'saved'): void }>();
@@ -85,6 +97,29 @@ const typeOptions = [
 const type = ref<'in' | 'out'>('in');
 const amount = ref<number | null>(null);
 const reason = ref('');
+const reasonCode = ref<string | null>(null);
+
+// Codes match the API's shift-cash.constants.ts.
+const CODE_OPTIONS = {
+  in: [
+    { label: 'Modal tambahan', value: 'modal_tambahan' },
+    { label: 'Uang kembalian', value: 'kembalian' },
+    { label: 'Lainnya', value: 'lainnya' },
+  ],
+  out: [
+    { label: 'Beli bahan', value: 'beli_bahan' },
+    { label: 'Biaya operasional', value: 'operasional' },
+    { label: 'Setoran ke pemilik', value: 'setoran_pemilik' },
+    { label: 'Lainnya', value: 'lainnya' },
+  ],
+};
+const codeOptions = computed(() => CODE_OPTIONS[type.value]);
+// Typed text wins; otherwise a specific category's label stands in as the reason.
+const finalReason = computed(() => {
+  if (reason.value.trim()) return reason.value.trim();
+  const picked = codeOptions.value.find((o) => o.value === reasonCode.value);
+  return picked && picked.value !== 'lainnya' ? picked.label : '';
+});
 const submitting = ref(false);
 const errorMessage = ref('');
 
@@ -94,16 +129,24 @@ watch(visible, (v) => {
     type.value = props.initialType ?? 'in';
     amount.value = null;
     reason.value = '';
+    reasonCode.value = null;
     errorMessage.value = '';
   }
 });
+// A code of the other type would be rejected as meaningless: reset when the type changes.
+watch(type, () => { reasonCode.value = null; });
 
 const onSubmit = async () => {
-  if (!amount.value || !reason.value.trim() || submitting.value) return;
+  if (!amount.value || !finalReason.value || submitting.value) return;
   submitting.value = true;
   errorMessage.value = '';
   try {
-    await props.submit({ type: type.value, amount: amount.value, reason: reason.value.trim() });
+    await props.submit({
+      type: type.value,
+      amount: amount.value,
+      reason: finalReason.value,
+      ...(reasonCode.value ? { reason_code: reasonCode.value } : {}),
+    });
     visible.value = false;
     emit('saved');
   } catch (error) {

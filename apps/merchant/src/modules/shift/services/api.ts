@@ -130,12 +130,19 @@ export const getParticipantMetrics = async (shiftId: string | number, userId: st
 
 export const addCashEntry = async (
   shiftId: string | number,
-  data: { type: 'in' | 'out'; amount: number; reason: string },
+  data: { type: 'in' | 'out'; amount: number; reason: string; reason_code?: string },
   options: any = {},
 ) => {
   return await api.post(
     `/api/v1/shifts/${shiftId}/cash-entries`,
     data,
     { ...(options || {}) },
+  );
+};
+
+export const getDailyReport = async (outletId: string | number, date: string, options: any = {}) => {
+  return await api.get(
+    `/api/v1/shifts/outlet/${outletId}/daily-report`,
+    { params: { date }, ...(options || {}) },
   );
 };

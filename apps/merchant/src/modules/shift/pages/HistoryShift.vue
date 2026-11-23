@@ -63,6 +63,7 @@
               :severity="differenceSeverity(data.cash_difference) ?? undefined"
             />
             <span v-else>-</span>
+            <div v-if="data.closed_by_system" class="text-xs text-slate-400">Ditutup otomatis</div>
           </template>
         </Column>
         <Column header="Status">

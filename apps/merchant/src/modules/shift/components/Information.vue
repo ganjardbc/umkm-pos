@@ -72,6 +72,10 @@
         </div>
       </div>
 
+      <Message v-if="currentShift.closed_by_system" severity="warn" icon="pi pi-info-circle">
+        Ditutup otomatis oleh sistem. Kas akhir tidak dihitung, jadi selisih tidak tersedia.
+      </Message>
+
       <Divider />
 
       <div class="grid grid-cols-2 xl:grid-cols-4 gap-4">
