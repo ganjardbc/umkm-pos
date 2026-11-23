@@ -85,6 +85,21 @@ describe('daily report (blind count)', () => {
     expect(prisma.transactions.aggregate).toHaveBeenCalledTimes(1);
   });
 
+  it('queries the WIB day window, not the server-local one', async () => {
+    const prisma = makePrisma();
+    prisma.outlets.findFirst.mockResolvedValue({ id: 'o1', name: 'Outlet' });
+    prisma.shifts.findMany.mockResolvedValue([]);
+    await new ShiftsService(prisma as any).getDailyReport(
+      'o1',
+      'm1',
+      '2026-11-24',
+    );
+    const { gte, lt } =
+      prisma.shifts.findMany.mock.calls[0][0].where.start_time;
+    expect(gte.toISOString()).toBe('2026-11-23T17:00:00.000Z');
+    expect(lt.toISOString()).toBe('2026-11-24T17:00:00.000Z');
+  });
+
   it('rejects a bad date', async () => {
     await expect(
       new ShiftsService(makePrisma() as any).getDailyReport(
@@ -98,13 +113,22 @@ describe('daily report (blind count)', () => {
 
 describe('auto close', () => {
   it('lastOccurrence picks today after the time and yesterday before it', () => {
-    const now = new Date(2026, 10, 24, 12, 0);
-    expect(ShiftsAutoCloseService.lastOccurrence('10:30', now)).toEqual(
-      new Date(2026, 10, 24, 10, 30),
-    );
-    expect(ShiftsAutoCloseService.lastOccurrence('23:00', now)).toEqual(
-      new Date(2026, 10, 23, 23, 0),
-    );
+    // 12:00 WIB on 24 Nov === 05:00Z
+    const now = new Date('2026-11-24T05:00:00Z');
+    expect(
+      ShiftsAutoCloseService.lastOccurrence('10:30', now).toISOString(),
+    ).toBe('2026-11-24T03:30:00.000Z');
+    expect(
+      ShiftsAutoCloseService.lastOccurrence('23:00', now).toISOString(),
+    ).toBe('2026-11-23T16:00:00.000Z');
+  });
+
+  it('lastOccurrence is the same whatever the server timezone is', () => {
+    // 00:30 WIB on 25 Nov === 17:30Z on 24 Nov; 00:15 WIB today has just passed
+    const now = new Date('2026-11-24T17:30:00Z');
+    expect(
+      ShiftsAutoCloseService.lastOccurrence('00:15', now).toISOString(),
+    ).toBe('2026-11-24T17:15:00.000Z');
   });
 
   it('closes open shifts as the system with no counted cash', async () => {
@@ -117,11 +141,11 @@ describe('auto close', () => {
     ]);
     const closeShift = jest.fn().mockResolvedValue({});
     await new ShiftsAutoCloseService(prisma as any, { closeShift } as any).run(
-      new Date(2026, 10, 24, 12, 0),
+      new Date('2026-11-24T05:00:00Z'), // 12:00 WIB
     );
     expect(closeShift).toHaveBeenCalledWith('s1', 'u1', 'm1', null, true);
     expect(prisma.shifts.findMany.mock.calls[0][0].where.start_time.lt).toEqual(
-      new Date(2026, 10, 24, 10, 0),
+      new Date('2026-11-24T03:00:00Z'), // 10:00 WIB
     );
   });
 });

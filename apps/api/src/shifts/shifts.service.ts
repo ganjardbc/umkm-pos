@@ -12,6 +12,10 @@ import { CreateShiftDto } from './dto/create-shift.dto';
 import { AddCashEntryDto } from './dto/add-cash-entry.dto';
 import { PaginationDto } from '../common/dto/pagination.dto';
 import { Prisma } from '@prisma/client';
+import {
+  businessDayRange,
+  startOfBusinessDay,
+} from '../common/utils/business-day';
 
 export type ShiftStatus = 'open' | 'closed' | 'transferred';
 
@@ -710,8 +714,7 @@ export class ShiftsService {
     });
     if (outlet?.cash_out_daily_limit == null) return;
     const limit = Number(outlet.cash_out_daily_limit);
-    const startOfDay = new Date();
-    startOfDay.setHours(0, 0, 0, 0);
+    const startOfDay = startOfBusinessDay();
     const today = await this.prisma.shift_cash_entries.findMany({
       where: {
         type: 'out',
@@ -748,9 +751,7 @@ export class ShiftsService {
     if (!outlet) {
       throw new NotFoundException(`Outlet with ID ${outletId} not found`);
     }
-    const [y, m, d] = date.split('-').map(Number);
-    const from = new Date(y, m - 1, d, 0, 0, 0, 0);
-    const to = new Date(y, m - 1, d + 1, 0, 0, 0, 0);
+    const { from, to } = businessDayRange(date);
 
     const shifts = await this.prisma.shifts.findMany({
       where: { outlet_id: outletId, start_time: { gte: from, lt: to } },

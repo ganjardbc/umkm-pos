@@ -2,6 +2,11 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import type { Response } from 'express';
 import { PrismaService } from '../database/prisma.service';
 import { QueryReportDto } from './dto/query-report.dto';
+import {
+  DATE_ONLY,
+  businessDayKey,
+  businessDayRange,
+} from '../common/utils/business-day';
 import { CsvExportService } from '../common/services/csv-export.service';
 
 @Injectable()
@@ -40,17 +45,20 @@ export class ReportsService {
     return outlets.map((o) => o.id);
   }
 
-  /** Parse optional ISO date string to Date or undefined */
+  /** Parse optional date string; a date-only string (YYYY-MM-DD) starts at 00:00 WIB */
   private parseDate(dateStr?: string): Date | undefined {
-    return dateStr ? new Date(dateStr) : undefined;
+    if (!dateStr) return undefined;
+    return DATE_ONLY.test(dateStr)
+      ? businessDayRange(dateStr).from
+      : new Date(dateStr);
   }
 
-  /** Like parseDate, but a date-only string (YYYY-MM-DD) covers the whole day */
+  /** Like parseDate, but a date-only string covers the whole WIB day */
   private parseDateEnd(dateStr?: string): Date | undefined {
     if (!dateStr) return undefined;
-    const d = new Date(dateStr);
-    if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) d.setUTCHours(23, 59, 59, 999);
-    return d;
+    return DATE_ONLY.test(dateStr)
+      ? new Date(businessDayRange(dateStr).to.getTime() - 1)
+      : new Date(dateStr);
   }
 
   // ─────────────────────────────────────────────
@@ -81,9 +89,8 @@ export class ReportsService {
 
     const total_sales = txs.reduce((acc, t) => acc + Number(t.total_amount), 0);
     const total_transactions = txs.length;
-    const total_days = new Set(
-      txs.map((t) => t.created_at.toISOString().slice(0, 10)),
-    ).size;
+    const total_days = new Set(txs.map((t) => businessDayKey(t.created_at)))
+      .size;
 
     return {
       total_sales,
@@ -129,7 +136,7 @@ export class ReportsService {
       { report_date: string; total_sales: number; total_transactions: number }
     >();
     for (const t of txs) {
-      const day = t.created_at.toISOString().slice(0, 10);
+      const day = businessDayKey(t.created_at);
       const row = byDay.get(day) ?? {
         report_date: day,
         total_sales: 0,
