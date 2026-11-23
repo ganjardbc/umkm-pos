@@ -6,35 +6,43 @@
     class="w-full max-w-md"
   >
     <div class="space-y-5">
-      <div
-        v-for="group in groups"
-        :key="group.id"
-        class="space-y-2"
-      >
+      <div v-for="group in groups" :key="group.id" class="space-y-2">
         <div class="flex items-baseline justify-between">
           <span class="text-sm font-semibold">{{ group.name }}</span>
           <span class="text-xs text-gray-400">
             {{ group.is_required ? 'Wajib' : 'Opsional' }}{{ group.allow_multiple ? ', boleh banyak' : '' }}
           </span>
         </div>
-        <div class="grid grid-cols-2 gap-2">
+
+        <div>
           <button
             v-for="option in group.product_options"
             :key="option.id"
             type="button"
-            class="rounded-lg border px-3 py-2 text-left text-sm cursor-pointer transition-all"
-            :class="isChosen(group.id, option.id)
-              ? 'border-primary bg-primary/10 text-primary dark:border-primary-400 dark:bg-primary-500/20 dark:text-primary-300'
-              : 'border-gray-200 dark:border-dark! bg-white dark:bg-dark! text-gray-500'"
+            class="w-full flex items-center justify-between gap-4 px-0 py-1.5 text-left text-sm cursor-pointer"
             @click="toggle(group, option.id)"
           >
-            <div class="font-semibold">{{ option.name }}</div>
-            <div
-              v-if="Number(option.price_delta) > 0"
-              class="text-xs"
-            >
-              +{{ getCurrency(option.price_delta) }}
-            </div>
+            <span class="min-w-0">
+              <span class="font-medium">{{ option.name }}</span>
+              <span v-if="Number(option.price_delta) > 0" class="ml-2 text-xs text-gray-400">
+                +{{ getCurrency(option.price_delta) }}
+              </span>
+            </span>
+            <!-- Display only: the row button owns the click (it also lets an optional radio be unchecked) -->
+            <Checkbox
+              v-if="group.allow_multiple"
+              :model-value="isChosen(group.id, option.id)"
+              binary
+              class="pointer-events-none shrink-0"
+              :tabindex="-1"
+            />
+            <RadioButton
+              v-else
+              :model-value="isChosen(group.id, option.id)"
+              :value="true"
+              class="pointer-events-none shrink-0"
+              :tabindex="-1"
+            />
           </button>
         </div>
       </div>
@@ -83,7 +91,7 @@ watch(visibility, (open) => {
   );
 });
 
-const isChosen = (groupId: string, optionId: string) => chosen.value[groupId]?.includes(optionId);
+const isChosen = (groupId: string, optionId: string) => !!chosen.value[groupId]?.includes(optionId);
 
 const toggle = (group: any, optionId: string) => {
   const current = chosen.value[group.id] ?? [];
