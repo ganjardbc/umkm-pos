@@ -80,7 +80,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref } from 'vue';
 import DatePicker from 'primevue/datepicker';
 import Message from 'primevue/message';
 import ReportCard from '@/modules/reports/components/ReportCard.vue';
@@ -92,13 +92,9 @@ import {
   exportTransactionsCsv,
 } from '@/modules/reports/services/api.ts';
 import { downloadFile } from '@umkm-pos/ui/helpers/download';
-import { getOutlet } from '@/helpers/auth.ts';
+import { useDateRange } from '@/modules/reports/composables/useDateRange.ts';
 
-const outlet = getOutlet();
-
-// Date range state
-const dateRange = ref<Date[] | null>(null);
-const dateRangeError = ref<string | null>(null);
+const { dateRange, dateRangeError, params } = useDateRange();
 
 // Loading states
 const summaryLoading = ref(false);
@@ -113,91 +109,6 @@ const dailyError = ref<string | null>(null);
 const productsError = ref<string | null>(null);
 const outletsError = ref<string | null>(null);
 const transactionsError = ref<string | null>(null);
-
-/**
- * Format a Date object to YYYY-MM-DD format for API calls
- */
-function formatDate(date: Date): string {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
-
-/**
- * Initialize date range to last 30 days
- */
-const initializeDateRange = () => {
-  const end = new Date();
-  const start = new Date();
-  start.setDate(start.getDate() - 30);
-  dateRange.value = [start, end];
-};
-
-/**
- * Validate date range
- */
-const validateDateRange = (): boolean => {
-  dateRangeError.value = null;
-
-  if (!dateRange.value || dateRange.value.length !== 2) {
-    dateRangeError.value = 'Pilih tanggal mulai dan tanggal selesai';
-    return false;
-  }
-
-  const [start, end] = dateRange.value;
-
-  if (!start || !end) {
-    dateRangeError.value = 'Pilih tanggal mulai dan tanggal selesai';
-    return false;
-  }
-
-  if (start > end) {
-    dateRangeError.value = 'Tanggal mulai harus sebelum atau sama dengan tanggal selesai';
-    return false;
-  }
-
-  if (end > new Date()) {
-    dateRangeError.value = 'Tanggal selesai tidak boleh di masa depan';
-    return false;
-  }
-
-  return true;
-};
-
-/**
- * Computed property for formatted date range
- */
-const formattedDateRange = computed(() => {
-  if (!dateRange.value || dateRange.value.length !== 2) {
-    return null;
-  }
-
-  const [start, end] = dateRange.value;
-
-  if (!start || !end) {
-    return null;
-  }
-
-  return {
-    date_from: formatDate(start),
-    date_to: formatDate(end),
-  };
-});
-
-/**
- * Build query parameters
- */
-const params = computed(() => {
-  if (!formattedDateRange.value) {
-    return null;
-  }
-
-  return {
-    ...formattedDateRange.value,
-    outlet_id: outlet?.id,
-  };
-});
 
 /**
  * Download handlers
@@ -281,22 +192,6 @@ const downloadTransactions = async () => {
     transactionsLoading.value = false;
   }
 };
-
-/**
- * Watch for date range changes
- */
-watch(dateRange, () => {
-  if (dateRange.value && dateRange.value.length === 2) {
-    validateDateRange();
-  }
-}, { deep: true });
-
-/**
- * Initialize on component mount
- */
-onMounted(() => {
-  initializeDateRange();
-});
 </script>
 
 <style scoped></style>

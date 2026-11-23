@@ -34,8 +34,9 @@ import { PREFIX_ROUTE_PATH as PRP_CUSTOMERS } from '@/modules/customers/services
 import { PERMISSIONS as CUSTOMER_PERMISSIONS } from '@/modules/customers/services/rbac.ts';
 
 // Reports
-import { PREFIX_ROUTE_PATH as PRP_REPORTS } from '@/modules/reports/services/constants';
+import { PATH_EXPORTS as PRP_REPORT_EXPORTS, PATH_SHIFTS as PRP_REPORT_SHIFTS, PATH_SALES as PRP_REPORT_SALES, PATH_OUTLETS as PRP_REPORT_OUTLETS } from '@/modules/reports/services/constants';
 import { PERMISSIONS as REPORTS_PERMISSIONS } from '@/modules/reports/services/rbac.ts';
+import { PERMISSIONS as SHIFT_PERMISSIONS } from '@/modules/shift/services/rbac.ts';
 
 export default [
   {
@@ -93,14 +94,6 @@ export default [
   // Manajemen
   {
     group: 'Manajemen',
-    icon: 'pi pi-download',
-    label: 'Laporan',
-    featureFlag: DEFAULT_FEATURE_FLAG,
-    permissions: REPORTS_PERMISSIONS,
-    route: PRP_REPORTS,
-  },
-  {
-    group: 'Manajemen',
     icon: 'pi pi-sitemap',
     label: 'Outlet',
     featureFlag: DEFAULT_FEATURE_FLAG,
@@ -114,5 +107,39 @@ export default [
     featureFlag: DEFAULT_FEATURE_FLAG,
     permissions: USER_PERMISSIONS,
     route: PRP_USER,
+  },
+
+  // Laporan
+  {
+    group: 'Laporan',
+    icon: 'pi pi-chart-line',
+    label: 'Laporan Penjualan',
+    featureFlag: DEFAULT_FEATURE_FLAG,
+    permissions: REPORTS_PERMISSIONS,
+    route: PRP_REPORT_SALES,
+  },
+  {
+    group: 'Laporan',
+    icon: 'pi pi-sitemap',
+    label: 'Perbandingan Outlet',
+    featureFlag: DEFAULT_FEATURE_FLAG,
+    permissions: REPORTS_PERMISSIONS,
+    route: PRP_REPORT_OUTLETS,
+  },
+  {
+    group: 'Laporan',
+    icon: 'pi pi-wallet',
+    label: 'Laporan Kasir',
+    featureFlag: DEFAULT_FEATURE_FLAG,
+    permissions: SHIFT_PERMISSIONS,
+    route: PRP_REPORT_SHIFTS,
+  },
+  {
+    group: 'Laporan',
+    icon: 'pi pi-download',
+    label: 'Ekspor Laporan',
+    featureFlag: DEFAULT_FEATURE_FLAG,
+    permissions: REPORTS_PERMISSIONS,
+    route: PRP_REPORT_EXPORTS,
   },
 ];

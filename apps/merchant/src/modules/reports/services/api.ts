@@ -1,35 +1,5 @@
 import api from '@/plugins/axios.ts';
 
-export const getListreports = async (data: any, options:any = {}) => {
-  return await api.get(
-    '/api/reports',
-    { params: data, ...(options || {}) },
-  );
-};
-
-export const getDetailreports = async (id: string|number, options:any = {}) => {
-  return await api.get(
-    `/api/reports/${id}`,
-    { ...(options || {}) },
-  );
-};
-
-export const postreports = async (data: any, options:any = {}) => {
-  return await api.post(
-    `/api/reports`,
-    data,
-    { ...(options || {}) },
-  );
-};
-
-export const putreports = async (id: string|number, data: any, options:any = {}) => {
-  return await api.put(
-    `/api/reports/${id}`,
-    data,
-    { ...(options || {}) },
-  );
-};
-
 // Export API endpoints - returns blob data
 export const exportSummary = async (params: any, options: any = {}): Promise<Blob> => {
   const response = await api.get(
@@ -70,3 +40,11 @@ export const exportTransactionsCsv = async (params: any, options: any = {}): Pro
   );
   return response.data;
 };
+
+// JSON endpoints — unwrap the TransformInterceptor envelope.
+const get = async (url: string, params: any) => (await api.get(url, { params })).data?.data;
+
+export const getSummary = (params: any) => get('/api/v1/reports/summary', params);
+export const getDailySales = (params: any) => get('/api/v1/reports/daily', params);
+export const getTopProducts = (params: any) => get('/api/v1/reports/top-products', params);
+export const getOutletComparison = (params: any) => get('/api/v1/reports/outlet-comparison', params);

@@ -5,8 +5,11 @@
         v-model="date"
         :max-date="new Date()"
         date-format="yy-mm-dd"
+        show-button-bar
         :manual-input="false"
-        class="w-full md:w-64"
+        placeholder="Pilih tanggal"
+        show-icon
+        class="w-full"
         @update:model-value="fetchReport"
       />
       <Button
@@ -31,12 +34,7 @@
         {{ report.open_shifts }} kasir masih buka. Kas seharusnya dan penjualan tunainya baru muncul setelah ditutup, dan belum masuk total.
       </Message>
 
-      <div class="grid grid-cols-2 xl:grid-cols-4 gap-4">
-        <div v-for="item in totalCards" :key="item.label" class="p-4 rounded-lg bg-gray-50 dark:bg-dark-secondary space-y-1">
-          <div class="text-sm text-gray-600 dark:text-gray-400">{{ item.label }}</div>
-          <div class="text-base font-semibold text-gray-900 dark:text-white">{{ item.value }}</div>
-        </div>
-      </div>
+      <ReportTotals :items="totalCards" />
 
       <UiCard>
         <h2 class="text-lg font-semibold">Per Kasir Dibuka</h2>
@@ -88,11 +86,12 @@ import { getDailyReport } from '@/modules/shift/services/api.ts';
 import { formatCash, differenceSeverity } from '@/modules/shift/services/cash.ts';
 import { getErrorMessage, formatRangeTime } from '@umkm-pos/ui/helpers/utils';
 import { showToast } from '@umkm-pos/ui/helpers/toast';
+import ReportTotals from '@/modules/reports/components/ReportTotals.vue';
 import UiCard from '@umkm-pos/ui/components/UiCard.vue';
 import UiLoading from '@umkm-pos/ui/components/UiLoading.vue';
 
 const outlet = getOutlet();
-const date = ref<Date>(new Date());
+const date = ref<Date | null>(new Date());
 const loading = ref(false);
 const report = ref<any>(null);
 
@@ -111,6 +110,7 @@ const totalCards = computed(() => {
 });
 
 const fetchReport = async () => {
+  if (!date.value) return; // cleared via the picker's button bar
   try {
     loading.value = true;
     const response = await getDailyReport(outlet.id, dayjs(date.value).format('YYYY-MM-DD'));
