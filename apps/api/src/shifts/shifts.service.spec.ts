@@ -903,6 +903,7 @@ describe('ShiftsService', () => {
         type: 'out',
         amount: 25000,
         reason: 'Beli es',
+        reason_code: null,
         created_by: 'user-1',
       });
       expect(r.created_by_name).toBe('Kasir');

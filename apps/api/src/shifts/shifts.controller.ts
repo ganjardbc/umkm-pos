@@ -63,13 +63,27 @@ export class ShiftsController {
     @Param('outlet_id') outletId: string,
     @CurrentUser('merchant_id') merchantId: string,
   ) {
-    return {
-      outlet_id: outletId,
-      shift_required: await this.shiftsService.isShiftRequired(
-        outletId,
-        merchantId,
-      ),
-    };
+    return this.shiftsService.getOutletSetting(outletId, merchantId);
+  }
+
+  @Get('outlet/:outlet_id/daily-report')
+  @RequirePermission('shift.read')
+  @ApiOperation({
+    summary:
+      'Daily cash report of the outlet (all shifts that started on a date)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Totals over closed shifts plus per-shift rows',
+  })
+  @ApiResponse({ status: 400, description: 'Invalid date' })
+  @ApiResponse({ status: 404, description: 'Outlet not found' })
+  getDailyReport(
+    @Param('outlet_id') outletId: string,
+    @Query('date') date: string,
+    @CurrentUser('merchant_id') merchantId: string,
+  ) {
+    return this.shiftsService.getDailyReport(outletId, merchantId, date);
   }
 
   @Get('outlet/:outlet_id')

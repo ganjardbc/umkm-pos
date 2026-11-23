@@ -1,3 +1,4 @@
+import { REFUND_REASON_PREFIX } from './shift-cash.constants';
 import {
   Injectable,
   NotFoundException,
@@ -154,6 +155,32 @@ export class ShiftsService {
       );
     }
     return outlet.shift_required;
+  }
+
+  /** Cash-control settings of the outlet (merchant-scoped). */
+  async getOutletSetting(outletId: string, merchantId: string) {
+    const outlet = await this.prisma.outlets.findFirst({
+      where: { id: outletId, merchant_id: merchantId },
+      select: {
+        shift_required: true,
+        cash_out_daily_limit: true,
+        auto_close_time: true,
+      },
+    });
+    if (!outlet) {
+      throw new NotFoundException(
+        `Outlet with ID ${outletId} not found or does not belong to your merchant`,
+      );
+    }
+    return {
+      outlet_id: outletId,
+      shift_required: outlet.shift_required,
+      cash_out_daily_limit:
+        outlet.cash_out_daily_limit === null
+          ? null
+          : Number(outlet.cash_out_daily_limit),
+      auto_close_time: outlet.auto_close_time,
+    };
   }
 
   async findByOutlet(outletId: string) {
@@ -435,11 +462,13 @@ export class ShiftsService {
       closing_cash: shift.closing_cash ?? null,
       expected_cash: shift.expected_cash ?? null,
       cash_difference: shift.cash_difference ?? null,
+      closed_by_system: shift.closed_by_system,
       cash_entries: entries.map((e) => ({
         id: e.id,
         type: e.type,
         amount: e.amount,
         reason: e.reason,
+        reason_code: e.reason_code,
         created_by: e.created_by,
         created_by_name: e.users?.name ?? null,
         created_at: e.created_at,
@@ -461,7 +490,8 @@ export class ShiftsService {
     shiftId: string,
     userId: string,
     merchantId: string,
-    closingCash: number,
+    closingCash: number | null,
+    bySystem = false,
   ) {
     const outlets = await this.prisma.outlets.findMany({
       where: { merchant_id: merchantId },
@@ -489,6 +519,7 @@ export class ShiftsService {
           status: 'closed',
           end_time: new Date(),
           updated_by: userId,
+          closed_by_system: bySystem,
         },
       });
 
@@ -524,7 +555,9 @@ export class ShiftsService {
         data: {
           closing_cash: closingCash,
           expected_cash: expected,
-          cash_difference: round2(closingCash - expected),
+          // System close has no counted cash: leave the difference unknown, never fake 0.
+          cash_difference:
+            closingCash === null ? null : round2(closingCash - expected),
         },
       });
 
@@ -538,7 +571,7 @@ export class ShiftsService {
           shift_id: shiftId,
           action: 'shift_closed',
           user_id: userId,
-          action_details: { closed_by: userId },
+          action_details: { closed_by: userId, auto_closed: bySystem },
         },
       });
     });
@@ -577,6 +610,9 @@ export class ShiftsService {
       throw new ForbiddenException('You are not an active participant');
     }
 
+    if (dto.type === 'out')
+      await this.assertWithinCashOutLimit(shift.outlet_id, dto.amount);
+
     return this.prisma.$transaction(async (tx) => {
       const entry = await tx.shift_cash_entries.create({
         data: {
@@ -584,6 +620,7 @@ export class ShiftsService {
           type: dto.type,
           amount: dto.amount,
           reason: dto.reason,
+          reason_code: dto.reason_code ?? null,
           created_by: userId,
         },
         include: { users: { select: { name: true } } },
@@ -606,11 +643,143 @@ export class ShiftsService {
         type: entry.type,
         amount: entry.amount,
         reason: entry.reason,
+        reason_code: entry.reason_code,
         created_by: entry.created_by,
         created_by_name: entry.users?.name ?? null,
         created_at: entry.created_at,
       };
     });
+  }
+
+  /** Rejects a cash-out that would push today's total over the outlet limit (refunds excluded). */
+  private async assertWithinCashOutLimit(outletId: string, amount: number) {
+    const outlet = await this.prisma.outlets.findFirst({
+      where: { id: outletId },
+      select: { cash_out_daily_limit: true },
+    });
+    if (outlet?.cash_out_daily_limit == null) return;
+    const limit = Number(outlet.cash_out_daily_limit);
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+    const today = await this.prisma.shift_cash_entries.findMany({
+      where: {
+        type: 'out',
+        created_at: { gte: startOfDay },
+        shifts: { outlet_id: outletId },
+        NOT: { reason: { startsWith: REFUND_REASON_PREFIX } },
+      },
+      select: { amount: true },
+    });
+    const used = today.reduce((a, e) => a + Number(e.amount), 0);
+    if (used + amount > limit + 0.001) {
+      throw new BadRequestException(
+        `Batas kas keluar harian terlampaui. Terpakai ${used}, batas ${limit}.`,
+      );
+    }
+  }
+
+  /**
+   * Daily report: every shift of the outlet that started on `date` (server time).
+   * Blind count: expected cash and cash sales are only reported for closed shifts,
+   * and totals only sum closed shifts.
+   */
+  async getDailyReport(outletId: string, merchantId: string, date: string) {
+    if (
+      !/^\d{4}-\d{2}-\d{2}$/.test(date ?? '') ||
+      Number.isNaN(Date.parse(date))
+    ) {
+      throw new BadRequestException('date must be YYYY-MM-DD');
+    }
+    const outlet = await this.prisma.outlets.findFirst({
+      where: { id: outletId, merchant_id: merchantId },
+      select: { id: true, name: true },
+    });
+    if (!outlet) {
+      throw new NotFoundException(`Outlet with ID ${outletId} not found`);
+    }
+    const [y, m, d] = date.split('-').map(Number);
+    const from = new Date(y, m - 1, d, 0, 0, 0, 0);
+    const to = new Date(y, m - 1, d + 1, 0, 0, 0, 0);
+
+    const shifts = await this.prisma.shifts.findMany({
+      where: { outlet_id: outletId, start_time: { gte: from, lt: to } },
+      include: { shift_owner: { select: { id: true, name: true } } },
+      orderBy: { start_time: 'asc' },
+    });
+
+    const round2 = (n: number) => Math.round(n * 100) / 100;
+    const rows = await Promise.all(
+      shifts.map(async (sh) => {
+        const entries = await this.prisma.shift_cash_entries.findMany({
+          where: { shift_id: sh.id },
+          select: { type: true, amount: true },
+        });
+        const sum = (t: string) =>
+          round2(
+            entries
+              .filter((e) => e.type === t)
+              .reduce((a, e) => a + Number(e.amount), 0),
+          );
+        const closed = sh.status === 'closed';
+        const sales = closed
+          ? await this.prisma.transactions.aggregate({
+              where: {
+                paid_shift_id: sh.id,
+                payment_method: 'cash',
+                is_cancelled: false,
+              },
+              _sum: { total_amount: true },
+            })
+          : null;
+        const transactions = await this.prisma.transactions.count({
+          where: { shift_id: sh.id, is_cancelled: false },
+        });
+        return {
+          id: sh.id,
+          status: sh.status,
+          shift_owner: sh.shift_owner,
+          start_time: sh.start_time,
+          end_time: sh.end_time,
+          closed_by_system: sh.closed_by_system,
+          opening_cash:
+            sh.opening_cash === null ? null : Number(sh.opening_cash),
+          cash_in: sum('in'),
+          cash_out: sum('out'),
+          cash_sales: sales
+            ? round2(Number(sales._sum.total_amount ?? 0))
+            : null,
+          expected_cash:
+            closed && sh.expected_cash !== null
+              ? Number(sh.expected_cash)
+              : null,
+          closing_cash:
+            sh.closing_cash === null ? null : Number(sh.closing_cash),
+          cash_difference:
+            sh.cash_difference === null ? null : Number(sh.cash_difference),
+          transactions,
+        };
+      }),
+    );
+
+    const closedRows = rows.filter((r) => r.status === 'closed');
+    const total = (f: (r: (typeof rows)[number]) => number | null) =>
+      round2(closedRows.reduce((a, r) => a + (f(r) ?? 0), 0));
+    return {
+      outlet,
+      date,
+      open_shifts: rows.length - closedRows.length,
+      totals: {
+        opening_cash: total((r) => r.opening_cash),
+        cash_sales: total((r) => r.cash_sales),
+        cash_in: total((r) => r.cash_in),
+        cash_out: total((r) => r.cash_out),
+        expected_cash: total((r) => r.expected_cash),
+        closing_cash: total((r) => r.closing_cash),
+        cash_difference: total((r) => r.cash_difference),
+        transactions: rows.reduce((a, r) => a + r.transactions, 0),
+      },
+      shifts: rows,
+    };
   }
 
   /**

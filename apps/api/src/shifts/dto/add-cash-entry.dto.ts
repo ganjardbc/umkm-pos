@@ -1,7 +1,8 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import {
   IsIn,
+  IsOptional,
   IsNotEmpty,
   IsNumber,
   IsString,
@@ -9,6 +10,8 @@ import {
   MaxLength,
   Min,
 } from 'class-validator';
+
+import { CASH_REASON_CODES } from '../shift-cash.constants';
 
 export class AddCashEntryDto {
   @ApiProperty({ enum: ['in', 'out'], example: 'out' })
@@ -30,4 +33,9 @@ export class AddCashEntryDto {
   @IsNotEmpty()
   @MaxLength(255)
   reason: string;
+
+  @ApiPropertyOptional({ enum: CASH_REASON_CODES })
+  @IsOptional()
+  @IsIn(CASH_REASON_CODES)
+  reason_code?: string;
 }

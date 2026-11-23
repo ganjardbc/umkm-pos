@@ -1,6 +1,9 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsBoolean,
+  IsNumber,
+  Max,
+  Min,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -69,4 +72,28 @@ export class CreateOutletDto {
   @IsOptional()
   @IsBoolean()
   shift_required?: boolean;
+
+  @ApiPropertyOptional({
+    example: 500000,
+    description:
+      'Max total cash-out per day (excluding refunds). null = no limit',
+    nullable: true,
+  })
+  @IsOptional()
+  @IsNumber({ allowNaN: false, allowInfinity: false, maxDecimalPlaces: 2 })
+  @Min(0)
+  @Max(999999999999.99)
+  cash_out_daily_limit?: number | null;
+
+  @ApiPropertyOptional({
+    example: '23:00',
+    description:
+      'HH:mm (server time). Open shifts close automatically. null = off',
+    nullable: true,
+  })
+  @IsOptional()
+  @Matches(/^([01]\d|2[0-3]):[0-5]\d$/, {
+    message: 'auto_close_time must be HH:mm',
+  })
+  auto_close_time?: string | null;
 }
