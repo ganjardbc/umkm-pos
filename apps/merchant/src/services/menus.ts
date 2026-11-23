@@ -16,9 +16,6 @@ import { PERMISSIONS as PRODUCT_PERMISSIONS } from '@/modules/product-lists/serv
 import { PREFIX_ROUTE_PATH as PRP_STOCK } from '@/modules/stock/services/constants';
 import { PERMISSIONS as STOCK_PERMISSIONS } from '@/modules/stock/services/rbac.ts';
 
-// Shift
-import { PREFIX_ROUTE_PATH as PRP_SHIFT } from '@/modules/shift/services/constants';
-import { PERMISSIONS as SHIFT_PERMISSIONS } from '@/modules/shift/services/rbac.ts';
 
 // Transaction
 import { PREFIX_ROUTE_PATH as PRP_TRANSACTION } from '@/modules/transaction/services/constants';
@@ -65,14 +62,6 @@ export default [
     featureFlag: DEFAULT_FEATURE_FLAG,
     permissions: TRANSACTION_PERMISSIONS,
     route: PRP_TRANSACTION,
-  },
-  {
-    group: 'Penjualan',
-    icon: 'pi pi-clock',
-    label: 'Buka/Tutup Kasir',
-    featureFlag: DEFAULT_FEATURE_FLAG,
-    permissions: SHIFT_PERMISSIONS,
-    route: PRP_SHIFT,
   },
   {
     group: 'Penjualan',
