@@ -98,7 +98,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import { getErrorMessage } from '@umkm-pos/ui/helpers/utils';
-import { formatCash } from '@/modules/shift/services/cash.ts';
+import { formatCash, differenceSeverity } from '@/modules/shift/services/cash.ts';
 import { getOutlet } from '@/helpers/auth.ts';
 import { showToast } from '@umkm-pos/ui/helpers/toast';
 
@@ -162,12 +162,9 @@ const summaryRows = computed(() => {
   ];
 });
 
-// green = pas, yellow = selisih kecil (<= Rp5.000), red = lebih besar. Threshold is a UI hint only.
 const differenceClass = computed(() => {
-  const diff = Math.abs(Number(summary.value?.cash_difference));
-  if (Number.isNaN(diff)) return '';
-  if (diff === 0) return 'text-green-600';
-  return diff <= 5000 ? 'text-yellow-600' : 'text-red-600';
+  const severity = differenceSeverity(summary.value?.cash_difference);
+  return severity ? { success: 'text-green-600', warn: 'text-yellow-600', danger: 'text-red-600' }[severity] : '';
 });
 
 const shareSummary = async () => {

@@ -1,6 +1,6 @@
 <template>
   <div class="w-full space-y-4">
-    <div class="flex flex-col md:flex-row gap-4">
+    <div class="flex flex-col md:flex-row md:items-center gap-4">
       <UiSearch
         v-model="form.search"
         type="search"
@@ -8,7 +8,25 @@
         class="w-full"
         @input="search"
       />
+      <DatePicker
+        v-model="form.dateRange"
+        selection-mode="range"
+        :max-date="new Date()"
+        date-format="yy-mm-dd"
+        placeholder="Periode"
+        show-button-bar
+        :manual-input="false"
+        class="w-full md:w-64"
+        @update:model-value="applyFilter"
+      />
+      <label class="flex items-center gap-2 text-sm whitespace-nowrap">
+        <Checkbox v-model="form.onlyDifference" binary @update:model-value="applyFilter" />
+        Hanya yang ada selisih
+      </label>
     </div>
+    <p v-if="hasFilter" class="text-xs text-slate-400">
+      Filter memeriksa 100 catatan terbaru.
+    </p>
 
     <UiLoading
       v-if="loading"
@@ -20,71 +38,55 @@
       <p class="text-sm">Riwayat masih kosong.</p>
     </div>
 
-    <div v-else class="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
-      <UiCard
-        v-for="(shift, index) in shifts"
-        :key="shift.id"
-        class="relative overflow-hidden"
-      >
-        <div class="flex items-start justify-between gap-2">
-          <div class="min-w-0 flex-1">
-            <p class="truncate text-sm font-semibold text-slate-900 dark:text-slate-50">
-              {{ shift.shift_owner?.name || '-' }}
-            </p>
-            <p class="mt-0.5 text-xs text-slate-400">
-              #{{ getNoTable(index, pagination.page, pagination.rows) }}
-            </p>
-          </div>
-          <div class="flex shrink-0 gap-1">
+    <UiCard v-else>
+      <DataTable :value="shifts" size="small" scrollable>
+        <Column header="Tanggal">
+          <template #body="{ data }">
+            {{ formatDate(data.start_time) }}
+            <div class="text-xs text-slate-400">{{ formatRangeTime(data.start_time, data.end_time) }}</div>
+          </template>
+        </Column>
+        <Column header="Kasir">
+          <template #body="{ data }">{{ data.shift_owner?.name || '-' }}</template>
+        </Column>
+        <Column header="Kas Awal">
+          <template #body="{ data }">{{ formatCash(data.opening_cash) }}</template>
+        </Column>
+        <Column header="Kas Akhir">
+          <template #body="{ data }">{{ formatCash(data.closing_cash) }}</template>
+        </Column>
+        <Column header="Selisih">
+          <template #body="{ data }">
             <Tag
-              :value="shift.status === 'open' ? 'Buka' : 'Tutup'"
-              :severity="getStatusSeverity(shift.status)"
-              class="capitalize text-xs!"
+              v-if="differenceSeverity(data.cash_difference)"
+              :value="formatCash(data.cash_difference)"
+              :severity="differenceSeverity(data.cash_difference) ?? undefined"
             />
-          </div>
-        </div>
-
-        <Divider class="my-0!" />
-
-        <div class="grid grid-cols-2 gap-y-2 text-xs">
-          <span class="text-slate-400">Outlet</span>
-          <span class="text-right text-slate-700 dark:text-slate-300">{{ shift.outlet?.name || '-' }}</span>
-
-          <span class="text-slate-400">Tanggal</span>
-          <span class="text-right text-slate-700 dark:text-slate-300">{{ formatDate(shift.start_time) }}</span>
-
-          <span class="text-slate-400">Waktu</span>
-          <span class="text-right text-slate-700 dark:text-slate-300">{{ formatRangeTime(shift.start_time, shift.end_time) }}</span>
-
-          <span class="text-slate-400">Durasi</span>
-          <span class="text-right text-slate-700 dark:text-slate-300">{{ getDuration(shift.start_time, shift.end_time) }}</span>
-
-          <span class="text-slate-400">Kas Awal</span>
-          <span class="text-right text-slate-700 dark:text-slate-300">{{ formatCash(shift.opening_cash) }}</span>
-
-          <span class="text-slate-400">Kas Akhir</span>
-          <span class="text-right text-slate-700 dark:text-slate-300">{{ formatCash(shift.closing_cash) }}</span>
-
-          <span class="text-slate-400">Selisih</span>
-          <span class="text-right text-slate-700 dark:text-slate-300">{{ formatCash(shift.cash_difference) }}</span>
-        </div>
-
-        <Divider class="my-0!" />
-
-        <div class="flex items-center justify-end">
-          <div class="flex gap-1">
+            <span v-else>-</span>
+          </template>
+        </Column>
+        <Column header="Status">
+          <template #body="{ data }">
+            <Tag
+              :value="data.status === 'open' ? 'Buka' : 'Tutup'"
+              :severity="data.status === 'open' ? 'success' : 'secondary'"
+            />
+          </template>
+        </Column>
+        <Column header="">
+          <template #body="{ data }">
             <Button
               severity="secondary"
               variant="outlined"
               icon="pi pi-eye"
               size="small"
-              :disabled="!isCanDetail || shift.status === 'open'"
-              @click="onDetailShift(shift)"
+              :disabled="!isCanDetail || data.status === 'open'"
+              @click="onDetailShift(data)"
             />
-          </div>
-        </div>
-      </UiCard>
-    </div>
+          </template>
+        </Column>
+      </DataTable>
+    </UiCard>
 
     <UiPagination
       v-model="pagination"
@@ -97,10 +99,10 @@
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { getNoTable, getErrorMessage, formatDate, formatRangeTime, getDuration } from '@umkm-pos/ui/helpers/utils';
+import { getErrorMessage, formatDate, formatRangeTime } from '@umkm-pos/ui/helpers/utils';
 import { PREFIX_ROUTE_NAME } from '@/modules/shift/services/constants.ts';
 import { getListShift } from '@/modules/shift/services/api.ts';
-import { formatCash } from '@/modules/shift/services/cash.ts';
+import { formatCash, differenceSeverity } from '@/modules/shift/services/cash.ts';
 import { showToast } from '@umkm-pos/ui/helpers/toast';
 import { getOutlet, isHasPermission } from '@/helpers/auth.ts';
 import { READ } from '@/modules/shift/services/rbac.ts';
@@ -125,22 +127,43 @@ const pagination = ref({
   totalRecords: 0,
 });
 
+// The list endpoint has no period or difference filter, so when one is active we load the
+// latest 100 shifts and filter/paginate here. shortcut: older history is not reached while filtering.
+const hasFilter = computed(() => !!form.value.onlyDifference || !!form.value.dateRange?.[0]);
+
+const matchesFilter = (s: any) => {
+  const [from, to] = form.value.dateRange || [];
+  const start = new Date(s.start_time).getTime();
+  if (from && start < new Date(from).setHours(0, 0, 0, 0)) return false;
+  if (to && start > new Date(to).setHours(23, 59, 59, 999)) return false;
+  if (form.value.onlyDifference && !(Number(s.cash_difference) !== 0 && s.cash_difference != null)) return false;
+  return true;
+};
+
 const fetchShift = async () => {
   try {
     loading.value = true;
-
+    const filtering = hasFilter.value;
     const payload = {
       outlet_id: outlet?.id,
-      page: pagination.value.page,
-      limit: pagination.value.rows,
+      page: filtering ? 1 : pagination.value.page,
+      limit: filtering ? 100 : pagination.value.rows,
       search: form.value.search ? form.value.search.trim() : undefined,
-    }
+    };
     const response = await getListShift(payload);
     const { data, meta } = response?.data?.data || {};
 
-    shifts.value = data || [];
-    pagination.value.totalRecords = meta?.total;
-    pagination.value.pageCount = meta?.totalPages;
+    if (filtering) {
+      const all = (data || []).filter(matchesFilter);
+      const { page, rows } = pagination.value;
+      shifts.value = all.slice((page - 1) * rows, page * rows);
+      pagination.value.totalRecords = all.length;
+      pagination.value.pageCount = Math.ceil(all.length / rows);
+    } else {
+      shifts.value = data || [];
+      pagination.value.totalRecords = meta?.total;
+      pagination.value.pageCount = meta?.totalPages;
+    }
   } catch (error) {
     console.log(error);
     showToast({
@@ -153,14 +176,21 @@ const fetchShift = async () => {
   }
 };
 
+const applyFilter = () => {
+  pagination.value.page = 1;
+  fetchShift();
+};
+
 const onPageChange = (event: any) => {
   pagination.value.page = event.page + 1;
   fetchShift();
 };
 
 // Search
-const form = ref({
+const form = ref<{ search: string; dateRange: Date[] | null; onlyDifference: boolean }>({
   search: '',
+  dateRange: null,
+  onlyDifference: false,
 });
 
 let searchDebounceTimer: ReturnType<typeof setTimeout>;
@@ -170,17 +200,6 @@ const search = () => {
     pagination.value.page = 1;
     fetchShift();
   }, 300);
-};
-
-const getStatusSeverity = (status: string) => {
-  switch (status) {
-    case 'open':
-      return 'success';
-    case 'closed':
-      return 'danger';
-    default:
-      return 'warning';
-  }
 };
 
 const onDetailShift = (shift: any) => {
