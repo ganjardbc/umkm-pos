@@ -29,44 +29,32 @@
       <p class="text-sm">Belum ada riwayat stok.</p>
     </div>
 
-    <div v-else class="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
-      <UiCard
-        v-for="(item, index) in stocks"
-        :key="item.id"
-        class="relative overflow-hidden"
-      >
-        <div class="flex items-start justify-between gap-2">
-          <div class="min-w-0 flex-1">
-            <p class="truncate text-sm font-semibold text-slate-900 dark:text-slate-50">
-              {{ item.products?.name || '-' }}
-            </p>
-            <p class="mt-0.5 text-xs text-slate-400">
-              #{{ getNoTable(index, pagination.page, pagination.rows) }}
-            </p>
-          </div>
-          <span :class="item.change_qty > 0 ? 'text-green-600' : 'text-red-600'" class="text-sm font-semibold shrink-0">
-            {{ item.change_qty || '-' }}
-          </span>
-        </div>
-
-        <Divider class="my-0!" />
-
-        <div class="grid grid-cols-2 gap-y-2 text-xs">
-          <span class="text-slate-400">Stok Setelahnya</span>
-          <span class="text-right text-slate-700 dark:text-slate-300">{{ item.stock_after || '-' }}</span>
-
-          <span class="text-slate-400">Alasan</span>
-          <span class="text-right text-slate-700 dark:text-slate-300">{{ item.reason || '-' }}</span>
-        </div>
-
-        <Divider class="my-0!" />
-
-        <div class="flex items-center justify-between">
-          <span class="text-slate-400 text-xs">Dibuat Pada</span>
-          <span class="text-xs text-slate-700 dark:text-slate-300">{{ formatDateTime(item.created_at) }}</span>
-        </div>
-      </UiCard>
-    </div>
+    <UiCard v-else>
+      <DataTable :value="stocks" size="small" scrollable>
+        <Column header="#">
+          <template #body="{ index }">{{ getNoTable(index, pagination.page, pagination.rows) }}</template>
+        </Column>
+        <Column header="Produk">
+          <template #body="{ data }">{{ data.products?.name || '-' }}</template>
+        </Column>
+        <Column header="Perubahan">
+          <template #body="{ data }">
+            <span :class="data.change_qty > 0 ? 'text-green-600' : 'text-red-600'" class="font-semibold">
+              {{ data.change_qty > 0 ? `+${data.change_qty}` : (data.change_qty ?? '-') }}
+            </span>
+          </template>
+        </Column>
+        <Column header="Stok Setelahnya">
+          <template #body="{ data }">{{ data.stock_after ?? '-' }}</template>
+        </Column>
+        <Column header="Alasan">
+          <template #body="{ data }">{{ data.reason || '-' }}</template>
+        </Column>
+        <Column header="Dibuat Pada">
+          <template #body="{ data }">{{ formatDateTime(data.created_at) }}</template>
+        </Column>
+      </DataTable>
+    </UiCard>
 
     <UiPagination
       v-model="pagination"
