@@ -37,7 +37,7 @@
           label="Buka Kasir"
           icon="pi pi-play"
           :disabled="loading"
-          @click="cashMode = 'open'"
+          @click="startOpen"
         />
         <div v-else class="text-sm text-gray-500 dark:text-gray-400">
           Anda tidak memiliki akses untuk membuka kasir.
@@ -84,6 +84,7 @@
     <CashDialog
       v-model:visible="cashVisible"
       :mode="cashMode || 'open'"
+      :suggested-opening="suggestedOpening"
       :submit="cashMode === 'close' ? handleCloseShift : handleOpenShift"
     />
   </UiCard>
@@ -150,6 +151,12 @@ const fetchOutletShift = async () => {
 };
 
 const cashMode = ref<'open' | 'close' | null>(null);
+const suggestedOpening = ref<number | null>(null);
+// Load before the dialog shows so the prefill is ready when it opens.
+const startOpen = async () => {
+  suggestedOpening.value = await shiftApi.getLastClosingCash(props.outletId);
+  cashMode.value = 'open';
+};
 const cashVisible = computed({
   get: () => cashMode.value !== null,
   set: (v) => { if (!v) cashMode.value = null; },

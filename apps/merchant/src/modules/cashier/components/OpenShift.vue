@@ -23,7 +23,7 @@
         icon="pi pi-play"
         fluid
         :disabled="!outlet?.id"
-        @click="showDialog = true"
+        @click="openDialog"
       />
       <Message
         v-else
@@ -40,6 +40,7 @@
     <CashDialog
       v-model:visible="showDialog"
       mode="open"
+      :suggested-opening="suggestedOpening"
       :submit="onOpenShift"
     />
   </div>
@@ -48,7 +49,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { getOutlet, isHasPermission } from '@/helpers/auth.ts';
-import { openShift } from '@/modules/shift/services/api.ts';
+import { openShift, getLastClosingCash } from '@/modules/shift/services/api.ts';
 import { CREATE as SHIFT_CREATE } from '@/modules/shift/services/rbac.ts';
 import { showToast } from '@umkm-pos/ui/helpers/toast';
 import CashDialog from '@/modules/shift/components/CashDialog.vue';
@@ -58,6 +59,12 @@ const emit = defineEmits(['shift-opened']);
 const outlet = getOutlet();
 const canOpenShift = computed(() => isHasPermission(SHIFT_CREATE));
 const showDialog = ref(false);
+const suggestedOpening = ref<number | null>(null);
+// Load before the dialog shows so the prefill is ready when it opens.
+const openDialog = async () => {
+  suggestedOpening.value = await getLastClosingCash(outlet.id);
+  showDialog.value = true;
+};
 
 // Errors propagate to CashDialog, which shows them and keeps the form open.
 const onOpenShift = async (openingCash: number) => {

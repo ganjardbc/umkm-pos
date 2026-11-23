@@ -35,6 +35,18 @@ export const getOutletShiftSetting = async (outletId: string | number, options: 
   );
 };
 
+// Kas akhir of the outlet's latest closed shift (from the existing list endpoint), or null.
+export const getLastClosingCash = async (outletId: string | number): Promise<number | null> => {
+  try {
+    const response = await getListShift({ outlet_id: outletId, page: 1, limit: 3 });
+    const list: any[] = response?.data?.data?.data || [];
+    const last = list.find((s) => s.status === 'closed' && s.closing_cash !== null && s.closing_cash !== undefined);
+    return last ? Number(last.closing_cash) : null;
+  } catch {
+    return null;
+  }
+};
+
 export const openShift = async (data: { outlet_id: string | number; opening_cash: number }, options: any = {}) => {
   return await api.post(
     `/api/v1/shifts`,

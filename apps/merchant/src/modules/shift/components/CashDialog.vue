@@ -9,7 +9,10 @@
     <div v-if="summary" class="space-y-2 text-sm">
       <div v-for="row in summaryRows" :key="row.label" class="flex justify-between">
         <span class="text-gray-500 dark:text-gray-400">{{ row.label }}</span>
-        <span class="font-semibold">{{ row.value }}</span>
+        <span
+          class="font-semibold"
+          :class="row.label === 'Selisih' ? differenceClass : ''"
+        >{{ row.value }}</span>
       </div>
     </div>
 
@@ -25,6 +28,12 @@
           :disabled="submitting"
           placeholder="Masukkan nominal (boleh 0)"
         />
+        <small v-if="mode === 'open' && suggestedOpening !== null && suggestedOpening !== undefined" class="text-gray-500 dark:text-gray-400">
+          Terisi dari kas akhir terakhir ({{ formatCash(suggestedOpening) }}).
+          <template v-if="amount !== null && amount !== suggestedOpening">
+            Selisih {{ formatCash(amount - suggestedOpening) }}.
+          </template>
+        </small>
       </UiFormGroup>
       <Message v-if="errorMessage" severity="error" size="small">
         {{ errorMessage }}
@@ -32,11 +41,16 @@
     </div>
 
     <template #footer>
-      <Button
-        v-if="summary"
-        label="Tutup"
-        @click="visible = false"
-      />
+      <template v-if="summary">
+        <Button
+          label="Bagikan"
+          icon="pi pi-share-alt"
+          severity="secondary"
+          variant="outlined"
+          @click="shareSummary"
+        />
+        <Button label="Selesai" @click="visible = false" />
+      </template>
       <template v-else>
         <Button
           label="Batal"
@@ -60,11 +74,15 @@
 import { ref, computed, watch } from 'vue';
 import { getErrorMessage } from '@umkm-pos/ui/helpers/utils';
 import { formatCash } from '@/modules/shift/services/cash.ts';
+import { getOutlet } from '@/helpers/auth.ts';
+import { showToast } from '@umkm-pos/ui/helpers/toast';
 
 const props = defineProps<{
   mode: 'open' | 'close';
   // Calls the API; resolves with the response data. Rejects => error shown, dialog stays open.
   submit: (amount: number) => Promise<any>;
+  // Open mode: last closing cash of the outlet, prefilled into the input.
+  suggestedOpening?: number | null;
 }>();
 
 const visible = defineModel<boolean>('visible', { default: false });
@@ -76,7 +94,7 @@ const summary = ref<any>(null);
 
 watch(visible, (v) => {
   if (v) {
-    amount.value = null;
+    amount.value = props.mode === 'open' ? (props.suggestedOpening ?? null) : null;
     errorMessage.value = '';
     summary.value = null;
   }
@@ -105,6 +123,30 @@ const summaryRows = computed(() => {
     { label: 'Selisih', value: formatCash(Number.isNaN(diff) ? null : diff) },
   ];
 });
+
+// green = pas, yellow = selisih kecil (<= Rp5.000), red = lebih besar. Threshold is a UI hint only.
+const differenceClass = computed(() => {
+  const diff = Math.abs(Number(summary.value?.cash_difference));
+  if (Number.isNaN(diff)) return '';
+  if (diff === 0) return 'text-green-600';
+  return diff <= 5000 ? 'text-yellow-600' : 'text-red-600';
+});
+
+const shareSummary = async () => {
+  const text = [
+    `Laporan Tutup Kasir${getOutlet()?.name ? ` - ${getOutlet().name}` : ''}`,
+    ...summaryRows.value.map((r) => `${r.label}: ${r.value}`),
+  ].join('\n');
+  try {
+    if (navigator.share) await navigator.share({ title: 'Laporan Tutup Kasir', text });
+    else {
+      await navigator.clipboard.writeText(text);
+      showToast({ type: 'success', title: 'Sukses', message: 'Ringkasan disalin' });
+    }
+  } catch {
+    // user cancelled the share sheet
+  }
+};
 
 const onSubmit = async () => {
   if (amount.value === null || submitting.value) return;
