@@ -93,7 +93,10 @@ const sections = computed(() => {
 const isActive = (path: string): boolean => {
   const routePath = path.split('/')[1];
   const routeName = route.path.split('/')[1];
-  return routePath === routeName;
+  if (routePath !== routeName) return false;
+  // Items with a sub-path (e.g. /reports/shifts) must match it too, else siblings all light up.
+  const subPath = path.split('/')[2];
+  return !subPath || subPath === route.path.split('/')[2];
 };
 
 const isActiveChild = (path: string): boolean => {
