@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full md:max-w-3xl mx-auto flex flex-col items-center py-8 px-4">
+  <div class="w-full md:max-w-3xl mx-auto min-h-[70vh] flex flex-col items-center justify-center py-8 px-4">
     <router-link to="/" class="flex items-center mb-4">
       <Image :src="defaultLogo" alt="Image" class="w-58" />
     </router-link>
@@ -8,7 +8,7 @@
     </div>
 
     <div v-if="steps.length > 0" class="w-full mt-8 space-y-3">
-      <h2 class="text-base font-semibold">
+      <h2 class="text-base font-semibold text-center">
         Langkah awal
       </h2>
       <UiCard
