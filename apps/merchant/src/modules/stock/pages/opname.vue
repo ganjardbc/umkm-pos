@@ -10,7 +10,7 @@
       <Button
         icon="pi pi-check"
         label="Simpan Opname"
-        class="w-full md:w-[192px]"
+        class="w-full md:w-[248px]"
         :disabled="countedRows.length === 0"
         :loading="saving"
         @click="onSave"
