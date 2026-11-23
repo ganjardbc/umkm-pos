@@ -163,8 +163,9 @@ export class ShiftsController {
   async getShift(
     @Param('id') id: string,
     @CurrentUser('merchant_id') merchantId: string,
+    @CurrentUser('id') userId: string,
   ) {
-    return this.shiftsService.getShift(id, merchantId);
+    return this.shiftsService.getShift(id, merchantId, userId);
   }
 
   @Patch(':id/close')

@@ -15,6 +15,10 @@ import { Prisma } from '@prisma/client';
 
 export type ShiftStatus = 'open' | 'closed' | 'transferred';
 
+// Lets the holder see expected cash while a shift is still open. Everyone else
+// only sees it after the shift is closed (blind close).
+const PERMISSION_VIEW_EXPECTED = 'shift.view_expected';
+
 @Injectable()
 export class ShiftsService {
   constructor(private prisma: PrismaService) {}
@@ -375,7 +379,57 @@ export class ShiftsService {
   /**
    * Get shift details with participants and transaction counts
    */
-  async getShift(shiftId: string, merchantId: string) {
+  /**
+   * expected = opening + cash sales received in this shift (not cancelled)
+   * + cash in - cash out. Single source of truth for close and the live view.
+   */
+  private async calcExpectedCash(
+    db: Prisma.TransactionClient,
+    shiftId: string,
+    openingCash: Prisma.Decimal | number | string | null,
+  ): Promise<number> {
+    const sales = await db.transactions.aggregate({
+      where: {
+        paid_shift_id: shiftId,
+        payment_method: 'cash',
+        is_cancelled: false,
+      },
+      _sum: { total_amount: true },
+    });
+    const entries = await db.shift_cash_entries.findMany({
+      where: { shift_id: shiftId },
+      select: { type: true, amount: true },
+    });
+    const cashIn = entries
+      .filter((e) => e.type === 'in')
+      .reduce((a, e) => a + Number(e.amount), 0);
+    const cashOut = entries
+      .filter((e) => e.type === 'out')
+      .reduce((a, e) => a + Number(e.amount), 0);
+    return (
+      Math.round(
+        (Number(openingCash ?? 0) +
+          Number(sales._sum.total_amount ?? 0) +
+          cashIn -
+          cashOut) *
+          100,
+      ) / 100
+    );
+  }
+
+  private async canViewExpectedCash(userId: string, outletId: string) {
+    const granted = await this.prisma.role_permissions.count({
+      where: {
+        permissions: { code: PERMISSION_VIEW_EXPECTED },
+        roles: {
+          user_roles: { some: { user_id: userId, outlet_id: outletId } },
+        },
+      },
+    });
+    return granted > 0;
+  }
+
+  async getShift(shiftId: string, merchantId: string, viewerId?: string) {
     // Validate shift belongs to merchant
     const outlets = await this.prisma.outlets.findMany({
       where: { merchant_id: merchantId },
@@ -449,6 +503,21 @@ export class ShiftsService {
           .reduce((a, e) => a + Number(e.amount), 0) * 100,
       ) / 100;
 
+    // Only for a still-open shift and only for holders of the permission;
+    // `expected_cash` itself stays null until close.
+    let expectedCashLive: number | null = null;
+    if (
+      viewerId &&
+      shift.status === 'open' &&
+      (await this.canViewExpectedCash(viewerId, shift.outlet_id))
+    ) {
+      expectedCashLive = await this.calcExpectedCash(
+        this.prisma,
+        shiftId,
+        shift.opening_cash,
+      );
+    }
+
     return {
       id: shift.id,
       outlet_id: shift.outlet_id,
@@ -461,6 +530,7 @@ export class ShiftsService {
       opening_cash: shift.opening_cash ?? null,
       closing_cash: shift.closing_cash ?? null,
       expected_cash: shift.expected_cash ?? null,
+      expected_cash_live: expectedCashLive,
       cash_difference: shift.cash_difference ?? null,
       closed_by_system: shift.closed_by_system,
       cash_entries: entries.map((e) => ({
@@ -523,31 +593,12 @@ export class ShiftsService {
         },
       });
 
-      const sales = await tx.transactions.aggregate({
-        where: {
-          paid_shift_id: shiftId,
-          payment_method: 'cash',
-          is_cancelled: false,
-        },
-        _sum: { total_amount: true },
-      });
       // Number math rounded to cents: exact for DECIMAL(14,2) (< 2^53 cents)
       const round2 = (n: number) => Math.round(n * 100) / 100;
-      const entries = await tx.shift_cash_entries.findMany({
-        where: { shift_id: shiftId },
-        select: { type: true, amount: true },
-      });
-      const cashIn = entries
-        .filter((e) => e.type === 'in')
-        .reduce((a, e) => a + Number(e.amount), 0);
-      const cashOut = entries
-        .filter((e) => e.type === 'out')
-        .reduce((a, e) => a + Number(e.amount), 0);
-      const expected = round2(
-        Number(shift.opening_cash ?? 0) +
-          Number(sales._sum.total_amount ?? 0) +
-          cashIn -
-          cashOut,
+      const expected = await this.calcExpectedCash(
+        tx,
+        shiftId,
+        shift.opening_cash,
       );
 
       await tx.shifts.update({

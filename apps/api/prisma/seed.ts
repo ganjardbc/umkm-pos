@@ -856,6 +856,10 @@ async function main() {
     { code: 'shift.create', description: 'Open cashier shifts' },
     { code: 'shift.read', description: 'Read cashier shifts' },
     { code: 'shift.update', description: 'Close cashier shifts' },
+    {
+      code: 'shift.view_expected',
+      description: 'See expected cash of an open shift',
+    },
     // Role management
     { code: 'role.create', description: 'Create roles' },
     { code: 'role.read', description: 'Read roles' },
@@ -956,6 +960,7 @@ async function main() {
     'shift.create',
     'shift.read',
     'shift.update',
+    'shift.view_expected',
     'role.read',
     'role.assign',
     'permission.read',
@@ -1008,6 +1013,7 @@ async function main() {
     'shift.create',
     'shift.read',
     'shift.update',
+    'shift.view_expected',
     'role.read',
     'permission.read',
     'user.create',

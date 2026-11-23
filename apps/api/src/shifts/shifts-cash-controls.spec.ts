@@ -7,6 +7,8 @@ const makePrisma = () => ({
   shifts: { findMany: jest.fn(), findFirst: jest.fn() },
   shift_cash_entries: { findMany: jest.fn() },
   transactions: { aggregate: jest.fn(), count: jest.fn() },
+  shift_participants: { findMany: jest.fn() },
+  role_permissions: { count: jest.fn() },
 });
 
 describe('cash-out daily limit', () => {
@@ -121,5 +123,70 @@ describe('auto close', () => {
     expect(prisma.shifts.findMany.mock.calls[0][0].where.start_time.lt).toEqual(
       new Date(2026, 10, 24, 10, 0),
     );
+  });
+});
+
+describe('expected cash while open (owner view)', () => {
+  const openShift = {
+    id: 's1',
+    outlet_id: 'o1',
+    status: 'open',
+    opening_cash: '200000',
+    closing_cash: null,
+    expected_cash: null,
+    cash_difference: null,
+    closed_by_system: false,
+    outlets: { id: 'o1', name: 'Outlet', slug: 'outlet' },
+    shift_owner: { id: 'u1', name: 'A', username: 'a' },
+  };
+
+  const setup = (shift: any, canView: boolean) => {
+    const prisma: any = makePrisma();
+    prisma.outlets.findMany.mockResolvedValue([{ id: 'o1' }]);
+    prisma.shifts.findFirst.mockResolvedValue(shift);
+    prisma.shift_participants.findMany.mockResolvedValue([]);
+    prisma.transactions.count.mockResolvedValue(0);
+    prisma.transactions.aggregate.mockResolvedValue({
+      _sum: { total_amount: '1180000' },
+    });
+    prisma.shift_cash_entries.findMany.mockResolvedValue([
+      { type: 'in', amount: '50000' },
+      { type: 'out', amount: '53000' },
+    ]);
+    prisma.role_permissions.count.mockResolvedValue(canView ? 1 : 0);
+    return prisma;
+  };
+
+  it('returns the live value for a holder of shift.view_expected, and keeps expected_cash null', async () => {
+    const prisma = setup(openShift, true);
+    const r: any = await new ShiftsService(prisma).getShift('s1', 'm1', 'u1');
+    expect(r.expected_cash_live).toBe(1377000);
+    expect(r.expected_cash).toBeNull();
+    const where = prisma.role_permissions.count.mock.calls[0][0].where;
+    expect(where.permissions.code).toBe('shift.view_expected');
+    expect(where.roles.user_roles.some).toEqual({
+      user_id: 'u1',
+      outlet_id: 'o1',
+    });
+  });
+
+  it('hides it from a user without the permission', async () => {
+    const prisma = setup(openShift, false);
+    const r: any = await new ShiftsService(prisma).getShift('s1', 'm1', 'u2');
+    expect(r.expected_cash_live).toBeNull();
+    expect(prisma.transactions.aggregate).not.toHaveBeenCalled();
+  });
+
+  it('returns null without a viewer id, and for a closed shift', async () => {
+    const noViewer = setup(openShift, true);
+    expect(
+      ((await new ShiftsService(noViewer).getShift('s1', 'm1')) as any)
+        .expected_cash_live,
+    ).toBeNull();
+    const closed = setup({ ...openShift, status: 'closed' }, true);
+    expect(
+      ((await new ShiftsService(closed).getShift('s1', 'm1', 'u1')) as any)
+        .expected_cash_live,
+    ).toBeNull();
   });
 });
