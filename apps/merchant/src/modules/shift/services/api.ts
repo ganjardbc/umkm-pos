@@ -1,4 +1,5 @@
 import api from '@/plugins/axios.ts';
+import { getListTransaction } from '@/modules/transaction/services/api.ts';
 
 export const getListShift = async (data: any, options: any = {}) => {
   return await api.get(
@@ -42,6 +43,18 @@ export const getLastClosingCash = async (outletId: string | number): Promise<num
     const list: any[] = response?.data?.data?.data || [];
     const last = list.find((s) => s.status === 'closed' && s.closing_cash !== null && s.closing_cash !== undefined);
     return last ? Number(last.closing_cash) : null;
+  } catch {
+    return null;
+  }
+};
+
+// Unpaid orders of the outlet (payment_method 'pending'). The list endpoint has no payment
+// filter, so this counts within the latest 100 non-cancelled orders. null = unknown.
+export const getUnpaidCount = async (outletId: string | number): Promise<number | null> => {
+  try {
+    const response = await getListTransaction({ outlet_id: outletId, is_cancelled: false, page: 1, limit: 100 });
+    const list: any[] = response?.data?.data?.data || [];
+    return list.filter((t) => t.payment_method === 'pending').length;
   } catch {
     return null;
   }

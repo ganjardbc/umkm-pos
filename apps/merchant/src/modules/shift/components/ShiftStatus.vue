@@ -20,7 +20,7 @@
         severity="danger"
         class="w-full md:w-auto"
         :disabled="loading"
-        @click="cashMode = 'close'"
+        @click="startClose"
       />
     </div>
 
@@ -85,6 +85,7 @@
       v-model:visible="cashVisible"
       :mode="cashMode || 'open'"
       :suggested-opening="suggestedOpening"
+      :unpaid-count="unpaidCount"
       :submit="cashMode === 'close' ? handleCloseShift : handleOpenShift"
     />
   </UiCard>
@@ -152,6 +153,11 @@ const fetchOutletShift = async () => {
 
 const cashMode = ref<'open' | 'close' | null>(null);
 const suggestedOpening = ref<number | null>(null);
+const unpaidCount = ref<number | null>(null);
+const startClose = async () => {
+  unpaidCount.value = await shiftApi.getUnpaidCount(props.outletId);
+  cashMode.value = 'close';
+};
 // Load before the dialog shows so the prefill is ready when it opens.
 const startOpen = async () => {
   suggestedOpening.value = await shiftApi.getLastClosingCash(props.outletId);

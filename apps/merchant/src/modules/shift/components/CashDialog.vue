@@ -17,6 +17,9 @@
     </div>
 
     <div v-else class="space-y-3">
+      <Message v-if="mode === 'close' && unpaidCount" severity="warn" size="small">
+        Ada {{ unpaidCount }} pesanan belum dibayar. Anda tetap bisa menutup kasir.
+      </Message>
       <UiFormGroup :label="mode === 'open' ? 'Kas Awal' : 'Kas Akhir'" variant="vertical">
         <InputNumber
           v-model="amount"
@@ -35,6 +38,28 @@
           </template>
         </small>
       </UiFormGroup>
+      <div v-if="mode === 'close'" class="space-y-2">
+        <Button
+          :label="showCounter ? 'Sembunyikan hitung pecahan' : 'Hitung pecahan uang'"
+          icon="pi pi-calculator"
+          severity="secondary"
+          variant="text"
+          size="small"
+          @click="showCounter = !showCounter"
+        />
+        <div v-if="showCounter" class="grid grid-cols-2 gap-2">
+          <div v-for="d in DENOMINATIONS" :key="d" class="flex items-center gap-2 text-sm">
+            <span class="w-24 text-gray-600 dark:text-gray-400">{{ formatCash(d) }}</span>
+            <InputNumber
+              v-model="counts[d]"
+              :min="0"
+              :disabled="submitting"
+              input-class="w-16!"
+              @update:model-value="applyCounts"
+            />
+          </div>
+        </div>
+      </div>
       <Message v-if="errorMessage" severity="error" size="small">
         {{ errorMessage }}
       </Message>
@@ -83,7 +108,18 @@ const props = defineProps<{
   submit: (amount: number) => Promise<any>;
   // Open mode: last closing cash of the outlet, prefilled into the input.
   suggestedOpening?: number | null;
+  // Close mode: unpaid orders found at the outlet; warns but never blocks.
+  unpaidCount?: number | null;
 }>();
+
+// Pecahan rupiah (kertas dan logam) for the cash counter.
+const DENOMINATIONS = [100000, 50000, 20000, 10000, 5000, 2000, 1000, 500, 200, 100];
+const showCounter = ref(false);
+const counts = ref<Record<number, number | null>>({});
+// Counting fills the Kas Akhir input; the input stays editable.
+const applyCounts = () => {
+  amount.value = DENOMINATIONS.reduce((sum, d) => sum + d * (counts.value[d] || 0), 0);
+};
 
 const visible = defineModel<boolean>('visible', { default: false });
 
@@ -97,6 +133,8 @@ watch(visible, (v) => {
     amount.value = props.mode === 'open' ? (props.suggestedOpening ?? null) : null;
     errorMessage.value = '';
     summary.value = null;
+    counts.value = {};
+    showCounter.value = false;
   }
 });
 

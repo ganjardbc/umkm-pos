@@ -12,7 +12,7 @@
 
     <div v-if="canUpdate" class="ml-auto flex gap-2">
       <Button label="Catat Kas" icon="pi pi-wallet" size="small" severity="secondary" @click="showCashEntry = true" />
-      <Button label="Tutup Kasir" size="small" severity="danger" @click="showClose = true" />
+      <Button label="Tutup Kasir" size="small" severity="danger" @click="startClose" />
     </div>
 
     <CashEntryDialog
@@ -20,7 +20,7 @@
       :submit="(data) => addCashEntry(currentShift.id, data)"
       @saved="reload"
     />
-    <CashDialog v-model:visible="showClose" mode="close" :submit="onClose" />
+    <CashDialog v-model:visible="showClose" mode="close" :unpaid-count="unpaidCount" :submit="onClose" />
   </div>
 </template>
 
@@ -29,7 +29,7 @@ import { computed, ref } from 'vue';
 import { useShift } from '@/modules/shift/composables/useShift.ts';
 import { isHasPermission } from '@/helpers/auth.ts';
 import { UPDATE } from '@/modules/shift/services/rbac.ts';
-import { addCashEntry, closeShift } from '@/modules/shift/services/api.ts';
+import { addCashEntry, closeShift, getUnpaidCount } from '@/modules/shift/services/api.ts';
 import { formatCash } from '@/modules/shift/services/cash.ts';
 import CashEntryDialog from '@/modules/shift/components/CashEntryDialog.vue';
 import CashDialog from '@/modules/shift/components/CashDialog.vue';
@@ -41,6 +41,11 @@ const { currentShift, fetchShift } = useShift();
 const canUpdate = computed(() => isHasPermission(UPDATE));
 const showCashEntry = ref(false);
 const showClose = ref(false);
+const unpaidCount = ref<number | null>(null);
+const startClose = async () => {
+  unpaidCount.value = await getUnpaidCount(currentShift.outlet_id);
+  showClose.value = true;
+};
 
 const reload = () => fetchShift({ shiftId: currentShift.id });
 
