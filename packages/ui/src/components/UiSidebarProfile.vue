@@ -71,6 +71,8 @@
               class="justify-start! items-center!"
             />
           </router-link>
+          <!-- App-specific actions (not routes), e.g. "Pasang Aplikasi". -->
+          <slot name="actions" :close="closeProfileMenu" />
         </div>
         <Divider />
         <Button
@@ -162,6 +164,8 @@ const opProfileMenu = ref();
 const openProfileMenu = (event: MouseEvent) => {
   opProfileMenu.value.toggle(event);
 };
+
+const closeProfileMenu = () => opProfileMenu.value?.hide();
 
 const hydrateAvatarUrl = async () => {
   try {

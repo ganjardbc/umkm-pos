@@ -26,17 +26,6 @@
 
       <Divider layout="vertical" class="mx-2!" />
 
-      <Button
-        v-if="canInstall"
-        label="Pasang Aplikasi"
-        icon="pi pi-download"
-        size="small"
-        severity="secondary"
-        variant="outlined"
-        class="mr-2"
-        @click="installApp"
-      />
-
       <div class="flex items-center gap-1">
         <UiSidebarNotification
           :is-collapsed="isCollapsed"
@@ -53,7 +42,21 @@
           } : null"
           :links="profileLinks"
           @navigate="navigate"
-        />
+        >
+          <template #actions="{ close }">
+            <Button
+              v-if="canInstall"
+              severity="secondary"
+              variant="text"
+              icon="pi pi-download"
+              size="small"
+              label="Pasang Aplikasi"
+              fluid
+              class="justify-start! items-center!"
+              @click="() => { close(); installApp(); }"
+            />
+          </template>
+        </UiSidebarProfile>
       </div>
     </template>
 
