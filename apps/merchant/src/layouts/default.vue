@@ -26,6 +26,17 @@
 
       <Divider layout="vertical" class="mx-2!" />
 
+      <Button
+        v-if="canInstall"
+        label="Pasang Aplikasi"
+        icon="pi pi-download"
+        size="small"
+        severity="secondary"
+        variant="outlined"
+        class="mr-2"
+        @click="installApp"
+      />
+
       <div class="flex items-center gap-1">
         <UiSidebarNotification
           :is-collapsed="isCollapsed"
@@ -38,7 +49,7 @@
           :badge-severity="shiftRequired ? (isUserInShift ? 'success' : 'danger') : null"
           :status-tag="shiftRequired ? {
             severity: isUserInShift ? 'success' : 'secondary',
-            value: isUserInShift ? 'In Shift' : 'Not Shift',
+            value: isUserInShift ? 'Bertugas' : 'Tidak Bertugas',
           } : null"
           :links="profileLinks"
           @navigate="navigate"
@@ -66,6 +77,7 @@ import { useDarkMode } from '@umkm-pos/ui/composables/useDarkMode';
 import UiSidebarOutlet from '@/components/UiSidebarOutlet.vue';
 import UiSidebarNotification from '@/components/UiSidebarNotification.vue';
 
+import { canInstall, installApp } from '@/helpers/pwa.ts';
 import menus from '@/services/menus.ts';
 import { getOutlet, isHasPermission } from '@/helpers/auth.ts';
 import { useAuthStore } from '@/modules/auth/stores/index.ts';
