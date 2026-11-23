@@ -98,6 +98,7 @@ const {
   participants,
   shiftRequired,
   isUserOwner,
+  isShiftUserCanManage,
   fetchShift,
   fetchShiftParticipants,
 } = useShift();
@@ -118,7 +119,8 @@ const moneyCards = computed(() => [
 // Catatan Kas: same rule as the detail page (API stays the final guard).
 const showCashEntry = ref(false);
 const cashEntryType = ref<'in' | 'out'>('in');
-const canRecordCash = computed(() => isOpen.value && isHasPermission(UPDATE) && shiftRequired.value);
+// The API only accepts entries from active participants of the shift.
+const canRecordCash = computed(() => isOpen.value && isHasPermission(UPDATE) && shiftRequired.value && isShiftUserCanManage.value);
 const openCashEntry = (type: 'in' | 'out') => {
   cashEntryType.value = type;
   showCashEntry.value = true;

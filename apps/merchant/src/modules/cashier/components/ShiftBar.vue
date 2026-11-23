@@ -11,7 +11,7 @@
     <span class="text-gray-600 dark:text-gray-400">{{ currentShift.total_transactions || 0 }} transaksi</span>
 
     <div v-if="canUpdate" class="ml-auto flex gap-2">
-      <Button label="Catat Kas" icon="pi pi-wallet" size="small" severity="secondary" @click="showCashEntry = true" />
+      <Button v-if="isShiftUserCanManage" label="Catat Kas" icon="pi pi-wallet" size="small" severity="secondary" @click="showCashEntry = true" />
       <Button label="Tutup Kasir" size="small" severity="danger" @click="startClose" />
     </div>
 
@@ -36,7 +36,7 @@ import CashDialog from '@/modules/shift/components/CashDialog.vue';
 import { formatTime } from '@umkm-pos/ui/helpers/utils';
 import { showToast } from '@umkm-pos/ui/helpers/toast';
 
-const { currentShift, fetchShift } = useShift();
+const { currentShift, fetchShift, isShiftUserCanManage } = useShift();
 
 const canUpdate = computed(() => isHasPermission(UPDATE));
 const showCashEntry = ref(false);

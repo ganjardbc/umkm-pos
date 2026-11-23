@@ -51,15 +51,6 @@
     </UiEmptyState>
 
     <Message
-      v-if="isOpen && canClose && !isUserOwner"
-      severity="info"
-      icon="pi pi-info-circle"
-      class="mt-4"
-    >
-      Hanya {{ currentShift.shift_owner?.name }} yang dapat menutup kasir ini.
-    </Message>
-
-    <Message
       v-if="isOpen && !isUserInShift && !isUserRemovedFromShift"
       severity="info"
       icon="pi pi-info-circle"
@@ -118,7 +109,6 @@ const emit = defineEmits(['shift-loaded']);
 
 const {
   shiftRequired,
-  isUserOwner,
   isUserInShift,
   isUserRemovedFromShift,
   currentShift,
