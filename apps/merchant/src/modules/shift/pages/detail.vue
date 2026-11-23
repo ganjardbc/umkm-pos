@@ -8,7 +8,7 @@
         @click="onBack"
       />
       <h1 class="text-lg font-semibold">
-        Detail Shift
+        Laporan Kasir
       </h1>
     </div>
 
@@ -64,7 +64,7 @@ const route = useRoute();
 const router = useRouter();
 const shiftID = computed(() => route.params.id as string);
 
-// Fetch Detail Shift
+// Fetch Laporan Kasir
 const currentShift = ref<any>();
 
 const fetchDetailShift = async () => {

@@ -62,7 +62,7 @@
           :closable="false"
           class="mb-4"
         >
-          Outlet belum menerima pesanan karena shift kasir belum dibuka.
+          Outlet belum menerima pesanan karena kasir belum dibuka.
         </Message>
         <router-view />
       </main>

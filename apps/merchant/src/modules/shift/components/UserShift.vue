@@ -2,7 +2,7 @@
   <UiCard>
     <div class="w-full flex gap-4 items-center justify-between">
       <h1 class="text-lg font-semibold">
-        Peserta Shift
+        Kasir Bertugas
       </h1>
     </div>
 
@@ -20,7 +20,7 @@
             <div class="flex justify-end gap-2">
               <Tag
                 v-if="participant?.is_owner"
-                value="Pemilik Shift"
+                value="Penanggung Jawab"
                 severity="info"
               />
               <Tag
@@ -48,7 +48,7 @@
     </div>
 
     <div v-if="participants.length === 0" class="text-center py-4 text-gray-500 dark:text-gray-400">
-      Belum ada peserta
+      Belum ada kasir bertugas
     </div>
   </UiCard>
 </template>

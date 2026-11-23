@@ -85,7 +85,7 @@
             <label class="text-sm text-gray-700">Wajibkan buka/tutup kasir</label>
           </div>
           <p class="text-xs text-gray-500">
-            Bila dimatikan, kasir langsung berjualan tanpa membuka shift dan kas tidak dicatat. Tidak bisa dimatikan selama ada shift terbuka.
+            Bila dimatikan, kasir langsung berjualan tanpa membuka kasir dan kas tidak dicatat. Tidak bisa dimatikan selama kasir sedang buka.
           </p>
         </UiFormGroup>
       </div>

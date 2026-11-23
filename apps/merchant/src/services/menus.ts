@@ -69,7 +69,7 @@ export default [
   {
     group: 'Penjualan',
     icon: 'pi pi-clock',
-    label: 'Shift',
+    label: 'Buka/Tutup Kasir',
     featureFlag: DEFAULT_FEATURE_FLAG,
     permissions: SHIFT_PERMISSIONS,
     route: PRP_SHIFT,

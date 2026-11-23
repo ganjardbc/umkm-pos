@@ -2,7 +2,7 @@
   <UiCard>
     <div class="w-full flex gap-4 items-center justify-between">
       <h1 class="text-lg font-semibold">
-        Kas Masuk / Keluar
+        Catatan Kas
       </h1>
       <slot name="action" />
     </div>

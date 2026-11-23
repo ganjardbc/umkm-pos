@@ -1,23 +1,23 @@
 <template>
   <UiCard class="shift-handoff">
     <div class="shift-handoff__header">
-      <h3 class="shift-handoff__title">Oper Shift</h3>
+      <h3 class="shift-handoff__title">Serah Terima Kasir</h3>
     </div>
 
     <div class="shift-handoff__content">
       <p class="shift-handoff__description">
-        Oper tanggung jawab shift kepada peserta lain oleh pemilik shift.
+        Serahkan tanggung jawab kasir kepada kasir bertugas lain oleh penanggung jawab.
       </p>
 
       <div class="space-y-4">
         <div>
-          <label class="block text-sm font-medium mb-2">Pilih Peserta Tujuan</label>
+          <label class="block text-sm font-medium mb-2">Pilih Kasir Tujuan</label>
           <Dropdown
             v-model="selectedTargetUserId"
             :options="otherParticipants"
             option-label="user_name"
             option-value="user_id"
-            placeholder="Pilih peserta"
+            placeholder="Pilih kasir"
             class="w-full"
             :disabled="!isShiftOwner"
           />
@@ -28,7 +28,7 @@
             v-model="removePreviousOwner"
             :disabled="!isShiftOwner"
           />
-          <label class="text-sm">Keluarkan saya dari peserta shift setelah oper shift</label>
+          <label class="text-sm">Keluarkan saya dari kasir bertugas setelah serah terima</label>
         </div>
 
         <div class="flex gap-2 justify-end">
@@ -40,7 +40,7 @@
             @click="resetForm"
           />
           <Button
-            label="Oper Shift"
+            label="Serah Terima Kasir"
             :loading="loading"
             :disabled="!isShiftOwner || !selectedTargetUserId"
             fluid
@@ -49,7 +49,7 @@
         </div>
 
         <div v-if="isHandoffComplete" class="text-center text-sm text-green-600 dark:text-green-400">
-          ✓ Oper shift berhasil diselesaikan
+          ✓ Serah terima kasir berhasil
         </div>
       </div>
     </div>
@@ -116,7 +116,7 @@ const handleHandoff = async () => {
     showToast({
       type: 'success',
       title: 'Sukses',
-      message: 'Shift berhasil dioper',
+      message: 'Serah terima kasir berhasil',
     });
 
     // Mark as complete to disable form
@@ -129,17 +129,17 @@ const handleHandoff = async () => {
     showToast({
       type: 'error',
       title: 'Gagal',
-      message: getErrorMessage(error) || 'Gagal mengoper shift',
+      message: getErrorMessage(error) || 'Gagal melakukan serah terima kasir',
     });
   }
 };
 
 const handleConfirmHandoff = () => {
   showConfirm({
-    header: 'Oper Shift?',
-    message: 'Apakah Anda yakin ingin mengoper shift ini?',
+    header: 'Serah Terima Kasir?',
+    message: 'Apakah Anda yakin ingin menyerahkan kasir ini?',
     rejectLabel: 'Batal',
-    acceptLabel: 'Oper Shift',
+    acceptLabel: 'Serah Terima Kasir',
     type: 'warn',
     accept: () => {
       handleHandoff();

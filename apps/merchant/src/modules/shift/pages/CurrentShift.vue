@@ -1,138 +1,152 @@
 <template>
-  <div class="pos-shift">
-    <!-- Shift Status -->
+  <div class="w-full space-y-4">
+    <!-- 1. Status -->
     <ShiftStatus :outlet-id="outlet?.id" />
 
-    <!-- Participants Tab -->
-    <ParticipantManagement
-      :shift-id="currentShift.id"
-      :is-shift-owner="isShiftOwner"
-      :is-shift-open="currentShift.status === 'open'"
-      @participant-added="onParticipantChanged"
-      @participant-removed="onParticipantChanged"
-      @handoff-complete="onHandoffComplete"
-    />
+    <template v-if="isOpen">
+      <!-- 2. Uang -->
+      <div class="grid grid-cols-2 xl:grid-cols-5 gap-4">
+        <div v-for="item in moneyCards" :key="item.label" class="p-4 rounded-lg bg-gray-50 dark:bg-dark-secondary space-y-1">
+          <div class="text-sm text-gray-600 dark:text-gray-400">{{ item.label }}</div>
+          <div class="text-base font-semibold text-gray-900 dark:text-white">{{ item.value }}</div>
+          <div class="text-xs text-gray-500 dark:text-gray-400">{{ item.hint }}</div>
+        </div>
 
-    <!-- Metrics Tab -->
-    <MetricsDisplay
-      :shift-id="currentShift.id"
-      :participants="participants"
-    />
+        <!-- Hitung buta (B-1): angka kas seharusnya tidak dikirim ke tampilan kasir. -->
+        <!-- TODO langkah lanjut: pemilik (izin laporan) boleh melihat angka di sini; butuh izin dan data baru. -->
+        <div class="p-4 rounded-lg border border-dashed border-gray-300 dark:border-gray-600 space-y-1 col-span-2 xl:col-span-1">
+          <div class="text-sm text-gray-600 dark:text-gray-400">
+            <i class="pi pi-lock text-xs mr-1" />Kas seharusnya disembunyikan
+          </div>
+          <div class="text-xs text-gray-500 dark:text-gray-400">
+            Hitung uang di laci dulu. Angka sistem muncul setelah kas akhir diisi.
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Catatan Kas -->
+      <CashEntryList :entries="currentShift.cash_entries || []">
+        <template #action>
+          <div v-if="canRecordCash" class="flex gap-2">
+            <Button label="Kas Masuk" icon="pi pi-plus" size="small" severity="success" @click="openCashEntry('in')" />
+            <Button label="Kas Keluar" icon="pi pi-minus" size="small" severity="danger" @click="openCashEntry('out')" />
+          </div>
+        </template>
+      </CashEntryList>
+
+      <CashEntryDialog
+        v-model:visible="showCashEntry"
+        :initial-type="cashEntryType"
+        :submit="(data) => addCashEntry(currentShift.id, data)"
+        @saved="reloadShift"
+      />
+
+      <!-- 4. Kasir Bertugas -->
+      <UiCard v-if="showStaff">
+        <div class="w-full flex flex-col md:flex-row gap-3 md:items-center justify-between">
+          <div class="space-y-1">
+            <h2 class="text-lg font-semibold">Kasir Bertugas</h2>
+            <div class="text-sm text-gray-500 dark:text-gray-400">
+              {{ activeStaffNames || 'Belum ada kasir bertugas.' }}
+            </div>
+          </div>
+          <Button
+            :label="showStaffManager ? 'Sembunyikan' : 'Kelola dan Serah Terima'"
+            severity="secondary"
+            size="small"
+            @click="showStaffManager = !showStaffManager"
+          />
+        </div>
+      </UiCard>
+
+      <ParticipantManagement
+        v-if="showStaff && showStaffManager"
+        :shift-id="currentShift.id"
+        :is-shift-owner="isUserOwner"
+        :is-shift-open="isOpen"
+        @participant-added="reloadStaff"
+        @participant-removed="reloadStaff"
+        @handoff-complete="onHandoffComplete"
+      />
+    </template>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, watch } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useShift } from '@/modules/shift/composables/useShift.ts';
-import { getUser, getOutlet } from '@/helpers/auth.ts';
+import { getOutlet, isHasPermission } from '@/helpers/auth.ts';
+import { UPDATE } from '@/modules/shift/services/rbac.ts';
+import { addCashEntry } from '@/modules/shift/services/api.ts';
+import { getListUser } from '@/modules/user/services/api.ts';
+import { formatCash } from '@/modules/shift/services/cash.ts';
 import ParticipantManagement from '@/modules/shift/components/ParticipantManagement.vue';
-import MetricsDisplay from '@/modules/shift/components/MetricsDisplay.vue';
 import ShiftStatus from '@/modules/shift/components/ShiftStatus.vue';
+import CashEntryDialog from '@/modules/shift/components/CashEntryDialog.vue';
+import CashEntryList from '@/modules/shift/components/CashEntryList.vue';
+import UiCard from '@umkm-pos/ui/components/UiCard.vue';
 
-const emit = defineEmits(['shift-loaded']);
 const outlet = getOutlet();
 
 const {
   currentShift,
   participants,
+  shiftRequired,
+  isUserOwner,
   fetchShift,
   fetchShiftParticipants,
 } = useShift();
-const user = getUser();
 
-const isShiftOwner = computed(() => {
-  return currentShift.shift_owner_id === user?.id;
-});
+const isOpen = computed(() => currentShift.status === 'open');
 
-const onParticipantChanged = async () => {
-  // Reload participants when they change
-  if (currentShift.id) {
-    await fetchShiftParticipants({ shiftId: currentShift.id });
-  }
+// Money cards: only what the shift response carries.
+const entries = computed(() => currentShift.cash_entries || []);
+const countOf = (type: string) => entries.value.filter((e: any) => e.type === type).length;
+const moneyCards = computed(() => [
+  { label: 'Kas Awal', value: formatCash(currentShift.opening_cash), hint: 'Saat kasir dibuka' },
+  { label: 'Kas Masuk', value: formatCash(currentShift.total_cash_in ?? 0), hint: `${countOf('in')} catatan` },
+  { label: 'Kas Keluar', value: formatCash(currentShift.total_cash_out ?? 0), hint: `${countOf('out')} catatan` },
+  { label: 'Transaksi', value: String(currentShift.total_transactions || 0), hint: 'Tidak termasuk yang dibatalkan' },
+]);
+
+// Catatan Kas: same rule as the detail page (API stays the final guard).
+const showCashEntry = ref(false);
+const cashEntryType = ref<'in' | 'out'>('in');
+const canRecordCash = computed(() => isOpen.value && isHasPermission(UPDATE) && shiftRequired.value);
+const openCashEntry = (type: 'in' | 'out') => {
+  cashEntryType.value = type;
+  showCashEntry.value = true;
 };
+const reloadShift = () => fetchShift({ shiftId: currentShift.id });
 
-const onHandoffComplete = async () => {
-  // Reload shift data after handoff
+// Kasir Bertugas: shown only when the outlet has more than one user. Counted via the
+// existing users list (meta.total); if the user may not read it, fall back to the
+// shift's own participants.
+const outletUserCount = ref<number | null>(null);
+const showStaff = computed(() => (outletUserCount.value ?? participants.value.length) > 1);
+const showStaffManager = ref(false);
+const activeStaffNames = computed(() =>
+  participants.value
+    .filter((p: any) => !p.participant_removed_at)
+    .map((p: any) => p.user_name)
+    .join(', '),
+);
+
+const reloadStaff = async () => {
   if (currentShift.id) {
     await fetchShift({ shiftId: currentShift.id });
     await fetchShiftParticipants({ shiftId: currentShift.id });
   }
 };
+const onHandoffComplete = reloadStaff;
 
-watch(
-  () => currentShift,
-  (shift: any) => {
-    if (shift.id) {
-      fetchShiftParticipants({ shiftId: shift.id });
-    }
-  },
-  { immediate: true }
-)
-
-onMounted(() => {
-  if (currentShift.id) {
-    fetchShiftParticipants({ shiftId: currentShift.id });
+onMounted(async () => {
+  try {
+    const response = await getListUser({ limit: 1, page: 1 });
+    const total = response?.data?.data?.meta?.total;
+    outletUserCount.value = typeof total === 'number' ? total : null;
+  } catch {
+    outletUserCount.value = null;
   }
 });
 </script>
-
-<style scoped>
-@import "tailwindcss";
-@import "@umkm-pos/ui/styles/themes.css";
-
-.pos-shift {
-  @apply w-full space-y-4;
-}
-
-/* .pos-shift-status {
-  @apply w-full p-2 rounded-lg border transition-colors duration-200 mb-4;
-}
-
-.pos-shift-status--open {
-  @apply border-green-500 bg-green-50;
-}
-
-.pos-shift-status--closed {
-  @apply border-red-500 bg-red-50;
-}
-
-.pos-shift-status--dark {
-  @apply dark:border-dark! dark:bg-dark-secondary!;
-}
-
-.pos-shift-status__content {
-  @apply flex items-center justify-between gap-4;
-}
-
-.pos-shift-status__left {
-  @apply flex-1 flex gap-2 items-center pl-2;
-}
-
-.pos-shift-status__indicator {
-  font-size: 10px;
-}
-
-.pos-shift-status__indicator--open {
-  @apply text-green-400 dark:text-green-400;
-}
-
-.pos-shift-status__indicator--closed {
-  @apply text-red-400 dark:text-red-400;
-}
-
-.pos-shift-status__label {
-  @apply flex-1 text-sm font-semibold;
-}
-
-.pos-shift-status__label--empty {
-  @apply text-gray-900;
-}
-
-.pos-shift-status__label--empty-dark {
-  @apply dark:text-white;
-}
-
-.pos-shift-status__actions {
-  @apply flex gap-2;
-} */
-</style>

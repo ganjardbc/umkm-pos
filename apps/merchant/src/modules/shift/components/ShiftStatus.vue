@@ -1,123 +1,83 @@
 <template>
-  <div
-    class="pos-shift-status"
-    :class="{
-      'pos-shift-status--open': currentShift.status === ShiftStatus.OPEN,
-      'pos-shift-status--closed': currentShift.status === ShiftStatus.CLOSED,
-      'pos-shift-status--dark': true,
-    }"
-  >
-    <div class="pos-shift-status__content">
-      <div class="pos-shift-status__left">
-        <span
-          class="pos-shift-status__indicator"
-          :class="{
-            'pos-shift-status__indicator--open': currentShift.status === ShiftStatus.OPEN,
-            'pos-shift-status__indicator--closed': currentShift.status === ShiftStatus.CLOSED,
-          }"
-        >
-          ●
-        </span>
-        <div class="flex-1 flex flex-col md:flex-row">
-          <span
-            class="pos-shift-status__label"
-            :class="{
-              'pos-shift-status__label--empty': !currentShift.id,
-              'pos-shift-status__label--empty-dark': !currentShift.id,
-            }"
-          >
-            {{
-              currentShift.status === ShiftStatus.OPEN
-                ? `${currentShift?.shift_owner?.name} sedang aktif di Shift`
-                : 'Tidak Ada Shift Aktif'
-              }}
-          </span>
-          <span class="text-xs">
-            Dibuat pada {{ currentShift.created_at ? formatDateTime(currentShift.created_at) : '-' }}
-          </span>
+  <UiCard>
+    <!-- Kasir buka -->
+    <div v-if="isOpen" class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <span class="w-3 h-3 rounded-full bg-green-500 shrink-0" />
+        <div>
+          <div class="text-base font-semibold">
+            Kasir sedang buka
+            <span class="text-sm font-normal text-gray-500 dark:text-gray-400">· {{ duration }}</span>
+          </div>
+          <div class="text-sm text-gray-500 dark:text-gray-400">
+            Dibuka {{ currentShift.shift_owner?.name || '-' }} pukul {{ formatTime(currentShift.start_time) }}
+          </div>
         </div>
       </div>
-      <div class="pos-shift-status__actions">
+      <Button
+        v-if="canClose"
+        label="Tutup Kasir"
+        severity="danger"
+        class="w-full md:w-auto"
+        :disabled="loading"
+        @click="cashMode = 'close'"
+      />
+    </div>
+
+    <!-- Kasir tutup -->
+    <div v-else class="flex flex-col items-center gap-3 py-6 text-center">
+      <span class="w-3 h-3 rounded-full bg-gray-400" />
+      <div class="text-base font-semibold">Kasir belum dibuka</div>
+      <template v-if="shiftRequired">
+        <div class="text-sm text-gray-500 dark:text-gray-400">
+          Buka kasir dan isi kas awal untuk mulai menerima transaksi.
+        </div>
         <Button
-          v-if="currentShift.status === ShiftStatus.OPEN"
-          label="Tutup Shift"
-          size="small"
-          severity="success"
-          class="w-full md:w-auto"
-          :loading="loading"
-          :disabled="loading"
-          @click="cashMode = 'close'"
-        />
-        <Button
-          v-else-if="shiftRequired"
-          label="Buka Shift"
-          size="small"
-          severity="danger"
-          class="w-full md:w-auto"
-          :loading="loading"
+          v-if="canOpen"
+          label="Buka Kasir"
+          icon="pi pi-play"
           :disabled="loading"
           @click="cashMode = 'open'"
         />
-      </div>
-    </div>
-
-    <Divider />
-
-    <div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
-      <!-- Participant Count -->
-      <div class="p-4 flex flex-row xl:flex-col gap-2 justify-between items-center rounded-lg bg-blue-50 dark:bg-dark">
-        <label class="text-sm font-medium text-gray-600 dark:text-gray-400">Peserta</label>
-        <div class="text-base font-semibold text-gray-900 dark:text-white">
-          {{ currentShift.participant_count || 0 }}
+        <div v-else class="text-sm text-gray-500 dark:text-gray-400">
+          Anda tidak memiliki akses untuk membuka kasir.
         </div>
-      </div>
-
-      <!-- Total Transactions -->
-      <div class="p-4 flex flex-row xl:flex-col gap-2 justify-between items-center rounded-lg bg-red-50 dark:bg-dark">
-        <label class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Transaksi</label>
-        <div class="text-base font-semibold text-gray-900 dark:text-white">
-          {{ currentShift.total_transactions || 0 }}
-        </div>
-      </div>
-
-      <!-- Shift Time -->
-      <div class="p-4 flex flex-row xl:flex-col gap-2 justify-between items-center rounded-lg bg-orange-50 dark:bg-dark">
-        <label class="text-sm font-medium text-gray-600 dark:text-gray-400">Waktu Shift</label>
-        <div class="text-base font-semibold text-gray-900 dark:text-white">
-          {{ formatRangeTime(currentShift.start_time, currentShift.end_time) }}
-        </div>
+      </template>
+      <div v-else class="text-sm text-gray-500 dark:text-gray-400">
+        Outlet ini tidak mewajibkan buka kasir.
       </div>
     </div>
 
     <Message
-      v-if="!isUserRemovedFromShift && currentShift.status === ShiftStatus.OPEN"
-      severity="success"
+      v-if="isOpen && canClose && !isUserOwner"
+      severity="info"
       icon="pi pi-info-circle"
+      class="mt-4"
     >
-      Hanya {{ currentShift?.shift_owner?.name }} yang dapat menutup shift ini.
+      Hanya {{ currentShift.shift_owner?.name }} yang dapat menutup kasir ini.
     </Message>
 
     <Message
-      v-if="!isUserInShift && currentShift.status === ShiftStatus.OPEN"
+      v-if="isOpen && !isUserInShift && !isUserRemovedFromShift"
       severity="info"
       icon="pi pi-info-circle"
+      class="mt-4"
     >
-      <b>Anda bukan peserta shift ini.</b><br>
+      <b>Anda bukan kasir bertugas saat ini.</b><br>
       <span class="text-sm">
-        Untuk bergabung dalam shift ini, Anda dapat meminta kepada pemilik shift.
+        Untuk ikut bertugas, minta penanggung jawab menambahkan Anda.
       </span>
     </Message>
 
     <Message
-      v-if="isUserRemovedFromShift && currentShift.status === ShiftStatus.OPEN"
+      v-if="isOpen && isUserRemovedFromShift"
       severity="warn"
       icon="pi pi-info-circle"
+      class="mt-4"
     >
-      <b>
-        Anda telah dihapus dari shift ini.
-      </b><br>
+      <b>Anda telah dikeluarkan dari kasir bertugas.</b><br>
       <span class="text-sm">
-        Silakan hubungi pemilik shift untuk mengaktifkan kembali shift Anda.
+        Hubungi penanggung jawab untuk mengaktifkan kembali.
       </span>
     </Message>
 
@@ -126,22 +86,20 @@
       :mode="cashMode || 'open'"
       :submit="cashMode === 'close' ? handleCloseShift : handleOpenShift"
     />
-  </div>
-
+  </UiCard>
 </template>
 
 <script setup lang="ts">
-import { onMounted, watch, ref, computed } from 'vue';
+import { onMounted, onBeforeUnmount, watch, ref, computed } from 'vue';
+import dayjs from 'dayjs';
 import CashDialog from '@/modules/shift/components/CashDialog.vue';
 import { useShift } from '@/modules/shift/composables/useShift.ts';
-import { formatDateTime, formatRangeTime } from '@umkm-pos/ui/helpers/utils';
+import { isHasPermission } from '@/helpers/auth.ts';
+import { CREATE, UPDATE } from '@/modules/shift/services/rbac.ts';
+import { formatTime } from '@umkm-pos/ui/helpers/utils';
 import { showToast } from '@umkm-pos/ui/helpers/toast';
+import UiCard from '@umkm-pos/ui/components/UiCard.vue';
 import * as shiftApi from '@/modules/shift/services/api.ts';
-
-const ShiftStatus = {
-  OPEN: 'open',
-  CLOSED: 'closed'
-};
 
 const props = defineProps({
   outletId: {
@@ -154,25 +112,36 @@ const emit = defineEmits(['shift-loaded']);
 
 const {
   shiftRequired,
+  isUserOwner,
   isUserInShift,
   isUserRemovedFromShift,
   currentShift,
   loading,
+  fetchShift,
   fetchShiftParticipants,
 } = useShift();
+
+const isOpen = computed(() => currentShift.status === 'open');
+const canOpen = computed(() => isHasPermission(CREATE));
+const canClose = computed(() => isHasPermission(UPDATE));
+
+// Elapsed time, refreshed once a minute.
+const now = ref(dayjs());
+let timer: ReturnType<typeof setInterval> | undefined;
+const duration = computed(() => {
+  const minutes = Math.max(0, now.value.diff(dayjs(currentShift.start_time), 'minute'));
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return h ? `${h} jam ${m} menit` : `${m} menit`;
+});
 
 const fetchOutletShift = async () => {
   try {
     const response = await shiftApi.getOutletShift(props.outletId);
     const shiftData = response?.data?.data || {};
     if (shiftData?.id) {
-      // Set current shift
-      const { fetchShift: fetchShiftDetail } = useShift();
-      await fetchShiftDetail({ shiftId: shiftData.id });
-      
-      // Fetch participants
+      await fetchShift({ shiftId: shiftData.id });
       await fetchShiftParticipants({ shiftId: shiftData.id });
-      
       emit('shift-loaded', shiftData);
     }
   } catch (error) {
@@ -198,95 +167,40 @@ const handleOpenShift = async (openingCash: number) => {
     showToast({
       type: 'success',
       title: 'Sukses',
-      message: 'Shift berhasil dibuka',
+      message: 'Kasir berhasil dibuka',
     });
   }
   return newShift;
 };
 
 const handleCloseShift = async (closingCash: number) => {
-  const response = await shiftApi.closeShift(currentShift.id, { closing_cash: closingCash });
+  const shiftId = currentShift.id;
+  const response = await shiftApi.closeShift(shiftId, { closing_cash: closingCash });
   const closed = response?.data?.data;
-  await fetchOutletShift();
+  // Reload the closed shift itself: the outlet lookup may no longer return it.
+  await fetchShift({ shiftId });
   showToast({
     type: 'success',
     title: 'Sukses',
-    message: 'Shift berhasil ditutup',
+    message: 'Kasir berhasil ditutup',
   });
   return closed;
 };
 
 onMounted(() => {
-  if (props.outletId) {
-    fetchOutletShift();
-  }
+  timer = setInterval(() => { now.value = dayjs(); }, 60_000);
 });
 
-// Watch for outlet changes
+onBeforeUnmount(() => {
+  if (timer) clearInterval(timer);
+});
+
+// Also covers the first load.
 watch(
   () => props.outletId,
   (newOutletId) => {
-    if (newOutletId) {
-      fetchOutletShift();
-    }
+    if (newOutletId) fetchOutletShift();
   },
   { immediate: true },
 );
 </script>
-
-<style scoped>
-@import "tailwindcss";
-@import "@umkm-pos/ui/styles/themes.css";
-
-.pos-shift-status {
-  @apply w-full p-4 rounded-lg border transition-colors duration-200 space-y-4;
-}
-
-.pos-shift-status--open {
-  @apply border-green-500 bg-green-50;
-}
-
-.pos-shift-status--closed {
-  @apply border-red-500 bg-red-50;
-}
-
-.pos-shift-status--dark {
-  @apply dark:border-dark! dark:bg-dark-secondary!;
-}
-
-.pos-shift-status__content {
-  @apply flex flex-col md:flex-row md:items-center justify-between gap-4;
-}
-
-.pos-shift-status__left {
-  @apply flex-1 flex gap-2 items-center;
-}
-
-.pos-shift-status__indicator {
-  font-size: 10px;
-}
-
-.pos-shift-status__indicator--open {
-  @apply text-green-400 dark:text-green-400;
-}
-
-.pos-shift-status__indicator--closed {
-  @apply text-red-400 dark:text-red-400;
-}
-
-.pos-shift-status__label {
-  @apply flex-1 text-sm font-semibold;
-}
-
-.pos-shift-status__label--empty {
-  @apply text-gray-900;
-}
-
-.pos-shift-status__label--empty-dark {
-  @apply dark:text-white;
-}
-
-.pos-shift-status__actions {
-  @apply flex gap-2;
-}
-</style>

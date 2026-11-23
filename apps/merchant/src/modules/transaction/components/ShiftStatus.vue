@@ -5,9 +5,9 @@
     severity="warn"
     icon="pi pi-info-circle"
   >
-    <b>Shift telah ditutup.</b><br>
+    <b>Kasir sudah ditutup.</b><br>
     <span class="text-sm">
-      Silakan buka shift baru untuk membuat transaksi.
+      Silakan buka kasir untuk membuat transaksi.
     </span>
   </Message>
 
@@ -16,9 +16,9 @@
     severity="info"
     icon="pi pi-info-circle"
   >
-    <b>Anda bukan peserta shift ini.</b><br>
+    <b>Anda bukan kasir bertugas saat ini.</b><br>
     <span class="text-sm">
-      Untuk membuat transaksi, Anda harus menjadi bagian dari shift ini.
+      Untuk membuat transaksi, Anda harus menjadi kasir bertugas.
     </span>
   </Message>
 </template>

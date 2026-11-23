@@ -1,7 +1,7 @@
 <template>
   <UiLoading
     v-if="!isShiftLoaded || !isSettingLoaded"
-    message="Memuat shift..."
+    message="Memuat kasir..."
   />
 
   <!-- Shift failed to load: don't show the open-shift screen as if no shift exists -->
@@ -9,7 +9,7 @@
     v-else-if="shiftLoadError"
     class="flex flex-col items-center gap-3 py-12"
   >
-    <span>Shift gagal dimuat. Periksa koneksi lalu coba lagi.</span>
+    <span>Data kasir gagal dimuat. Periksa koneksi lalu coba lagi.</span>
     <Button
       label="Coba Lagi"
       icon="pi pi-refresh"
@@ -33,6 +33,9 @@
   >
     <!-- POS Product -->
     <div class="pos__content">
+      <!-- Status bar: only when the outlet requires opening the cashier -->
+      <CashierShiftBar v-if="shiftRequired && isShiftOpen" />
+
       <!-- Warning Shift -->
       <ShiftStatus />
 
@@ -49,7 +52,7 @@
       :outlet-id="currentShift?.outlet_id"
       :target-transaction-id="targetTransactionId"
       class="pos__cart"
-      @checkout-success="clearForm"
+      @checkout-success="onCheckoutSuccess"
       @add-items-success="onAddItemsSuccess"
     />
   </div>
@@ -65,6 +68,7 @@ import { useShift } from '@/modules/shift/composables/useShift.ts';
 import { getOutletShift } from '@/modules/shift/services/api.ts';
 import { useCashierStore } from '@/modules/cashier/stores';
 import ShiftStatus from '@/modules/transaction/components/ShiftStatus.vue';
+import CashierShiftBar from '@/modules/cashier/components/ShiftBar.vue';
 import CashierCart from '@/modules/cashier/components/Cart.vue';
 import CashierProduct from '@/modules/cashier/components/Product.vue';
 import OpenShift from '@/modules/cashier/components/OpenShift.vue';
@@ -104,6 +108,12 @@ const isShiftOpen = computed(() => currentShift.status === 'open');
 // Task 26: Clear form - reset all state to defaults
 const clearForm = () => {
   posStore.clearCart();
+};
+
+// Keep the bar's transaction count current.
+const onCheckoutSuccess = () => {
+  clearForm();
+  if (currentShift.id) fetchShift({ shiftId: currentShift.id }).catch(() => {});
 };
 
 const shiftLoadError = ref(false);

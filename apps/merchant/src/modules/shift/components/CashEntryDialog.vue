@@ -67,6 +67,8 @@ import { ref, watch } from 'vue';
 import { getErrorMessage } from '@umkm-pos/ui/helpers/utils';
 
 const props = defineProps<{
+  // Preselected type when the dialog opens (default: Kas Masuk).
+  initialType?: 'in' | 'out';
   // Calls the API. Rejects => error shown, dialog stays open with inputs kept.
   submit: (data: { type: 'in' | 'out'; amount: number; reason: string }) => Promise<any>;
 }>();
@@ -89,7 +91,7 @@ const errorMessage = ref('');
 // Reset only when opening, so a failed submit keeps the inputs.
 watch(visible, (v) => {
   if (v) {
-    type.value = 'in';
+    type.value = props.initialType ?? 'in';
     amount.value = null;
     reason.value = '';
     errorMessage.value = '';

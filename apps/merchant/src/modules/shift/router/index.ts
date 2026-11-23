@@ -13,7 +13,7 @@ export default [
     name: PREFIX_ROUTE_NAME,
     component: () => import('@/modules/shift/pages/index.vue'),
     meta: {
-      title: 'Shift',
+      title: 'Buka/Tutup Kasir',
       layout: 'default',
       permission: PERMISSIONS,
       breadcrumbs: [
@@ -23,7 +23,7 @@ export default [
           isActive: false,
         },
         {
-          label: 'Shift',
+          label: 'Buka/Tutup Kasir',
           route: PREFIX_ROUTE_PATH,
           isActive: true,
         },
@@ -35,7 +35,7 @@ export default [
     name: `${PREFIX_ROUTE_NAME}-detail`,
     component: () => import('@/modules/shift/pages/detail.vue'),
     meta: {
-      title: 'Shift',
+      title: 'Buka/Tutup Kasir',
       layout: 'default',
       permission: PERMISSIONS,
       breadcrumbs: [
@@ -45,7 +45,7 @@ export default [
           isActive: false,
         },
         {
-          label: 'Shift',
+          label: 'Buka/Tutup Kasir',
           route: PREFIX_ROUTE_PATH,
           isActive: true,
         },

@@ -2,7 +2,7 @@
   <UiCard>
     <div class="w-full flex gap-4 items-center justify-between">
       <h1 class="text-lg font-semibold">
-        Informasi Shift
+        Informasi Kasir
       </h1>
     </div>
 
@@ -18,7 +18,7 @@
 
         <!-- Shift Owner -->
         <div class="space-y-2">
-          <label class="text-sm font-medium text-gray-600 dark:text-gray-400">Pemilik Shift</label>
+          <label class="text-sm font-medium text-gray-600 dark:text-gray-400">Penanggung Jawab</label>
           <div class="text-base font-semibold text-gray-900 dark:text-white">
             {{ currentShift.shift_owner?.name || '-' }}
           </div>
@@ -49,7 +49,7 @@
       <div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
         <!-- Participant Count -->
         <div class="p-4 flex flex-row xl:flex-col gap-2 justify-between items-center rounded-lg bg-gray-50 dark:bg-dark">
-          <label class="text-sm font-medium text-gray-600 dark:text-gray-400">Peserta</label>
+          <label class="text-sm font-medium text-gray-600 dark:text-gray-400">Kasir Bertugas</label>
           <div class="text-base font-semibold text-gray-900 dark:text-white">
             {{ currentShift.participant_count || 0 }}
           </div>
@@ -65,7 +65,7 @@
 
         <!-- Shift Time -->
         <div class="p-4 flex flex-row xl:flex-col gap-2 justify-between items-center rounded-lg bg-gray-50 dark:bg-dark">
-          <label class="text-sm font-medium text-gray-600 dark:text-gray-400">Waktu Shift</label>
+          <label class="text-sm font-medium text-gray-600 dark:text-gray-400">Waktu Kasir Buka</label>
           <div class="text-base font-semibold text-gray-900 dark:text-white">
             {{ formatRangeTime(currentShift.start_time, currentShift.end_time) }}
           </div>
@@ -101,7 +101,7 @@ const cashItems = computed(() => [
   { label: 'Kas Awal', value: formatCash(props.currentShift.opening_cash) },
   { label: 'Kas Masuk', value: formatCash(props.currentShift.total_cash_in ?? 0) },
   { label: 'Kas Keluar', value: formatCash(props.currentShift.total_cash_out ?? 0) },
-  { label: 'Kas Diharapkan', value: formatCash(props.currentShift.expected_cash) },
+  { label: 'Kas Seharusnya', value: formatCash(props.currentShift.expected_cash) },
   { label: 'Kas Akhir', value: formatCash(props.currentShift.closing_cash) },
   { label: 'Selisih', value: formatCash(props.currentShift.cash_difference) },
 ]);

@@ -1,10 +1,10 @@
 <template>
   <div class="w-full space-y-4">
-    <!-- Tabs Shift Management -->
+    <!-- Tabs -->
     <Tabs v-model:value="activeTab">
       <TabList class="bg-transparent!">
-        <Tab value="current-shift">Shift Saat Ini</Tab>
-        <Tab value="shift-histories">Riwayat Shift</Tab>
+        <Tab value="current-shift">Hari Ini</Tab>
+        <Tab value="shift-histories">Riwayat</Tab>
       </TabList>
     </Tabs>
 

@@ -482,7 +482,7 @@ const onCheckout = async () => {
     showToast({
       type: 'error',
       title: 'Validasi Gagal',
-      message: 'Silakan pilih shift terlebih dahulu',
+      message: 'Silakan buka kasir terlebih dahulu',
     });
     return;
   }

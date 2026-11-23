@@ -4,7 +4,7 @@
       <UiSearch
         v-model="form.search"
         type="search"
-        placeholder="Cari riwayat shift..."
+        placeholder="Cari riwayat..."
         class="w-full"
         @input="search"
       />
@@ -12,12 +12,12 @@
 
     <UiLoading
       v-if="loading"
-      message="Memuat riwayat shift..."
+      message="Memuat riwayat..."
     />
 
     <div v-else-if="shifts.length === 0" class="flex flex-col items-center justify-center py-16 text-gray-400">
       <i class="pi pi-inbox mb-3 text-4xl" />
-      <p class="text-sm">Riwayat shift masih kosong.</p>
+      <p class="text-sm">Riwayat masih kosong.</p>
     </div>
 
     <div v-else class="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
@@ -146,7 +146,7 @@ const fetchShift = async () => {
     showToast({
         type: 'error',
         title: 'Gagal',
-        message: getErrorMessage(error) || 'Terjadi kesalahan saat memuat riwayat shift.',
+        message: getErrorMessage(error) || 'Terjadi kesalahan saat memuat riwayat.',
     });
   } finally {
     loading.value = false;

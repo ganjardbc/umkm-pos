@@ -40,6 +40,9 @@ export interface Currentshift {
   closing_cash?: string | number | null,
   expected_cash?: string | number | null,
   cash_difference?: string | number | null,
+  cash_entries?: any[],
+  total_cash_in?: number,
+  total_cash_out?: number,
 }
 
 export interface Metrics {

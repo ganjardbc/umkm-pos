@@ -7,10 +7,10 @@
 
       <div class="space-y-2 text-center">
         <h1 class="text-xl font-semibold">
-          Belum Ada Shift Aktif
+          Kasir Belum Dibuka
         </h1>
         <p class="text-sm text-gray-500 dark:text-gray-400">
-          Buka shift terlebih dahulu untuk mulai membuat transaksi
+          Buka kasir terlebih dahulu untuk mulai membuat transaksi
           <template v-if="outlet?.name">
             di <b>{{ outlet.name }}</b>
           </template>.
@@ -19,7 +19,7 @@
 
       <Button
         v-if="canOpenShift"
-        label="Buka Shift"
+        label="Buka Kasir"
         icon="pi pi-play"
         fluid
         :disabled="!outlet?.id"
@@ -32,7 +32,7 @@
         class="w-full"
       >
         <span class="text-sm">
-          Anda tidak memiliki akses untuk membuka shift. Silakan hubungi pemilik outlet.
+          Anda tidak memiliki akses untuk membuka kasir. Silakan hubungi pemilik outlet.
         </span>
       </Message>
     </div>
@@ -67,7 +67,7 @@ const onOpenShift = async (openingCash: number) => {
     showToast({
       type: 'success',
       title: 'Sukses',
-      message: 'Shift berhasil dibuka',
+      message: 'Kasir berhasil dibuka',
     });
     emit('shift-opened', newShift);
   }

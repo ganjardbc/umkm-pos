@@ -28,7 +28,7 @@ export const NOTIFICATION_TYPES: Record<string, NotificationTypeConfig> = {
   order_item_added: { label: 'Tambahan Pesanan', icon: 'pi pi-cart-plus', tone: 'blue', route: TRANSACTION_ROUTE_PATH },
   transaction: { label: 'Transaksi', icon: 'pi pi-receipt', tone: 'blue', route: TRANSACTION_ROUTE_PATH },
   inventory: { label: 'Stok', icon: 'pi pi-box', tone: 'amber', route: STOCK_ROUTE_PATH },
-  shift: { label: 'Shift', icon: 'pi pi-clock', tone: 'violet', route: SHIFT_ROUTE_PATH },
+  shift: { label: 'Buka/Tutup Kasir', icon: 'pi pi-clock', tone: 'violet', route: SHIFT_ROUTE_PATH },
   system: { label: 'Sistem', icon: 'pi pi-info-circle', tone: 'slate' },
   general: { label: 'Umum', icon: 'pi pi-bell', tone: 'slate' },
 };

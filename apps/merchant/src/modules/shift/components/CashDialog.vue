@@ -46,7 +46,7 @@
           @click="visible = false"
         />
         <Button
-          :label="mode === 'open' ? 'Buka Shift' : 'Tutup Shift'"
+          :label="mode === 'open' ? 'Buka Kasir' : 'Tutup Kasir'"
           :loading="submitting"
           :disabled="submitting || amount === null"
           @click="onSubmit"
@@ -83,8 +83,8 @@ watch(visible, (v) => {
 });
 
 const header = computed(() => {
-  if (summary.value) return 'Ringkasan Kas Shift';
-  return props.mode === 'open' ? 'Buka Shift' : 'Tutup Shift';
+  if (summary.value) return 'Ringkasan Tutup Kasir';
+  return props.mode === 'open' ? 'Buka Kasir' : 'Tutup Kasir';
 });
 
 const summaryRows = computed(() => {
@@ -100,7 +100,7 @@ const summaryRows = computed(() => {
     { label: 'Penjualan Tunai', value: formatCash(Number.isNaN(expected - opening) ? null : Math.round((expected - opening - totalIn + totalOut) * 100) / 100) },
     { label: 'Kas Masuk', value: formatCash(totalIn) },
     { label: 'Kas Keluar', value: formatCash(totalOut) },
-    { label: 'Kas Diharapkan', value: formatCash(s.expected_cash) },
+    { label: 'Kas Seharusnya', value: formatCash(s.expected_cash) },
     { label: 'Kas Akhir', value: formatCash(s.closing_cash) },
     { label: 'Selisih', value: formatCash(Number.isNaN(diff) ? null : diff) },
   ];

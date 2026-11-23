@@ -275,8 +275,8 @@ const addProductToCart = (product: any) => {
   if (!props.isUserInShift) {
     showToast({
       type: 'warn',
-      title: 'Shift Belum Aktif',
-      message: 'Silakan buka shift terlebih dahulu untuk menambahkan produk ke keranjang.',
+      title: 'Kasir Belum Dibuka',
+      message: 'Silakan buka kasir terlebih dahulu untuk menambahkan produk ke keranjang.',
     });
     return;
   }

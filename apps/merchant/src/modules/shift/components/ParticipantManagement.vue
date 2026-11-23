@@ -1,12 +1,12 @@
 <template>
   <UiCard class="participant-management">
     <div class="participant-management__header">
-      <h3 class="participant-management__title">Peserta Shift</h3>
+      <h3 class="participant-management__title">Kasir Bertugas</h3>
       <div class="flex justify-end gap-2 items-center">
         <Button
           v-if="isShiftOwner && isShiftOpen"
           icon="pi pi-pencil"
-          label="Oper Shift"
+          label="Serah Terima Kasir"
           severity="secondary"
           size="small"
           :loading="loading"
@@ -40,7 +40,7 @@
             <div class="flex justify-end gap-2">
               <Tag
                 v-if="participant.is_owner"
-                value="Pemilik Shift"
+                value="Penanggung Jawab"
                 severity="info"
               />
               <Tag
@@ -80,20 +80,20 @@
             size="small"
             @click="confirmRestoreParticipant(participant)"
             :loading="loading"
-            title="Kembalikan peserta"
+            title="Kembalikan kasir bertugas"
           />
         </div>
       </div>
     </div>
     <div v-if="participants.length === 0" class="participant-management__empty">
-      <p>Belum ada peserta shift</p>
+      <p>Belum ada kasir bertugas</p>
     </div>
   </UiCard>
 
   <!-- Add Participant Dialog -->
   <Dialog
     v-model:visible="showAddDialog"
-    header="Tambah Peserta"
+    header="Tambah Kasir Bertugas"
     :modal="true"
     class="w-full md:w-96"
   >
@@ -129,22 +129,22 @@
   <!-- Handoff Shift Dialog -->
   <Dialog
     v-model:visible="showHandoffDialog"
-    header="Oper Shift"
+    header="Serah Terima Kasir"
     :modal="true"
     class="w-full md:w-96"
   >
     <div class="space-y-4">
       <p class="text-sm text-gray-600 dark:text-gray-400">
-        Oper tanggung jawab shift kepada peserta lain
+        Serahkan tanggung jawab kasir kepada kasir bertugas lain
       </p>
       <div>
-        <label class="block text-sm font-medium mb-2">Pilih Peserta Tujuan</label>
+        <label class="block text-sm font-medium mb-2">Pilih Kasir Tujuan</label>
         <Dropdown
           v-model="selectedHandoffUserId"
           :options="otherParticipants"
           option-label="user_name"
           option-value="user_id"
-          placeholder="Pilih peserta"
+          placeholder="Pilih kasir"
           class="w-full"
           :disabled="isHandoffComplete"
         />
@@ -155,11 +155,11 @@
           v-model="removePreviousOwner"
           :disabled="isHandoffComplete"
         />
-        <label class="text-sm">Keluarkan saya dari peserta shift setelah oper shift</label>
+        <label class="text-sm">Keluarkan saya dari kasir bertugas setelah serah terima</label>
       </div>
 
       <div v-if="isHandoffComplete" class="text-center text-sm text-green-600 dark:text-green-400">
-        ✓ Oper shift berhasil diselesaikan
+        ✓ Serah terima kasir berhasil
       </div>
 
       <div class="flex gap-2 justify-end">
@@ -170,7 +170,7 @@
           @click="handleCloseHandoffDialog"
         />
         <Button
-          label="Oper Shift"
+          label="Serah Terima Kasir"
           :loading="loading"
           :disabled="!selectedHandoffUserId || isHandoffComplete"
           @click="handleConfirmHandoff"
@@ -257,7 +257,7 @@ const handleAddParticipant = async () => {
     showToast({
       type: 'success',
       title: 'Sukses',
-      message: 'Peserta berhasil ditambahkan',
+      message: 'Kasir bertugas berhasil ditambahkan',
     } as any);
     showAddDialog.value = false;
     selectedUserId.value = '';
@@ -266,7 +266,7 @@ const handleAddParticipant = async () => {
     showToast({
       type: 'error',
       title: 'Gagal',
-      message: getErrorMessage(error) || 'Gagal menambahkan peserta',
+      message: getErrorMessage(error) || 'Gagal menambahkan kasir bertugas',
     } as any);
   }
 };
@@ -274,8 +274,8 @@ const handleAddParticipant = async () => {
 const confirmRemoveParticipant = (participant: Participant) => {
   participantToRemove.value = participant;
   showConfirm({
-    header: 'Hapus Peserta',
-    message: 'Apakah Anda yakin ingin menghapus pengguna ini dari shift?',
+    header: 'Hapus Kasir Bertugas',
+    message: 'Apakah Anda yakin ingin menghapus pengguna ini dari kasir bertugas?',
     rejectLabel: 'Batal',
     acceptLabel: 'Hapus',
     type: 'warn',
@@ -296,7 +296,7 @@ const handleRemoveParticipant = async () => {
     showToast({
       type: 'success',
       title: 'Sukses',
-      message: 'Peserta berhasil dihapus',
+      message: 'Kasir bertugas berhasil dihapus',
     } as any);
     showRemoveConfirm.value = false;
     participantToRemove.value = null;
@@ -305,7 +305,7 @@ const handleRemoveParticipant = async () => {
     showToast({
       type: 'error',
       title: 'Gagal',
-      message: getErrorMessage(error) || 'Gagal menghapus peserta',
+      message: getErrorMessage(error) || 'Gagal menghapus kasir bertugas',
     } as any);
   }
 };
@@ -313,8 +313,8 @@ const handleRemoveParticipant = async () => {
 const confirmRestoreParticipant = (participant: Participant) => {
   participantToRemove.value = participant;
   showConfirm({
-    header: 'Kembalikan Peserta',
-    message: 'Apakah Anda yakin ingin mengembalikan pengguna ini ke dalam shift?',
+    header: 'Kembalikan Kasir Bertugas',
+    message: 'Apakah Anda yakin ingin mengembalikan pengguna ini ke kasir bertugas?',
     rejectLabel: 'Batal',
     acceptLabel: 'Kembalikan',
     type: 'info',
@@ -335,7 +335,7 @@ const handleRestoreParticipant = async () => {
     showToast({
       type: 'success',
       title: 'Sukses',
-      message: 'Peserta berhasil dikembalikan',
+      message: 'Kasir bertugas berhasil dikembalikan',
     } as any);
     participantToRemove.value = null;
     emit('participant-added');
@@ -343,7 +343,7 @@ const handleRestoreParticipant = async () => {
     showToast({
       type: 'error',
       title: 'Gagal',
-      message: getErrorMessage(error) || 'Gagal mengembalikan peserta',
+      message: getErrorMessage(error) || 'Gagal mengembalikan kasir bertugas',
     } as any);
   }
 };
@@ -367,10 +367,10 @@ const loadAvailableUsers = async () => {
 
 const handleConfirmHandoff = () => {
   showConfirm({
-    header: 'Oper Shift?',
-    message: 'Apakah Anda yakin ingin mengoper shift ini?',
+    header: 'Serah Terima Kasir?',
+    message: 'Apakah Anda yakin ingin menyerahkan kasir ini?',
     rejectLabel: 'Batal',
-    acceptLabel: 'Oper Shift',
+    acceptLabel: 'Serah Terima',
     type: 'warn',
     accept: () => {
       handleHandoff();
@@ -390,7 +390,7 @@ const handleHandoff = async () => {
     showToast({
       type: 'success',
       title: 'Sukses',
-      message: 'Shift berhasil dioper',
+      message: 'Serah terima kasir berhasil',
     } as any);
 
     // Mark as complete to disable form
@@ -404,7 +404,7 @@ const handleHandoff = async () => {
     showToast({
       type: 'error',
       title: 'Gagal',
-      message: getErrorMessage(error) || 'Gagal mengoper shift',
+      message: getErrorMessage(error) || 'Gagal melakukan serah terima kasir',
     } as any);
   }
 };

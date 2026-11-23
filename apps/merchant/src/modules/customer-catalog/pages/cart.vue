@@ -208,7 +208,7 @@ const confirmSubmitOrder = () => {
   if (!catalogStore.isShiftOpen) {
     showToast({
       type: 'warn',
-      title: 'Shift belum dibuka',
+      title: 'Kasir belum dibuka',
       message: 'Outlet belum menerima pesanan saat ini.',
     });
     return;
@@ -236,7 +236,7 @@ const submitOrder = async () => {
     if (!catalogStore.isShiftOpen) {
       showToast({
         type: 'warn',
-        title: 'Shift belum dibuka',
+        title: 'Kasir belum dibuka',
         message: 'Outlet belum menerima pesanan saat ini.',
       });
       return;

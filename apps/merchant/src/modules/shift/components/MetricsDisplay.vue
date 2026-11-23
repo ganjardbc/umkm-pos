@@ -17,14 +17,14 @@
         <!-- Summary Chart -->
         <div class="metrics-display__chart-container">
           <div class="chart-wrapper">
-            <h4 class="chart-title">Transaksi & Pendapatan per Peserta</h4>
+            <h4 class="chart-title">Transaksi & Pendapatan per Kasir</h4>
             <canvas ref="summaryChartCanvas"></canvas>
           </div>
         </div>
 
         <!-- Individual Metrics -->
         <div class="metrics-display__chart-container">
-          <h4 class="chart-title">Detail Peserta</h4>
+          <h4 class="chart-title">Detail Kasir</h4>
           <div v-if="metrics.length === 0" class="metrics-display__empty">
             Data metrik masih kosong.
           </div>
@@ -35,7 +35,7 @@
               <div class="metric-card__tags">
                 <Tag
                   v-if="showOwnerStatus && metric.is_owner"
-                  value="Pemilik Shift"
+                  value="Penanggung Jawab"
                   severity="info"
                 />
                 <Tag
