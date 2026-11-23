@@ -155,6 +155,7 @@ export class ReportsService {
     // Get transaction IDs scoped to merchant (& optionally date range)
     const txWhere: Record<string, unknown> = {
       outlet_id: { in: outletIds },
+      is_cancelled: false,
     };
     if (dateFrom || dateTo) {
       txWhere.created_at = {
@@ -201,6 +202,7 @@ export class ReportsService {
 
     const txWhere: Record<string, unknown> = {
       outlet_id: { in: outletIds },
+      is_cancelled: false,
     };
     if (dateFrom || dateTo) {
       txWhere.created_at = {
