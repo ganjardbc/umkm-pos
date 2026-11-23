@@ -29,7 +29,7 @@
         @click="() => { router.push(PRP_SHIFT); navigate(); }"
       >
         <i class="pi pi-clock" />
-        <span class="hidden md:inline">Buka/Tutup Kasir</span>
+        <span class="hidden xl:inline whitespace-nowrap">Buka/Tutup Kasir</span>
       </Button>
 
       <div class="flex items-center gap-1">

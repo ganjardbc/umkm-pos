@@ -1,214 +1,89 @@
 <template>
-  <UiCard class="max-w-2xl mx-auto">
-    <template #header>
-      <h1 class="text-xl font-semibold">
+  <div class="mx-auto w-full max-w-5xl space-y-4">
+    <div class="flex items-center gap-4">
+      <Button
+        severity="secondary"
+        icon="pi pi-arrow-left"
+        size="small"
+        aria-label="Kembali"
+        @click="onCancel"
+      />
+      <h1 class="text-lg font-semibold">
         Tambah Outlet
       </h1>
-    </template>
+    </div>
 
-    <Form
-      v-slot="$form"
-      :resolver="resolver"
-      :initialValues="initialValues"
-      @submit="onFormSubmit"
-      class="flex flex-col gap-4 w-full"
-    >
-      <div class="w-full space-y-4">
-        <UiFormGroup label="Nama" variant="vertical">
-          <InputText
-            name="name"
-            type="text"
-            placeholder=""
-            fluid
-            @update:modelValue="(value: any) => onNameChange(value, $form)"
-          />
-          <Message
-            v-if="$form.name?.invalid"
-            severity="error"
-            size="small"
-            variant="simple"
-          >
-            {{ $form.name.error?.message }}
-          </Message>
-        </UiFormGroup>
-        <UiFormGroup label="Slug" variant="vertical">
-          <InputText
-            name="slug"
-            type="text"
-            placeholder=""
-            fluid
-            readonly
-            disabled
-          />
-          <Message
-            v-if="$form.slug?.invalid"
-            severity="error"
-            size="small"
-            variant="simple"
-          >
-            {{ $form.slug.error?.message }}
-          </Message>
-        </UiFormGroup>
-        <UiFormGroup label="Lokasi" variant="vertical">
-          <Textarea
-            name="location"
-            placeholder=""
-            fluid
-          />
-          <Message
-            v-if="$form.location?.invalid"
-            severity="error"
-            size="small"
-            variant="simple"
-          >
-            {{ $form.location.error?.message }}
-          </Message>
-        </UiFormGroup>
-        <UiFormGroup label="Kode Rahasia Pelanggan" variant="vertical">
-          <InputText
-            name="guest_session_secret"
-            type="text"
-            placeholder="DEMO123"
-            fluid
-          />
-        </UiFormGroup>
-        <UiFileUpload
-          :previewUrl="imagePreview"
-          @select="onUploadImage"
-          @remove="onRemoveImage"
-        />
-        <UiFormGroup label="Status Aktif" variant="vertical">
-          <div class="flex items-center gap-2">
-            <Checkbox
-              name="is_active"
-              binary
-            />
-            <label class="text-sm text-gray-700">Outlet aktif</label>
-          </div>
-          <Message
-            v-if="$form.is_active?.invalid"
-            severity="error"
-            size="small"
-            variant="simple"
-          >
-            {{ $form.is_active.error?.message }}
-          </Message>
-        </UiFormGroup>
-      </div>
-
-      <div class="w-full flex justify-end gap-4">
-        <Button
-          severity="secondary"
-          label="Batal"
-          size="medium"
-          class="w-full md:w-[128px]"
-          @click="onCancel"
-        />
-        <Button
-          type="submit"
-          label="Simpan"
-          size="medium"
-          class="w-full md:w-[128px]"
-          :loading="isSubmitting"
-        />
-      </div>
-    </Form>
-  </UiCard>
+    <OutletForm
+      mode="create"
+      :initial-values="initialValues"
+      :submitting="submitting"
+      @submit="onSubmit"
+      @cancel="onCancel"
+    />
+  </div>
 </template>
+
 <script setup lang="ts">
-import type { FormCreate } from '@/modules/outlet/services/types.ts';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { z } from 'zod';
-import { zodResolver } from '@primevue/forms/resolvers/zod';
 import { getErrorMessage } from '@umkm-pos/ui/helpers/utils';
 import { showToast } from '@umkm-pos/ui/helpers/toast';
-import { showLoading, hideLoading } from '@umkm-pos/ui/helpers/loading';
 import { postOutlet } from '@/modules/outlet/services/api.ts';
 import { setOutletImage } from '@/services/uploads';
-import { useFileUpload } from '@umkm-pos/ui/composables/useFileUpload';
-import UiCard from '@umkm-pos/ui/components/UiCard.vue';
-import UiFormGroup from '@umkm-pos/ui/components/UiFormGroup.vue';
+import OutletForm, {
+  type OutletFormSubmit,
+  type OutletFormValues,
+} from '@/modules/outlet/components/OutletForm.vue';
 
 const router = useRouter();
 
-const isSubmitting = ref(false);
-
-const {
-  selectedUploadId,
-  imagePreview,
-  onUploadImage,
-  onRemoveImage,
-} = useFileUpload();
-
-const initialValues = ref<FormCreate>({
-  slug: '',
+const initialValues: OutletFormValues = {
   name: '',
   location: '',
   guest_session_secret: '',
-  logo: '',
-  is_active: true
-});
-
-const resolver = ref(zodResolver(
-  z.object({
-    slug: z.string().min(1, { message: 'Slug wajib diisi.' }),
-    name: z.string().min(1, { message: 'Nama wajib diisi.' }),
-    location: z.string().min(1, { message: 'Lokasi wajib diisi.' }),
-    guest_session_secret: z.string().optional(),
-    is_active: z.boolean()
-  })
-));
-
-const onFormSubmit = async (event: any) => {
-  const { valid, values } = event as { valid: boolean; values: any };
-  if (valid) {
-    isSubmitting.value = true;
-    try {
-      showLoading();
-
-      const payload = {
-        slug: values?.slug,
-        name: values?.name,
-        location: values?.location,
-        guest_session_secret: values?.guest_session_secret,
-        logo: values?.logo,
-        is_active: values?.is_active,
-      };
-      const response = await postOutlet(payload);
-      const { success, data } = response?.data || {};
-
-      if (success) {
-        if (selectedUploadId.value) {
-          await setOutletImage(data?.id, selectedUploadId.value);
-        }
-        router.back();
-      }
-    } catch (error) {
-      showToast({
-        type: 'error',
-        title: 'Gagal Menambah Outlet.',
-        message: getErrorMessage(error) || 'Terjadi kesalahan.',
-      });
-    } finally {
-      hideLoading();
-      isSubmitting.value = false;
-    }
-  }
+  is_active: true,
+  shift_required: true,
+  cash_out_daily_limit: null,
+  auto_close_time: '',
 };
 
-const onNameChange = (name: string, form: any) => {
-  const slug = name
-    .toLowerCase()
-    .trim()
-    .replace(/[^\w\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-');
-  
-  form.slug.value = slug;
+const submitting = ref(false);
+
+const onSubmit = async ({ values, slug, uploadId }: OutletFormSubmit) => {
+  if (submitting.value) return;
+  try {
+    submitting.value = true;
+    const response = await postOutlet({
+      slug,
+      name: values.name,
+      location: values.location,
+      guest_session_secret: values.guest_session_secret || undefined,
+      is_active: values.is_active,
+      shift_required: values.shift_required,
+      cash_out_daily_limit: values.cash_out_daily_limit ?? undefined,
+      auto_close_time: values.auto_close_time || undefined,
+    });
+    const { success, data } = response?.data || {};
+
+    if (success && uploadId) {
+      await setOutletImage(data?.id, uploadId);
+    }
+    if (success) {
+      showToast({ type: 'success', title: 'Outlet ditambahkan', message: `${values.name} siap dipakai.` });
+      router.back();
+    }
+  } catch (error) {
+    showToast({
+      type: 'error',
+      title: 'Gagal menambah outlet',
+      message: getErrorMessage(error) || 'Terjadi kesalahan.',
+    });
+  } finally {
+    submitting.value = false;
+  }
 };
 
 const onCancel = () => {
   router.back();
-}
+};
 </script>
