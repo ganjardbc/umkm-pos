@@ -824,7 +824,8 @@ export class ShiftsService {
         cash_sales: total((r) => r.cash_sales),
         cash_in: total((r) => r.cash_in),
         cash_out: total((r) => r.cash_out),
-        expected_cash: total((r) => r.expected_cash),
+        // Expected cash only over shifts that were counted, so it compares with closing_cash.
+        expected_cash: total((r) => (r.closed_by_system ? 0 : r.expected_cash)),
         closing_cash: total((r) => r.closing_cash),
         cash_difference: total((r) => r.cash_difference),
         transactions: rows.reduce((a, r) => a + r.transactions, 0),
@@ -952,6 +953,7 @@ export class ShiftsService {
           closing_cash: shift.closing_cash ?? null,
           expected_cash: shift.expected_cash ?? null,
           cash_difference: shift.cash_difference ?? null,
+          closed_by_system: shift.closed_by_system,
           participant_count: participantCount,
           total_transactions: totalTransactions,
         };
