@@ -316,7 +316,7 @@ defineExpose({ isCollapsed, isSmallSidebar, handleOpenSidebar });
 
 /* Header */
 .default-layout__header {
-  @apply sticky top-0 z-10 w-full h-14 px-2 bg-transparent;
+  @apply sticky top-0 z-10 w-full h-14 px-2 bg-white;
 }
 
 .default-layout__header--dark {
