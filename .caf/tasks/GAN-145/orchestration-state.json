@@ -1,0 +1,8 @@
+{
+  "orchestrationRetryCount": 0,
+  "lastFailedGate": "validate",
+  "lastFailedAt": "2026-10-30T08:51:43.187Z",
+  "lastKnownCommitSha": "8e6d5a0a54c7a8f9f84fe86b80e34a6ae0ec62c9",
+  "ticketTitle": "[CAF-TEST] Badge \"stok menipis\" di daftar produk",
+  "ticketDescription": "Merchant ingin tahu produk mana yang stoknya hampir habis. Tambahkan penanda \"stok menipis\" di daftar produk app merchant. Catatan: ticket ini sengaja belum menjelaskan kapan sebuah produk dianggap \"menipis\" dan dari mana batasnya berasal. Planner harus menanyakannya sebelum menulis spec, bukan menebak. Acceptance Criteria (awal, belum lengkap): 1. Produk dengan stok \"menipis\" menampilkan badge di daftar produk. 2. Produk dengan stok cukup tidak menampilkan badge."
+}
