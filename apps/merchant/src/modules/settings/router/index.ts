@@ -12,11 +12,13 @@ import {
   ACCOUNT_DEACTIVATE,
 } from '@/modules/settings/services/rbac';
 
+import { PREFIX_ROUTE_PATH as PRP_PROFILE } from '@/modules/profile/services/constants';
+
 export default [
   {
     path: PREFIX_ROUTE_PATH,
     name: PREFIX_ROUTE_NAME,
-    component: () => import('@/modules/settings/pages/index.vue'),
+    redirect: PRP_PROFILE,
     meta: {
       title: 'Pengaturan',
       layout: 'default',

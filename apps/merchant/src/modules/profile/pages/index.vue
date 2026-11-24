@@ -11,18 +11,7 @@
     <UiCard v-if="profile">
       <div class="space-y-4">
         <div class="flex justify-between items-center">
-          <div class="space-y-2">
-            <h1 class="text-xl font-semibold">{{ profile?.name }}</h1>
-            <router-link :to="PRP_SETTINGS" class="block">
-              <Button
-                severity="secondary"
-                variant="outlined"
-                icon="pi pi-cog"
-                size="small"
-                label="Pengaturan"
-              />
-            </router-link>
-          </div>
+          <h1 class="text-xl font-semibold">{{ profile?.name }}</h1>
           <Avatar
             :image="profile?.avatar"
             :label="profile?.avatar ? undefined : profile?.name?.charAt(0)"
@@ -63,6 +52,37 @@
       </div>
     </UiCard>
 
+
+    <div class="grid grid-cols-1 gap-4">
+      <UiCard
+        v-for="(menu, i) in listOfSettingMenus"
+        :key="i"
+        class="cursor-pointer hover:shadow-lg transition-shadow"
+        @click="navigateTo(menu?.route)"
+      >
+        <div class="flex items-center gap-3">
+          <div class="w-[42px] text-center">
+            <i
+              class="text-xl!"
+              :class="[
+                menu?.icon,
+                menu?.color,
+              ]"
+            />
+          </div>
+          <div class="flex-1">
+            <h3 class="text-sm font-semibold">
+              {{ menu?.label }}
+            </h3>
+            <p class="text-xs text-gray-500">
+              {{ menu?.description }}
+            </p>
+          </div>
+          <i class="pi pi-chevron-right text-xs!" />
+        </div>
+      </UiCard>
+    </div>
+
     <Divider />
 
     <Button
@@ -78,17 +98,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { removeAuth } from '@/helpers/auth.ts';
+import { removeAuth, isHasPermission } from '@/helpers/auth.ts';
 import { PREFIX_ROUTE_PATH as PRP_AUTH } from '@/modules/auth/services/constants.ts';
-import { PREFIX_ROUTE_PATH as PRP_SETTINGS } from '@/modules/settings/services/constants.ts';
+import { LIST_MENU } from '@/modules/settings/services/constants.ts';
 import { getDetailprofile } from '@/modules/profile/services/api.ts';
 import { getErrorMessage, formatDateTime } from '@umkm-pos/ui/helpers/utils';
 import { showConfirm, showToast } from '@umkm-pos/ui/helpers/toast';
 import UiCard from '@umkm-pos/ui/components/UiCard.vue';
 
 const router = useRouter();
+
+const listOfSettingMenus = computed(() => LIST_MENU.filter((item) => isHasPermission(item.permission)));
+
+const navigateTo = (routeName: string) => router.push({ name: routeName });
 
 // Profile
 const profile = ref<any>(null);

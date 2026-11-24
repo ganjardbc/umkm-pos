@@ -56,7 +56,7 @@
               variant="text"
               icon="pi pi-download"
               size="small"
-              label="Pasang Aplikasi"
+              label="Pasang App"
               fluid
               class="justify-start! items-center!"
               @click="() => { close(); installApp(); }"
@@ -105,7 +105,6 @@ import { PREFIX_ROUTE_PATH as PRP_AUTH } from '@/modules/auth/services/constants
 import { PREFIX_ROUTE_PATH as PRP_PROFILE } from '@/modules/profile/services/constants.ts';
 import { PREFIX_ROUTE_PATH as PRP_MERCHANT } from '@/modules/merchants/services/constants.ts';
 import { READ as MERCHANT_READ } from '@/modules/merchants/services/rbac.ts';
-import { PREFIX_ROUTE_PATH as PRP_SETTINGS } from '@/modules/settings/services/constants.ts';
 
 const route = useRoute();
 const router = useRouter();
@@ -125,7 +124,6 @@ const profileLinks = computed(() => [
   ...(isHasPermission(MERCHANT_READ)
     ? [{ label: 'Merchant', icon: 'pi pi-shop', to: PRP_MERCHANT }]
     : []),
-  { label: 'Pengaturan', icon: 'pi pi-cog', to: PRP_SETTINGS },
 ]);
 
 // Computed for Shift
