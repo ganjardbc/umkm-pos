@@ -22,7 +22,7 @@
       <Button
         v-if="canShift"
         :severity="shiftRequired && isShiftOpen ? 'success' : 'secondary'"
-        variant="outlined"
+        variant="text"
         size="small"
         class="mr-2 gap-2"
         aria-label="Buka/Tutup Kasir"
