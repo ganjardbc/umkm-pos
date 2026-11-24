@@ -36,7 +36,7 @@ export class AuditLogsService {
   async getAuditLogs(
     shiftId: string,
     merchantId: string,
-    limit: number = 10,
+    limit: number = 20,
     offset: number = 0,
   ) {
     // Validate shift belongs to merchant
