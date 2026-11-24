@@ -26,7 +26,7 @@
       v-else-if="customers.length === 0"
       class="flex flex-col items-center justify-center py-16 text-gray-400"
     >
-      <i class="pi pi-users mb-3 text-4xl" />
+      <i class="pi pi-inbox mb-3 text-4xl" />
       <p class="text-sm">Belum ada pelanggan.</p>
     </div>
 
