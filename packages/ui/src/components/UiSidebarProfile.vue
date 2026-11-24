@@ -136,7 +136,7 @@ const personalInfo = computed(() => ({
 }));
 
 const allLinks = computed<ProfileLink[]>(() => [
-  { label: 'Profil', icon: 'pi pi-user', to: props.profilePath },
+  { label: 'Profil & Setting', icon: 'pi pi-user', to: props.profilePath },
   ...props.links,
 ]);
 
