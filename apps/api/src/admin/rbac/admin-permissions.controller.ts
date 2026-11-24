@@ -16,11 +16,11 @@ import {
 } from '@nestjs/swagger';
 import { RbacService } from '../../rbac/rbac.service';
 import { CreatePermissionDto } from '../../rbac/dto/create-permission.dto';
+import { PermissionsQueryDto } from '../../rbac/dto/permissions-query.dto';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { RequirePermission } from '../../common/decorators/require-permission.decorator';
 import { AdminGuard } from '../../common/guards/admin.guard';
 import { PermissionGuard } from '../../common/guards/permission.guard';
-import { PaginationDto } from '../../common/dto/pagination.dto';
 
 @ApiTags('Admin - Permissions')
 @ApiBearerAuth()
@@ -42,8 +42,8 @@ export class AdminPermissionsController {
   @RequirePermission('permission.read')
   @ApiOperation({ summary: 'List all permissions' })
   @ApiResponse({ status: 200, description: 'Return permissions (paginated)' })
-  findAll(@Query() pagination: PaginationDto) {
-    return this.rbacService.findAllPermissions(pagination);
+  findAll(@Query() query: PermissionsQueryDto) {
+    return this.rbacService.findAllPermissions(query);
   }
 
   @Get(':id')

@@ -88,7 +88,7 @@
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { getNoTable, getErrorMessage, formatDateTime } from '@umkm-pos/ui/helpers/utils';
+import { getNoTable, getErrorMessage, formatDateTime, useDebounce } from '@umkm-pos/ui/helpers/utils';
 import { getListPermission, deletePermission } from '@/modules/permission/services/api.ts';
 import { showToast, showConfirm } from '@umkm-pos/ui/helpers/toast';
 import { showLoading, hideLoading } from '@umkm-pos/ui/helpers/loading';
@@ -133,6 +133,7 @@ const fetchPermission = async () => {
     const payload = {
       page: pagination.value.page,
       limit: pagination.value.rows,
+      search: form.value.search.trim() || undefined,
     };
     const response = await getListPermission(payload);
     const { data, meta } = response?.data?.data || {};
@@ -208,9 +209,10 @@ const form = ref({
   search: '',
 });
 
-const search = () => {
-  console.log(form.value);
-};
+const search = useDebounce(() => {
+  pagination.value.page = 1;
+  fetchPermission();
+}, 400);
 
 onMounted(() => {
   fetchPermission();
