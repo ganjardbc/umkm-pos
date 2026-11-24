@@ -1,5 +1,5 @@
 <template>
-  <div class="mx-auto w-full max-w-5xl space-y-4">
+  <div class="mx-auto w-full space-y-4">
     <div class="flex items-center gap-4">
       <Button
         severity="secondary"

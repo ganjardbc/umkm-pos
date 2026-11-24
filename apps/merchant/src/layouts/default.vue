@@ -26,7 +26,7 @@
         size="small"
         class="mr-2 gap-2"
         aria-label="Buka/Tutup Kasir"
-        @click="() => { router.push(PRP_SHIFT); navigate(); }"
+        @click="() => { router.push(PRP_SHIFT); }"
       >
         <i class="pi pi-clock" />
         <span class="hidden xl:inline whitespace-nowrap">Buka/Tutup Kasir</span>
