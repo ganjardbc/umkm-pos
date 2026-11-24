@@ -65,6 +65,28 @@ export class AdminMerchantsService {
     };
   }
 
+  async getOptions(search?: string) {
+    const trimmedSearch = search?.trim();
+    const where = trimmedSearch
+      ? {
+          OR: [
+            { name: { contains: trimmedSearch } },
+            { slug: { contains: trimmedSearch } },
+          ],
+        }
+      : undefined;
+
+    return this.prisma.merchants.findMany({
+      where,
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+      },
+      orderBy: { name: 'asc' },
+    });
+  }
+
   async findOne(id: string) {
     const merchant = await this.prisma.merchants.findUnique({
       where: { id },

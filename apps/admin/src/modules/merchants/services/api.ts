@@ -7,6 +7,13 @@ export const getListMerchants = async (data: any, options: any = {}) => {
   );
 };
 
+export const getMerchantOptions = async (params?: { search?: string }, options: any = {}) => {
+  return await api.get(
+    '/api/v1/admin/merchants/options',
+    { params, ...(options || {}) },
+  );
+};
+
 export const getDetailMerchants = async (id: string | number, options: any = {}) => {
   return await api.get(
     `/api/v1/admin/merchants/${id}`,

@@ -21,6 +21,7 @@
         class="w-full md:w-64"
         :loading="loadingMerchants"
         @change="search"
+        @filter="onFilterMerchants"
       />
       <Button
         icon="pi pi-plus"
@@ -169,6 +170,7 @@ const {
   merchantOptions,
   loadingMerchants,
   fetchMerchantOptions,
+  onFilterMerchants,
 } = useMerchantOptions();
 
 // Fetch Data

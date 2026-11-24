@@ -58,6 +58,39 @@ describe('AdminMerchantsService', () => {
     expect(result.data).toHaveLength(2);
   });
 
+  it('getOptions returns lightweight options ordered by name asc', async () => {
+    const mockOptions = [
+      { id: 'm-1', name: 'Alpha', slug: 'alpha' },
+      { id: 'm-2', name: 'Beta', slug: 'beta' },
+    ];
+    mockPrisma.merchants.findMany.mockResolvedValue(mockOptions);
+
+    const result = await service.getOptions();
+
+    expect(mockPrisma.merchants.findMany).toHaveBeenCalledWith({
+      where: undefined,
+      select: { id: true, name: true, slug: true },
+      orderBy: { name: 'asc' },
+    });
+    expect(result).toEqual(mockOptions);
+  });
+
+  it('getOptions filters by search term across name and slug', async () => {
+    const mockOptions = [{ id: 'm-1', name: 'Alpha', slug: 'alpha' }];
+    mockPrisma.merchants.findMany.mockResolvedValue(mockOptions);
+
+    const result = await service.getOptions('alp');
+
+    expect(mockPrisma.merchants.findMany).toHaveBeenCalledWith({
+      where: {
+        OR: [{ name: { contains: 'alp' } }, { slug: { contains: 'alp' } }],
+      },
+      select: { id: true, name: true, slug: true },
+      orderBy: { name: 'asc' },
+    });
+    expect(result).toEqual(mockOptions);
+  });
+
   it('findOne throws NotFound for unknown merchant', async () => {
     mockPrisma.merchants.findUnique.mockResolvedValue(null);
 

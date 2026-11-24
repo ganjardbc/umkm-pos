@@ -24,6 +24,7 @@
             filter
             fluid
             :loading="loadingMerchants"
+            @filter="onFilterMerchants"
           />
           <Message
             v-if="$form.merchant_id?.invalid"
@@ -167,6 +168,7 @@ const {
   merchantOptions,
   loadingMerchants,
   fetchMerchantOptions,
+  onFilterMerchants,
 } = useMerchantOptions();
 
 // State Form

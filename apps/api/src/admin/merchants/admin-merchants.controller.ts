@@ -14,6 +14,7 @@ import {
   ApiOperation,
   ApiResponse,
   ApiBearerAuth,
+  ApiQuery,
 } from '@nestjs/swagger';
 import { AdminMerchantsService } from './admin-merchants.service';
 import { CreateMerchantDto } from '../../merchants/dto/create-merchant.dto';
@@ -47,6 +48,22 @@ export class AdminMerchantsController {
   @ApiResponse({ status: 200, description: 'Return merchants (paginated)' })
   findAll(@Query() query: MerchantsQueryDto) {
     return this.merchantsService.findAll(query);
+  }
+
+  @Get('options')
+  @RequirePermission('merchants.read')
+  @ApiOperation({
+    summary: 'List merchants as lightweight options for dropdowns',
+  })
+  @ApiQuery({
+    name: 'search',
+    required: false,
+    type: String,
+    description: 'Filter merchants by name or slug',
+  })
+  @ApiResponse({ status: 200, description: 'Return merchant options' })
+  getOptions(@Query('search') search?: string) {
+    return this.merchantsService.getOptions(search);
   }
 
   @Get(':id')
