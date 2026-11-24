@@ -1,0 +1,8 @@
+{
+  "orchestrationRetryCount": 0,
+  "lastFailedGate": "validate",
+  "lastFailedAt": "2026-10-30T08:48:28.276Z",
+  "lastKnownCommitSha": "8e6d5a0a54c7a8f9f84fe86b80e34a6ae0ec62c9",
+  "ticketTitle": "[CAF-TEST] Empty state di daftar produk merchant",
+  "ticketDescription": "Saat merchant belum punya produk, halaman daftar produk di app merchant saat ini kosong tanpa penjelasan. Tampilkan empty state agar merchant tahu harus melakukan apa. Scope: frontend saja (apps/merchant). Tidak ada perubahan API, database, atau packages/ui. Acceptance Criteria: 1. Ketika daftar produk kosong dan loading selesai, halaman menampilkan teks \"Belum ada produk\" dan tombol \"Tambah Produk\". 2. Tombol \"Tambah Produk\" mengarah ke halaman/form tambah produk yang sudah ada. 3. Ketika daftar produk berisi minimal satu produk, empty state tidak tampil. 4. Ketika loading belum selesai, empty state tidak tampil. 5. Perubahan lulus `pnpm typecheck`, `pnpm lint`, dan `pnpm test`. Out of scope: ilustrasi baru, perubahan layout daftar, halaman selain daftar produk."
+}
