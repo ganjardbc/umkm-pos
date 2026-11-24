@@ -90,9 +90,9 @@
               @click="router.back()"
             />
 
-            <div class="default-layout__header-title default-layout__header-title--dark">
+            <h1 class="default-layout__header-title default-layout__header-title--dark">
               {{ title }}
-            </div>
+            </h1>
 
             <Divider
               v-if="breadcrumbs.length && isWeb"
@@ -104,6 +104,7 @@
               :home="home"
               :model="breadcrumbs"
               size="small"
+              class="bg-transparent! p-0!"
             >
               <template #item="{ item, props: itemProps }">
                 <router-link v-if="item.route" v-slot="{ href, navigate }" :to="item.route" custom>
@@ -315,11 +316,11 @@ defineExpose({ isCollapsed, isSmallSidebar, handleOpenSidebar });
 
 /* Header */
 .default-layout__header {
-  @apply sticky top-0 z-10 w-full h-14 px-4 border-b border-gray-200 bg-white;
+  @apply sticky top-0 z-10 w-full h-14 px-2 bg-transparent;
 }
 
 .default-layout__header--dark {
-  @apply dark:border-dark dark:bg-dark-secondary;
+  @apply dark:border-dark dark:bg-dark-secondary border-b border-gray-200;
 }
 
 .default-layout__header-content {
@@ -343,7 +344,7 @@ defineExpose({ isCollapsed, isSmallSidebar, handleOpenSidebar });
 }
 
 .default-layout__header-title {
-  @apply text-lg font-semibold mr-3 truncate;
+  @apply text-lg font-semibold truncate;
 }
 
 .default-layout__header-dark-toggle {
